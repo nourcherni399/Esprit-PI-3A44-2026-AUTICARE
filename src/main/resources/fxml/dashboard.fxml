@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="org.example.controllers.MainController"
+            stylesheets="@../styles/app.css,@../styles/login.css">
+    <top>
+        <HBox alignment="CENTER_LEFT" spacing="10" style="-fx-background-color: #e8edf5;">
+            <padding><Insets bottom="10" left="10" right="10" top="8"/></padding>
+            <Label fx:id="connectedLabel"/>
+            <Button onAction="#refreshAll" text="Rafraichir"/>
+            <Button onAction="#onLogout" text="Deconnexion"/>
+        </HBox>
+    </top>
+    <center>
+        <TabPane fx:id="mainTabPane" tabClosingPolicy="UNAVAILABLE">
+            <tabs>
+                <Tab text="Utilisateurs">
+                    <SplitPane>
+                        <items>
+                            <VBox spacing="8">
+                                <padding><Insets top="8" right="8" bottom="8" left="8"/></padding>
+                                <HBox spacing="6">
+                                    <TextField fx:id="userSearchField" promptText="Recherche"/>
+                                    <ComboBox fx:id="userRoleFilterBox" promptText="Role"/>
+                                    <Button text="Filtrer" onAction="#onSearchUsers"/>
+                                </HBox>
+                                <ListView fx:id="usersList" onMouseClicked="#onUserSelected"/>
+                                <Button text="Supprimer" onAction="#onDeleteUser"/>
+                            </VBox>
+                            <GridPane hgap="8" vgap="8" padding="10">
+                                <children>
+                                    <Label text="Id" GridPane.rowIndex="0"/><TextField fx:id="userIdField" editable="false" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+                                    <Label text="Nom" GridPane.rowIndex="1"/><TextField fx:id="userNomField" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+                                    <Label text="Prenom" GridPane.rowIndex="2"/><TextField fx:id="userPrenomField" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
+                                    <Label text="Email" GridPane.rowIndex="3"/><TextField fx:id="userEmailField" GridPane.columnIndex="1" GridPane.rowIndex="3"/>
+                                    <Label text="Telephone" GridPane.rowIndex="4"/><TextField fx:id="userTelephoneField" GridPane.columnIndex="1" GridPane.rowIndex="4"/>
+                                    <Label text="Mot de passe" GridPane.rowIndex="5"/><PasswordField fx:id="userPasswordField" GridPane.columnIndex="1" GridPane.rowIndex="5"/>
+                                    <Label text="Role" GridPane.rowIndex="6"/><ComboBox fx:id="userRoleBox" GridPane.columnIndex="1" GridPane.rowIndex="6"/>
+                                    <CheckBox fx:id="userActifBox" text="Actif" selected="true" GridPane.columnIndex="1" GridPane.rowIndex="7"/>
+                                    <Button text="Enregistrer" onAction="#onSaveUser" GridPane.columnIndex="1" GridPane.rowIndex="8"/>
+                                </children>
+                            </GridPane>
+                        </items>
+                    </SplitPane>
+                </Tab>
+                <Tab text="Produits">
+                    <SplitPane>
+                        <items>
+                            <VBox spacing="8" padding="8">
+                                <ListView fx:id="productsList" onMouseClicked="#onProductSelected"/>
+                                <Button text="Supprimer" onAction="#onDeleteProduct"/>
+                            </VBox>
+                            <GridPane hgap="8" vgap="8" padding="10">
+                                <children>
+                                    <Label text="Id"/><TextField fx:id="productIdField" editable="false" GridPane.columnIndex="1"/>
+                                    <Label text="Nom" GridPane.rowIndex="1"/><TextField fx:id="productNomField" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+                                    <Label text="Description" GridPane.rowIndex="2"/><TextArea fx:id="productDescriptionField" prefRowCount="4" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
+                                    <Label text="Prix" GridPane.rowIndex="3"/><TextField fx:id="productPrixField" GridPane.columnIndex="1" GridPane.rowIndex="3"/>
+                                    <Label text="Categorie" GridPane.rowIndex="4"/><TextField fx:id="productCategorieField" GridPane.columnIndex="1" GridPane.rowIndex="4"/>
+                                    <Label text="Stock" GridPane.rowIndex="5"/><TextField fx:id="productStockField" GridPane.columnIndex="1" GridPane.rowIndex="5"/>
+                                    <CheckBox fx:id="productPublieBox" text="Publie" selected="true" GridPane.columnIndex="1" GridPane.rowIndex="6"/>
+                                    <Button text="Enregistrer" onAction="#onSaveProduct" GridPane.columnIndex="1" GridPane.rowIndex="7"/>
+                                </children>
+                            </GridPane>
+                        </items>
+                    </SplitPane>
+                </Tab>
+                <Tab text="Rendez-vous">
+                    <SplitPane>
+                        <items>
+                            <VBox spacing="8" padding="8">
+                                <ListView fx:id="apptsList" onMouseClicked="#onAppointmentSelected"/>
+                                <Button text="Supprimer" onAction="#onDeleteAppointment"/>
+                            </VBox>
+                            <GridPane hgap="8" vgap="8" padding="10">
+                                <children>
+                                    <Label text="Id"/><TextField fx:id="apptIdField" editable="false" GridPane.columnIndex="1"/>
+                                    <Label text="Medecin Id" GridPane.rowIndex="1"/><TextField fx:id="apptMedecinIdField" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+                                    <Label text="Patient Id" GridPane.rowIndex="2"/><TextField fx:id="apptPatientIdField" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
+                                    <Label text="Date/heure ISO" GridPane.rowIndex="3"/><TextField fx:id="apptDateTimeField" promptText="2026-04-08T14:00" GridPane.columnIndex="1" GridPane.rowIndex="3"/>
+                                    <Label text="Motif" GridPane.rowIndex="4"/><TextField fx:id="apptMotifField" GridPane.columnIndex="1" GridPane.rowIndex="4"/>
+                                    <Label text="Statut" GridPane.rowIndex="5"/><ComboBox fx:id="apptStatusBox" GridPane.columnIndex="1" GridPane.rowIndex="5"/>
+                                    <Label text="Notes" GridPane.rowIndex="6"/><TextArea fx:id="apptNotesField" GridPane.columnIndex="1" GridPane.rowIndex="6"/>
+                                    <Button text="Enregistrer" onAction="#onSaveAppointment" GridPane.columnIndex="1" GridPane.rowIndex="7"/>
+                                </children>
+                            </GridPane>
+                        </items>
+                    </SplitPane>
+                </Tab>
+                <Tab text="Disponibilites">
+                    <SplitPane>
+                        <items>
+                            <VBox spacing="8" padding="8">
+                                <ListView fx:id="availList" onMouseClicked="#onAvailabilitySelected"/>
+                                <Button text="Supprimer" onAction="#onDeleteAvailability"/>
+                            </VBox>
+                            <GridPane hgap="8" vgap="8" padding="10">
+                                <children>
+                                    <Label text="Id"/><TextField fx:id="availIdField" editable="false" GridPane.columnIndex="1"/>
+                                    <Label text="Medecin Id" GridPane.rowIndex="1"/><TextField fx:id="availMedecinIdField" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+                                    <Label text="Debut ISO" GridPane.rowIndex="2"/><TextField fx:id="availStartField" promptText="2026-04-08T08:00" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
+                                    <Label text="Fin ISO" GridPane.rowIndex="3"/><TextField fx:id="availEndField" promptText="2026-04-08T09:00" GridPane.columnIndex="1" GridPane.rowIndex="3"/>
+                                    <Button text="Enregistrer" onAction="#onSaveAvailability" GridPane.columnIndex="1" GridPane.rowIndex="4"/>
+                                </children>
+                            </GridPane>
+                        </items>
+                    </SplitPane>
+                </Tab>
+                <Tab text="Evenements">
+                    <SplitPane>
+                        <items>
+                            <VBox spacing="8" padding="8">
+                                <ListView fx:id="eventsList" onMouseClicked="#onEventSelected"/>
+                                <Button text="Supprimer" onAction="#onDeleteEvent"/>
+                            </VBox>
+                            <GridPane hgap="8" vgap="8" padding="10">
+                                <children>
+                                    <Label text="Id"/><TextField fx:id="eventIdField" editable="false" GridPane.columnIndex="1"/>
+                                    <Label text="Titre" GridPane.rowIndex="1"/><TextField fx:id="eventTitreField" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+                                    <Label text="Description" GridPane.rowIndex="2"/><TextArea fx:id="eventDescriptionField" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
+                                    <Label text="Debut ISO" GridPane.rowIndex="3"/><TextField fx:id="eventStartField" promptText="2026-04-08T09:00" GridPane.columnIndex="1" GridPane.rowIndex="3"/>
+                                    <Label text="Fin ISO" GridPane.rowIndex="4"/><TextField fx:id="eventEndField" promptText="2026-04-08T17:00" GridPane.columnIndex="1" GridPane.rowIndex="4"/>
+                                    <Label text="Lieu" GridPane.rowIndex="5"/><TextField fx:id="eventLieuField" GridPane.columnIndex="1" GridPane.rowIndex="5"/>
+                                    <Label text="Places" GridPane.rowIndex="6"/><TextField fx:id="eventPlacesField" GridPane.columnIndex="1" GridPane.rowIndex="6"/>
+                                    <Label text="Statut" GridPane.rowIndex="7"/><ComboBox fx:id="eventStatusBox" GridPane.columnIndex="1" GridPane.rowIndex="7"/>
+                                    <Button text="Enregistrer" onAction="#onSaveEvent" GridPane.columnIndex="1" GridPane.rowIndex="8"/>
+                                </children>
+                            </GridPane>
+                        </items>
+                    </SplitPane>
+                </Tab>
+                <Tab text="Inscriptions">
+                    <SplitPane>
+                        <items>
+                            <VBox spacing="8" padding="8.0">
+                                <ListView fx:id="regsList" onMouseClicked="#onRegistrationSelected"/>
+                                <Button text="Supprimer" onAction="#onDeleteRegistration"/>
+                            </VBox>
+                            <GridPane hgap="8" vgap="8" padding="10.0">
+                                <children>
+                                    <Label text="Id"/><TextField fx:id="regIdField" editable="false" GridPane.columnIndex="1"/>
+                                    <Label text="Evenement Id" GridPane.rowIndex="1"/><TextField fx:id="regEventIdField" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+                                    <Label text="Utilisateur Id" GridPane.rowIndex="2"/><TextField fx:id="regUserIdField" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
+                                    <Label text="Statut" GridPane.rowIndex="3"/><ComboBox fx:id="regStatusBox" GridPane.columnIndex="1" GridPane.rowIndex="3"/>
+                                    <Button text="Enregistrer" onAction="#onSaveRegistration" GridPane.columnIndex="1" GridPane.rowIndex="4"/>
+                                </children>
+                            </GridPane>
+                        </items>
+                    </SplitPane>
+                </Tab>
+                <Tab text="Modules">
+                    <SplitPane>
+                        <items>
+                            <VBox spacing="8" padding="8.0">
+                                <ListView fx:id="modulesList" onMouseClicked="#onModuleSelected"/>
+                                <Button text="Supprimer" onAction="#onDeleteModule"/>
+                            </VBox>
+                            <GridPane hgap="8" vgap="8" padding="10.0">
+                                <children>
+                                    <Label text="Id"/><TextField fx:id="moduleIdField" editable="false" GridPane.columnIndex="1"/>
+                                    <Label text="Titre" GridPane.rowIndex="1"/><TextField fx:id="moduleTitreField" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+                                    <Label text="Description" GridPane.rowIndex="2"/><TextArea fx:id="moduleDescriptionField" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
+                                    <Label text="Categorie" GridPane.rowIndex="3"/><TextField fx:id="moduleCategorieField" GridPane.columnIndex="1" GridPane.rowIndex="3"/>
+                                    <Label text="Ressource lien" GridPane.rowIndex="4"/><TextField fx:id="moduleLienField" GridPane.columnIndex="1" GridPane.rowIndex="4"/>
+                                    <Button text="Enregistrer" onAction="#onSaveModule" GridPane.columnIndex="1" GridPane.rowIndex="5"/>
+                                </children>
+                            </GridPane>
+                        </items>
+                    </SplitPane>
+                </Tab>
+                <Tab text="Blog">
+                    <SplitPane>
+                        <items>
+                            <VBox spacing="8" padding="8">
+                                <ListView fx:id="articlesList" onMouseClicked="#onArticleSelected"/>
+                                <Button text="Supprimer" onAction="#onDeleteArticle"/>
+                            </VBox>
+                            <GridPane hgap="8" vgap="8" padding="10.0">
+                                <children>
+                                    <Label text="Id"/><TextField fx:id="articleIdField" editable="false" GridPane.columnIndex="1"/>
+                                    <Label text="Titre" GridPane.rowIndex="1"/><TextField fx:id="articleTitreField" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+                                    <Label text="Contenu" GridPane.rowIndex="2"/><TextArea fx:id="articleContenuField" prefRowCount="8" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
+                                    <Label text="Auteur Id" GridPane.rowIndex="3"/><TextField fx:id="articleAuteurIdField" GridPane.columnIndex="1" GridPane.rowIndex="3"/>
+                                    <Label text="Categorie" GridPane.rowIndex="4"/><TextField fx:id="articleCategorieField" GridPane.columnIndex="1" GridPane.rowIndex="4"/>
+                                    <Label text="Slug" GridPane.rowIndex="5"/><TextField fx:id="articleSlugField" GridPane.columnIndex="1" GridPane.rowIndex="5"/>
+                                    <Label text="Module" GridPane.rowIndex="6"/><ComboBox fx:id="articleModuleBox" GridPane.columnIndex="1" GridPane.rowIndex="6"/>
+                                    <Button text="Enregistrer" onAction="#onSaveArticle" GridPane.columnIndex="1" GridPane.rowIndex="7"/>
+                                </children>
+                            </GridPane>
+                        </items>
+                    </SplitPane>
+                </Tab>
+            </tabs>
+        </TabPane>
+    </center>
+</BorderPane>

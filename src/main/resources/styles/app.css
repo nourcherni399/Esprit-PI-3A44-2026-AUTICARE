@@ -1,0 +1,76 @@
+/*
+ * AutiCare — design system inclusif (JavaFX)
+ *
+ * Équivalents des tokens web :
+ *   --auticare-bg:            #F5F1EB
+ *   --auticare-text:          #6B7280
+ *   --auticare-text-strong:   #4B5563
+ *   --auticare-border:        #E5E0D8
+ *   --auticare-accent:        #8B7355
+ *   --auticare-accent-soft:   #A89882
+ *   --auticare-card:          #FDFBF7
+ *   --auticare-focus:         #9CA3AF
+ *
+ * (JavaFX ne gère pas les variables CSS --* comme les navigateurs : valeurs reprises en dur.)
+ */
+
+.root {
+    -fx-background-color: #F5F1EB;
+    -fx-font-family: "Segoe UI", system-ui, "Segoe UI Emoji", sans-serif;
+    -fx-font-size: 14px;
+    -fx-focus-color: #9CA3AF;
+    -fx-faint-focus-color: #9CA3AF;
+}
+
+/* Liens apaisants (Hyperlink sans style spécifique plus tard dans la cascade) */
+.hyperlink {
+    -fx-text-fill: #8B7355;
+    -fx-border-color: transparent;
+    -fx-underline: false;
+}
+
+.hyperlink:hover {
+    -fx-text-fill: #A89882;
+    -fx-underline: true;
+}
+
+.hyperlink:focused {
+    -fx-border-color: #9CA3AF;
+    -fx-border-width: 2;
+    -fx-border-radius: 4;
+    -fx-background-insets: 0;
+}
+
+/* Focus modéré (réduction surcharge sensorielle) — complété par les feuilles d’écran */
+.button:focused,
+.combo-box:focused,
+.text-field:focused,
+.password-field:focused,
+.text-area:focused {
+    -fx-border-color: #9CA3AF;
+}
+
+/* Classes utilitaires (optionnel sur les nœuds) */
+.auticare-bg {
+    -fx-background-color: #F5F1EB;
+}
+
+.auticare-text {
+    -fx-text-fill: #6B7280;
+}
+
+.auticare-text-strong {
+    -fx-text-fill: #4B5563;
+}
+
+.auticare-border {
+    -fx-border-color: #E5E0D8;
+}
+
+.auticare-card {
+    -fx-background-color: #FDFBF7;
+}
+
+.auticare-accent {
+    -fx-text-fill: #8B7355;
+}
