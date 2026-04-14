@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Text?>
+<?import javafx.scene.text.TextFlow?>
+
+<BorderPane styleClass="admin-root" stylesheets="@../../../styles/app.css,@../../../styles/admin.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.example.controllers.AdminUserDeleteController">
+    <left>
+        <VBox styleClass="admin-sidebar">
+            <HBox alignment="CENTER_LEFT" spacing="10" styleClass="admin-brand-row">
+                <ImageView fitHeight="38" fitWidth="38" pickOnBounds="true" preserveRatio="true" styleClass="admin-sidebar-logo">
+                    <image>
+                        <Image url="@../../../images/logo.png"/>
+                    </image>
+                </ImageView>
+                <Label styleClass="admin-brand" text="AutiCare Admin"/>
+            </HBox>
+            <Label alignment="CENTER_LEFT" maxWidth="Infinity" onMouseClicked="#onNavDashboard" styleClass="admin-nav-item" text="Tableau de bord"/>
+            <Label alignment="CENTER_LEFT" maxWidth="Infinity" onMouseClicked="#onNavUsers" styleClass="admin-nav-item admin-nav-item-active" text="Utilisateurs"/>
+            <Label alignment="CENTER_LEFT" maxWidth="Infinity" onMouseClicked="#onNavProducts" styleClass="admin-nav-item" text="Produits"/>
+            <Label alignment="CENTER_LEFT" maxWidth="Infinity" onMouseClicked="#onNavStocks" styleClass="admin-nav-item" text="Stocks"/>
+            <Label alignment="CENTER_LEFT" maxWidth="Infinity" onMouseClicked="#onNavOrders" styleClass="admin-nav-item" text="Commandes"/>
+            <Label alignment="CENTER_LEFT" maxWidth="Infinity" onMouseClicked="#onNavEvents" styleClass="admin-nav-item" text="Événements"/>
+            <Label alignment="CENTER_LEFT" maxWidth="Infinity" onMouseClicked="#onNavTopics" styleClass="admin-nav-item" text="Thématiques"/>
+            <Label alignment="CENTER_LEFT" maxWidth="Infinity" onMouseClicked="#onNavModules" styleClass="admin-nav-item" text="Modules"/>
+            <Label alignment="CENTER_LEFT" maxWidth="Infinity" onMouseClicked="#onNavSettings" styleClass="admin-nav-item" text="Paramètres"/>
+            <Region VBox.vgrow="ALWAYS"/>
+            <VBox styleClass="admin-nav-footer">
+                <Label alignment="CENTER_LEFT" maxWidth="Infinity" onMouseClicked="#onNavAdminHome" styleClass="admin-nav-item" text="Accueil admin"/>
+            </VBox>
+        </VBox>
+    </left>
+    <center>
+        <BorderPane styleClass="admin-main">
+            <top>
+                <HBox alignment="CENTER_LEFT" styleClass="admin-topbar">
+                    <HBox alignment="CENTER_LEFT" spacing="8" HBox.hgrow="ALWAYS">
+                        <Label text="🔍"/>
+                        <TextField fx:id="topSearchField" promptText="Rechercher..." styleClass="admin-search" HBox.hgrow="ALWAYS"/>
+                    </HBox>
+                    <Region minWidth="16"/>
+                    <Label text="🔔"/>
+                    <Region minWidth="12"/>
+                    <HBox alignment="CENTER_LEFT" onMouseClicked="#onOpenMyProfile" spacing="10" styleClass="admin-topbar-profile">
+                        <StackPane fx:id="topbarAvatarHost" styleClass="admin-topbar-avatar-host"/>
+                        <VBox styleClass="admin-user-block">
+                            <Label fx:id="userNameLabel" styleClass="admin-user-name" text="—"/>
+                            <Label fx:id="userEmailLabel" styleClass="admin-user-email" text="—"/>
+                        </VBox>
+                    </HBox>
+                    <Button onAction="#onLogout" styleClass="admin-btn-logout" text="Se déconnecter"/>
+                </HBox>
+            </top>
+            <center>
+                <ScrollPane fitToWidth="true" hbarPolicy="NEVER" style="-fx-background: transparent; -fx-background-color: transparent;">
+                    <content>
+                        <VBox styleClass="admin-content">
+                            <Label onMouseClicked="#onBack" styleClass="admin-form-back" text="← Retour"/>
+                            <VBox styleClass="admin-delete-card">
+                                <Label styleClass="admin-delete-title" text="Supprimer l'utilisateur"/>
+                                <TextFlow styleClass="admin-delete-message">
+                                    <Text text="Êtes-vous sûr de vouloir supprimer "/>
+                                    <Text fx:id="deleteNameText" styleClass="admin-delete-bold"/>
+                                    <Text text=" ("/>
+                                    <Text fx:id="deleteEmailText" styleClass="admin-delete-bold"/>
+                                    <Text text=") ? Cette action est irréversible."/>
+                                </TextFlow>
+                                <HBox alignment="CENTER_LEFT" spacing="12" styleClass="admin-delete-actions">
+                                    <Button onAction="#onConfirmDelete" styleClass="admin-btn-delete-confirm" text="Confirmer la suppression"/>
+                                    <Button onAction="#onCancel" styleClass="admin-btn-secondary" text="Annuler"/>
+                                </HBox>
+                            </VBox>
+                        </VBox>
+                    </content>
+                </ScrollPane>
+            </center>
+        </BorderPane>
+    </center>
+</BorderPane>

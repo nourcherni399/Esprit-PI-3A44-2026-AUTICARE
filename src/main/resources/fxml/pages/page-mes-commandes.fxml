@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox alignment="TOP_CENTER" styleClass="public-admin-product-form-page"
+      xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="org.example.controllers.PageMesCommandesController">
+    <VBox alignment="TOP_LEFT" maxWidth="720" spacing="14" styleClass="public-product-form-card">
+        <Label styleClass="public-product-form-title" text="Mes commandes"/>
+        <Label styleClass="public-product-form-lead"
+               text="Vos commandes (compte connecté) : photo, nom et prix de chaque article. Bon PDF en bas de chaque commande."
+               wrapText="true"/>
+        <VBox fx:id="guestBox" managed="false" spacing="10" visible="false" alignment="CENTER_LEFT">
+            <Label styleClass="public-product-form-hint" text="Vous devez être connecté pour voir vos commandes."
+                   wrapText="true"/>
+            <Button onAction="#onGoLogin" styleClass="public-product-form-primary-btn" text="Se connecter"/>
+        </VBox>
+        <ScrollPane fx:id="ordersScroll" fitToWidth="true" hbarPolicy="NEVER" maxHeight="520"
+                    styleClass="public-product-form-scroll" VBox.vgrow="ALWAYS">
+            <content>
+                <VBox fx:id="ordersVBox" spacing="10">
+                    <padding>
+                        <Insets bottom="4" left="2" right="2" top="2"/>
+                    </padding>
+                </VBox>
+            </content>
+        </ScrollPane>
+    </VBox>
+</VBox>

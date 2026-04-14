@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.FlowPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+
+<!-- Structure type page RDV : bandeau titre, puis carte blanche (filtres | catalogue). -->
+<VBox alignment="TOP_CENTER" maxWidth="1140" spacing="0" styleClass="catalog-page"
+      xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="org.example.controllers.PageProduitsController">
+
+    <!-- Bloc titre (au-dessus de la carte, lisible sur le fond) -->
+    <VBox alignment="TOP_CENTER" styleClass="catalog-hero">
+        <Label styleClass="public-page-kicker" text="CATALOGUE"/>
+        <Label styleClass="public-page-title" text="Produits adaptés" textAlignment="CENTER" wrapText="true"/>
+        <Label styleClass="public-page-lead"
+               text="Découvrez une sélection d’outils et de produits pensés pour le confort sensoriel, la concentration et le quotidien."
+               textAlignment="CENTER" wrapText="true"/>
+    </VBox>
+
+    <!-- Carte unique : colonne filtres | zone résultats -->
+    <VBox maxWidth="Infinity" spacing="0" styleClass="rdv-content-card">
+        <HBox alignment="TOP_LEFT" spacing="28" styleClass="rdv-two-col">
+
+            <!-- Colonne gauche : filtres -->
+            <VBox minWidth="260" prefWidth="300" spacing="16" styleClass="rdv-filters-panel">
+                <Label styleClass="rdv-filters-title" text="Filtres"/>
+                <VBox spacing="8">
+                    <Label styleClass="rdv-filter-label" text="Catégorie"/>
+                    <VBox fx:id="categoryButtonsBox" spacing="8"/>
+                </VBox>
+                <VBox spacing="8">
+                    <Label styleClass="rdv-filter-label" text="Fourchette de prix"/>
+                    <VBox fx:id="priceButtonsBox" spacing="8"/>
+                </VBox>
+                <VBox styleClass="rdv-help-box">
+                    <Label styleClass="rdv-help-title" text="Comment naviguer ?"/>
+                    <Label styleClass="rdv-help-text"
+                           text="Affinez par catégorie ou prix, utilisez la recherche pour trouver un article. Les produits affichés sont ceux publiés par l’équipe AutiCare."
+                           wrapText="true"/>
+                </VBox>
+            </VBox>
+
+            <!-- Colonne droite : recherche, tri, grille -->
+            <VBox maxWidth="Infinity" spacing="14" styleClass="rdv-main-col" HBox.hgrow="ALWAYS">
+                <VBox spacing="8">
+                    <Label styleClass="rdv-filter-label" text="Recherche"/>
+                    <HBox alignment="CENTER_LEFT" spacing="10">
+                        <TextField fx:id="searchField" maxWidth="Infinity" onAction="#onSearch"
+                                   promptText="Nom, description, catégorie, prix…" styleClass="rdv-field"
+                                   HBox.hgrow="ALWAYS"/>
+                        <Button minWidth="110" mnemonicParsing="false" onAction="#onSearch"
+                                styleClass="public-product-form-primary-btn" text="Rechercher"/>
+                    </HBox>
+                </VBox>
+
+                <Separator/>
+
+                <HBox alignment="CENTER_LEFT" styleClass="catalog-results-toolbar">
+                    <Label fx:id="resultsCountLabel" styleClass="rdv-results-count" text=" "/>
+                    <Region maxWidth="Infinity" HBox.hgrow="ALWAYS"/>
+                    <HBox fx:id="sortToolbar" alignment="CENTER_RIGHT" spacing="8"/>
+                </HBox>
+
+                <ScrollPane fx:id="productsScroll" fitToWidth="true" hbarPolicy="NEVER" maxHeight="Infinity"
+                            minViewportHeight="420" prefViewportHeight="520" styleClass="catalog-scroll"
+                            vbarPolicy="AS_NEEDED" VBox.vgrow="ALWAYS">
+                    <FlowPane fx:id="productsFlow" alignment="TOP_LEFT" hgap="18" styleClass="catalog-flow" vgap="18"/>
+                </ScrollPane>
+            </VBox>
+        </HBox>
+    </VBox>
+</VBox>
