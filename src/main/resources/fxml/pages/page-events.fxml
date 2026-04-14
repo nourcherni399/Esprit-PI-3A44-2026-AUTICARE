@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.DatePicker?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.ToggleButton?>
+<?import javafx.scene.control.ToggleGroup?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox alignment="TOP_CENTER" maxWidth="1140" spacing="16" styleClass="events-page"
+      xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="org.example.controllers.PageEventsController">
+    <VBox spacing="6" styleClass="events-header">
+        <Label styleClass="events-page-title" text="Événements &amp; Ateliers"/>
+        <Label styleClass="events-page-subtitle" text="Découvrez nos ateliers et rencontres par thématique." wrapText="true"/>
+    </VBox>
+
+    <VBox spacing="14" styleClass="events-filter-card">
+        <HBox alignment="CENTER_LEFT" spacing="14" styleClass="events-filter-row">
+            <VBox spacing="4" styleClass="events-filter-field">
+                <Label styleClass="events-filter-label" text="Date début"/>
+                <DatePicker fx:id="dateDebutPicker" maxWidth="Infinity" styleClass="events-date-picker"/>
+            </VBox>
+            <VBox spacing="4" styleClass="events-filter-field">
+                <Label styleClass="events-filter-label" text="Date fin"/>
+                <DatePicker fx:id="dateFinPicker" maxWidth="Infinity" styleClass="events-date-picker"/>
+            </VBox>
+            <VBox spacing="4" HBox.hgrow="ALWAYS" styleClass="events-filter-field-grow">
+                <Label styleClass="events-filter-label" text="Lieu"/>
+                <TextField fx:id="lieuField" maxWidth="Infinity" promptText="Ex. Salle d'art" styleClass="events-field"/>
+            </VBox>
+            <VBox spacing="4" styleClass="events-filter-field">
+                <Label styleClass="events-filter-label" text="Thématique"/>
+                <ComboBox fx:id="thematiqueCombo" editable="false" maxWidth="Infinity" styleClass="events-combo"/>
+            </VBox>
+            <VBox alignment="BOTTOM_LEFT" spacing="8" styleClass="events-filter-actions">
+                <Button fx:id="searchBtn" mnemonicParsing="false" onAction="#onSearch" styleClass="events-btn-primary" text="🔍  Rechercher"/>
+                <Button fx:id="resetBtn" mnemonicParsing="false" onAction="#onReset" styleClass="events-btn-ghost" text="Réinitialiser"/>
+            </VBox>
+        </HBox>
+    </VBox>
+
+    <!-- Même feuille blanche que les filtres : affichage + grille / liste + Autres -->
+    <VBox spacing="16" maxWidth="Infinity" styleClass="public-white-sheet events-page-content-sheet">
+        <HBox alignment="CENTER_LEFT" maxWidth="Infinity" spacing="12" styleClass="events-view-toggle-row">
+            <Label styleClass="events-display-label" text="Affichage :"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <HBox alignment="CENTER_RIGHT" spacing="0" styleClass="events-segment">
+                <fx:define>
+                    <ToggleGroup fx:id="viewToggleGroup"/>
+                </fx:define>
+                <ToggleButton fx:id="gridToggle" mnemonicParsing="false" onAction="#onViewModeChanged" selected="true"
+                              styleClass="events-segment-btn" text="▦  Grille" toggleGroup="$viewToggleGroup"/>
+                <ToggleButton fx:id="listToggle" mnemonicParsing="false" onAction="#onViewModeChanged"
+                              styleClass="events-segment-btn" text="☰  Liste" toggleGroup="$viewToggleGroup"/>
+            </HBox>
+        </HBox>
+
+        <!-- Pas de ScrollPane ici : la coque (public-shell) scrolle déjà toute la page. -->
+        <VBox spacing="28" styleClass="events-body">
+            <padding>
+                <Insets bottom="8" left="0" right="0" top="0"/>
+            </padding>
+            <VBox fx:id="themesHost" id="themesHost" spacing="20" styleClass="events-themes-host"/>
+            <VBox fx:id="otherSection" spacing="10" styleClass="events-other-section">
+                <HBox alignment="CENTER_LEFT" spacing="8">
+                    <Label styleClass="events-other-title" text="Autres événements"/>
+                    <Label fx:id="otherCountLabel" styleClass="events-other-count" text="0 événement"/>
+                </HBox>
+                <VBox fx:id="otherEventsHost" id="otherEventsHost" spacing="10" styleClass="events-other-list"/>
+            </VBox>
+        </VBox>
+    </VBox>
+</VBox>

@@ -1,0 +1,1508 @@
+/*
+ * AutiCare — design system inclusif (JavaFX)
+ *
+ * Équivalents des tokens web :
+ *   --auticare-bg:            #F5F1EB
+ *   --auticare-text:          #6B7280
+ *   --auticare-text-strong:   #4B5563
+ *   --auticare-border:        #E5E0D8
+ *   --auticare-accent:        #8B7355
+ *   --auticare-accent-soft:   #A89882
+ *   --auticare-card:          #FDFBF7
+ *   --auticare-focus:         #9CA3AF
+ *
+ * (JavaFX ne gère pas les variables CSS --* comme les navigateurs : valeurs reprises en dur.)
+ */
+
+.root {
+    -fx-background-color: #F5F1EB;
+    -fx-font-family: "Segoe UI", system-ui, "Segoe UI Emoji", sans-serif;
+    -fx-font-size: 14px;
+    -fx-focus-color: #9CA3AF;
+    -fx-faint-focus-color: #9CA3AF;
+}
+
+/* Liens apaisants (Hyperlink sans style spécifique plus tard dans la cascade) */
+.hyperlink {
+    -fx-text-fill: #8B7355;
+    -fx-border-color: transparent;
+    -fx-underline: false;
+}
+
+.hyperlink:hover {
+    -fx-text-fill: #A89882;
+    -fx-underline: true;
+}
+
+.hyperlink:focused {
+    -fx-border-color: #9CA3AF;
+    -fx-border-width: 2;
+    -fx-border-radius: 4;
+    -fx-background-insets: 0;
+}
+
+/* Focus modéré (réduction surcharge sensorielle) — complété par les feuilles d’écran */
+.button:focused,
+.combo-box:focused,
+.text-field:focused,
+.password-field:focused,
+.text-area:focused {
+    -fx-border-color: #9CA3AF;
+}
+
+/* Classes utilitaires (optionnel sur les nœuds) */
+.auticare-bg {
+    -fx-background-color: #F5F1EB;
+}
+
+.auticare-text {
+    -fx-text-fill: #6B7280;
+}
+
+.auticare-text-strong {
+    -fx-text-fill: #4B5563;
+}
+
+.auticare-border {
+    -fx-border-color: #E5E0D8;
+}
+
+.auticare-card {
+    -fx-background-color: #FDFBF7;
+}
+
+.auticare-accent {
+    -fx-text-fill: #8B7355;
+}
+
+/* ---------- Dashboard — onglet Événements (vue « métier avancé ») ---------- */
+
+.admin-events-tab-root {
+    -fx-background-color: #f5f1eb;
+}
+
+.admin-events-scroll {
+    -fx-background-color: transparent;
+}
+
+.admin-events-scroll > .viewport {
+    -fx-background-color: #f5f1eb;
+}
+
+.admin-events-scroll-root {
+    -fx-background-color: transparent;
+}
+
+.admin-events-scroll-root > .viewport {
+    -fx-background-color: #f5f1eb;
+}
+
+/* Ancienne contrainte retirée : elle n’était pas utilisée par le FXML embarqué mais pouvait prêter à confusion. */
+.admin-events-panel {
+    -fx-max-width: infinity;
+}
+
+.admin-events-main-title {
+    -fx-font-size: 22px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #1f2937;
+}
+
+.admin-events-main-sub {
+    -fx-font-size: 13px;
+    -fx-text-fill: #6b7280;
+}
+
+.admin-events-toolbar {
+    -fx-alignment: center_left;
+    -fx-padding: 0 0 4 0;
+}
+
+.admin-events-field, .admin-events-combo {
+    -fx-background-radius: 8;
+}
+
+.admin-events-btn-filter {
+    -fx-background-color: #e5e7eb;
+    -fx-text-fill: #374151;
+    -fx-background-radius: 8;
+    -fx-padding: 6 14 6 14;
+}
+
+.admin-events-btn-advanced {
+    -fx-background-color: #a78bfa;
+    -fx-text-fill: white;
+    -fx-font-weight: 700;
+    -fx-background-radius: 10;
+    -fx-padding: 8 16 8 16;
+}
+
+.admin-events-btn-new {
+    -fx-background-color: #3b82f6;
+    -fx-text-fill: white;
+    -fx-font-weight: 700;
+    -fx-background-radius: 10;
+    -fx-padding: 8 16 8 16;
+}
+
+.admin-events-table {
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 12;
+    -fx-border-color: rgba(0, 0, 0, 0.08);
+    -fx-border-radius: 12;
+    -fx-table-cell-border-color: #e5e7eb;
+    -fx-padding: 0;
+}
+
+/* Contenu des cellules et en-têtes centrés (horizontal + vertical) */
+.admin-events-table .column-header > .label {
+    -fx-alignment: center;
+    -fx-font-weight: 700;
+    -fx-text-fill: #334155;
+}
+
+.admin-events-table .column-header-background {
+    -fx-background-color: linear-gradient(to bottom, #f8fafc 0%, #eef2f7 100%);
+    -fx-background-radius: 12 12 0 0;
+    -fx-border-color: #dbe1ea;
+    -fx-border-width: 0 0 1 0;
+}
+
+.admin-events-table .column-header {
+    -fx-border-color: transparent #e5e7eb transparent transparent;
+    -fx-border-width: 0 1 0 0;
+}
+
+.admin-events-table .table-row-cell .table-cell {
+    -fx-alignment: center;
+    -fx-padding: 9 8 9 8;
+    -fx-border-color: transparent #eceff4 #eceff4 transparent;
+    -fx-border-width: 0 1 1 0;
+    -fx-text-fill: #1f2937;
+}
+
+.admin-events-table .table-row-cell {
+    -fx-background-color: #ffffff;
+}
+
+.admin-events-table .table-row-cell:odd {
+    -fx-background-color: #fbfcfe;
+}
+
+.admin-events-table .table-row-cell:hover {
+    -fx-background-color: #f0f9ff;
+}
+
+.admin-events-table .table-row-cell:selected {
+    -fx-background-color: #e0f2fe;
+}
+
+.admin-events-table .table-row-cell:selected .table-cell {
+    -fx-text-fill: #0f172a;
+}
+
+.admin-events-thematique-pill {
+    -fx-background-color: rgba(249, 219, 238, 0.75);
+    -fx-border-color: rgba(233, 152, 201, 0.85);
+    -fx-border-width: 1;
+    -fx-border-radius: 999;
+    -fx-background-radius: 999;
+    -fx-text-fill: #c0268f;
+    -fx-font-size: 12px;
+    -fx-font-weight: 600;
+    -fx-padding: 5 12 5 12;
+    -fx-translate-y: 2;
+}
+
+/* Boutons d’action type « cap 2 » : pastels + coins arrondis */
+.admin-events-action-btn {
+    -fx-background-radius: 8;
+    -fx-padding: 8;
+    -fx-min-width: 36;
+    -fx-min-height: 36;
+    -fx-max-width: 36;
+    -fx-max-height: 36;
+    -fx-cursor: hand;
+    -fx-background-insets: 0;
+    -fx-border-width: 0;
+    -fx-content-display: graphic-only;
+}
+
+.admin-events-action-btn:hover {
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.12), 6, 0.2, 0, 1);
+}
+
+.admin-events-action-view {
+    -fx-background-color: #ecfdf5;
+}
+
+.admin-events-action-view:hover {
+    -fx-background-color: #d1fae5;
+}
+
+.admin-events-action-edit {
+    -fx-background-color: #eff6ff;
+}
+
+.admin-events-action-edit:hover {
+    -fx-background-color: #dbeafe;
+}
+
+.admin-events-action-delete {
+    -fx-background-color: #fef2f2;
+}
+
+.admin-events-action-delete:hover {
+    -fx-background-color: #fee2e2;
+}
+
+.admin-events-table-placeholder {
+    -fx-text-fill: #9ca3af;
+}
+
+.admin-events-chart-card {
+    -fx-padding: 14 16 16 16;
+    -fx-background-color: #fdfbf7;
+    -fx-background-radius: 14;
+    -fx-border-color: rgba(0, 0, 0, 0.06);
+    -fx-border-radius: 14;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.06), 12, 0.2, 0, 2);
+}
+
+.admin-events-chart-title {
+    -fx-font-weight: 700;
+    -fx-font-size: 14px;
+    -fx-text-fill: #374151;
+}
+
+/* Zone graphique (événements : légende seule ; thématiques : PieChart) — même cadre visuel */
+.admin-events-pie-placeholder {
+    -fx-background-color: #fafaf9;
+    -fx-background-radius: 10;
+    -fx-border-color: rgba(0, 0, 0, 0.05);
+    -fx-border-radius: 10;
+    -fx-border-width: 1;
+}
+
+/* Même hauteur de tracé pour les deux camemberts (évite zone blanche sur le 2ᵉ graphique). */
+.admin-events-pie-placeholder .chart {
+    -fx-min-height: 190px;
+    -fx-pref-height: 210px;
+}
+
+.admin-events-pie-legend {
+    -fx-font-size: 11px;
+    -fx-text-fill: #6b7280;
+}
+
+.admin-thematiques-pie-stats.chart,
+.admin-thematiques-pie-events.chart {
+    -fx-padding: 4 4 0 4;
+}
+
+/* Légende PieChart : centrée comme cap 1 (même avec une seule entrée) */
+.admin-thematiques-pie-stats .chart-legend,
+.admin-thematiques-pie-events .chart-legend {
+    -fx-padding: 10 8 6 8;
+    -fx-hgap: 18;
+    -fx-vgap: 6;
+    -fx-alignment: center;
+    -fx-tile-alignment: center-left;
+}
+
+.admin-thematiques-pie-stats .chart-legend-item,
+.admin-thematiques-pie-events .chart-legend-item {
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+    -fx-border-color: transparent;
+    -fx-border-width: 0;
+    -fx-padding: 4 6 4 6;
+}
+
+.admin-thematiques-pie-stats .chart-legend-item:hover,
+.admin-thematiques-pie-events .chart-legend-item:hover {
+    -fx-background-color: transparent;
+}
+
+.admin-thematiques-pie-stats .chart-legend-item-text,
+.admin-thematiques-pie-events .chart-legend-item-text {
+    -fx-font-size: 12px;
+    -fx-font-weight: 600;
+    -fx-text-fill: #374151;
+}
+
+/* Rectangle horizontal allongé (pastille type « barre de couleur ») */
+.admin-thematiques-pie-stats .chart-legend-item-symbol,
+.admin-thematiques-pie-events .chart-legend-item-symbol {
+    -fx-background-radius: 2px;
+    -fx-min-width: 26px;
+    -fx-max-width: 26px;
+    -fx-min-height: 8px;
+    -fx-max-height: 8px;
+    -fx-pref-width: 26px;
+    -fx-pref-height: 8px;
+}
+
+/* Libellés sur les parts désactivés ; si réactivés un jour : une seule couleur, pas d’ombre */
+.admin-thematiques-pie-stats .chart-pie-label,
+.admin-thematiques-pie-events .chart-pie-label {
+    -fx-fill: #374151;
+    -fx-font-size: 11px;
+}
+
+.admin-events-stat-card {
+    -fx-padding: 14 16 16 16;
+    -fx-background-color: #fdfbf7;
+    -fx-background-radius: 14;
+    -fx-border-color: rgba(0, 0, 0, 0.06);
+    -fx-border-radius: 14;
+}
+
+.admin-events-stat-title {
+    -fx-font-weight: 700;
+    -fx-font-size: 13px;
+}
+
+.admin-events-stat-line {
+    -fx-font-size: 13px;
+    -fx-text-fill: #374151;
+}
+
+.admin-events-stat-muted {
+    -fx-text-fill: #9ca3af;
+}
+
+.admin-events-stat-warn {
+    -fx-text-fill: #ea580c;
+}
+
+.admin-events-stat-big {
+    -fx-font-size: 28px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #1f2937;
+}
+
+.admin-events-stat-caption {
+    -fx-font-size: 12px;
+    -fx-text-fill: #6b7280;
+}
+
+/* Grands chiffres KPI + badges circulaires (thématiques / événements) */
+.admin-stat-kpi-huge {
+    -fx-font-size: 32px;
+    -fx-font-weight: 800;
+}
+
+.admin-stat-kpi-grey {
+    -fx-text-fill: #1f2937;
+}
+
+.admin-stat-kpi-green {
+    -fx-text-fill: #16a34a;
+}
+
+.admin-stat-kpi-purple {
+    -fx-text-fill: #7c3aed;
+}
+
+.admin-stat-row-badge {
+    -fx-padding: 2 0 2 0;
+}
+
+.admin-stat-num-badge {
+    -fx-min-width: 40px;
+    -fx-min-height: 40px;
+    -fx-pref-width: 40px;
+    -fx-pref-height: 40px;
+    -fx-max-width: 40px;
+    -fx-max-height: 40px;
+    -fx-alignment: center;
+    -fx-background-radius: 50%;
+    -fx-font-weight: 700;
+    -fx-font-size: 14px;
+}
+
+.admin-stat-num-badge-blue {
+    -fx-background-color: #dbeafe;
+    -fx-text-fill: #1d4ed8;
+}
+
+.admin-stat-num-badge-green {
+    -fx-background-color: #dcfce7;
+    -fx-text-fill: #15803d;
+}
+
+.admin-stat-num-badge-orange {
+    -fx-background-color: #ffedd5;
+    -fx-text-fill: #c2410c;
+}
+
+.admin-stat-num-badge-grey {
+    -fx-background-color: #f3f4f6;
+    -fx-text-fill: #4b5563;
+}
+
+.admin-stat-num-badge-red {
+    -fx-background-color: #fee2e2;
+    -fx-text-fill: #b91c1c;
+}
+
+.admin-stat-num-badge-purple {
+    -fx-background-color: #ede9fe;
+    -fx-text-fill: #6d28d9;
+}
+
+/* Cartes stats : pastilles lisibles mais pastels (pas trop vives) */
+.admin-events-stat-card .label.admin-stat-num-badge {
+    -fx-min-width: 44px;
+    -fx-min-height: 44px;
+    -fx-pref-width: 44px;
+    -fx-pref-height: 44px;
+    -fx-max-width: 44px;
+    -fx-max-height: 44px;
+    -fx-font-size: 16px;
+    -fx-font-weight: 800;
+}
+
+.admin-events-stat-card .label.admin-stat-num-badge-blue {
+    -fx-background-color: #dbeafe;
+    -fx-text-fill: #2563eb;
+}
+
+.admin-events-stat-card .label.admin-stat-num-badge-green {
+    -fx-background-color: #dcfce7;
+    -fx-text-fill: #15803d;
+}
+
+.admin-events-stat-card .label.admin-stat-num-badge-orange {
+    -fx-background-color: #ffedd5;
+    -fx-text-fill: #c2410c;
+}
+
+.admin-events-stat-card .label.admin-stat-num-badge-grey {
+    -fx-background-color: #f1f5f9;
+    -fx-text-fill: #475569;
+}
+
+.admin-events-stat-card .label.admin-stat-num-badge-red {
+    -fx-background-color: #fee2e2;
+    -fx-text-fill: #b91c1c;
+}
+
+.admin-events-stat-card .label.admin-stat-num-badge-purple {
+    -fx-background-color: #ede9fe;
+    -fx-text-fill: #6d28d9;
+}
+
+/*
+ * Pastilles KPI 52px — toutes les cartes stats événements (période, inscriptions, générales)
+ * + onglet dashboard (préfixes dash*).
+ */
+#statBigTotalThem,
+#statBigTotal,
+#dashStatBigTotal {
+    -fx-min-width: 52px;
+    -fx-min-height: 52px;
+    -fx-pref-width: 52px;
+    -fx-pref-height: 52px;
+    -fx-max-width: 52px;
+    -fx-max-height: 52px;
+    -fx-font-size: 18px;
+    -fx-font-weight: 800;
+    -fx-alignment: center;
+    -fx-background-radius: 50%;
+    -fx-padding: 0;
+    -fx-background-color: #dbeafe;
+    -fx-text-fill: #2563eb;
+}
+
+#statBigAvecThem,
+#statBigVenir,
+#dashStatBigVenir {
+    -fx-min-width: 52px;
+    -fx-min-height: 52px;
+    -fx-pref-width: 52px;
+    -fx-pref-height: 52px;
+    -fx-max-width: 52px;
+    -fx-max-height: 52px;
+    -fx-font-size: 18px;
+    -fx-font-weight: 800;
+    -fx-alignment: center;
+    -fx-background-radius: 50%;
+    -fx-padding: 0;
+    -fx-background-color: #dcfce7;
+    -fx-text-fill: #15803d;
+}
+
+#statBigTotalEvtKpi,
+#statBigInscTotal,
+#dashStatBigInscTotal {
+    -fx-min-width: 52px;
+    -fx-min-height: 52px;
+    -fx-pref-width: 52px;
+    -fx-pref-height: 52px;
+    -fx-max-width: 52px;
+    -fx-max-height: 52px;
+    -fx-font-size: 18px;
+    -fx-font-weight: 800;
+    -fx-alignment: center;
+    -fx-background-radius: 50%;
+    -fx-padding: 0;
+    -fx-background-color: #ede9fe;
+    -fx-text-fill: #6d28d9;
+}
+
+/* Événements par période / inscriptions : même taille que les lignes « Statistiques générales » */
+#statBadgePeriodVenir,
+#dashStatBadgePeriodVenir {
+    -fx-min-width: 52px;
+    -fx-min-height: 52px;
+    -fx-pref-width: 52px;
+    -fx-pref-height: 52px;
+    -fx-max-width: 52px;
+    -fx-max-height: 52px;
+    -fx-font-size: 18px;
+    -fx-font-weight: 800;
+    -fx-alignment: center;
+    -fx-background-radius: 50%;
+    -fx-padding: 0;
+    -fx-background-color: #dbeafe;
+    -fx-text-fill: #2563eb;
+}
+
+#statBadgePeriodPasses,
+#dashStatBadgePeriodPasses {
+    -fx-min-width: 52px;
+    -fx-min-height: 52px;
+    -fx-pref-width: 52px;
+    -fx-pref-height: 52px;
+    -fx-max-width: 52px;
+    -fx-max-height: 52px;
+    -fx-font-size: 18px;
+    -fx-font-weight: 800;
+    -fx-alignment: center;
+    -fx-background-radius: 50%;
+    -fx-padding: 0;
+    -fx-background-color: #f1f5f9;
+    -fx-text-fill: #475569;
+}
+
+#statBadgeInscAccept,
+#dashStatBadgeInscAccept {
+    -fx-min-width: 52px;
+    -fx-min-height: 52px;
+    -fx-pref-width: 52px;
+    -fx-pref-height: 52px;
+    -fx-max-width: 52px;
+    -fx-max-height: 52px;
+    -fx-font-size: 18px;
+    -fx-font-weight: 800;
+    -fx-alignment: center;
+    -fx-background-radius: 50%;
+    -fx-padding: 0;
+    -fx-background-color: #dcfce7;
+    -fx-text-fill: #15803d;
+}
+
+#statBadgeInscAttente,
+#dashStatBadgeInscAttente {
+    -fx-min-width: 52px;
+    -fx-min-height: 52px;
+    -fx-pref-width: 52px;
+    -fx-pref-height: 52px;
+    -fx-max-width: 52px;
+    -fx-max-height: 52px;
+    -fx-font-size: 18px;
+    -fx-font-weight: 800;
+    -fx-alignment: center;
+    -fx-background-radius: 50%;
+    -fx-padding: 0;
+    -fx-background-color: #ffedd5;
+    -fx-text-fill: #c2410c;
+}
+
+#statBadgeInscRefus,
+#dashStatBadgeInscRefus {
+    -fx-min-width: 52px;
+    -fx-min-height: 52px;
+    -fx-pref-width: 52px;
+    -fx-pref-height: 52px;
+    -fx-max-width: 52px;
+    -fx-max-height: 52px;
+    -fx-font-size: 18px;
+    -fx-font-weight: 800;
+    -fx-alignment: center;
+    -fx-background-radius: 50%;
+    -fx-padding: 0;
+    -fx-background-color: #fee2e2;
+    -fx-text-fill: #b91c1c;
+}
+
+.admin-events-icon-btn {
+    -fx-background-color: transparent;
+    -fx-padding: 2 6 2 6;
+    -fx-cursor: hand;
+}
+
+.admin-events-accordion {
+    -fx-padding: 0 8 8 8;
+}
+
+/* Formulaire « Nouvel événement » / thématiques — panneau glassy
+ * prefWidth : le cadre blanc occupe réellement cette largeur dans le StackPane
+ * (sans pref, JavaFX garde souvent la largeur implicite des enfants). */
+/* Conteneur dégradé : couronne fine autour de la feuille blanche (marges FXML réduites). */
+.admin-new-event-layer {
+    -fx-alignment: top-center;
+    -fx-background-color: linear-gradient(to bottom, #f8fafc 0%, #f1f5ff 40%, #faf8ff 100%);
+    -fx-background-radius: 16;
+    -fx-border-color: rgba(99, 102, 241, 0.14);
+    -fx-border-width: 1;
+    -fx-border-radius: 16;
+    -fx-effect: dropshadow(gaussian, rgba(79, 70, 229, 0.1), 18, 0.18, 0, 4);
+    -fx-min-width: 680;
+    -fx-max-width: infinity;
+}
+
+.admin-form-stack-inner {
+    -fx-max-width: 960;
+    -fx-min-width: 0;
+    -fx-alignment: top-center;
+}
+
+/* Zone blanche : champs au maximum de la largeur utile (padding latéral minimal). */
+.admin-form-white-sheet {
+    -fx-spacing: 16;
+    -fx-alignment: top-center;
+    -fx-padding: 14 10 18 10;
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 12;
+    -fx-border-color: rgba(148, 163, 184, 0.22);
+    -fx-border-width: 1;
+    -fx-border-radius: 12;
+    -fx-max-width: 960;
+    -fx-effect: dropshadow(gaussian, rgba(15, 23, 42, 0.06), 14, 0.1, 0, 2);
+}
+
+/* Champs pleine largeur dans les cartes */
+.admin-form-card .text-field,
+.admin-form-card .text-area {
+    -fx-max-width: infinity;
+}
+
+.admin-form-card .combo-box,
+.admin-form-card .date-picker {
+    -fx-max-width: infinity;
+}
+
+.admin-form-card .date-picker > .text-field {
+    -fx-max-width: infinity;
+}
+
+.admin-form-hero {
+    -fx-spacing: 8;
+    -fx-padding: 4 8 16 8;
+    -fx-border-color: transparent transparent rgba(148, 163, 184, 0.35) transparent;
+    -fx-border-width: 0 0 1 0;
+}
+
+.admin-form-hero .admin-new-event-h1 {
+    -fx-max-width: infinity;
+    -fx-text-alignment: left;
+}
+
+.admin-form-subtitle {
+    -fx-font-size: 13px;
+    -fx-text-fill: #64748b;
+    -fx-wrap-text: true;
+}
+
+/* Blocs de section à l’intérieur de .admin-form-white-sheet (sans double fond blanc). */
+.admin-form-card {
+    -fx-spacing: 14;
+    -fx-padding: 0;
+    -fx-background-color: transparent;
+    -fx-alignment: top-left;
+}
+
+.admin-form-card > .label.admin-new-event-label {
+    -fx-max-width: infinity;
+}
+
+/* Titre de section : accent indigo, aligné à gauche. */
+.admin-form-section-title {
+    -fx-font-size: 15px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #6366f1;
+    -fx-letter-spacing: 0.02em;
+    -fx-padding: 0 0 10 0;
+    -fx-background-color: transparent;
+    -fx-background-radius: 0;
+    -fx-border-color: transparent transparent rgba(99, 102, 241, 0.35) transparent;
+    -fx-border-width: 0 0 1 0;
+    -fx-max-width: infinity;
+    -fx-text-alignment: left;
+}
+
+.admin-form-actions {
+    -fx-spacing: 14;
+    -fx-padding: 22 4 4 4;
+    -fx-border-color: rgba(148, 163, 184, 0.4) transparent transparent transparent;
+    -fx-border-width: 1 0 0 0;
+}
+
+.admin-form-ai-row {
+    -fx-spacing: 10;
+    -fx-padding: 8 0 0 0;
+}
+
+.admin-form-datetime-grid {
+    -fx-padding: 2 0 0 0;
+}
+
+.admin-form-datetime-grid .admin-time-picker {
+    -fx-min-width: 0;
+    -fx-max-width: infinity;
+}
+
+.admin-new-event-back-link {
+    -fx-background-color: transparent;
+    -fx-text-fill: #6366f1;
+    -fx-font-size: 13px;
+    -fx-font-weight: 600;
+    -fx-padding: 4 8 12 4;
+    -fx-cursor: hand;
+    -fx-border-color: transparent;
+    -fx-underline: false;
+}
+
+.admin-new-event-back-link:hover {
+    -fx-text-fill: #4f46e5;
+    -fx-underline: true;
+}
+
+.admin-new-event-h1 {
+    -fx-font-size: 26px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #0f172a;
+}
+
+.admin-new-event-label {
+    -fx-font-size: 12px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #334155;
+}
+
+/* Champs texte — bordure nette + focus glow */
+.admin-new-event-input, .admin-new-event-textarea {
+    -fx-background-radius: 12;
+    -fx-border-radius: 12;
+    -fx-border-width: 2;
+    -fx-border-color: #cbd5e1;
+    -fx-background-color: #ffffff;
+    -fx-padding: 11 14 11 14;
+    -fx-font-size: 13px;
+    -fx-prompt-text-fill: #94a3b8;
+}
+
+.admin-new-event-input:hover, .admin-new-event-textarea:hover {
+    -fx-border-color: #94a3b8;
+    -fx-background-color: #fafafa;
+}
+
+.admin-new-event-input:focused, .admin-new-event-textarea:focused {
+    -fx-border-color: #6366f1;
+    -fx-background-color: #ffffff;
+    -fx-effect: dropshadow(gaussian, rgba(99, 102, 241, 0.35), 12, 0.25, 0, 0);
+}
+
+/* Combo & date dans le même esprit visuel */
+.admin-new-event-layer .combo-box,
+.admin-new-event-layer .combo-box-base {
+    -fx-background-radius: 12;
+    -fx-border-radius: 12;
+    -fx-border-width: 2;
+    -fx-border-color: #cbd5e1;
+    -fx-background-color: #ffffff;
+    -fx-padding: 2 4 2 4;
+}
+
+.admin-new-event-layer .combo-box:hover,
+.admin-new-event-layer .combo-box-base:hover {
+    -fx-border-color: #94a3b8;
+}
+
+.admin-new-event-layer .combo-box:focused,
+.admin-new-event-layer .combo-box-base:focused {
+    -fx-border-color: #6366f1;
+    -fx-effect: dropshadow(gaussian, rgba(99, 102, 241, 0.3), 10, 0.22, 0, 0);
+}
+
+.admin-new-event-layer .date-picker {
+    -fx-background-radius: 12;
+    -fx-max-width: infinity;
+}
+
+.admin-new-event-layer .date-picker > .text-field {
+    -fx-background-radius: 12;
+    -fx-border-radius: 12;
+    -fx-border-width: 2;
+    -fx-border-color: #cbd5e1;
+    -fx-padding: 9 12 9 12;
+    -fx-max-width: infinity;
+}
+
+.admin-new-event-layer .date-picker:focused > .text-field {
+    -fx-border-color: #6366f1;
+}
+
+.admin-new-event-btn-outline-green {
+    -fx-background-color: rgba(34, 197, 94, 0.08);
+    -fx-border-color: #22c55e;
+    -fx-border-width: 2;
+    -fx-text-fill: #15803d;
+    -fx-font-weight: 600;
+    -fx-border-radius: 10;
+    -fx-background-radius: 10;
+    -fx-padding: 8 14 8 14;
+    -fx-cursor: hand;
+}
+
+.admin-new-event-btn-outline-green:hover {
+    -fx-background-color: rgba(34, 197, 94, 0.18);
+    -fx-border-color: #16a34a;
+}
+
+.admin-new-event-btn-outline-blue {
+    -fx-background-color: rgba(59, 130, 246, 0.08);
+    -fx-border-color: #3b82f6;
+    -fx-border-width: 2;
+    -fx-text-fill: #1d4ed8;
+    -fx-font-weight: 600;
+    -fx-border-radius: 10;
+    -fx-background-radius: 10;
+    -fx-padding: 8 14 8 14;
+    -fx-cursor: hand;
+}
+
+.admin-new-event-btn-outline-blue:hover {
+    -fx-background-color: rgba(59, 130, 246, 0.16);
+    -fx-border-color: #2563eb;
+}
+
+.admin-new-event-btn-coords {
+    -fx-background-color: linear-gradient(to bottom, #e0f2fe 0%, #bae6fd 100%);
+    -fx-text-fill: #075985;
+    -fx-font-weight: 600;
+    -fx-border-color: #7dd3fc;
+    -fx-border-width: 2;
+    -fx-background-radius: 12;
+    -fx-border-radius: 12;
+    -fx-padding: 10 14 10 14;
+    -fx-max-width: 240;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(14, 165, 233, 0.25), 8, 0.2, 0, 2);
+}
+
+.admin-new-event-btn-coords:hover {
+    -fx-background-color: linear-gradient(to bottom, #bae6fd 0%, #7dd3fc 100%);
+}
+
+.admin-new-event-btn-primary {
+    -fx-background-color: linear-gradient(to bottom, #60a5fa 0%, #2563eb 55%, #1d4ed8 100%);
+    -fx-text-fill: white;
+    -fx-font-weight: 700;
+    -fx-font-size: 13px;
+    -fx-background-radius: 12;
+    -fx-padding: 12 24 12 24;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(37, 99, 235, 0.55), 14, 0.35, 0, 4);
+    -fx-border-color: rgba(255, 255, 255, 0.35);
+    -fx-border-width: 1;
+}
+
+.admin-new-event-btn-primary:hover {
+    -fx-background-color: linear-gradient(to bottom, #3b82f6 0%, #1d4ed8 100%);
+    -fx-effect: dropshadow(gaussian, rgba(37, 99, 235, 0.65), 18, 0.4, 0, 5);
+}
+
+.admin-new-event-btn-primary:pressed {
+    -fx-background-color: #1e40af;
+    -fx-effect: dropshadow(gaussian, rgba(30, 64, 175, 0.4), 8, 0.3, 0, 2);
+}
+
+.admin-new-event-btn-secondary {
+    -fx-background-color: #ffffff;
+    -fx-text-fill: #475569;
+    -fx-font-weight: 600;
+    -fx-border-color: #cbd5e1;
+    -fx-border-width: 2;
+    -fx-border-radius: 12;
+    -fx-background-radius: 12;
+    -fx-padding: 12 22 12 22;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(15, 23, 42, 0.06), 6, 0.15, 0, 2);
+}
+
+.admin-new-event-btn-secondary:hover {
+    -fx-background-color: #f8fafc;
+    -fx-border-color: #94a3b8;
+    -fx-text-fill: #1e293b;
+}
+
+/* Sélecteur d'heure type « horloge » (12 h + AM/PM) */
+.admin-time-picker {
+    -fx-background-color: linear-gradient(to bottom, #ffffff, #f8fafc);
+    -fx-border-color: #cbd5e1;
+    -fx-border-width: 2;
+    -fx-border-radius: 12;
+    -fx-background-radius: 12;
+    -fx-padding: 6 12 6 12;
+    -fx-max-width: infinity;
+    -fx-effect: dropshadow(gaussian, rgba(15, 23, 42, 0.05), 8, 0.12, 0, 2);
+}
+
+.admin-time-spinner {
+    -fx-background-radius: 8;
+    -fx-border-radius: 8;
+    -fx-border-color: #e2e8f0;
+    -fx-border-width: 1;
+}
+
+.admin-time-spinner .increment-arrow-button,
+.admin-time-spinner .decrement-arrow-button {
+    -fx-padding: 3 5 3 5;
+    -fx-background-color: #f1f5f9;
+}
+
+.admin-time-spinner .increment-arrow-button:hover,
+.admin-time-spinner .decrement-arrow-button:hover {
+    -fx-background-color: #e2e8f0;
+}
+
+.admin-time-sep {
+    -fx-font-weight: 800;
+    -fx-text-fill: #64748b;
+}
+
+.admin-time-ampm {
+    -fx-min-width: 88px;
+    -fx-pref-width: 100px;
+    -fx-max-width: infinity;
+}
+
+.admin-new-event-layer .admin-time-ampm > .list-cell {
+    -fx-text-overrun: clip;
+}
+
+.admin-new-event-layer .admin-time-ampm .arrow-button {
+    -fx-min-width: 28px;
+}
+
+/* Fiche événement admin (voir détail) */
+.admin-event-detail-root {
+    -fx-background-color: #fdfbf7;
+    -fx-background-radius: 16;
+    -fx-border-color: rgba(0, 0, 0, 0.08);
+    -fx-border-radius: 16;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.1), 18, 0.12, 0, 4);
+    -fx-pref-width: 1220;
+    -fx-max-width: 1280;
+    -fx-min-width: 720;
+}
+
+.admin-event-detail-remind-btn {
+    -fx-background-color: #22c55e;
+    -fx-text-fill: white;
+    -fx-font-weight: 700;
+    -fx-background-radius: 10;
+    -fx-padding: 12 16 12 16;
+    -fx-cursor: hand;
+}
+
+.admin-event-detail-remind-btn:hover {
+    -fx-background-color: #16a34a;
+}
+
+.admin-event-detail-card {
+    -fx-background-color: white;
+    -fx-background-radius: 12;
+    -fx-border-color: rgba(0, 0, 0, 0.06);
+    -fx-border-radius: 12;
+    -fx-padding: 16 18 18 18;
+    -fx-spacing: 10;
+}
+
+.admin-event-detail-title {
+    -fx-font-size: 22px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #111827;
+}
+
+.admin-event-detail-meta {
+    -fx-font-size: 14px;
+    -fx-text-fill: #6b7280;
+}
+
+.admin-event-detail-body {
+    -fx-font-size: 14px;
+    -fx-text-fill: #374151;
+}
+
+.admin-event-detail-card-title {
+    -fx-font-size: 15px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #1e293b;
+}
+
+.admin-event-detail-sub {
+    -fx-font-size: 12px;
+    -fx-text-fill: #64748b;
+}
+
+.admin-event-detail-placeholder {
+    -fx-font-size: 13px;
+    -fx-text-fill: #9ca3af;
+}
+
+/* Rouge type PDF / Adobe Acrobat (~ #E4002B) */
+.admin-event-detail-pdf-btn {
+    -fx-background-color: #e4002b;
+    -fx-text-fill: #ffffff;
+    -fx-border-color: #e4002b;
+    -fx-border-radius: 10;
+    -fx-background-radius: 10;
+    -fx-font-weight: 600;
+    -fx-padding: 8 14 8 14;
+    -fx-cursor: hand;
+}
+
+.admin-event-detail-pdf-btn:hover {
+    -fx-background-color: #c40026;
+    -fx-border-color: #c40026;
+    -fx-text-fill: #ffffff;
+}
+
+.admin-event-detail-pdf-btn:pressed {
+    -fx-background-color: #a30020;
+    -fx-border-color: #a30020;
+}
+
+.admin-event-detail-chat-badge {
+    -fx-background-color: #3b82f6;
+    -fx-background-radius: 8;
+    -fx-alignment: center;
+}
+
+.admin-event-detail-chat-badge-ico {
+    -fx-font-size: 18px;
+    -fx-text-fill: white;
+}
+
+.admin-event-detail-empty-chat {
+    -fx-padding: 24 16 32 16;
+}
+
+.admin-event-detail-big-ico {
+    -fx-font-size: 42px;
+    -fx-opacity: 0.35;
+}
+
+.admin-event-detail-unread-badge {
+    -fx-background-color: #fef3c7;
+    -fx-text-fill: #92400e;
+    -fx-background-radius: 999;
+    -fx-padding: 6 12 6 12;
+    -fx-font-size: 12px;
+    -fx-font-weight: 700;
+}
+
+.admin-event-detail-list-title {
+    -fx-font-size: 12px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #64748b;
+}
+
+.admin-event-detail-conv-scroll,
+.admin-event-detail-msg-scroll {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-fit-to-height: true;
+}
+
+.admin-event-detail-conv-item {
+    -fx-background-color: #ffffff;
+    -fx-border-color: #e5e7eb;
+    -fx-border-radius: 12;
+    -fx-background-radius: 12;
+    -fx-padding: 10 12 10 12;
+    -fx-text-fill: #1f2937;
+    -fx-font-size: 13px;
+    -fx-cursor: hand;
+}
+
+.admin-event-detail-conv-item:hover {
+    -fx-border-color: #67c7f0;
+    -fx-background-color: #f5fbff;
+}
+
+.admin-event-detail-conv-item-active {
+    -fx-border-color: #67c7f0;
+    -fx-background-color: #eaf6ff;
+}
+
+.admin-event-detail-conv-avatar {
+    -fx-min-width: 48px;
+    -fx-min-height: 48px;
+    -fx-pref-width: 48px;
+    -fx-pref-height: 48px;
+    -fx-max-width: 48px;
+    -fx-max-height: 48px;
+    -fx-background-color: #dbe4f0;
+    -fx-background-radius: 999;
+    -fx-alignment: center;
+    -fx-font-size: 22px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #456789;
+}
+
+.admin-event-detail-conv-name {
+    -fx-font-size: 15px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #12325a;
+}
+
+.admin-event-detail-conv-meta {
+    -fx-font-size: 13px;
+    -fx-text-fill: #5d7696;
+}
+
+.admin-event-detail-conv-right {
+    -fx-background-color: #ffffff;
+    -fx-border-color: #e5e7eb;
+    -fx-border-radius: 12;
+    -fx-background-radius: 12;
+    -fx-padding: 12 14 12 14;
+}
+
+.admin-event-detail-conv-title {
+    -fx-font-size: 24px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #1f2937;
+}
+
+.admin-event-detail-conv-sub {
+    -fx-font-size: 13px;
+    -fx-text-fill: #6b7280;
+}
+
+.admin-event-detail-msg-bubble-me,
+.admin-event-detail-msg-bubble-them {
+    -fx-background-color: #f9fafb;
+    -fx-border-color: #e5e7eb;
+    -fx-border-radius: 12;
+    -fx-background-radius: 12;
+    -fx-padding: 10 12 10 12;
+}
+
+.admin-event-detail-msg-bubble-me {
+    -fx-border-color: #93c5fd;
+    -fx-background-color: #eff6ff;
+}
+
+.admin-event-detail-msg-body {
+    -fx-text-fill: #1f2937;
+    -fx-font-size: 15px;
+}
+
+.admin-event-detail-msg-meta {
+    -fx-text-fill: #6b7280;
+    -fx-font-size: 12px;
+}
+
+.admin-event-detail-msg-delete-btn {
+    -fx-background-color: #ffffff;
+    -fx-text-fill: #b91c1c;
+    -fx-font-size: 11px;
+    -fx-font-weight: 700;
+    -fx-border-color: #fecaca;
+    -fx-border-width: 1;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-padding: 4 10 4 10;
+    -fx-cursor: hand;
+}
+
+.admin-event-detail-msg-delete-btn:hover {
+    -fx-background-color: #fef2f2;
+    -fx-border-color: #fca5a5;
+}
+
+.admin-event-detail-send-btn {
+    -fx-background-color: #0ea5e9;
+    -fx-text-fill: #ffffff;
+    -fx-font-size: 14px;
+    -fx-font-weight: 700;
+    -fx-background-radius: 12;
+    -fx-padding: 10 16 10 16;
+    -fx-cursor: hand;
+}
+
+.admin-event-detail-send-btn:hover {
+    -fx-background-color: #0284c7;
+}
+
+.admin-event-participant-accept {
+    -fx-background-color: #10b981;
+    -fx-text-fill: #ffffff;
+    -fx-font-size: 13px;
+    -fx-font-weight: 700;
+    -fx-background-radius: 10;
+    -fx-border-radius: 10;
+    -fx-padding: 8 16 8 16;
+    -fx-cursor: hand;
+}
+
+.admin-event-participant-accept:hover {
+    -fx-background-color: #059669;
+}
+
+.admin-event-participant-accept:disabled {
+    -fx-opacity: 0.5;
+}
+
+.admin-event-participant-refuse {
+    -fx-background-color: #ffffff;
+    -fx-text-fill: #b91c1c;
+    -fx-font-size: 13px;
+    -fx-font-weight: 700;
+    -fx-border-color: #fecaca;
+    -fx-border-width: 1;
+    -fx-background-radius: 10;
+    -fx-border-radius: 10;
+    -fx-padding: 8 16 8 16;
+    -fx-cursor: hand;
+}
+
+.admin-event-participant-refuse:hover {
+    -fx-background-color: #fef2f2;
+    -fx-border-color: #fca5a5;
+}
+
+.admin-event-participant-refuse:disabled {
+    -fx-opacity: 0.5;
+}
+
+/* Admin — thématiques */
+.admin-thematiques-chart {
+    -fx-padding: 4 0 8 0;
+}
+
+.admin-thematiques-card {
+    -fx-background-color: white;
+    -fx-background-radius: 12;
+    -fx-border-color: rgba(0, 0, 0, 0.08);
+    -fx-border-radius: 12;
+    -fx-padding: 0 0 12 0;
+    -fx-pref-width: 280;
+    -fx-max-width: 280;
+}
+
+/* Ligne titre + pastille ordre : alignée avec le texte du corps */
+.admin-thematiques-card-title-row {
+    -fx-padding: 6 12 0 12;
+}
+
+/* Titre carte : gras, bleu marine presque noir (comme la maquette) */
+.admin-thematiques-card-title {
+    -fx-font-size: 17px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #0f2137;
+    -fx-wrap-text: true;
+    -fx-max-width: 200;
+}
+
+/* Pastille ordre (coin haut droit) : cercle bleu clair comme la maquette */
+.admin-thematiques-badge {
+    -fx-background-color: #dbeafe;
+    -fx-background-radius: 50%;
+    -fx-min-width: 32px;
+    -fx-min-height: 32px;
+    -fx-pref-width: 32px;
+    -fx-pref-height: 32px;
+    -fx-max-width: 32px;
+    -fx-max-height: 32px;
+    -fx-padding: 0;
+    -fx-font-size: 13px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #1d4ed8;
+    -fx-alignment: center;
+}
+
+.admin-thematiques-card-code {
+    -fx-font-size: 13px;
+    -fx-font-weight: 500;
+    -fx-text-fill: #64748b;
+    -fx-padding: 2 12 0 12;
+}
+
+.admin-thematiques-card-desc {
+    -fx-font-size: 12px;
+    -fx-font-weight: 400;
+    -fx-text-fill: #94a3b8;
+    -fx-padding: 0 12 0 12;
+}
+
+.admin-thematiques-card-img-placeholder {
+    -fx-background-color: #e5e7eb;
+    -fx-background-radius: 12 12 0 0;
+}
+
+.admin-thematiques-icon-btn {
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 10;
+    -fx-border-color: #e5e7eb;
+    -fx-border-radius: 10;
+    -fx-border-width: 1;
+    -fx-cursor: hand;
+    -fx-padding: 4 8 4 8;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.06), 6, 0.2, 0, 1);
+}
+
+.admin-thematiques-icon-btn:hover {
+    -fx-background-color: #f9fafb;
+    -fx-border-color: #d1d5db;
+}
+
+.admin-thematiques-action-view .admin-thematiques-svg {
+    -fx-fill: #2563eb;
+}
+
+.admin-thematiques-action-edit .admin-thematiques-svg {
+    -fx-fill: #d97706;
+}
+
+.admin-thematiques-action-delete .admin-thematiques-svg {
+    -fx-fill: #dc2626;
+}
+
+.admin-thematiques-stat-badge {
+    -fx-background-color: #dbeafe;
+    -fx-background-radius: 999;
+    -fx-padding: 2 10 2 10;
+    -fx-font-size: 12px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #1d4ed8;
+}
+
+.admin-thematiques-swatch {
+    -fx-cursor: hand;
+}
+
+.admin-thematiques-swatch-hint {
+    -fx-font-size: 11px;
+    -fx-text-fill: #6b7280;
+}
+
+.admin-thematiques-image-hint {
+    -fx-font-size: 12px;
+    -fx-text-fill: #6b7280;
+}
+
+.admin-thematiques-check {
+    -fx-padding: 24 0 0 0;
+}
+
+.admin-form-card .admin-thematiques-check {
+    -fx-padding: 28 0 0 8;
+}
+
+.admin-thematiques-card-ordre {
+    -fx-font-size: 12px;
+    -fx-text-fill: #4b5563;
+    -fx-padding: 0 12 0 12;
+}
+
+.admin-thematiques-detail-root {
+    -fx-padding: 0 0 8 0;
+}
+
+.admin-thematiques-detail-card {
+    -fx-background-color: white;
+    -fx-background-radius: 14;
+    -fx-border-color: rgba(0, 0, 0, 0.06);
+    -fx-border-radius: 14;
+    -fx-padding: 16 18 18 18;
+    -fx-spacing: 10;
+}
+
+.admin-thematiques-detail-meta {
+    -fx-font-size: 13px;
+    -fx-text-fill: #64748b;
+}
+
+.admin-thematiques-detail-sub {
+    -fx-font-size: 14px;
+    -fx-text-fill: #64748b;
+}
+
+.admin-thematiques-detail-body {
+    -fx-font-size: 14px;
+    -fx-text-fill: #374151;
+}
+
+.admin-thematiques-thumb-wrap {
+    -fx-background-color: #e5e7eb;
+    -fx-background-radius: 10;
+}
+
+.admin-thematiques-detail-hero-wrap {
+    -fx-background-color: #e5e7eb;
+    -fx-background-radius: 14;
+}
+
+.admin-thematiques-detail-hero-wrap.admin-thematiques-detail-hero-empty {
+    -fx-min-height: 200;
+}
+
+.admin-thematiques-detail-hero {
+    -fx-background-radius: 12;
+}
+
+.admin-thematiques-events-table .table-cell {
+    -fx-alignment: CENTER;
+}
+
+.admin-thematiques-events-table .column-header > .label {
+    -fx-alignment: CENTER;
+}
+
+.admin-thematiques-detail-swatch {
+    -fx-background-radius: 6;
+    -fx-border-color: rgba(0, 0, 0, 0.08);
+    -fx-border-radius: 6;
+}
+
+.admin-thematiques-detail-dot {
+    -fx-background-radius: 4;
+    -fx-border-color: rgba(0, 0, 0, 0.1);
+    -fx-border-radius: 4;
+}
+
+.admin-thematiques-btn-danger {
+    -fx-background-color: linear-gradient(to bottom, #fef2f2, #fee2e2);
+    -fx-text-fill: #b91c1c;
+    -fx-border-color: #f87171;
+    -fx-border-width: 2;
+    -fx-border-radius: 12;
+    -fx-background-radius: 12;
+    -fx-font-weight: 700;
+    -fx-padding: 10 18 10 18;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(248, 113, 113, 0.35), 8, 0.2, 0, 2);
+}
+
+.admin-thematiques-btn-danger:hover {
+    -fx-background-color: linear-gradient(to bottom, #fee2e2, #fecaca);
+    -fx-border-color: #ef4444;
+}
