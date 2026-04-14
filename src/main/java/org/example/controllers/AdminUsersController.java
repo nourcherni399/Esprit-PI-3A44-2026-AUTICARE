@@ -145,17 +145,26 @@ public class AdminUsersController {
                 return;
             }
             for (AdminNotificationItem item : notifications) {
-                VBox card = new VBox(4);
-                card.getStyleClass().add("admin-notif-item");
+                HBox card = new HBox(10);
+                card.setPrefWidth(485);
+                card.getStyleClass().addAll("admin-notif-item", notificationTypeStyleClass(item));
+
+                Label icon = new Label(notificationIcon(item));
+                icon.getStyleClass().add("admin-notif-item-icon");
+
                 Label title = new Label(notificationTitle(item));
                 title.getStyleClass().add("admin-notif-item-title");
+
                 Label body = new Label(item.getResume() != null ? item.getResume() : "");
                 body.getStyleClass().add("admin-notif-item-body");
                 body.setWrapText(true);
+
                 String when = item.getDateCreation() != null ? NOTIF_TIME_FMT.format(item.getDateCreation()) : "";
                 Label meta = new Label(item.getExpediteurNom() + (when.isBlank() ? "" : " • " + when));
                 meta.getStyleClass().add("admin-notif-item-meta");
-                card.getChildren().addAll(title, body, meta);
+                VBox textCol = new VBox(4, title, body, meta);
+                HBox.setHgrow(textCol, Priority.ALWAYS);
+                card.getChildren().addAll(icon, textCol);
 
                 CustomMenuItem menuItem = new CustomMenuItem(card, true);
                 menuItem.setOnAction(e -> onNotificationClick(item));
@@ -185,6 +194,32 @@ public class AdminUsersController {
                     : "Demandes d'inscription";
         }
         return "Notification";
+    }
+
+    private static String notificationTypeStyleClass(AdminNotificationItem item) {
+        if (item == null) {
+            return "admin-notif-item-accept";
+        }
+        if (AdminNotificationService.TYPE_MESSAGE_EVENEMENT.equals(item.getTypeCode())) {
+            return "admin-notif-item-msg";
+        }
+        if (AdminNotificationService.TYPE_INSCRIPTION_DEMANDE.equals(item.getTypeCode())) {
+            return "admin-notif-item-pending";
+        }
+        return "admin-notif-item-accept";
+    }
+
+    private static String notificationIcon(AdminNotificationItem item) {
+        if (item == null) {
+            return "\u2713";
+        }
+        if (AdminNotificationService.TYPE_MESSAGE_EVENEMENT.equals(item.getTypeCode())) {
+            return "\u2709";
+        }
+        if (AdminNotificationService.TYPE_INSCRIPTION_DEMANDE.equals(item.getTypeCode())) {
+            return "\u263A";
+        }
+        return "\u2713";
     }
 
     private void onNotificationClick(AdminNotificationItem item) {

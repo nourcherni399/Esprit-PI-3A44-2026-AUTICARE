@@ -1,9 +1,7 @@
 package org.example.controllers;
 
 import javafx.fxml.FXML;
-import javafx.geometry.Pos;
 import javafx.scene.control.Label;
-import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import org.example.models.UserNotificationItem;
@@ -68,29 +66,62 @@ public class PageNotificationsController implements PublicShellAware {
         }
     }
 
-    private HBox buildNotificationCard(UserNotificationItem item) {
-        Label icon = new Label("✓");
-        icon.getStyleClass().add("public-notifications-card-icon");
+    private VBox buildNotificationCard(UserNotificationItem item) {
+        Label icon = new Label(notificationIcon(item));
+        icon.getStyleClass().add("public-notif-item-icon");
 
-        Label body = new Label(item.getResume() != null ? item.getResume() : "Notification");
-        body.getStyleClass().add("public-notifications-card-text");
+        Label title = new Label(notificationTitle(item));
+        title.getStyleClass().add("public-notifications-page-title");
+        title.setWrapText(true);
+
+        VBox header = new VBox(6, icon, title);
+        header.getStyleClass().add("public-notifications-page-header");
+
+        String bodyText = item.getResume() != null ? item.getResume() : "Notification";
+        Label body = new Label(bodyText);
+        body.getStyleClass().add("public-notifications-page-body");
         body.setWrapText(true);
 
         String metaValue = item.getDateCreation() != null ? TS_FMT.format(item.getDateCreation()) : "";
         Label meta = new Label(metaValue);
-        meta.getStyleClass().add("public-notifications-card-meta");
+        meta.getStyleClass().add("public-notifications-page-meta");
 
-        VBox textBox = new VBox(4, body, meta);
-        HBox.setHgrow(textBox, Priority.ALWAYS);
-
-        HBox row = new HBox(10, icon, textBox);
-        row.setAlignment(Pos.CENTER_LEFT);
-        row.getStyleClass().add("public-notifications-card");
+        VBox row = new VBox(10, header, body, meta);
+        row.getStyleClass().addAll("public-notif-item", "public-notifications-page-item", notificationTypeStyleClass(item));
+        VBox.setVgrow(row, Priority.NEVER);
         if (!item.isLu()) {
-            row.getStyleClass().add("public-notifications-card-unread");
+            row.getStyleClass().add("public-notifications-page-item-unread");
         }
         row.setOnMouseClicked(e -> onNotificationClick(item));
         return row;
+    }
+
+    private static String notificationTypeStyleClass(UserNotificationItem item) {
+        String code = item != null && item.getTypeCode() != null ? item.getTypeCode() : "";
+        return switch (code) {
+            case UserNotificationService.TYPE_EVENT_MESSAGE_REPLY -> "public-notif-item-msg";
+            case UserNotificationService.TYPE_EVENT_REGISTRATION_REFUSED -> "public-notif-item-refused";
+            default -> "public-notif-item-accepted";
+        };
+    }
+
+    private static String notificationIcon(UserNotificationItem item) {
+        String code = item != null && item.getTypeCode() != null ? item.getTypeCode() : "";
+        return switch (code) {
+            case UserNotificationService.TYPE_EVENT_MESSAGE_REPLY -> "\u2709";
+            case UserNotificationService.TYPE_EVENT_REGISTRATION_REFUSED -> "\u2716";
+            default -> "\u2713";
+        };
+    }
+
+    private static String notificationTitle(UserNotificationItem item) {
+        String code = item != null && item.getTypeCode() != null ? item.getTypeCode() : "";
+        return switch (code) {
+            case UserNotificationService.TYPE_EVENT_MESSAGE_REPLY -> "Messages événements";
+            case UserNotificationService.TYPE_EVENT_REGISTRATION_REFUSED,
+                    UserNotificationService.TYPE_EVENT_REGISTRATION_ACCEPTED -> "Inscriptions événements";
+            default -> "Notifications";
+        };
     }
 
     private void onNotificationClick(UserNotificationItem item) {

@@ -184,12 +184,24 @@
 }
 
 .admin-notif-item {
-    -fx-background-color: #ffffff;
+    -fx-alignment: center-left;
     -fx-padding: 10 12 10 12;
+    -fx-background-radius: 12;
+    -fx-border-radius: 12;
+    -fx-border-width: 1;
 }
 
 .admin-notif-item:hover {
-    -fx-background-color: #f8fafc;
+    -fx-opacity: 0.95;
+}
+
+.admin-notif-item-icon {
+    -fx-min-width: 26;
+    -fx-min-height: 26;
+    -fx-alignment: center;
+    -fx-font-size: 12px;
+    -fx-font-weight: 800;
+    -fx-background-radius: 999;
 }
 
 .admin-notif-item-title {
@@ -206,6 +218,48 @@
 .admin-notif-item-meta {
     -fx-font-size: 11px;
     -fx-text-fill: #6b7280;
+}
+
+.admin-notif-item-msg {
+    -fx-background-color: rgba(226, 240, 255, 0.95);
+    -fx-border-color: rgba(147, 191, 255, 0.95);
+}
+
+.admin-notif-item-msg .admin-notif-item-icon {
+    -fx-background-color: rgba(147, 197, 253, 0.38);
+    -fx-text-fill: #1d4ed8;
+}
+
+.admin-notif-item-msg .admin-notif-item-title {
+    -fx-text-fill: #1e40af;
+}
+
+.admin-notif-item-pending {
+    -fx-background-color: rgba(255, 247, 224, 0.95);
+    -fx-border-color: rgba(245, 198, 89, 0.9);
+}
+
+.admin-notif-item-pending .admin-notif-item-icon {
+    -fx-background-color: rgba(250, 204, 21, 0.28);
+    -fx-text-fill: #b45309;
+}
+
+.admin-notif-item-pending .admin-notif-item-title {
+    -fx-text-fill: #b45309;
+}
+
+.admin-notif-item-accept {
+    -fx-background-color: rgba(229, 249, 240, 0.92);
+    -fx-border-color: rgba(122, 206, 170, 0.9);
+}
+
+.admin-notif-item-accept .admin-notif-item-icon {
+    -fx-background-color: rgba(127, 226, 182, 0.35);
+    -fx-text-fill: #047857;
+}
+
+.admin-notif-item-accept .admin-notif-item-title {
+    -fx-text-fill: #065f46;
 }
 
 .admin-content {
