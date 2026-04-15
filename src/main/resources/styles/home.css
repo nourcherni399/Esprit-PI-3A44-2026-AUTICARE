@@ -1,0 +1,1197 @@
+/* AutiCare — landing (charte type Tailwind : #CDB4DB, #A8BBA3, #3D3D3D, #5C5C5C, voile #FDF8F5) */
+
+.home-root {
+    -fx-font-family: "Segoe UI", "SF Pro Display", "Inter", system-ui, sans-serif;
+    -fx-background-color: #fdf8f5;
+}
+
+/* Barre nav accueil : 3 zones (logo | liens | actions) + séparateurs verticaux, bouton S'inscrire contour */
+.nav-home {
+    -fx-background-color: #ffffff;
+    -fx-padding: 14 36 14 36;
+    -fx-border-color: #e8eaed;
+    -fx-border-width: 0 0 1 0;
+    -fx-min-height: 58;
+}
+
+/* Espace entre logo / liens / droite (complété par les Region hgrow) */
+.nav-home .nav-zone-spacer {
+    -fx-min-width: 32;
+}
+
+.nav-home .nav-brand-block {
+    -fx-alignment: center-left;
+    -fx-padding: 0 4 0 0;
+}
+
+.nav-home .nav-vsep {
+    -fx-background-color: #e5e7eb;
+    -fx-min-height: 38;
+    -fx-pref-height: 40;
+    -fx-max-width: 1;
+    -fx-min-width: 1;
+}
+
+.nav-home .nav-center-links {
+    -fx-alignment: center;
+    -fx-spacing: 6;
+    -fx-padding: 0 28 0 28;
+}
+
+.nav-home .nav-item {
+    -fx-spacing: 10;
+    -fx-padding: 10 16 10 16;
+    -fx-background-radius: 10;
+}
+
+.nav-home .nav-item:hover {
+    -fx-background-color: rgba(0, 0, 0, 0.045);
+}
+
+.nav-home .nav-item-icon {
+    -fx-font-size: 16px;
+    -fx-text-fill: #6b7280;
+    -fx-min-width: 22;
+}
+
+.nav-home .nav-item-label {
+    -fx-font-size: 13px;
+    -fx-font-weight: 500;
+    -fx-text-fill: #3d3d3d;
+}
+
+.nav-home .nav-trailing {
+    -fx-alignment: center-right;
+    -fx-spacing: 18;
+    -fx-padding: 0 0 0 20;
+}
+
+.nav-home .icon-btn {
+    -fx-background-color: transparent;
+    -fx-padding: 8 10 8 10;
+    -fx-font-size: 17px;
+    -fx-text-fill: #4b5563;
+    -fx-background-radius: 999;
+}
+
+.nav-home .icon-btn:hover {
+    -fx-background-color: rgba(0, 0, 0, 0.06);
+}
+
+.nav-home .nav-link {
+    -fx-font-size: 13px;
+    -fx-font-weight: 500;
+    -fx-text-fill: #4b5563;
+    -fx-padding: 6 2 6 2;
+}
+
+.nav-home .nav-link:hover {
+    -fx-text-fill: #111827;
+}
+
+/* Connexion : contour pointillé (maquette) */
+/* Bouton S'inscrire : pilule plein vert sauge */
+.nav-home .signup-btn {
+    -fx-background-color: #98b092;
+    -fx-text-fill: #ffffff;
+    -fx-font-weight: 600;
+    -fx-font-size: 13px;
+    -fx-padding: 10 22 10 14;
+    -fx-background-radius: 999;
+    -fx-border-color: transparent;
+    -fx-border-width: 0;
+    -fx-graphic-text-gap: 10;
+    -fx-content-display: left;
+    -fx-cursor: hand;
+}
+
+.nav-home .signup-btn:hover {
+    -fx-background-color: #889f82;
+}
+
+.nav-home .signup-btn:pressed {
+    -fx-background-color: #789073;
+}
+
+.nav-home .signup-btn-icon {
+    -fx-text-fill: #ffffff;
+    -fx-font-size: 14px;
+    -fx-padding: 0 2 0 0;
+}
+
+.nav-home .nav-lang-row {
+    -fx-spacing: 8;
+    -fx-padding: 0 0 0 8;
+}
+
+.nav-home .nav-icon-symbol {
+    -fx-font-size: 15px;
+    -fx-text-fill: #6b7280;
+}
+
+.nav-home .lang-combo {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-font-size: 13px;
+    -fx-font-weight: 500;
+    -fx-text-fill: #374151;
+}
+
+.nav-home.nav-home-frosted {
+    -fx-background-color: rgba(255, 255, 255, 0.82);
+    -fx-border-color: rgba(230, 220, 228, 0.85);
+    -fx-border-width: 0 0 1 0;
+    -fx-effect: dropshadow(gaussian, rgba(205, 180, 219, 0.18), 10, 0, 0, 3);
+}
+
+.home-topbar-profile {
+    -fx-alignment: center-left;
+    -fx-padding: 4 8 4 8;
+    -fx-background-radius: 14;
+    -fx-cursor: hand;
+}
+
+.home-topbar-profile:hover {
+    -fx-background-color: rgba(163, 184, 153, 0.14);
+}
+
+.home-topbar-avatar {
+    -fx-background-color: #a3b899;
+    -fx-text-fill: #ffffff;
+    -fx-font-size: 15px;
+    -fx-font-weight: 700;
+}
+
+.home-topbar-name {
+    -fx-font-size: 15px;
+    -fx-text-fill: #343a40;
+    -fx-font-weight: 600;
+}
+
+.home-topbar-code {
+    -fx-font-size: 15px;
+    -fx-text-fill: #ef4444;
+    -fx-font-weight: 500;
+}
+
+.home-topbar-logout {
+    -fx-font-size: 12px;
+    -fx-text-fill: #9ca3af;
+    -fx-padding: 0;
+    -fx-border-color: transparent;
+    -fx-underline: false;
+}
+
+.home-topbar-logout:hover {
+    -fx-text-fill: #6b7280;
+    -fx-underline: false;
+}
+
+.home-scroll {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-padding: 0;
+}
+
+.home-scroll .viewport {
+    -fx-background-color: transparent;
+}
+
+.home-scroll-content {
+    -fx-spacing: 0;
+    -fx-background-color: transparent;
+}
+
+/* Calque page : fond défilant + voile beige #FDF8F5 */
+.home-page-stack {
+    -fx-max-width: Infinity;
+    -fx-max-height: Infinity;
+}
+
+.home-global-bg-clip {
+    -fx-max-width: Infinity;
+    -fx-max-height: Infinity;
+}
+
+.home-global-fallback {
+    -fx-background-color: linear-gradient(to bottom right, #f3eadb 0%, #f1e8f8 45%, #e8f3e4 100%);
+}
+
+.home-global-bg-img {
+    -fx-opacity: 1;
+}
+
+.home-global-scroll-strip {
+    -fx-spacing: 0;
+    -fx-alignment: center-left;
+}
+
+.home-global-veil {
+    -fx-background-color: rgba(253, 248, 245, 0.50);
+}
+
+/* --- Hero : deux colonnes + diaporama (gauche) + volet lavande (droite) --- */
+.home-hero {
+    -fx-min-height: 460;
+    -fx-max-width: Infinity;
+}
+
+.home-hero-bg {
+    -fx-max-width: Infinity;
+    -fx-alignment: center-left;
+}
+
+.home-hero-photo-wrap {
+    -fx-min-height: 440;
+    -fx-max-width: Infinity;
+}
+
+.home-hero-bg-img {
+}
+
+.home-hero-left-fallback {
+    -fx-background-color: linear-gradient(to bottom right, #cdb4db 0%, #a8bba3 100%);
+}
+
+.home-hero-left-toning {
+    -fx-background-color: rgba(35, 32, 52, 0.14);
+}
+
+.home-hero-right {
+    -fx-min-width: 260;
+    -fx-pref-width: 340;
+    -fx-max-height: Infinity;
+    -fx-background-color: rgba(205, 180, 219, 0.22);
+}
+
+.home-hero-badge {
+    -fx-font-size: 13px;
+    -fx-font-weight: 600;
+    -fx-text-fill: #5c5c5c;
+}
+
+.home-hero-title {
+    -fx-font-size: 32px;
+    -fx-font-weight: bold;
+    -fx-text-fill: white;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.38), 10, 0, 0, 2);
+    -fx-wrap-text: true;
+    -fx-max-width: 760;
+    -fx-text-alignment: center;
+}
+
+/* Voile léger type bg-gradient-to-t from-black/20 (lisibilité sans assombrir trop) */
+.home-hero-darken {
+    -fx-background-color: linear-gradient(to bottom,
+        rgba(0, 0, 0, 0.08) 0%,
+        rgba(0, 0, 0, 0.02) 45%,
+        transparent 72%);
+}
+
+.home-hero-vignette {
+    -fx-background-color: radial-gradient(center 50% 42%, radius 90%,
+        transparent 0%,
+        rgba(35, 32, 52, 0.18) 100%);
+}
+
+.home-hero-bottom-fade {
+    -fx-background-color: linear-gradient(to top,
+        rgba(0, 0, 0, 0.2) 0%,
+        transparent 55%);
+}
+
+.home-hero-center {
+    -fx-padding: 48 36 56 36;
+    -fx-spacing: 20;
+    -fx-alignment: center;
+}
+
+.home-hero-badge-row {
+    -fx-alignment: center;
+    -fx-spacing: 8;
+}
+
+/* Badge pill blanc/90 + icône lavande (Twig) */
+.home-hero-badge-pill {
+    -fx-background-color: rgba(255, 255, 255, 0.9);
+    -fx-background-radius: 999;
+    -fx-padding: 10 18 10 18;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.12), 18, 0, 0, 6);
+}
+
+.home-hero-badge-icon {
+    -fx-font-size: 16px;
+    -fx-text-fill: #cdb4db;
+}
+
+.home-hero-badge-text {
+    -fx-font-size: 13px;
+    -fx-font-weight: 600;
+    -fx-text-fill: #5c5c5c;
+}
+
+/* Titre en deux tons (TextFlow) : blanc + accent crème sur « personnes autistes » */
+.home-hero-title-flow {
+    -fx-max-width: 760;
+    -fx-text-alignment: center;
+    -fx-line-spacing: 4px;
+}
+
+.home-hero-title-text {
+    -fx-fill: white;
+    -fx-font-size: 32px;
+    -fx-font-weight: bold;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.38), 10, 0, 0, 2);
+}
+
+.home-hero-title-accent {
+    -fx-fill: #fff8f0;
+    -fx-font-size: 32px;
+    -fx-font-weight: bold;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.4), 10, 0, 0, 2);
+}
+
+.home-hero-sub {
+    -fx-font-size: 18px;
+    -fx-text-fill: rgba(255, 255, 255, 0.95);
+    -fx-wrap-text: true;
+    -fx-text-alignment: center;
+    -fx-max-width: 640;
+    -fx-line-spacing: 3px;
+}
+
+.home-hero-actions {
+    -fx-spacing: 14;
+    -fx-padding: 12 0 0 0;
+}
+
+/* hero-cta-pulse : ombre type shadow-xl ; scale animé en Java (~2,2s) */
+.home-hero-cta-btn {
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.15), 20, 0.2, 0, 10);
+}
+
+.home-hero-cta-arrow {
+    -fx-font-size: 16px;
+    -fx-text-fill: #3d3d3d;
+    -fx-padding: 0;
+}
+
+.home-cta-white {
+    -fx-background-color: #ffffff;
+    -fx-text-fill: #3d3d3d;
+    -fx-font-weight: 600;
+    -fx-padding: 16 28 16 28;
+    -fx-background-radius: 16;
+    -fx-cursor: hand;
+}
+
+.home-cta-white:hover {
+    -fx-background-color: #fff8f0;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.18), 24, 0.25, 0, 12);
+}
+
+/* 2e bouton : bg-white/90 + bordure blanche semi-transparente */
+.home-cta-white-90 {
+    -fx-background-color: rgba(255, 255, 255, 0.9);
+    -fx-text-fill: #3d3d3d;
+    -fx-font-weight: 600;
+    -fx-padding: 16 28 16 28;
+    -fx-background-radius: 16;
+    -fx-border-color: rgba(255, 255, 255, 0.5);
+    -fx-border-width: 2;
+    -fx-border-radius: 16;
+    -fx-cursor: hand;
+}
+
+.home-cta-white-90:hover {
+    -fx-background-color: #ffffff;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.18), 24, 0.25, 0, 12);
+}
+
+.home-cta-outline {
+    -fx-background-color: rgba(255, 255, 255, 0.22);
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-padding: 13 24 13 24;
+    -fx-background-radius: 26;
+    -fx-border-color: rgba(255, 255, 255, 0.88);
+    -fx-border-radius: 26;
+    -fx-cursor: hand;
+}
+
+.home-cta-outline:hover {
+    -fx-background-color: rgba(255, 255, 255, 0.34);
+    -fx-effect: dropshadow(gaussian, rgba(30, 39, 64, 0.2), 14, 0, 0, 3);
+}
+
+/* --- Mission : fond animé + voile + grille contenu --- */
+.home-mission-outer {
+    -fx-max-width: Infinity;
+}
+
+.home-mission-photo-host {
+    -fx-min-height: 420;
+    -fx-max-width: Infinity;
+}
+
+.home-mission-bg-img {
+}
+
+.home-mission-bg-veil {
+    -fx-background-color: rgba(253, 248, 245, 0.52);
+}
+
+.home-mission-twig-bg {
+    -fx-background-color: rgba(232, 224, 240, 0.4);
+}
+
+.home-mission-section {
+    -fx-padding: 56 40 56 40;
+    -fx-background-color: transparent;
+    -fx-max-width: Infinity;
+}
+
+.home-mission-grid {
+    -fx-spacing: 48;
+    -fx-alignment: center-left;
+    -fx-padding: 0 16 0 16;
+}
+
+.home-mission-img-wrap {
+    -fx-effect: dropshadow(gaussian, rgba(205, 180, 219, 0.28), 18, 0, 0, 6);
+    -fx-background-radius: 24;
+}
+
+.home-mission-img {
+    -fx-background-radius: 24;
+}
+
+.home-mission-text {
+    -fx-padding: 8 0 8 0;
+    -fx-max-width: 520;
+}
+
+.home-mission-tag {
+    -fx-font-size: 13px;
+    -fx-letter-spacing: 0.06em;
+    -fx-text-fill: #cdb4db;
+    -fx-font-weight: 600;
+}
+
+.home-mission-title {
+    -fx-font-size: 32px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #3d3d3d;
+    -fx-wrap-text: true;
+}
+
+.home-mission-body {
+    -fx-font-size: 16px;
+    -fx-text-fill: #5c5c5c;
+    -fx-wrap-text: true;
+    -fx-max-width: 480;
+    -fx-line-spacing: 4px;
+}
+
+.home-mission-btn {
+    -fx-background-color: #cdb4db;
+    -fx-text-fill: white;
+    -fx-font-weight: 600;
+    -fx-padding: 12 22 12 22;
+    -fx-background-radius: 16;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(100, 80, 140, 0.18), 10, 0, 0, 3);
+}
+
+.home-mission-btn:hover {
+    -fx-background-color: #b8a4cc;
+    -fx-effect: dropshadow(gaussian, rgba(100, 80, 140, 0.24), 14, 0, 0, 4);
+}
+
+/* Boutons secondaires : transition d’ombre renforcée au survol (complété par scale Java) */
+.home-btn-soft {
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.08), 8, 0, 0, 2);
+}
+
+.home-btn-soft:hover {
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.14), 14, 0, 0, 4);
+}
+
+/* --- Stats --- */
+.home-stats-wrap,
+.home-stats-only-wrap {
+    -fx-padding: 38 40 42 40;
+    -fx-spacing: 24;
+    -fx-max-width: Infinity;
+    -fx-alignment: center;
+    -fx-background-color: rgba(255, 255, 255, 0.96);
+}
+
+.home-stat-bordered.home-stat-mint {
+    -fx-border-color: rgba(168, 187, 163, 0.5);
+    -fx-border-width: 2;
+}
+
+.home-stat-bordered.home-stat-blue {
+    -fx-border-color: rgba(181, 212, 232, 0.5);
+    -fx-border-width: 2;
+}
+
+.home-stat-bordered.home-stat-peach {
+    -fx-border-color: rgba(240, 213, 200, 0.5);
+    -fx-border-width: 2;
+}
+
+.home-stats-row {
+    -fx-spacing: 26;
+    -fx-alignment: center;
+}
+
+.home-stat-card {
+    -fx-pref-width: 202;
+    -fx-min-height: 146;
+    -fx-padding: 18 18 16 18;
+    -fx-background-radius: 18;
+    -fx-alignment: center;
+    -fx-spacing: 8;
+    -fx-effect: dropshadow(gaussian, rgba(60, 56, 88, 0.12), 10, 0, 0, 2);
+}
+
+.home-stat-mint {
+    -fx-background-color: #d4e5d0;
+}
+
+.home-stat-blue {
+    -fx-background-color: #dfeef5;
+}
+
+.home-stat-peach {
+    -fx-background-color: #faede8;
+}
+
+.home-stat-icon {
+    -fx-min-width: 50;
+    -fx-min-height: 50;
+    -fx-pref-width: 50;
+    -fx-pref-height: 50;
+    -fx-alignment: center;
+    -fx-background-radius: 12;
+    -fx-font-size: 20px;
+    -fx-text-fill: white;
+}
+
+.home-stat-icon-mint {
+    -fx-background-color: #a8bba3;
+}
+
+.home-stat-icon-blue {
+    -fx-background-color: #b5d4e8;
+}
+
+.home-stat-icon-peach {
+    -fx-background-color: #f0d5c8;
+    -fx-text-fill: #5c5c5c;
+}
+
+.home-stat-num {
+    -fx-font-size: 44px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #2f3138;
+}
+
+.home-stat-label {
+    -fx-font-size: 11px;
+    -fx-text-fill: #4f535d;
+    -fx-text-alignment: center;
+    -fx-wrap-text: true;
+}
+
+.home-banner {
+    -fx-padding: 8 48 52 48;
+    -fx-spacing: 12;
+    -fx-alignment: center;
+    -fx-max-width: Infinity;
+    -fx-background-color: #faf7f2;
+}
+
+.home-banner-bg {
+    -fx-background-color: rgba(255, 255, 255, 0.85);
+    -fx-background-radius: 20;
+    -fx-padding: 38 44 38 44;
+    -fx-spacing: 12;
+    -fx-alignment: center;
+    -fx-max-width: 960;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.05), 16, 0, 0, 2);
+    -fx-border-color: rgba(232, 224, 245, 0.5);
+    -fx-border-radius: 20;
+    -fx-border-width: 1;
+}
+
+.home-banner-title {
+    -fx-font-size: 23px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #2d3748;
+}
+
+.home-banner-sub {
+    -fx-font-size: 14px;
+    -fx-text-fill: #5a6578;
+    -fx-wrap-text: true;
+    -fx-text-alignment: center;
+    -fx-max-width: 720;
+    -fx-line-spacing: 2px;
+}
+
+/* Section produits IA + bandeau « tout ce dont vous avez besoin » */
+.home-ai-section {
+    -fx-padding: 48 40 48 40;
+    -fx-spacing: 24;
+    -fx-alignment: center;
+    -fx-max-width: Infinity;
+    -fx-background-color: rgba(253, 248, 245, 0.45);
+}
+
+.home-ai-header {
+    -fx-spacing: 10;
+    -fx-alignment: center;
+    -fx-padding: 0 16 0 16;
+}
+
+.home-ai-badge {
+    -fx-background-color: rgba(205, 180, 219, 0.2);
+    -fx-background-radius: 20;
+    -fx-padding: 6 16 6 16;
+    -fx-text-fill: #b39bc7;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+}
+
+.home-ai-title {
+    -fx-font-size: 28px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #3d3d3d;
+}
+
+.home-ai-sub {
+    -fx-font-size: 15px;
+    -fx-text-fill: #5c5c5c;
+    -fx-wrap-text: true;
+    -fx-max-width: 560;
+}
+
+.home-ai-flow {
+    -fx-padding: 8 0 0 0;
+}
+
+.home-ai-footer {
+    -fx-padding: 12 0 0 0;
+}
+
+.home-ai-see-all {
+    -fx-background-color: #cdb4db;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-padding: 12 26 12 26;
+    -fx-background-radius: 28;
+    -fx-cursor: hand;
+}
+
+.home-ai-see-all:hover {
+    -fx-background-color: #b8a4cc;
+}
+
+.home-ai-card {
+    -fx-pref-width: 240;
+    -fx-max-width: 260;
+    -fx-background-color: white;
+    -fx-background-radius: 24;
+    -fx-border-color: #e8dcf0;
+    -fx-border-width: 2;
+    -fx-border-radius: 24;
+    -fx-padding: 0 0 16 0;
+    -fx-spacing: 0;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.07), 14, 0, 0, 4);
+}
+
+.home-ai-card-img {
+    -fx-background-radius: 22 22 0 0;
+}
+
+.home-ai-card-body {
+    -fx-padding: 14 16 0 16;
+    -fx-spacing: 6;
+}
+
+.home-ai-card-title {
+    -fx-font-size: 15px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #3d3d3d;
+}
+
+.home-ai-card-desc {
+    -fx-font-size: 12px;
+    -fx-text-fill: #5c5c5c;
+    -fx-wrap-text: true;
+}
+
+.home-ai-card-price {
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #cdb4db;
+}
+
+.home-need-stack {
+    -fx-min-height: 210;
+    -fx-pref-height: 220;
+    -fx-max-width: Infinity;
+    -fx-alignment: center;
+}
+
+/* bg-[#FAEDE8]/60 (Twig) — calques animés en fondu */
+.home-need-bg-a {
+    -fx-background-color: rgba(245, 233, 227, 0.55);
+}
+
+.home-need-bg-b {
+    -fx-background-color: rgba(249, 242, 238, 0.62);
+}
+
+.home-need-overlay {
+    -fx-background-color: rgba(255, 255, 255, 0.42);
+}
+
+.home-need-content {
+    -fx-padding: 24 40 28 40;
+    -fx-spacing: 8;
+    -fx-alignment: center;
+    -fx-max-width: 860;
+}
+
+.home-need-title {
+    -fx-font-size: 48px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #2f3138;
+    -fx-text-alignment: center;
+}
+
+.home-need-sub {
+    -fx-font-size: 14px;
+    -fx-text-fill: #4f535d;
+    -fx-wrap-text: true;
+    -fx-text-alignment: center;
+    -fx-max-width: 820;
+    -fx-line-spacing: 2px;
+}
+
+/* --- Cartes services --- */
+.home-features-wrap {
+    -fx-padding: 40 32 60 32;
+    -fx-spacing: 0;
+    -fx-max-width: Infinity;
+    -fx-alignment: center;
+    -fx-background-color: rgba(253, 248, 245, 0.45);
+}
+
+.home-features-row {
+    -fx-spacing: 20;
+    -fx-alignment: center;
+}
+
+.home-feature-card {
+    -fx-pref-width: 242;
+    -fx-max-width: 264;
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 24;
+    -fx-border-radius: 24;
+    -fx-border-width: 2;
+    -fx-border-color: #e8dcf0;
+    -fx-effect: dropshadow(gaussian, rgba(205, 180, 219, 0.2), 16, 0, 0, 4);
+    -fx-spacing: 0;
+}
+
+.home-feature-border-green {
+    -fx-border-color: #d4e5d0;
+    -fx-border-width: 2;
+}
+
+.home-feature-border-lavender {
+    -fx-border-color: #e8dcf0;
+    -fx-border-width: 2;
+}
+
+.home-feature-border-sky {
+    -fx-border-color: #dfeef5;
+    -fx-border-width: 2;
+}
+
+.home-feature-border-coral {
+    -fx-border-color: #faede8;
+    -fx-border-width: 2;
+}
+
+.home-feature-photo {
+    -fx-background-radius: 22 22 0 0;
+}
+
+.home-feature-img-frame {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+}
+
+.home-feature-img {
+    -fx-min-height: 130;
+    -fx-max-width: Infinity;
+    -fx-background-radius: 18 18 0 0;
+}
+
+.home-feature-img-1 {
+    -fx-background-color: linear-gradient(135deg, #7a9e7a 0%, #b8d4b8 100%);
+}
+
+.home-feature-img-1 .label {
+    -fx-text-fill: white;
+    -fx-font-size: 12px;
+    -fx-padding: 14 16 14 16;
+}
+
+.home-feature-img-2 {
+    -fx-background-color: linear-gradient(180deg, #ffd89b 0%, #6b8cae 100%);
+}
+
+.home-feature-img-3 {
+    -fx-background-color: linear-gradient(135deg, #e8c4a8 0%, #c45c48 35%, #f2ebe0 100%);
+}
+
+.home-feature-img-4 {
+    -fx-background-color: linear-gradient(135deg, #8b9dc3 0%, #e8ecf5 100%);
+}
+
+.home-feature-body {
+    -fx-padding: 18 18 20 18;
+    -fx-spacing: 8;
+    -fx-alignment: top_left;
+}
+
+.home-feature-title {
+    -fx-font-size: 15px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #3d3d3d;
+    -fx-text-alignment: left;
+}
+
+.home-feature-desc {
+    -fx-font-size: 12px;
+    -fx-text-fill: #5c5c5c;
+    -fx-wrap-text: true;
+    -fx-line-spacing: 2px;
+    -fx-text-alignment: left;
+}
+
+/* Flèche : décalage animé en Java ; couleur au survol */
+.home-feature-link {
+    -fx-font-size: 12px;
+    -fx-text-fill: #5a9fd4;
+    -fx-cursor: hand;
+    -fx-padding: 4 0 0 0;
+    -fx-border-color: transparent;
+    -fx-underline: false;
+    -fx-text-alignment: left;
+}
+
+.home-feature-link:hover {
+    -fx-text-fill: #3d7eb8;
+    -fx-underline: false;
+}
+
+.home-feature-link-coral {
+    -fx-text-fill: #d97a6a;
+}
+
+.home-feature-link-coral:hover {
+    -fx-text-fill: #c45c48;
+}
+
+.home-feature-link-green {
+    -fx-text-fill: #a8bba3;
+}
+
+.home-feature-link-lavender {
+    -fx-text-fill: #cdb4db;
+}
+
+.home-feature-link-sky {
+    -fx-text-fill: #b5d4e8;
+}
+
+.home-feature-link-coral-strong {
+    -fx-text-fill: #e8a598;
+}
+
+/* --- Témoignages (fond flou + voile) --- */
+.home-testi-stack {
+    -fx-max-width: Infinity;
+    -fx-alignment: center;
+    -fx-min-height: 420;
+}
+
+.home-testi-left-panel {
+    -fx-background-color: #f7eef9;
+}
+
+.home-testi-photo-host {
+    -fx-min-height: 420;
+    -fx-pref-width: 360;
+    -fx-max-width: 420;
+}
+
+.home-testi-bg-img {
+    -fx-opacity: 1;
+}
+
+.home-testi-overlay {
+    -fx-background-color: rgba(255, 255, 255, 0.18);
+}
+
+.home-testi-wrap {
+    -fx-padding: 50 36 56 36;
+    -fx-spacing: 10;
+    -fx-max-width: Infinity;
+    -fx-alignment: center;
+    -fx-background-color: transparent;
+}
+
+.home-testi-title {
+    -fx-font-size: 30px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #2f2f38;
+    -fx-text-alignment: center;
+}
+
+.home-testi-sub {
+    -fx-font-size: 16px;
+    -fx-font-weight: 500;
+    -fx-text-fill: #666666;
+    -fx-text-alignment: center;
+}
+
+.home-testi-row {
+    -fx-spacing: 20;
+    -fx-alignment: center;
+    -fx-padding: 22 0 0 0;
+}
+
+.home-testi-card {
+    -fx-pref-width: 320;
+    -fx-max-width: 320;
+    -fx-min-height: 280;
+    -fx-padding: 28 26 24 26;
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 28;
+    -fx-border-radius: 28;
+    -fx-border-width: 2;
+    -fx-border-color: #d8c5ea;
+    -fx-effect: dropshadow(gaussian, rgba(28, 22, 45, 0.12), 20, 0, 0, 6);
+    -fx-spacing: 14;
+    -fx-alignment: top_left;
+}
+
+.home-testi-border-lavender {
+    -fx-border-color: #d8c5ea;
+}
+
+.home-testi-border-mint {
+    -fx-border-color: #d8c5ea;
+}
+
+.home-testi-border-sky {
+    -fx-border-color: #d8c5ea;
+}
+
+.home-testi-quote {
+    -fx-font-size: 44px;
+    -fx-font-family: Georgia, "Times New Roman", serif;
+    -fx-font-weight: 700;
+    -fx-padding: 0 0 4 0;
+    -fx-line-spacing: 0;
+}
+
+.home-testi-quote-lavender {
+    -fx-text-fill: #cdb4db;
+}
+
+.home-testi-quote-mint {
+    -fx-text-fill: #a8bba3;
+}
+
+.home-testi-quote-sky {
+    -fx-text-fill: #b5d4e8;
+}
+
+.home-testi-avatar-img {
+    -fx-background-radius: 24;
+}
+
+.home-testi-text {
+    -fx-font-size: 18px;
+    -fx-text-fill: #3b3b42;
+    -fx-wrap-text: true;
+    -fx-line-spacing: 3px;
+}
+
+.home-testi-card .label {
+    -fx-font-family: "Segoe UI", "SF Pro Display", "Inter", system-ui, sans-serif;
+}
+
+.home-testi-avatar {
+    -fx-min-width: 40;
+    -fx-min-height: 40;
+    -fx-max-width: 40;
+    -fx-max-height: 40;
+    -fx-background-radius: 20;
+    -fx-alignment: center;
+    -fx-font-size: 18px;
+    -fx-background-color: #e8f0fa;
+}
+
+.home-testi-name {
+    -fx-font-size: 16px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #2f2f38;
+}
+
+.home-testi-role {
+    -fx-font-size: 13px;
+    -fx-text-fill: #666666;
+}
+
+/* --- CTA inscription (calques dégradés animés + contenu) --- */
+.home-join-outer {
+    -fx-max-width: Infinity;
+    -fx-min-height: 320;
+}
+
+.home-join-bg-layer {
+    -fx-min-height: 320;
+}
+
+/* CTA communauté : dégradé horizontal discret (menthe pâle → lavande/rosé) — même esprit que la maquette 1 */
+.home-join-bg-a {
+    -fx-background-color: linear-gradient(to right, #e8f3e4 0%, #f6f2fa 100%);
+}
+
+.home-join-bg-b {
+    -fx-background-color: linear-gradient(to right, #e4f0e0 0%, #faf7fc 100%);
+}
+
+.home-join {
+    -fx-padding: 56 40 52 40;
+    -fx-spacing: 20;
+    -fx-alignment: center;
+    -fx-max-width: Infinity;
+    -fx-background-color: transparent;
+    -fx-font-family: "Inter", "Segoe UI", "SF Pro Display", system-ui, sans-serif;
+}
+
+.home-join-gradient {
+    -fx-background-color: transparent;
+}
+
+.home-join-logo {
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.15), 12, 0, 0, 2);
+}
+
+.home-cta-block {
+    -fx-alignment: center;
+    -fx-spacing: 8;
+    -fx-max-width: 720;
+}
+
+.home-btn-cta-sage {
+    -fx-background-color: #a5bfa1;
+    -fx-text-fill: #ffffff;
+    -fx-font-weight: 600;
+    -fx-font-size: 14px;
+    -fx-padding: 14 26 14 26;
+    -fx-min-height: 46;
+    -fx-background-radius: 14;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(120, 140, 115, 0.28), 12, 0, 0, 3);
+}
+
+.home-btn-cta-sage:hover {
+    -fx-background-color: #96b091;
+}
+
+.home-btn-cta-lavender {
+    -fx-background-color: #cdb4db;
+    -fx-text-fill: white;
+    -fx-font-weight: 600;
+    -fx-padding: 14 26 14 26;
+    -fx-background-radius: 16;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(205, 180, 219, 0.4), 12, 0, 0, 3);
+}
+
+.home-btn-cta-lavender:hover {
+    -fx-background-color: #b8a4cc;
+}
+
+.home-join-cta-arrow {
+    -fx-font-size: 15px;
+    -fx-text-fill: white;
+    -fx-padding: 0;
+}
+
+.home-join-title {
+    -fx-font-size: 30px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #2d2d2d;
+    -fx-text-alignment: center;
+}
+
+.home-join-sub {
+    -fx-font-size: 16px;
+    -fx-font-weight: normal;
+    -fx-text-fill: #666666;
+    -fx-wrap-text: true;
+    -fx-text-alignment: center;
+    -fx-max-width: 520;
+    -fx-line-spacing: 2px;
+}
+
+.home-join-actions {
+    -fx-spacing: 14;
+    -fx-alignment: center;
+    -fx-padding: 14 0 0 0;
+}
+
+.home-btn-primary-green {
+    -fx-background-color: #6a9e82;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-padding: 11 22 11 22;
+    -fx-background-radius: 22;
+    -fx-cursor: hand;
+}
+
+.home-btn-primary-green:hover {
+    -fx-background-color: #5d8f72;
+}
+
+.home-btn-secondary {
+    -fx-background-color: #ffffff;
+    -fx-text-fill: #2d2d2d;
+    -fx-font-weight: 600;
+    -fx-font-size: 14px;
+    -fx-padding: 14 26 14 26;
+    -fx-min-height: 46;
+    -fx-background-radius: 14;
+    -fx-border-color: rgba(0, 0, 0, 0.08);
+    -fx-border-width: 1;
+    -fx-border-radius: 14;
+    -fx-cursor: hand;
+}
+
+.home-btn-secondary:hover {
+    -fx-background-color: #fafafa;
+}

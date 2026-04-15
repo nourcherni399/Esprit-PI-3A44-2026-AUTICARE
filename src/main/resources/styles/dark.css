@@ -1,0 +1,256 @@
+.root {
+    -fx-base: #121826;
+    -fx-background: #121826;
+    -fx-control-inner-background: #1b2436;
+    -fx-accent: #7dd3fc;
+    -fx-focus-color: #7dd3fc;
+    -fx-faint-focus-color: rgba(125, 211, 252, 0.25);
+}
+
+.home-root,
+.login-root,
+.admin-root,
+.admin-main {
+    -fx-background-color: #121826;
+}
+
+.top-nav,
+.admin-topbar,
+.admin-sidebar {
+    -fx-background-color: #182133;
+    -fx-border-color: #2a3449;
+}
+
+/* Accueil : même barre, surcharges maquette en mode sombre */
+.top-nav.nav-home {
+    -fx-background-color: #182133;
+    -fx-border-color: #2a3449;
+}
+
+.nav-home .nav-vsep {
+    -fx-background-color: #3d4f6a;
+}
+
+.nav-home .nav-item-icon {
+    -fx-text-fill: #cbd5e1;
+}
+
+.nav-home .nav-item-label {
+    -fx-text-fill: #e5e7eb;
+}
+
+.nav-home .nav-link {
+    -fx-text-fill: #e5e7eb;
+}
+
+.nav-home .nav-link:hover {
+    -fx-text-fill: #ffffff;
+}
+
+.nav-home .icon-btn {
+    -fx-text-fill: #e5e7eb;
+}
+
+.nav-home .signup-btn {
+    -fx-background-color: #6d8568;
+    -fx-text-fill: #ffffff;
+    -fx-border-width: 0;
+}
+
+.nav-home .signup-btn:hover {
+    -fx-background-color: #5d7558;
+}
+
+.nav-home .signup-btn-icon {
+    -fx-text-fill: #ffffff;
+}
+
+.nav-home .nav-icon-symbol {
+    -fx-text-fill: #9ca3af;
+}
+
+.nav-home .lang-combo {
+    -fx-text-fill: #e5e7eb;
+}
+
+.nav-home .nav-item:hover {
+    -fx-background-color: rgba(255, 255, 255, 0.07);
+}
+
+.nav-home .icon-btn:hover {
+    -fx-background-color: rgba(255, 255, 255, 0.08);
+}
+
+.nav-vsep {
+    -fx-background-color: #3d4f6a;
+}
+
+.nav-item:hover {
+    -fx-background-color: rgba(255, 255, 255, 0.06);
+}
+
+.nav-item-icon,
+.nav-item-label {
+    -fx-text-fill: #e5e7eb;
+}
+
+.signup-btn {
+    -fx-background-color: #7a8f6a;
+}
+
+.signup-btn:hover {
+    -fx-background-color: #6b7d5d;
+}
+
+.home-topbar-name {
+    -fx-text-fill: #e5e7eb;
+}
+
+.home-topbar-code {
+    -fx-text-fill: #f87171;
+}
+
+.home-topbar-logout {
+    -fx-text-fill: #9ca3af;
+}
+
+.nav-link,
+.field-label,
+.form-title,
+.form-sub,
+.admin-brand,
+.admin-user-name,
+.admin-user-email,
+.admin-page-title,
+.admin-nav-item,
+.admin-nav-text {
+    -fx-text-fill: #e5e7eb;
+}
+
+.admin-nav-item-active {
+    -fx-background-color: #2a3c5e;
+}
+
+.text-field,
+.password-field,
+.combo-box,
+.date-picker,
+.text-area,
+.admin-search {
+    -fx-background-color: #1f2a3f;
+    -fx-text-fill: #e5e7eb;
+    -fx-prompt-text-fill: #9ca3af;
+    -fx-border-color: #334155;
+}
+
+.login-card,
+.admin-panel,
+.admin-form-card,
+.admin-detail-outer-card,
+.admin-delete-card {
+    -fx-background-color: #182133;
+}
+
+.home-topbar-profile:hover,
+.admin-topbar-profile:hover,
+.admin-nav-item:hover {
+    -fx-background-color: #273449;
+}
+
+/* Accueil — équivalent classe dark sur html : fonds et textes */
+.home-global-veil {
+    -fx-background-color: rgba(18, 24, 38, 0.85);
+}
+
+.home-scroll .viewport {
+    -fx-background-color: transparent;
+}
+
+.nav-home.nav-home-frosted {
+    -fx-background-color: rgba(24, 33, 51, 0.9);
+    -fx-border-color: rgba(55, 65, 85, 0.85);
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.4), 12, 0, 0, 2);
+}
+
+.home-hero-badge-pill {
+    -fx-background-color: rgba(30, 38, 56, 0.92);
+}
+
+.home-hero-badge-text {
+    -fx-text-fill: #e5e7eb;
+}
+
+.home-hero-badge {
+    -fx-background-color: rgba(30, 38, 56, 0.92);
+    -fx-text-fill: #e5e7eb;
+}
+
+.home-hero-title-text {
+    -fx-fill: #f3f4f6;
+}
+
+.home-hero-title-accent {
+    -fx-fill: #fde68a;
+}
+
+.home-hero-sub {
+    -fx-text-fill: rgba(243, 244, 246, 0.95);
+}
+
+.home-mission-title,
+.home-need-title,
+.home-testi-title,
+.home-join-title {
+    -fx-text-fill: #e5e7eb;
+}
+
+.home-mission-body,
+.home-need-sub,
+.home-testi-sub,
+.home-join-sub {
+    -fx-text-fill: #9ca3af;
+}
+
+.home-stats-only-wrap,
+.home-ai-section {
+    -fx-background-color: #1a2234;
+}
+
+.home-features-wrap {
+    -fx-background-color: #1e2436;
+}
+
+.home-need-bg-a {
+    -fx-background-color: linear-gradient(145deg, #1a2234 0%, #221a30 45%, #1a2838 100%);
+}
+
+.home-need-bg-b {
+    -fx-background-color: linear-gradient(145deg, #1e2038 0%, #241a28 48%, #1a2830 100%);
+}
+
+.home-join-bg-a {
+    -fx-background-color: linear-gradient(to bottom right, #1a2e22 0%, #2a1f3a 45%, #2a1e28 100%);
+}
+
+.home-join-bg-b {
+    -fx-background-color: linear-gradient(to bottom right, #162428 0%, #221f35 50%, #281a24 100%);
+}
+
+.login-page-footer {
+    -fx-background-color: #121826;
+}
+
+.login-footer-brand,
+.login-footer-heading {
+    -fx-text-fill: #e5e7eb;
+}
+
+.login-footer-tagline,
+.login-footer-contact,
+.login-footer-link {
+    -fx-text-fill: #9ca3af;
+}
+
+.login-footer-copy {
+    -fx-text-fill: #6b7280;
+}
