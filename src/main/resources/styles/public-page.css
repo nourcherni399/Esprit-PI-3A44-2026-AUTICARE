@@ -1,0 +1,1663 @@
+/* Pages internes (coque public-shell) */
+
+.public-auth-page {
+    -fx-max-width: 1180;
+    -fx-padding: 16 8 24 8;
+}
+
+.auth-brand-imageview {
+    -fx-smooth: true;
+}
+
+.public-page {
+    -fx-max-width: 920;
+    -fx-padding: 8 28 32 28;
+    -fx-spacing: 14;
+    -fx-alignment: top_center;
+}
+
+.public-page-kicker {
+    -fx-font-size: 12px;
+    -fx-font-weight: 600;
+    -fx-text-fill: #a8bba3;
+    -fx-letter-spacing: 0.08em;
+}
+
+.public-page-title {
+    -fx-font-size: 34px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #2f3138;
+    -fx-wrap-text: true;
+    -fx-text-alignment: center;
+    -fx-effect: dropshadow(gaussian, rgba(255, 255, 255, 0.85), 4, 0, 0, 0);
+}
+
+.public-page-lead {
+    -fx-font-size: 15px;
+    -fx-text-fill: #4f535d;
+    -fx-wrap-text: true;
+    -fx-text-alignment: center;
+    -fx-line-spacing: 2px;
+    -fx-max-width: 720;
+}
+
+.public-page-body {
+    -fx-font-size: 14px;
+    -fx-text-fill: #5c5c5c;
+    -fx-wrap-text: true;
+    -fx-line-spacing: 3px;
+    -fx-max-width: 720;
+    -fx-text-alignment: center;
+}
+
+.public-page-card {
+    -fx-padding: 22 24 22 24;
+    -fx-spacing: 10;
+    -fx-background-color: rgba(255, 255, 255, 0.92);
+    -fx-background-radius: 18;
+    -fx-border-radius: 18;
+    -fx-border-color: rgba(205, 180, 219, 0.45);
+    -fx-border-width: 2;
+    -fx-effect: dropshadow(gaussian, rgba(60, 55, 80, 0.12), 14, 0.2, 0, 4);
+}
+
+/* ---------- Page Rendez-vous (liste + filtres) ---------- */
+
+.rdv-page {
+    -fx-max-width: 1140;
+    -fx-padding: 20 8 40 8;
+    -fx-spacing: 10;
+    -fx-alignment: top_center;
+}
+
+.rdv-header {
+    -fx-max-width: Infinity;
+    -fx-alignment: top_left;
+    -fx-spacing: 8;
+}
+
+.rdv-page-title {
+    -fx-font-size: 30px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #2f3138;
+    -fx-wrap-text: true;
+}
+
+.rdv-page-subtitle {
+    -fx-font-size: 15px;
+    -fx-text-fill: #6b7280;
+    -fx-wrap-text: true;
+    -fx-max-width: 800;
+}
+
+/* Grande carte sous le titre (contient filtres + résultats) */
+.rdv-content-card {
+    -fx-background-color: rgba(255, 255, 255, 0.86);
+    -fx-background-radius: 16;
+    -fx-border-radius: 16;
+    -fx-border-color: rgba(0, 0, 0, 0.09);
+    -fx-border-width: 1;
+    -fx-padding: 26 24 30 24;
+    -fx-spacing: 0;
+    -fx-max-width: Infinity;
+    -fx-effect: dropshadow(gaussian, rgba(60, 55, 80, 0.12), 20, 0.2, 0, 4);
+}
+
+.rdv-two-col {
+    -fx-max-width: Infinity;
+    -fx-alignment: top_left;
+}
+
+/* Panneau filtres à l’intérieur de la carte (séparateur léger, pas une 2e carte) */
+.rdv-filters-panel {
+    -fx-padding: 0 22 0 0;
+    -fx-spacing: 16;
+    -fx-border-color: transparent rgba(0, 0, 0, 0.08) transparent transparent;
+    -fx-border-width: 0 1 0 0;
+}
+
+.rdv-filters-title {
+    -fx-font-size: 16px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #2f3138;
+}
+
+.rdv-filter-label {
+    -fx-font-size: 12px;
+    -fx-font-weight: 600;
+    -fx-text-fill: #5c5c5c;
+}
+
+.rdv-combo {
+    -fx-background-radius: 10;
+}
+
+.rdv-field {
+    -fx-background-radius: 10;
+    -fx-padding: 10 12 10 12;
+}
+
+.rdv-help-box {
+    -fx-background-color: rgba(205, 180, 219, 0.32);
+    -fx-background-radius: 12;
+    -fx-padding: 14 14 16 14;
+    -fx-spacing: 8;
+}
+
+.rdv-help-title {
+    -fx-font-size: 14px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #5b4d6a;
+}
+
+.rdv-help-text {
+    -fx-font-size: 13px;
+    -fx-text-fill: #5c5c5c;
+    -fx-wrap-text: true;
+}
+
+.rdv-main-col {
+    -fx-min-width: 0;
+}
+
+.rdv-results-count {
+    -fx-font-size: 13px;
+    -fx-text-fill: #6b7280;
+}
+
+/* Bandeau « Professionnels » + pastille compteur */
+.rdv-pro-section-bar {
+    -fx-padding: 0 0 4 0;
+    -fx-alignment: center-left;
+}
+
+.rdv-pro-section-title {
+    -fx-font-size: 18px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #1f2937;
+    -fx-letter-spacing: -0.02em;
+}
+
+.rdv-pro-section-spacer {
+    -fx-min-height: 1;
+}
+
+.rdv-pro-count-pill {
+    -fx-font-size: 12px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #3d5a40;
+    -fx-background-color: rgba(168, 187, 163, 0.35);
+    -fx-background-radius: 999;
+    -fx-padding: 6 14 6 14;
+}
+
+.rdv-scroll {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+}
+
+.rdv-scroll > .viewport {
+    -fx-background-color: transparent;
+}
+
+.rdv-list {
+    -fx-padding: 8 4 16 4;
+    -fx-spacing: 0;
+}
+
+.rdv-pro-item {
+    -fx-padding: 4 0 4 0;
+}
+
+.rdv-pro-sep-wrap {
+    -fx-padding: 20 0 20 0;
+    -fx-alignment: center;
+}
+
+.rdv-pro-sep-line {
+    -fx-background-color: linear-gradient(to right,
+        rgba(0, 0, 0, 0) 0%,
+        rgba(0, 0, 0, 0.1) 22%,
+        rgba(0, 0, 0, 0.1) 78%,
+        rgba(0, 0, 0, 0) 100%);
+    -fx-min-height: 1;
+    -fx-pref-height: 1;
+    -fx-max-height: 1;
+}
+
+/* Carte pro : relief + bordure gauche colorée (variantes) */
+.rdv-pro-card {
+    -fx-background-color: rgba(255, 255, 255, 0.98);
+    -fx-background-radius: 18;
+    -fx-border-radius: 18;
+    -fx-border-color: rgba(0, 0, 0, 0.06);
+    -fx-border-width: 1;
+    -fx-padding: 22 24 22 22;
+    -fx-alignment: top-left;
+    -fx-fill-height: false;
+    -fx-effect: dropshadow(gaussian, rgba(55, 65, 90, 0.12), 24, 0.2, 0, 4);
+}
+
+.rdv-pro-card-accent-mint {
+    -fx-border-width: 1 1 1 4;
+    -fx-border-color: rgba(0, 0, 0, 0.06) rgba(0, 0, 0, 0.06) rgba(0, 0, 0, 0.06) #a8bba3;
+    -fx-background-color: linear-gradient(to right, rgba(212, 229, 208, 0.35) 0%, rgba(255, 255, 255, 0.98) 18%, rgba(255, 255, 255, 0.98) 100%);
+}
+
+.rdv-pro-card-accent-lavender {
+    -fx-border-width: 1 1 1 4;
+    -fx-border-color: rgba(0, 0, 0, 0.06) rgba(0, 0, 0, 0.06) rgba(0, 0, 0, 0.06) #cdb4db;
+    -fx-background-color: linear-gradient(to right, rgba(232, 220, 245, 0.45) 0%, rgba(255, 255, 255, 0.98) 18%, rgba(255, 255, 255, 0.98) 100%);
+}
+
+.rdv-pro-avatar {
+    -fx-background-color: linear-gradient(145deg, #e8f0e4 0%, #d4e5d0 100%);
+    -fx-background-radius: 20;
+    -fx-effect: dropshadow(gaussian, rgba(100, 130, 95, 0.22), 10, 0.15, 0, 2);
+    -fx-min-width: 72;
+    -fx-min-height: 72;
+    -fx-max-width: 72;
+    -fx-max-height: 72;
+    -fx-alignment: center;
+}
+
+.rdv-pro-avatar-text {
+    -fx-font-size: 20px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #3d5c38;
+}
+
+.rdv-pro-info {
+    -fx-min-width: 0;
+    -fx-max-height: use_pref_size;
+}
+
+.rdv-pro-name {
+    -fx-font-size: 18px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #111827;
+    -fx-wrap-text: true;
+}
+
+.rdv-pro-tag {
+    -fx-font-size: 11px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #5b4d6a;
+    -fx-background-color: rgba(205, 180, 219, 0.42);
+    -fx-background-radius: 999;
+    -fx-padding: 4 11 4 11;
+}
+
+.rdv-pro-stars {
+    -fx-font-size: 12px;
+    -fx-text-fill: #d4a017;
+    -fx-opacity: 0.75;
+}
+
+.rdv-pro-detail {
+    -fx-font-size: 13px;
+    -fx-text-fill: #4b5563;
+    -fx-line-spacing: 2px;
+}
+
+.rdv-pro-chip {
+    -fx-font-size: 11px;
+    -fx-font-weight: 600;
+    -fx-text-fill: #4b5563;
+    -fx-background-color: rgba(17, 24, 39, 0.06);
+    -fx-background-radius: 8;
+    -fx-padding: 5 11 5 11;
+}
+
+.rdv-pro-location {
+    -fx-font-size: 12px;
+    -fx-text-fill: #6b7280;
+}
+
+.rdv-pro-phone {
+    -fx-font-size: 12px;
+    -fx-text-fill: #6b7280;
+}
+
+.rdv-pro-price {
+    -fx-font-size: 18px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #2f3138;
+}
+
+.rdv-pro-price-pill {
+    -fx-font-size: 15px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #1e3a2f;
+    -fx-background-color: rgba(168, 187, 163, 0.45);
+    -fx-background-radius: 10;
+    -fx-padding: 8 14 8 14;
+}
+
+.rdv-pro-actions {
+    -fx-min-width: 148;
+    -fx-max-height: use_pref_size;
+}
+
+.rdv-pro-cta {
+    -fx-background-color: #7a9174;
+    -fx-text-fill: #ffffff;
+    -fx-font-weight: 700;
+    -fx-font-size: 13px;
+    -fx-padding: 11 18 11 18;
+    -fx-background-radius: 999;
+    -fx-border-radius: 999;
+    -fx-cursor: hand;
+}
+
+.rdv-pro-cta:hover {
+    -fx-background-color: #6a8064;
+}
+
+/* ---------- Page RDV (liste épurée, rdv-page-clean) ---------- */
+
+.rdv-page-clean {
+    -fx-spacing: 22;
+    -fx-padding: 8 4 44 4;
+}
+
+.rdv-header-clean {
+    -fx-max-width: Infinity;
+    -fx-alignment: top_left;
+    -fx-padding: 0 0 12 0;
+    -fx-border-color: transparent transparent rgba(194, 65, 12, 0.35) transparent;
+    -fx-border-width: 0 0 3 0;
+}
+
+.rdv-page-kicker {
+    -fx-font-size: 11px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #c2410c;
+    -fx-letter-spacing: 0.16em;
+}
+
+.rdv-page-title-clean {
+    -fx-font-size: 30px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #042f2e;
+    -fx-wrap-text: true;
+    -fx-letter-spacing: -0.02em;
+}
+
+.rdv-page-sub-clean {
+    -fx-font-size: 14px;
+    -fx-text-fill: #134e4a;
+    -fx-wrap-text: true;
+    -fx-line-spacing: 3px;
+}
+
+.rdv-shell {
+    -fx-spacing: 0;
+    -fx-background-color: linear-gradient(to bottom, #ffffff 0%, #ecfeff 38%, #ccfbf1 100%);
+    -fx-background-radius: 20;
+    -fx-border-radius: 20;
+    -fx-border-color: rgba(13, 148, 136, 0.38);
+    -fx-border-width: 1.5;
+    -fx-padding: 24 24 22 24;
+    -fx-effect: dropshadow(gaussian, rgba(15, 118, 110, 0.22), 28, 0.22, 0, 6);
+}
+
+.rdv-filters-row {
+    -fx-padding: 0 0 20 0;
+    -fx-border-color: transparent transparent rgba(13, 148, 136, 0.12) transparent;
+    -fx-border-width: 0 0 1 0;
+    -fx-alignment: center_left;
+}
+
+.rdv-filter-block {
+    -fx-spacing: 4;
+}
+
+.rdv-filter-cap {
+    -fx-font-size: 11px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #0f766e;
+    -fx-letter-spacing: 0.06em;
+}
+
+.rdv-filter-input {
+    -fx-background-radius: 12;
+    -fx-padding: 10 14 10 14;
+    -fx-font-size: 13px;
+    -fx-background-color: #ffffff;
+    -fx-border-color: rgba(13, 148, 136, 0.35);
+    -fx-border-radius: 12;
+    -fx-border-width: 1.5;
+}
+
+.rdv-count-block {
+    -fx-alignment: center_left;
+    -fx-spacing: 12;
+    -fx-padding: 8 16 8 18;
+    -fx-background-color: rgba(255, 255, 255, 0.95);
+    -fx-background-radius: 14;
+    -fx-border-color: rgba(13, 148, 136, 0.22);
+    -fx-border-radius: 14;
+    -fx-border-width: 1;
+    -fx-effect: dropshadow(gaussian, rgba(13, 148, 136, 0.08), 10, 0.15, 0, 2);
+}
+
+.rdv-count-sep {
+    -fx-background-color: rgba(13, 148, 136, 0.2);
+    -fx-background-radius: 1;
+    -fx-min-height: 28;
+    -fx-pref-height: 28;
+    -fx-max-height: 28;
+}
+
+.rdv-count-num {
+    -fx-font-size: 24px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #0f766e;
+    -fx-min-width: 32;
+    -fx-text-alignment: right;
+}
+
+.rdv-count-cap {
+    -fx-font-size: 10px;
+    -fx-text-fill: #64748b;
+    -fx-font-weight: 700;
+    -fx-letter-spacing: 0.06em;
+    -fx-wrap-text: true;
+}
+
+.rdv-tip {
+    -fx-padding: 16 18 16 18;
+    -fx-spacing: 8;
+    -fx-background-color: linear-gradient(to right, #ccfbf1 0%, #e9d5ff 55%, #fae8ff 100%);
+    -fx-background-radius: 14;
+    -fx-border-radius: 14;
+    -fx-border-color: transparent transparent transparent #7c3aed;
+    -fx-border-width: 0 0 0 5;
+}
+
+.rdv-tip-title {
+    -fx-font-size: 13px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #5b21b6;
+}
+
+.rdv-tip-text {
+    -fx-font-size: 13px;
+    -fx-text-fill: #134e4a;
+}
+
+.rdv-scroll-clean {
+    -fx-background-color: transparent;
+    -fx-padding: 4 0 0 0;
+}
+
+.rdv-scroll-clean > .viewport {
+    -fx-background-color: transparent;
+}
+
+.rdv-stack {
+    -fx-padding: 4 2 12 2;
+}
+
+/* Carte compacte « connexion requise » (remplace la liste des pros dans le ScrollPane) */
+.rdv-inline-login-holder {
+    -fx-background-color: transparent;
+}
+
+.rdv-inline-login-card {
+    -fx-spacing: 14;
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 18;
+    -fx-border-color: rgba(13, 148, 136, 0.2);
+    -fx-border-radius: 18;
+    -fx-border-width: 1;
+    -fx-effect: dropshadow(gaussian, rgba(30, 64, 120, 0.12), 20, 0.2, 0, 4);
+}
+
+.rdv-inline-login-logo {
+    -fx-alignment: center;
+    -fx-background-color: linear-gradient(145deg, #60a5fa 0%, #6366f1 45%, #2dd4bf 100%);
+    -fx-background-radius: 12;
+    -fx-effect: dropshadow(gaussian, rgba(79, 70, 229, 0.25), 6, 0.2, 0, 2);
+}
+
+.rdv-inline-login-logo-letter {
+    -fx-font-size: 18px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #ffffff;
+}
+
+.rdv-inline-login-title {
+    -fx-font-size: 17px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #0f172a;
+    -fx-wrap-text: true;
+}
+
+.rdv-inline-login-sparkle {
+    -fx-font-size: 14px;
+    -fx-text-fill: #0d9488;
+}
+
+.rdv-inline-login-sub {
+    -fx-font-size: 13px;
+    -fx-text-fill: #64748b;
+    -fx-wrap-text: true;
+    -fx-line-spacing: 2px;
+}
+
+.rdv-inline-login-actions {
+    -fx-padding: 2 0 0 0;
+    -fx-alignment: center;
+}
+
+.button.rdv-inline-login-btn-primary {
+    -fx-background-color: linear-gradient(to bottom, #93c5fd 0%, #3b82f6 50%, #2563eb 100%);
+    -fx-text-fill: #ffffff;
+    -fx-font-weight: 700;
+    -fx-font-size: 12px;
+    -fx-padding: 9 18 9 18;
+    -fx-background-radius: 999;
+    -fx-border-radius: 999;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(37, 99, 235, 0.35), 6, 0.2, 0, 2);
+}
+
+.button.rdv-inline-login-btn-primary:hover {
+    -fx-background-color: linear-gradient(to bottom, #60a5fa 0%, #2563eb 50%, #1d4ed8 100%);
+}
+
+.button.rdv-inline-login-btn-secondary {
+    -fx-background-color: transparent;
+    -fx-text-fill: #2563eb;
+    -fx-font-weight: 700;
+    -fx-font-size: 12px;
+    -fx-padding: 9 16 9 16;
+    -fx-background-radius: 999;
+    -fx-border-color: #93c5fd;
+    -fx-border-radius: 999;
+    -fx-border-width: 1.5;
+    -fx-cursor: hand;
+}
+
+.button.rdv-inline-login-btn-secondary:hover {
+    -fx-background-color: rgba(147, 197, 253, 0.15);
+}
+
+.hyperlink.rdv-inline-login-back {
+    -fx-font-size: 12px;
+    -fx-text-fill: #0d9488;
+    -fx-border-width: 0;
+    -fx-padding: 4 0 0 0;
+    -fx-underline: false;
+}
+
+.hyperlink.rdv-inline-login-back:hover {
+    -fx-text-fill: #0f766e;
+    -fx-underline: true;
+}
+
+.rdv-card {
+    -fx-spacing: 0;
+    -fx-padding: 20 20 20 20;
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 16;
+    -fx-border-radius: 16;
+    -fx-border-color: rgba(13, 148, 136, 0.28);
+    -fx-border-width: 1.5;
+}
+
+.rdv-av {
+    -fx-min-width: 56;
+    -fx-min-height: 56;
+    -fx-max-width: 56;
+    -fx-max-height: 56;
+    -fx-background-radius: 16;
+    -fx-background-color: linear-gradient(145deg, #2dd4bf 0%, #0d9488 55%, #0f766e 100%);
+    -fx-alignment: center;
+    -fx-effect: dropshadow(gaussian, rgba(13, 148, 136, 0.55), 10, 0.25, 0, 3);
+}
+
+.rdv-av-alt {
+    -fx-background-color: linear-gradient(145deg, #c084fc 0%, #9333ea 50%, #7e22ce 100%);
+    -fx-effect: dropshadow(gaussian, rgba(126, 34, 206, 0.45), 10, 0.25, 0, 3);
+}
+
+.rdv-av-txt {
+    -fx-font-size: 18px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #ffffff;
+}
+
+.rdv-name {
+    -fx-font-size: 16px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #042f2e;
+}
+
+.rdv-badge {
+    -fx-font-size: 11px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #115e59;
+    -fx-padding: 4 12 4 12;
+    -fx-background-color: #ccfbf1;
+    -fx-background-radius: 999;
+    -fx-border-color: rgba(13, 148, 136, 0.45);
+    -fx-border-radius: 999;
+    -fx-border-width: 1.5;
+}
+
+.rdv-badge-purple {
+    -fx-text-fill: #5b21b6;
+    -fx-background-color: #ede9fe;
+    -fx-border-color: rgba(124, 58, 237, 0.55);
+}
+
+.rdv-desc {
+    -fx-font-size: 13px;
+    -fx-text-fill: #0f766e;
+}
+
+.rdv-meta {
+    -fx-font-size: 12px;
+    -fx-text-fill: #0d9488;
+    -fx-font-weight: 700;
+}
+
+.rdv-meta-muted {
+    -fx-font-size: 12px;
+    -fx-text-fill: #9ca3af;
+}
+
+.rdv-side {
+    -fx-min-width: 100;
+    -fx-alignment: top_right;
+}
+
+.rdv-phone {
+    -fx-font-size: 13px;
+    -fx-font-weight: 600;
+    -fx-text-fill: #374151;
+}
+
+.rdv-tarif {
+    -fx-font-size: 15px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #0f766e;
+}
+
+.rdv-btn {
+    -fx-background-color: linear-gradient(to bottom, #14b8a6 0%, #0d9488 45%, #0f766e 100%);
+    -fx-text-fill: #ffffff;
+    -fx-font-weight: 700;
+    -fx-font-size: 12px;
+    -fx-padding: 11 18 11 18;
+    -fx-background-radius: 999;
+    -fx-border-radius: 999;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(13, 148, 136, 0.5), 8, 0.3, 0, 3);
+}
+
+.rdv-btn:hover {
+    -fx-background-color: linear-gradient(to bottom, #0d9488 0%, #0f766e 50%, #115e59 100%);
+}
+
+/* Carte médecin « Prendre RDV » (liste) — mise en page type fiche */
+.rdv-card-v2 {
+    -fx-background-color: #ffffff;
+    -fx-effect: dropshadow(gaussian, rgba(13, 148, 136, 0.28), 20, 0.28, 0, 4);
+}
+
+.rdv-card-bio {
+    -fx-font-size: 13px;
+    -fx-text-fill: #6b7280;
+}
+
+.rdv-card-contacts {
+    -fx-padding: 4 0 0 0;
+}
+
+/* Coordonnées — fiche moderne (une carte, séparateurs légers, tél | mail équilibrés) */
+.rdv-card-info-modern {
+    -fx-spacing: 0;
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 14;
+    -fx-border-color: rgba(148, 163, 184, 0.4);
+    -fx-border-radius: 14;
+    -fx-border-width: 1;
+    -fx-effect: dropshadow(gaussian, rgba(15, 23, 42, 0.07), 18, 0.18, 0, 3);
+}
+
+.rdv-mod-section-title {
+    -fx-font-size: 10px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #64748b;
+    -fx-letter-spacing: 0.16em;
+    -fx-padding: 14 18 12 18;
+    -fx-border-color: transparent transparent #f1f5f9 transparent;
+    -fx-border-width: 0 0 1 0;
+}
+
+.rdv-mod-cell {
+    -fx-spacing: 6;
+}
+
+.rdv-mod-cell-address {
+    -fx-padding: 14 18 16 18;
+    -fx-border-color: transparent transparent #f1f5f9 transparent;
+    -fx-border-width: 0 0 1 0;
+}
+
+.rdv-mod-split-row {
+    -fx-alignment: top_left;
+    -fx-border-color: transparent transparent #f1f5f9 transparent;
+    -fx-border-width: 0 0 1 0;
+}
+
+.rdv-mod-cell-half-left {
+    -fx-padding: 14 10 16 18;
+}
+
+.rdv-mod-cell-half-right {
+    -fx-padding: 14 18 16 10;
+}
+
+.rdv-mod-vsep {
+    -fx-pref-width: 1;
+    -fx-min-width: 1;
+    -fx-max-width: 1;
+    -fx-background-color: #e2e8f0;
+    -fx-background-radius: 1;
+}
+
+.rdv-mod-emoji {
+    -fx-font-size: 15px;
+    -fx-padding: 0;
+}
+
+.rdv-mod-key {
+    -fx-font-size: 10px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #94a3b8;
+    -fx-letter-spacing: 0.1em;
+}
+
+.rdv-mod-value {
+    -fx-font-size: 14px;
+    -fx-font-weight: 600;
+    -fx-text-fill: #1e293b;
+    -fx-wrap-text: true;
+}
+
+.rdv-mod-cabinet-cell {
+    -fx-padding: 14 18 16 18;
+    -fx-background-color: rgba(245, 243, 255, 0.7);
+    -fx-background-radius: 0 0 13 13;
+}
+
+.rdv-mod-cabinet-cell .rdv-mod-key {
+    -fx-text-fill: #7c3aed;
+}
+
+.rdv-mod-cabinet-cell .rdv-mod-value {
+    -fx-text-fill: #5b21b6;
+}
+
+.rdv-card-footer {
+    -fx-padding: 12 0 0 0;
+    -fx-border-color: rgba(124, 58, 237, 0.2);
+    -fx-border-width: 1 0 0 0;
+}
+
+.rdv-card-cabinet-pill {
+    -fx-font-size: 12px;
+    -fx-font-weight: 600;
+    -fx-text-fill: #115e59;
+    -fx-padding: 7 14 7 14;
+    -fx-background-color: #ecfeff;
+    -fx-border-color: rgba(13, 148, 136, 0.4);
+    -fx-border-radius: 10;
+    -fx-background-radius: 10;
+    -fx-alignment: center;
+}
+
+.rdv-card-tarif-block {
+    -fx-padding: 4 0 0 0;
+}
+
+/* Fiche tarif (liste Prendre RDV) : comme capture — bordure teal, libellé léger, montant dessous */
+.rdv-card-tarif-sheet {
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 12;
+    -fx-border-color: rgba(45, 166, 154, 0.5);
+    -fx-border-radius: 12;
+    -fx-border-width: 1;
+    -fx-padding: 14 18 16 18;
+    -fx-spacing: 6;
+    -fx-alignment: top_left;
+}
+
+.rdv-card-tarif-sheet-caption {
+    -fx-font-size: 13px;
+    -fx-font-weight: 400;
+    -fx-text-fill: #475569;
+}
+
+.rdv-card-tarif-sheet-amount {
+    -fx-font-size: 26px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #0f766e;
+    -fx-letter-spacing: -0.02em;
+}
+
+.rdv-card-price-box {
+    -fx-padding: 0;
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 16;
+    -fx-border-color: rgba(13, 148, 136, 0.2);
+    -fx-border-radius: 16;
+    -fx-border-width: 1;
+    -fx-effect: dropshadow(gaussian, rgba(13, 148, 136, 0.1), 16, 0.18, 0, 3);
+}
+
+.rdv-card-price-top-accent {
+    -fx-background-color: linear-gradient(to right, #14b8a6 0%, #0d9488 35%, #6366f1 70%, #a855f7 100%);
+    -fx-background-radius: 16 16 0 0;
+    -fx-min-height: 4;
+    -fx-pref-height: 4;
+    -fx-max-height: 4;
+}
+
+.rdv-card-price-body {
+    -fx-padding: 16 20 18 20;
+}
+
+.rdv-card-price-row {
+    -fx-alignment: center_left;
+}
+
+.rdv-card-tarif-amount {
+    -fx-font-size: 26px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #0f766e;
+    -fx-letter-spacing: -0.03em;
+}
+
+.rdv-card-tarif-caption {
+    -fx-font-size: 11px;
+    -fx-text-fill: #64748b;
+    -fx-font-weight: 700;
+    -fx-letter-spacing: 0.05em;
+    -fx-text-alignment: right;
+    -fx-wrap-text: true;
+    -fx-max-width: 200;
+}
+
+.rdv-card-price-inner {
+    -fx-padding: 16 18 16 16;
+    -fx-alignment: center_left;
+}
+
+.rdv-card-price-accent {
+    -fx-background-color: linear-gradient(to bottom, #14b8a6 0%, #7c3aed 100%);
+    -fx-background-radius: 3;
+    -fx-min-height: 48;
+}
+
+.rdv-card-tarif-texts {
+    -fx-spacing: 4;
+}
+
+.rdv-card-spec-sub {
+    -fx-font-size: 12px;
+    -fx-text-fill: #6b7280;
+}
+
+.rdv-card-rating-avg-tiny {
+    -fx-font-size: 12px;
+    -fx-font-weight: 600;
+    -fx-text-fill: #9ca3af;
+}
+
+.rdv-stars-row {
+    -fx-spacing: 4;
+    -fx-alignment: center_left;
+    -fx-padding: 0 0 0 4;
+}
+
+.rdv-star-readonly-on {
+    -fx-font-size: 18px;
+    -fx-text-fill: #ea580c;
+}
+
+.rdv-star-readonly-off {
+    -fx-font-size: 18px;
+    -fx-text-fill: #fdba74;
+}
+
+.label.rdv-star-btn {
+    -fx-font-size: 20px;
+    -fx-padding: 0 2 0 2;
+}
+
+.rdv-star-on {
+    -fx-text-fill: #ea580c;
+}
+
+.rdv-star-off {
+    -fx-text-fill: #fdba74;
+}
+
+.rdv-card-rating-section {
+    -fx-padding: 4 0 0 0;
+    -fx-spacing: 8;
+}
+
+.rdv-card-rating-avg {
+    -fx-font-size: 14px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #c2410c;
+}
+
+.rdv-card-rating-hint {
+    -fx-font-size: 12px;
+    -fx-text-fill: #6b7280;
+    -fx-font-style: italic;
+}
+
+.rdv-card-rating-cap {
+    -fx-font-size: 12px;
+    -fx-font-weight: 600;
+    -fx-text-fill: #4b5563;
+}
+
+.rdv-card-rating-combo {
+    -fx-pref-width: 88;
+    -fx-background-radius: 8;
+}
+
+.button.rdv-card-rating-save {
+    -fx-padding: 8 14 8 14;
+    -fx-font-size: 12px;
+}
+
+.rdv-review-card {
+    -fx-padding: 16 18 18 18;
+    -fx-spacing: 0;
+    -fx-background-color: linear-gradient(to bottom, #f0fdfa 0%, #faf5ff 100%);
+    -fx-background-radius: 14;
+    -fx-border-color: rgba(124, 58, 237, 0.28);
+    -fx-border-radius: 14;
+    -fx-border-width: 1.5;
+}
+
+.rdv-review-card-title {
+    -fx-font-size: 15px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #111827;
+}
+
+.rdv-review-card-sub {
+    -fx-font-size: 12px;
+    -fx-text-fill: #6b7280;
+}
+
+.text-area.rdv-review-textarea {
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 10;
+    -fx-border-color: #e5e7eb;
+    -fx-border-radius: 10;
+    -fx-padding: 10 12;
+    -fx-font-size: 13px;
+}
+
+.text-area.rdv-review-textarea .content {
+    -fx-background-color: transparent;
+}
+
+.rdv-review-counter {
+    -fx-font-size: 11px;
+    -fx-text-fill: #9ca3af;
+    -fx-alignment: center_right;
+}
+
+/* Zone boutons avis : compacte, centrée */
+.rdv-review-actions {
+    -fx-spacing: 8;
+    -fx-alignment: center;
+    -fx-padding: 6 0 0 0;
+}
+
+/* Boutons avis — même esprit que « Prendre RDV » (.rdv-btn) : pilule, dégradé turquoise, ombre */
+.button.rdv-review-submit {
+    -fx-font-family: "Inter", "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
+    -fx-font-size: 13px;
+    -fx-font-weight: 700;
+    -fx-padding: 10 22;
+    -fx-min-height: 40;
+    -fx-pref-height: 40;
+    -fx-background-radius: 999;
+    -fx-border-radius: 999;
+    -fx-cursor: hand;
+    -fx-background-insets: 0;
+    -fx-border-insets: 0;
+    -fx-effect: dropshadow(gaussian, rgba(13, 148, 136, 0.45), 10, 0.28, 0, 3);
+}
+
+.button.rdv-review-btn-primary,
+.button.rdv-review-btn-secondary {
+    -fx-text-fill: #ffffff;
+    -fx-background-color: linear-gradient(to bottom, #14b8a6 0%, #0d9488 45%, #0f766e 100%);
+    -fx-border-color: transparent;
+    -fx-border-width: 0;
+}
+
+.button.rdv-review-btn-primary:hover,
+.button.rdv-review-btn-secondary:hover {
+    -fx-background-color: linear-gradient(to bottom, #0d9488 0%, #0f766e 50%, #115e59 100%);
+    -fx-effect: dropshadow(gaussian, rgba(13, 148, 136, 0.55), 12, 0.3, 0, 4);
+}
+
+.button.rdv-review-btn-primary:pressed,
+.button.rdv-review-btn-secondary:pressed {
+    -fx-background-color: linear-gradient(to bottom, #0f766e 0%, #115e59 55%, #134e4a 100%);
+    -fx-effect: dropshadow(gaussian, rgba(13, 148, 136, 0.35), 6, 0.25, 0, 2);
+}
+
+.button.rdv-review-btn-primary:focused,
+.button.rdv-review-btn-secondary:focused {
+    -fx-background-color: linear-gradient(to bottom, #14b8a6 0%, #0d9488 45%, #0f766e 100%);
+    -fx-border-color: rgba(255, 255, 255, 0.85);
+    -fx-border-width: 2;
+}
+
+/* ---------- Prise de RDV : parcours type web ---------- */
+
+.rdv-booking-root {
+    -fx-spacing: 0;
+}
+
+.rdv-booking-topbar {
+    -fx-padding: 0;
+}
+
+.rdv-booking-back {
+    -fx-text-fill: #0d9488;
+    -fx-font-size: 14px;
+    -fx-border-width: 0;
+    -fx-padding: 0;
+}
+
+.rdv-booking-back:hover {
+    -fx-text-fill: #115e59;
+}
+
+.rdv-booking-stepper {
+    -fx-alignment: center_right;
+}
+
+.rdv-step-sep {
+    -fx-text-fill: #d1d5db;
+    -fx-font-size: 14px;
+    -fx-padding: 0 4 0 4;
+}
+
+.rdv-step-cell {
+    -fx-alignment: center_left;
+}
+
+.rdv-step-num {
+    -fx-min-width: 26;
+    -fx-min-height: 26;
+    -fx-alignment: center;
+    -fx-text-fill: #9ca3af;
+    -fx-font-size: 12px;
+    -fx-font-weight: 700;
+    -fx-background-color: #f3f4f6;
+    -fx-background-radius: 999;
+}
+
+.rdv-step-num-active {
+    -fx-min-width: 26;
+    -fx-min-height: 26;
+    -fx-alignment: center;
+    -fx-text-fill: #ffffff;
+    -fx-font-size: 12px;
+    -fx-font-weight: 700;
+    -fx-background-color: linear-gradient(to bottom, #14b8a6 0%, #0d9488 100%);
+    -fx-background-radius: 999;
+}
+
+.rdv-step-text {
+    -fx-font-size: 13px;
+    -fx-text-fill: #9ca3af;
+}
+
+.rdv-step-text-active {
+    -fx-font-size: 13px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #0d9488;
+}
+
+.rdv-booking-main {
+    -fx-alignment: top_left;
+}
+
+.rdv-booking-sidebar {
+    -fx-padding: 0 8 0 0;
+}
+
+.rdv-booking-profile-card {
+    -fx-background-color: linear-gradient(to bottom, #ffffff 0%, #f6faf8 100%);
+    -fx-background-radius: 18;
+    -fx-border-color: rgba(13, 148, 136, 0.16);
+    -fx-border-radius: 18;
+    -fx-border-width: 1;
+    -fx-padding: 20 18 20 18;
+    -fx-spacing: 14;
+    -fx-effect: dropshadow(gaussian, rgba(15, 118, 110, 0.1), 14, 0.18, 0, 3);
+}
+
+.rdv-booking-avatar-wrap {
+    -fx-min-width: 72;
+    -fx-min-height: 72;
+    -fx-max-width: 72;
+    -fx-max-height: 72;
+    -fx-background-color: linear-gradient(to bottom right, #5eead4, #2dd4bf 40%, #14b8a6 100%);
+    -fx-background-radius: 999;
+    -fx-alignment: center;
+}
+
+.rdv-booking-avatar-text {
+    -fx-font-size: 22px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #042f2e;
+}
+
+.rdv-booking-sidebar-name {
+    -fx-font-size: 18px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #2f3138;
+}
+
+.rdv-booking-sidebar-tag {
+    -fx-font-size: 12px;
+    -fx-font-weight: 600;
+    -fx-text-fill: #6b7280;
+}
+
+.rdv-booking-sidebar-bio {
+    -fx-font-size: 13px;
+    -fx-text-fill: #4b5563;
+}
+
+.rdv-booking-contact-block {
+    -fx-spacing: 6;
+}
+
+.rdv-booking-contact-line {
+    -fx-font-size: 13px;
+    -fx-text-fill: #374151;
+}
+
+.rdv-booking-price {
+    -fx-font-size: 15px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #2f3138;
+}
+
+.rdv-booking-voice-box {
+    -fx-background-color: linear-gradient(to bottom right, rgba(204, 251, 241, 0.95) 0%, rgba(237, 233, 254, 0.9) 100%);
+    -fx-background-radius: 14;
+    -fx-border-color: rgba(124, 58, 237, 0.35);
+    -fx-border-radius: 14;
+    -fx-border-width: 1.5;
+    -fx-padding: 16 14 16 14;
+}
+
+.rdv-booking-voice-title {
+    -fx-font-size: 14px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #5b21b6;
+}
+
+.rdv-booking-voice-combo {
+    -fx-background-radius: 10;
+}
+
+.rdv-booking-voice-btn {
+    -fx-background-color: linear-gradient(to bottom, #14b8a6 0%, #0d9488 50%, #0f766e 100%);
+    -fx-text-fill: #ffffff;
+    -fx-font-weight: 600;
+    -fx-padding: 10 14 10 14;
+    -fx-background-radius: 10;
+    -fx-cursor: hand;
+}
+
+.rdv-booking-voice-btn:hover {
+    -fx-background-color: linear-gradient(to bottom, #0d9488 0%, #0f766e 55%, #115e59 100%);
+}
+
+.rdv-booking-content {
+    -fx-padding: 4 0 0 0;
+}
+
+.rdv-booking-main-card {
+    -fx-background-color: rgba(255, 255, 255, 0.98);
+    -fx-background-radius: 18;
+    -fx-border-radius: 18;
+    -fx-border-color: rgba(13, 148, 136, 0.32);
+    -fx-border-width: 1.5;
+    -fx-effect: dropshadow(gaussian, rgba(13, 148, 136, 0.2), 22, 0.2, 0, 5);
+}
+
+.rdv-booking-main-title {
+    -fx-font-size: 26px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #042f2e;
+}
+
+.rdv-booking-main-sub {
+    -fx-font-size: 15px;
+    -fx-text-fill: #6b7280;
+    -fx-max-width: 640;
+}
+
+.rdv-booking-filter-all {
+    -fx-background-color: linear-gradient(to bottom, #14b8a6 0%, #0d9488 50%, #0f766e 100%);
+    -fx-text-fill: #ffffff;
+    -fx-font-weight: 700;
+    -fx-padding: 8 20 8 20;
+    -fx-background-radius: 10;
+    -fx-cursor: hand;
+}
+
+.rdv-booking-slots-scroll {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+}
+
+.rdv-booking-slots-scroll > .viewport {
+    -fx-background-color: transparent;
+}
+
+.rdv-booking-slots-flow {
+    -fx-padding: 4 4 12 4;
+}
+
+.rdv-slot-card {
+    -fx-cursor: hand;
+    -fx-padding: 14 16 16 16;
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 14;
+    -fx-border-color: rgba(13, 148, 136, 0.22);
+    -fx-border-radius: 14;
+    -fx-border-width: 1.5;
+    -fx-spacing: 8;
+    -fx-effect: dropshadow(gaussian, rgba(13, 148, 136, 0.12), 8, 0.2, 0, 2);
+}
+
+.rdv-slot-card:hover {
+    -fx-border-color: rgba(13, 148, 136, 0.65);
+    -fx-background-color: #f0fdfa;
+}
+
+.rdv-slot-card-selected {
+    -fx-border-color: #0d9488;
+    -fx-border-width: 2.5;
+    -fx-background-color: rgba(204, 251, 241, 0.85);
+}
+
+.rdv-slot-badge {
+    -fx-background-color: #a7f3d0;
+    -fx-text-fill: #047857;
+    -fx-font-size: 11px;
+    -fx-font-weight: 800;
+    -fx-padding: 4 10 4 10;
+    -fx-background-radius: 8;
+    -fx-max-width: 120;
+}
+
+.rdv-slot-time-big {
+    -fx-font-size: 17px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #042f2e;
+}
+
+.rdv-slot-detail {
+    -fx-font-size: 12px;
+    -fx-text-fill: #6b7280;
+}
+
+/* Créneau affiché mais non sélectionnable (déjà demandé / réservé) */
+.rdv-slot-card-blocked {
+    -fx-cursor: default;
+    -fx-background-color: #fef2f2;
+    -fx-border-color: rgba(185, 28, 28, 0.5);
+    -fx-effect: dropshadow(gaussian, rgba(185, 28, 28, 0.12), 6, 0.2, 0, 1);
+}
+
+.rdv-slot-card-blocked:hover {
+    -fx-background-color: #fee2e2;
+    -fx-border-color: rgba(185, 28, 28, 0.65);
+}
+
+.rdv-slot-badge-blocked {
+    -fx-background-color: #fecaca;
+    -fx-text-fill: #991b1b;
+    -fx-font-size: 11px;
+    -fx-font-weight: 800;
+    -fx-padding: 4 10 4 10;
+    -fx-background-radius: 8;
+    -fx-max-width: 120;
+}
+
+.rdv-slot-time-big-blocked {
+    -fx-font-size: 17px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #7f1d1d;
+}
+
+.rdv-slot-detail-blocked {
+    -fx-font-size: 12px;
+    -fx-text-fill: #b91c1c;
+}
+
+.rdv-slot-blocked-stamp {
+    -fx-font-size: 11px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #ffffff;
+    -fx-background-color: linear-gradient(to bottom, #dc2626 0%, #b91c1c 100%);
+    -fx-padding: 6 10 6 10;
+    -fx-background-radius: 8;
+}
+
+.rdv-booking-hint-blocked {
+    -fx-text-fill: #b91c1c;
+}
+
+.rdv-booking-foot-row {
+    -fx-padding: 4 0 0 0;
+}
+
+.rdv-booking-info-icon {
+    -fx-font-size: 14px;
+    -fx-text-fill: #9ca3af;
+}
+
+.rdv-booking-foot {
+    -fx-font-size: 12px;
+    -fx-text-fill: #6b7280;
+}
+
+.rdv-booking-continuer {
+    -fx-background-color: linear-gradient(to bottom, #14b8a6 0%, #0d9488 45%, #0f766e 100%);
+    -fx-text-fill: #ffffff;
+    -fx-font-weight: 700;
+    -fx-font-size: 14px;
+    -fx-padding: 12 28 12 28;
+    -fx-background-radius: 12;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(13, 148, 136, 0.45), 10, 0.25, 0, 3);
+}
+
+.rdv-booking-continuer:disabled {
+    -fx-opacity: 0.45;
+    -fx-cursor: default;
+}
+
+.rdv-booking-continuer:hover:!disabled {
+    -fx-background-color: linear-gradient(to bottom, #0d9488 0%, #0f766e 50%, #115e59 100%);
+}
+
+.rdv-booking-hint {
+    -fx-font-size: 14px;
+    -fx-text-fill: #6b7280;
+    -fx-padding: 12 8 12 8;
+    -fx-max-width: 520;
+}
+
+/* Étape « Type de consultation » (espacement resserré) */
+.rdv-type-root {
+    -fx-max-width: Infinity;
+    -fx-alignment: top_center;
+}
+
+/* Fond : image + léger zoom pour rogner les fines bandes claires du fichier source */
+.rdv-type-bg {
+    -fx-background-color: linear-gradient(to bottom right, #99f6e4 0%, #c4b5fd 38%, #fae8ff 100%);
+    -fx-background-image: url("../images/rdv-type-bg.png");
+    -fx-background-repeat: no-repeat;
+    -fx-background-size: 112% 112%;
+    -fx-background-position: center 42%;
+    -fx-opacity: 0.38;
+}
+
+.rdv-type-foreground {
+    -fx-background-color: transparent;
+}
+
+.rdv-type-root .rdv-booking-sidebar {
+    -fx-padding: 0 6 0 0;
+}
+
+.rdv-type-root .rdv-booking-profile-card {
+    -fx-padding: 14 12 14 12;
+    -fx-spacing: 10;
+}
+
+.rdv-type-root .rdv-booking-voice-box {
+    -fx-padding: 12 12 12 12;
+}
+
+.rdv-type-main-card {
+    -fx-background-color: rgba(255, 255, 255, 0.97);
+    -fx-background-radius: 14;
+    -fx-border-radius: 14;
+    -fx-border-color: rgba(13, 148, 136, 0.28);
+    -fx-border-width: 1.5;
+    -fx-effect: dropshadow(gaussian, rgba(124, 58, 237, 0.12), 14, 0.18, 0, 2);
+}
+
+.rdv-type-root .rdv-booking-main-title {
+    -fx-padding: 0 0 0 0;
+}
+
+.rdv-type-block-title {
+    -fx-font-size: 13px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #374151;
+    -fx-padding: 0 0 0 0;
+}
+
+.rdv-type-mode-value {
+    -fx-font-size: 14px;
+    -fx-text-fill: #4b5563;
+    -fx-padding: 0 0 0 0;
+}
+
+.rdv-type-option {
+    -fx-padding: 7 11 7 11;
+    -fx-background-color: rgba(255, 255, 255, 0.98);
+    -fx-background-radius: 12;
+    -fx-border-color: rgba(0, 0, 0, 0.1);
+    -fx-border-radius: 12;
+    -fx-border-width: 1;
+    -fx-cursor: hand;
+    -fx-spacing: 14;
+}
+
+.rdv-type-option:hover {
+    -fx-border-color: rgba(13, 148, 136, 0.35);
+}
+
+.rdv-type-option-selected {
+    -fx-border-color: #0d9488;
+    -fx-border-width: 2;
+    -fx-background-color: rgba(13, 148, 136, 0.06);
+}
+
+.rdv-type-option-radio {
+    -fx-padding: 0 4 0 0;
+}
+
+.rdv-type-option-title {
+    -fx-font-size: 15px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #2f3138;
+}
+
+.rdv-type-option-dur {
+    -fx-font-size: 12px;
+    -fx-text-fill: #6b7280;
+}
+
+.rdv-type-motif-combo {
+    -fx-background-radius: 10;
+}
+
+.rdv-type-retour {
+    -fx-background-color: #ffffff;
+    -fx-text-fill: #0d9488;
+    -fx-font-weight: 600;
+    -fx-font-size: 14px;
+    -fx-padding: 10 20 10 20;
+    -fx-background-radius: 12;
+    -fx-border-color: #0d9488;
+    -fx-border-radius: 12;
+    -fx-border-width: 1.5;
+    -fx-cursor: hand;
+}
+
+.rdv-type-retour:hover {
+    -fx-background-color: rgba(13, 148, 136, 0.08);
+}
+
+/* Stepper : étapes déjà complétées */
+.rdv-step-num-done {
+    -fx-min-width: 26;
+    -fx-min-height: 26;
+    -fx-alignment: center;
+    -fx-text-fill: #ffffff;
+    -fx-font-size: 13px;
+    -fx-font-weight: 800;
+    -fx-background-color: linear-gradient(to bottom, #2dd4bf 0%, #0d9488 100%);
+    -fx-background-radius: 999;
+}
+
+.rdv-step-text-done {
+    -fx-font-size: 13px;
+    -fx-font-weight: 600;
+    -fx-text-fill: #0d9488;
+}
+
+/* Étape « Vos informations » (même gabarit / espacements que « Type de consultation ») */
+.rdv-info-root {
+    -fx-max-width: Infinity;
+    -fx-alignment: top_center;
+}
+
+.rdv-info-bg {
+    -fx-background-color: linear-gradient(to bottom right, #99f6e4 0%, #c4b5fd 38%, #fae8ff 100%);
+    -fx-background-image: url("../images/rdv-type-bg.png");
+    -fx-background-repeat: no-repeat;
+    -fx-background-size: 112% 112%;
+    -fx-background-position: center 42%;
+    -fx-opacity: 0.38;
+}
+
+.rdv-info-root .rdv-booking-sidebar {
+    -fx-padding: 0 6 0 0;
+}
+
+.rdv-info-root .rdv-booking-profile-card {
+    -fx-padding: 14 12 14 12;
+    -fx-spacing: 10;
+}
+
+.rdv-info-root .rdv-booking-voice-box {
+    -fx-padding: 12 12 12 12;
+}
+
+.rdv-info-root .rdv-booking-main-title {
+    -fx-padding: 0 0 0 0;
+}
+
+.rdv-info-main-card {
+    -fx-spacing: 0;
+}
+
+.rdv-info-scroll {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+}
+
+.rdv-info-scroll > .viewport {
+    -fx-background-color: transparent;
+}
+
+.rdv-info-form-wrap {
+    -fx-spacing: 5;
+}
+
+.rdv-info-field {
+    -fx-spacing: 1;
+}
+
+.rdv-info-label {
+    -fx-font-size: 12px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #374151;
+}
+
+.rdv-info-input {
+    -fx-padding: 6 10 6 10;
+    -fx-background-radius: 8;
+    -fx-font-size: 13px;
+}
+
+.rdv-info-field-hint {
+    -fx-font-size: 11px;
+    -fx-text-fill: #6b7280;
+    -fx-padding: 1 0 0 0;
+    -fx-wrap-text: true;
+}
+
+.rdv-info-datepicker {
+    -fx-background-radius: 8;
+}
+
+.rdv-info-datepicker > .text-field {
+    -fx-padding: 6 10 6 10;
+}
+
+.rdv-info-textarea {
+    -fx-background-radius: 8;
+    -fx-padding: 6 10 6 10;
+    -fx-font-size: 13px;
+}
+
+.rdv-info-recap {
+    -fx-background-color: linear-gradient(to right, #ccfbf1 0%, #ede9fe 100%);
+    -fx-background-radius: 14;
+    -fx-border-color: rgba(124, 58, 237, 0.35);
+    -fx-border-radius: 14;
+    -fx-border-width: 1.5;
+    -fx-spacing: 4;
+}
+
+.rdv-info-recap-title {
+    -fx-font-size: 14px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #5b21b6;
+}
+
+.rdv-info-recap-line {
+    -fx-font-size: 13px;
+    -fx-text-fill: #134e4a;
+}
+
+.rdv-info-actions {
+    -fx-padding: 0;
+}

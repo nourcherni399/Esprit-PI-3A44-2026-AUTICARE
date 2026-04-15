@@ -1,0 +1,185 @@
+/* Profil médecin — carte type maquette (fond dégradé, sections, avatar +) */
+
+.med-profile-scroll {
+    -fx-background-color: transparent;
+    -fx-background: linear-gradient(135deg, #dbeafe 0%, #fef3c7 42%, #e0f2fe 88%);
+    -fx-padding: 0;
+}
+
+.med-profile-scroll > .viewport {
+    -fx-background-color: transparent;
+}
+
+.med-profile-scroll-inner {
+    -fx-padding: 28 24 40 24;
+    -fx-alignment: top_center;
+}
+
+.med-profile-card {
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 24;
+    -fx-border-color: rgba(148, 163, 184, 0.25);
+    -fx-border-radius: 24;
+    -fx-border-width: 1;
+    -fx-effect: dropshadow(gaussian, rgba(15, 23, 42, 0.14), 28, 0.22, 0, 10);
+    -fx-spacing: 0;
+}
+
+.med-profile-section-title {
+    -fx-font-size: 20px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #1e3a5f;
+}
+
+.med-profile-avatar-col {
+    -fx-padding: 4 0 0 0;
+}
+
+.med-profile-avatar-frame {
+    -fx-min-width: 128;
+    -fx-min-height: 128;
+    -fx-pref-width: 128;
+    -fx-pref-height: 128;
+    -fx-max-width: 128;
+    -fx-max-height: 128;
+}
+
+.med-profile-avatar-host {
+    -fx-alignment: center;
+}
+
+/* Initiales (fallback) — cercle gris */
+.med-profile-avatar-initials {
+    -fx-background-color: linear-gradient(to bottom, #e2e8f0, #cbd5e1);
+    -fx-background-radius: 999;
+    -fx-text-fill: #475569;
+    -fx-font-size: 32px;
+    -fx-font-weight: 700;
+    -fx-alignment: center;
+}
+
+.button.med-profile-fab-add {
+    -fx-background-color: linear-gradient(to bottom, #3b82f6 0%, #2563eb 100%);
+    -fx-text-fill: white;
+    -fx-font-size: 18px;
+    -fx-font-weight: 700;
+    -fx-min-width: 32;
+    -fx-min-height: 32;
+    -fx-max-width: 32;
+    -fx-max-height: 32;
+    -fx-padding: 0 0 2 0;
+    -fx-background-radius: 999;
+    -fx-border-radius: 999;
+    -fx-border-color: #ffffff;
+    -fx-border-width: 2.5;
+    -fx-translate-x: 4;
+    -fx-translate-y: 4;
+    -fx-cursor: hand;
+}
+
+.button.med-profile-fab-add:hover {
+    -fx-background-color: linear-gradient(to bottom, #2563eb 0%, #1d4ed8 100%);
+}
+
+.button.med-profile-fab-add:disabled {
+    -fx-opacity: 0.45;
+    -fx-cursor: default;
+}
+
+.med-profile-photo-caption {
+    -fx-font-size: 11px;
+    -fx-text-fill: #64748b;
+    -fx-text-alignment: center;
+    -fx-wrap-text: true;
+}
+
+.med-profile-grid {
+    -fx-padding: 0;
+}
+
+.med-profile-divider-row {
+    -fx-spacing: 14;
+    -fx-alignment: center;
+    -fx-padding: 0 8;
+}
+
+.med-profile-divider-line {
+    -fx-background-color: linear-gradient(to right, transparent, rgba(148, 163, 184, 0.55), transparent);
+    -fx-min-height: 1;
+    -fx-pref-height: 1;
+    -fx-max-height: 1;
+}
+
+.med-profile-divider-star {
+    -fx-font-size: 14px;
+    -fx-text-fill: #94a3b8;
+}
+
+.med-profile-field-label {
+    -fx-font-size: 12px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #334155;
+}
+
+.med-profile-input,
+.text-field.med-profile-input {
+    -fx-background-color: #f1f5f9;
+    -fx-background-radius: 12;
+    -fx-border-color: #e2e8f0;
+    -fx-border-radius: 12;
+    -fx-border-width: 1;
+    -fx-padding: 11 14;
+    -fx-font-size: 13px;
+    -fx-text-fill: #1e293b;
+}
+
+.med-profile-input:focused {
+    -fx-border-color: #60a5fa;
+    -fx-background-color: #ffffff;
+}
+
+.med-profile-hint {
+    -fx-font-size: 11px;
+    -fx-text-fill: #64748b;
+    -fx-wrap-text: true;
+    -fx-padding: 2 0 0 0;
+}
+
+.med-profile-footer {
+    -fx-spacing: 14;
+    -fx-padding: 28 0 0 0;
+    -fx-alignment: center_left;
+}
+
+.button.med-profile-btn-primary {
+    -fx-background-color: linear-gradient(to bottom, #1e40af 0%, #1e3a8a 100%);
+    -fx-text-fill: white;
+    -fx-font-weight: 700;
+    -fx-font-size: 13px;
+    -fx-padding: 11 22;
+    -fx-background-radius: 12;
+    -fx-border-radius: 12;
+    -fx-cursor: hand;
+}
+
+.button.med-profile-btn-primary:hover {
+    -fx-background-color: linear-gradient(to bottom, #2563eb 0%, #1d4ed8 100%);
+}
+
+.button.med-profile-btn-outline {
+    -fx-background-color: #ffffff;
+    -fx-text-fill: #334155;
+    -fx-font-weight: 600;
+    -fx-font-size: 13px;
+    -fx-border-color: #cbd5e1;
+    -fx-border-radius: 12;
+    -fx-background-radius: 12;
+    -fx-border-width: 1.5;
+    -fx-padding: 11 20;
+    -fx-cursor: hand;
+}
+
+.button.med-profile-btn-outline:hover {
+    -fx-background-color: #f8fafc;
+    -fx-border-color: #94a3b8;
+}

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox alignment="TOP_CENTER" maxWidth="920" spacing="14" styleClass="public-page" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1">
+    <Label styleClass="public-page-kicker" text="VIE DU RÉSEAU" />
+    <Label styleClass="public-page-title" text="Événements &amp; ateliers" textAlignment="CENTER" wrapText="true" />
+    <Label styleClass="public-page-lead" text="Ateliers sensoriels, conférences, rencontres parents et événements de sensibilisation : retrouvez ici l’agenda AutiCare." textAlignment="CENTER" wrapText="true" />
+    <VBox alignment="TOP_CENTER" styleClass="public-page-card">
+        <Label styleClass="public-page-body" text="La liste des événements à venir sera synchronisée avec votre espace de gestion. Les visiteurs verront ici les dates, lieux et liens d’inscription." textAlignment="CENTER" wrapText="true" />
+    </VBox>
+</VBox>

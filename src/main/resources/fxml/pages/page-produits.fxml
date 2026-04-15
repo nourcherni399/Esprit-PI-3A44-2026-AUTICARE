@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox alignment="TOP_CENTER" maxWidth="920" spacing="14" styleClass="public-page" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1">
+    <Label styleClass="public-page-kicker" text="CATALOGUE" />
+    <Label styleClass="public-page-title" text="Produits adaptés" textAlignment="CENTER" wrapText="true" />
+    <Label styleClass="public-page-lead" text="Découvrez une sélection d’outils et de produits pensés pour le confort sensoriel, la concentration et le quotidien." textAlignment="CENTER" wrapText="true" />
+    <VBox alignment="TOP_CENTER" styleClass="public-page-card">
+        <Label styleClass="public-page-body" text="Cette section sera bientôt reliée au catalogue publié. Les comptes professionnels pourront administrer les fiches produits depuis l’espace dédié après connexion." textAlignment="CENTER" wrapText="true" />
+    </VBox>
+</VBox>

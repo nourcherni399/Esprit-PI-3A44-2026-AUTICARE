@@ -1,0 +1,2070 @@
+/* Espace médecin — tableau de bord (charte lavande / cartes douces type maquette) */
+
+.med-root {
+    -fx-font-family: "Inter", "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
+    -fx-background-color: linear-gradient(to bottom, #f5f3ff 0%, #faf8ff 40%, #f8fafc 100%);
+}
+
+.med-sidebar-wrap {
+    -fx-background-color: transparent;
+}
+
+.med-sidebar {
+    -fx-background-color: #ffffff;
+    -fx-padding: 20 14 16 14;
+    -fx-spacing: 6;
+    -fx-border-color: rgba(167, 139, 250, 0.2);
+    -fx-border-width: 0 1 0 0;
+    -fx-min-width: 228;
+    -fx-pref-width: 248;
+    -fx-max-width: 268;
+    -fx-effect: dropshadow(gaussian, rgba(91, 33, 182, 0.06), 18, 0.15, 2, 0);
+}
+
+/* Motif discret bas de barre (étoiles / points) */
+.med-sidebar-deco {
+    -fx-background-color: radial-gradient(center 50% 100%, radius 90%, rgba(167, 139, 250, 0.18) 0%, transparent 62%),
+        radial-gradient(center 10% 80%, radius 35%, rgba(196, 181, 253, 0.2) 0%, transparent 55%),
+        radial-gradient(center 92% 70%, radius 28%, rgba(233, 213, 255, 0.35) 0%, transparent 50%);
+    -fx-background-radius: 0 0 0 0;
+}
+
+/* Même logo que la barre d’accueil (auticare-logo-auth.png) */
+.med-sidebar-brand {
+    -fx-padding: 0 0 8 0;
+    -fx-alignment: top_left;
+}
+
+.med-brand-logo-auth-img {
+    -fx-smooth: true;
+}
+
+.med-brand-role {
+    -fx-font-size: 11px;
+    -fx-text-fill: #6b7280;
+}
+
+.med-nav-item {
+    -fx-alignment: center-left;
+    -fx-padding: 11 14 11 14;
+    -fx-background-radius: 14;
+    -fx-cursor: hand;
+    -fx-font-size: 13px;
+    -fx-text-fill: #4b5563;
+}
+
+/* Boutons de menu : même rendu qu’un libellé */
+.button.med-nav-item {
+    -fx-background-color: transparent;
+    -fx-border-width: 0;
+    -fx-background-insets: 0;
+}
+
+.med-nav-item:hover {
+    -fx-background-color: rgba(167, 139, 250, 0.12);
+}
+
+.med-nav-item-active {
+    -fx-background-color: rgba(167, 139, 250, 0.22);
+    -fx-text-fill: #5b21b6;
+    -fx-font-weight: 700;
+}
+
+.med-sidebar-footer {
+    -fx-padding: 12 0 0 0;
+    -fx-spacing: 6;
+}
+
+.med-link-subtle {
+    -fx-font-size: 12px;
+    -fx-text-fill: #7b8494;
+    -fx-border-color: transparent;
+    -fx-padding: 2 0;
+}
+
+.med-link-subtle:hover {
+    -fx-text-fill: #a8bba3;
+}
+
+.med-topbar {
+    -fx-background-color: rgba(255, 255, 255, 0.92);
+    -fx-padding: 16 28 16 28;
+    -fx-spacing: 18;
+    -fx-border-color: rgba(167, 139, 250, 0.15);
+    -fx-border-width: 0 0 1 0;
+    -fx-alignment: center-left;
+}
+
+.med-topbar-bell {
+    -fx-font-size: 16px;
+    -fx-cursor: hand;
+    -fx-text-fill: #4b5563;
+}
+
+.med-topbar-bell-urgent {
+    -fx-text-fill: #c0392b;
+    -fx-font-weight: 800;
+}
+
+.med-search {
+    -fx-background-radius: 999;
+    -fx-padding: 11 22 11 22;
+    -fx-pref-width: 340;
+    -fx-max-width: 440;
+    -fx-background-color: #f1f5f9;
+    -fx-border-color: #e2e8f0;
+    -fx-border-radius: 999;
+}
+
+.med-user-name {
+    -fx-font-size: 14px;
+    -fx-font-weight: 600;
+    -fx-text-fill: #2f3138;
+}
+
+.med-user-name-link {
+    -fx-cursor: hand;
+}
+
+.med-user-name-link:hover {
+    -fx-underline: true;
+    -fx-text-fill: #7c3aed;
+}
+
+.med-user-email {
+    -fx-font-size: 11px;
+    -fx-text-fill: #6b7280;
+}
+
+.med-content {
+    -fx-padding: 28 32 40 32;
+    -fx-spacing: 22;
+}
+
+.med-welcome-card {
+    -fx-background-color: linear-gradient(120deg, rgba(237, 233, 254, 0.95) 0%, rgba(250, 232, 255, 0.88) 45%, rgba(224, 231, 255, 0.75) 100%);
+    -fx-background-radius: 20;
+    -fx-padding: 24 28 24 28;
+    -fx-spacing: 8;
+    -fx-border-color: rgba(167, 139, 250, 0.25);
+    -fx-border-radius: 20;
+    -fx-border-width: 1;
+    -fx-effect: dropshadow(gaussian, rgba(91, 33, 182, 0.08), 20, 0.2, 0, 4);
+}
+
+.med-welcome-title {
+    -fx-font-size: 24px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #312e81;
+}
+
+.med-welcome-sub {
+    -fx-font-size: 14px;
+    -fx-text-fill: #5b5b7a;
+}
+
+.med-stat-rows {
+    -fx-padding: 2 0 0 0;
+}
+
+.med-stat-row {
+    -fx-padding: 0;
+}
+
+/* Cartes KPI : même principe que Mon profil — carte blanche + encart lavande (med-profile-inner) */
+.med-stat-card {
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 20;
+    -fx-padding: 14 16 14 16;
+    -fx-spacing: 10;
+    -fx-border-color: rgba(148, 163, 184, 0.18);
+    -fx-border-radius: 20;
+    -fx-border-width: 1;
+    -fx-effect: dropshadow(gaussian, rgba(15, 23, 42, 0.08), 22, 0.2, 0, 6);
+    -fx-min-width: 130;
+}
+
+.med-stat-icon-badge {
+    -fx-min-width: 40;
+    -fx-max-width: 40;
+    -fx-min-height: 40;
+    -fx-max-height: 40;
+    -fx-alignment: center;
+    -fx-padding: 0;
+}
+
+.med-stat-icon-badge-round {
+    -fx-background-radius: 999;
+}
+
+.med-stat-icon-badge-square {
+    -fx-background-radius: 10;
+}
+
+.med-stat-icon-badge-amber {
+    -fx-background-color: rgba(254, 243, 199, 0.95);
+}
+
+.med-stat-icon-badge-purple {
+    -fx-background-color: rgba(237, 233, 254, 0.95);
+}
+
+.med-stat-icon-badge-coral {
+    -fx-background-color: rgba(254, 215, 215, 0.75);
+}
+
+.med-stat-icon-badge-mint-soft {
+    -fx-background-color: rgba(209, 250, 229, 0.9);
+}
+
+.med-stat-icon-badge-sky {
+    -fx-background-color: rgba(224, 242, 254, 0.95);
+}
+
+.med-stat-icon-badge-rose {
+    -fx-background-color: rgba(252, 231, 243, 0.95);
+}
+
+.med-stat-icon-badge-sand {
+    -fx-background-color: rgba(254, 240, 138, 0.5);
+}
+
+.med-stat-icon-badge-slate {
+    -fx-background-color: rgba(226, 232, 240, 0.95);
+}
+
+.med-stat-dot-in-badge {
+    -fx-min-width: 10;
+    -fx-max-width: 10;
+    -fx-min-height: 10;
+    -fx-max-height: 10;
+    -fx-background-color: #22c55e;
+    -fx-background-radius: 999;
+}
+
+.med-stat-emoji-in-badge {
+    -fx-font-size: 17px;
+    -fx-text-fill: #475569;
+    -fx-alignment: center;
+}
+
+.med-stat-emoji {
+    -fx-font-size: 15px;
+}
+
+.med-stat-label {
+    -fx-font-size: 12px;
+    -fx-font-weight: 600;
+    -fx-text-fill: #64748b;
+}
+
+.med-stat-value {
+    -fx-font-size: 26px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #1e1b4b;
+}
+
+.med-stat-value-sm {
+    -fx-font-size: 20px;
+}
+
+.med-stat-hint {
+    -fx-font-size: 11px;
+    -fx-text-fill: #94a3b8;
+}
+
+.med-stat-status-dot {
+    -fx-min-width: 10;
+    -fx-min-height: 10;
+    -fx-max-width: 10;
+    -fx-max-height: 10;
+    -fx-background-color: #34d399;
+    -fx-background-radius: 999;
+}
+
+.med-panel {
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 20;
+    -fx-padding: 20 22 22 22;
+    -fx-spacing: 12;
+    -fx-border-color: rgba(148, 163, 184, 0.18);
+    -fx-border-radius: 20;
+    -fx-border-width: 1;
+    -fx-effect: dropshadow(gaussian, rgba(15, 23, 42, 0.08), 22, 0.2, 0, 6);
+}
+
+/* Bloc profil : même principe que la carte « Aujourd’hui » (encart lavande à l’intérieur) */
+.med-profile-inner {
+    -fx-background-color: linear-gradient(135deg, rgba(237, 233, 254, 0.92) 0%, rgba(250, 232, 255, 0.78) 100%);
+    -fx-background-radius: 14;
+    -fx-padding: 16 18 16 18;
+    -fx-spacing: 6;
+    -fx-alignment: top_left;
+    -fx-border-color: rgba(167, 139, 250, 0.28);
+    -fx-border-radius: 14;
+    -fx-border-width: 1;
+}
+
+.med-profile-inner.med-stat-kpi-inner {
+    -fx-alignment: center;
+    -fx-padding: 12 10 12 10;
+}
+
+.med-profile-inner-name {
+    -fx-font-size: 15px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #312e81;
+    -fx-wrap-text: true;
+}
+
+.med-profile-inner-email {
+    -fx-font-size: 12px;
+    -fx-text-fill: #64748b;
+    -fx-wrap-text: true;
+}
+
+/* Conservé si un écran référence encore l’accent seul */
+.med-panel-accent {
+    -fx-border-color: rgba(167, 139, 250, 0.35);
+    -fx-background-color: linear-gradient(to bottom, #ffffff 0%, rgba(250, 245, 255, 0.65) 100%);
+}
+
+.med-panel-chart {
+    -fx-min-height: 280;
+}
+
+.med-chart-caption {
+    -fx-font-size: 12px;
+    -fx-text-fill: #64748b;
+}
+
+.med-panel-title {
+    -fx-font-size: 16px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #312e81;
+}
+
+.med-panel-body {
+    -fx-font-size: 13px;
+    -fx-text-fill: #64748b;
+}
+
+.med-panel-body-strong {
+    -fx-font-size: 14px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #3730a3;
+}
+
+.med-section-heading {
+    -fx-font-size: 16px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #312e81;
+    -fx-padding: 6 0 0 0;
+}
+
+/* Graphique d’activité */
+.med-activity-chart {
+    -fx-padding: 4 0 0 0;
+    -fx-background-color: transparent;
+    -fx-vertical-grid-lines-visible: false;
+    -fx-horizontal-grid-lines-visible: true;
+    -fx-alternative-column-fill-visible: false;
+    -fx-alternative-row-fill-visible: false;
+}
+
+.med-activity-chart .chart-plot-background {
+    -fx-background-color: rgba(248, 250, 252, 0.95);
+    -fx-background-radius: 14;
+}
+
+.med-activity-chart .chart-horizontal-grid-lines {
+    -fx-stroke: rgba(148, 163, 184, 0.35);
+}
+
+.med-activity-chart .chart-series-line {
+    -fx-stroke-width: 2.4px;
+}
+
+.med-activity-chart .chart-line-symbol {
+    -fx-background-radius: 4px;
+    -fx-padding: 3px;
+    -fx-min-width: 6px;
+    -fx-min-height: 6px;
+}
+
+.med-activity-chart .chart-legend {
+    -fx-background-color: transparent;
+    -fx-padding: 8 0 0 0;
+}
+
+.med-activity-chart .chart-legend-item {
+    -fx-text-fill: #475569;
+    -fx-font-size: 11px;
+}
+
+.med-activity-chart .default-color0.chart-series-line {
+    -fx-stroke: #fb923c;
+}
+
+.med-activity-chart .default-color1.chart-series-line {
+    -fx-stroke: #a78bfa;
+}
+
+.med-activity-chart .default-color2.chart-series-line {
+    -fx-stroke: #34d399;
+}
+
+.med-activity-chart .default-color3.chart-series-line {
+    -fx-stroke: #38bdf8;
+}
+
+.med-btn-primary {
+    -fx-background-color: linear-gradient(to bottom, #6d28d9 0%, #5b21b6 100%);
+    -fx-text-fill: #ffffff;
+    -fx-font-weight: 700;
+    -fx-padding: 10 18 10 18;
+    -fx-background-radius: 12;
+    -fx-cursor: hand;
+}
+
+.med-btn-primary:hover {
+    -fx-background-color: linear-gradient(to bottom, #7c3aed 0%, #6d28d9 100%);
+}
+
+.med-btn-ghost {
+    -fx-background-color: #ffffff;
+    -fx-text-fill: #334155;
+    -fx-border-color: #cbd5e1;
+    -fx-border-radius: 12;
+    -fx-border-width: 1.5;
+    -fx-padding: 9 16 9 16;
+    -fx-cursor: hand;
+}
+
+.med-quick-card {
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 16;
+    -fx-padding: 18 20 18 20;
+    -fx-spacing: 8;
+    -fx-border-color: rgba(167, 139, 250, 0.22);
+    -fx-border-radius: 16;
+    -fx-border-width: 1;
+    -fx-effect: dropshadow(gaussian, rgba(91, 33, 182, 0.06), 12, 0.15, 0, 2);
+    -fx-cursor: hand;
+}
+
+.med-quick-card:hover {
+    -fx-background-color: rgba(245, 243, 255, 0.85);
+    -fx-border-color: rgba(167, 139, 250, 0.45);
+}
+
+.med-quick-title {
+    -fx-font-size: 14px;
+    -fx-font-weight: 600;
+    -fx-text-fill: #2f3138;
+}
+
+.med-quick-sub {
+    -fx-font-size: 12px;
+    -fx-text-fill: #8b9199;
+}
+
+.med-calendar-box {
+    -fx-background-color: linear-gradient(135deg, rgba(237, 233, 254, 0.92) 0%, rgba(250, 232, 255, 0.78) 100%);
+    -fx-background-radius: 14;
+    -fx-padding: 16 18 16 18;
+    -fx-spacing: 6;
+    -fx-alignment: center;
+    -fx-border-color: rgba(167, 139, 250, 0.28);
+    -fx-border-radius: 14;
+    -fx-border-width: 1;
+}
+
+.med-calendar-day {
+    -fx-font-size: 20px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #4c1d95;
+}
+
+/* ---------- Page Disponibilités ---------- */
+
+.med-nav-item-active-dispo {
+    -fx-background-color: rgba(52, 152, 219, 0.22);
+    -fx-text-fill: #1e5a8a;
+    -fx-font-weight: 600;
+}
+
+.button.med-nav-item-active-dispo {
+    -fx-background-color: rgba(52, 152, 219, 0.22);
+}
+
+.button.med-nav-notif-urgent {
+    -fx-text-fill: #b91c1c;
+    -fx-font-weight: 700;
+}
+
+.med-dispo-wrap {
+    -fx-padding: 24 28 40 28;
+    -fx-spacing: 20;
+    -fx-max-width: 1100;
+}
+
+.med-dispo-main-title {
+    -fx-font-size: 26px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #2f3138;
+}
+
+.med-dispo-toolbar {
+    -fx-alignment: center-left;
+    -fx-spacing: 14;
+}
+
+.med-dispo-search {
+    -fx-background-radius: 10;
+    -fx-padding: 10 14 10 14;
+    -fx-max-width: 400;
+}
+
+.med-btn-dispo-primary {
+    -fx-background-color: #3498db;
+    -fx-text-fill: #ffffff;
+    -fx-font-weight: 600;
+    -fx-padding: 10 18 10 18;
+    -fx-background-radius: 10;
+    -fx-cursor: hand;
+}
+
+.med-btn-dispo-primary:hover {
+    -fx-background-color: #2980b9;
+}
+
+.med-cal-nav {
+    -fx-padding: 8 0 4 0;
+}
+
+.med-cal-nav-btn {
+    -fx-min-width: 40;
+    -fx-min-height: 36;
+    -fx-background-radius: 8;
+    -fx-background-color: #ffffff;
+    -fx-border-color: #e5e7eb;
+    -fx-border-radius: 8;
+    -fx-border-width: 1;
+    -fx-font-size: 18px;
+    -fx-cursor: hand;
+}
+
+.med-cal-nav-btn:hover {
+    -fx-background-color: #f3f4f6;
+}
+
+.med-cal-month-label {
+    -fx-font-size: 18px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #2f3138;
+    -fx-min-width: 200;
+    -fx-alignment: center;
+}
+
+.med-cal-grid {
+    -fx-padding: 4 0 0 0;
+}
+
+.med-cal-dow {
+    -fx-font-size: 11px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #6b7280;
+    -fx-padding: 0 0 4 0;
+}
+
+.med-cal-cell {
+    -fx-background-color: #faf9f7;
+    -fx-background-radius: 10;
+    -fx-border-color: rgba(0, 0, 0, 0.08);
+    -fx-border-radius: 10;
+    -fx-border-width: 1;
+    -fx-padding: 8;
+    -fx-min-height: 0;
+}
+
+/* Liste des créneaux : défilement dans la case pour éviter le débordement sur les jours du dessous */
+.med-cal-slots-scroll,
+.med-cal-slots-scroll .viewport {
+    -fx-background-color: transparent;
+}
+
+.med-cal-cell-muted {
+    -fx-background-color: #f3f4f6;
+    -fx-opacity: 0.65;
+}
+
+.med-cal-day-num {
+    -fx-font-size: 13px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #374151;
+    -fx-padding: 0 0 6 0;
+}
+
+.med-cal-day-selected {
+    -fx-background-color: #3498db;
+    -fx-background-radius: 999;
+    -fx-text-fill: #ffffff;
+    -fx-padding: 4 8 4 8;
+    -fx-min-width: 28;
+    -fx-alignment: center;
+}
+
+.med-slot-card {
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 8;
+    -fx-padding: 8 10 8 10;
+    -fx-spacing: 6;
+    -fx-border-color: rgba(52, 152, 219, 0.25);
+    -fx-border-radius: 8;
+    -fx-border-width: 1;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.05), 4, 0, 0, 1);
+}
+
+.med-slot-time {
+    -fx-font-size: 12px;
+    -fx-font-weight: 600;
+    -fx-text-fill: #2f3138;
+}
+
+.med-slot-dur {
+    -fx-background-color: rgba(52, 152, 219, 0.18);
+    -fx-text-fill: #1e5a8a;
+    -fx-font-size: 10px;
+    -fx-font-weight: 700;
+    -fx-padding: 2 8 2 8;
+    -fx-background-radius: 999;
+}
+
+.med-slot-actions {
+    -fx-spacing: 6;
+    -fx-alignment: center-left;
+}
+
+.med-slot-icon-btn {
+    -fx-background-color: transparent;
+    -fx-border-width: 0;
+    -fx-padding: 2 6 2 6;
+    -fx-cursor: hand;
+    -fx-font-size: 14px;
+}
+
+.med-slot-del {
+    -fx-text-fill: #e74c3c;
+}
+
+/* ---------- Page Notes patients ---------- */
+
+.med-notes-wrap {
+    -fx-padding: 24 28 40 28;
+    -fx-spacing: 20;
+    -fx-max-width: 1100;
+}
+
+.med-notes-banner {
+    -fx-background-color: rgba(52, 152, 219, 0.14);
+    -fx-background-radius: 14;
+    -fx-border-color: rgba(52, 152, 219, 0.25);
+    -fx-border-radius: 14;
+    -fx-border-width: 1;
+    -fx-padding: 22 24 22 24;
+}
+
+.med-notes-banner-title {
+    -fx-font-size: 24px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #1e3a5f;
+}
+
+.med-notes-banner-sub {
+    -fx-font-size: 14px;
+    -fx-text-fill: #4b5563;
+}
+
+.med-notes-banner-statbox {
+    -fx-background-color: rgba(255, 255, 255, 0.95);
+    -fx-background-radius: 12;
+    -fx-padding: 16 28 16 28;
+    -fx-border-color: rgba(255, 255, 255, 0.8);
+    -fx-border-radius: 12;
+    -fx-border-width: 1;
+    -fx-min-width: 120;
+}
+
+.med-notes-banner-count {
+    -fx-font-size: 36px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #2f3138;
+}
+
+.med-notes-banner-stat-label {
+    -fx-font-size: 12px;
+    -fx-text-fill: #6b7280;
+}
+
+.med-notes-card {
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 14;
+    -fx-border-color: rgba(0, 0, 0, 0.07);
+    -fx-border-radius: 14;
+    -fx-border-width: 1;
+    -fx-padding: 20 22 22 22;
+    -fx-spacing: 14;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.05), 12, 0, 0, 2);
+}
+
+.med-notes-card-header {
+    -fx-spacing: 6;
+}
+
+.med-notes-card-title {
+    -fx-font-size: 17px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #2f3138;
+}
+
+.med-notes-card-sub {
+    -fx-font-size: 13px;
+    -fx-text-fill: #6b7280;
+}
+
+.med-notes-sep {
+    -fx-padding: 4 0 4 0;
+}
+
+.med-notes-form {
+    -fx-padding: 4 0 8 0;
+    -fx-spacing: 10;
+}
+
+.med-notes-form-label {
+    -fx-font-size: 12px;
+    -fx-font-weight: 600;
+    -fx-text-fill: #4b5563;
+}
+
+.med-notes-combo {
+    -fx-background-radius: 10;
+    -fx-padding: 4 10 4 10;
+}
+
+.med-notes-htmleditor {
+    -fx-min-height: 260;
+    -fx-pref-height: 300;
+    -fx-border-color: rgba(0, 0, 0, 0.12);
+    -fx-border-radius: 10;
+    -fx-background-radius: 10;
+}
+
+.med-notes-textarea {
+    -fx-background-radius: 10;
+    -fx-border-radius: 10;
+    -fx-padding: 10 12 10 12;
+    -fx-font-size: 13px;
+    -fx-pref-height: 120;
+    -fx-min-height: 96;
+}
+
+.med-notes-placeholder {
+    -fx-font-size: 14px;
+    -fx-text-fill: #6b7280;
+    -fx-wrap-text: true;
+    -fx-padding: 8 0 0 0;
+}
+
+.med-notes-section-title {
+    -fx-font-size: 17px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #2f3138;
+}
+
+.med-notes-filter-row {
+    -fx-padding: 4 0 10 0;
+    -fx-spacing: 10;
+    -fx-alignment: center-left;
+}
+
+.med-notes-search-field {
+    -fx-background-radius: 10;
+    -fx-border-radius: 10;
+    -fx-border-color: rgba(148, 163, 184, 0.45);
+    -fx-padding: 8 12 8 12;
+    -fx-font-size: 13px;
+}
+
+.med-notes-datepicker {
+    -fx-background-radius: 10;
+}
+
+.med-notes-btn-export {
+    -fx-background-color: #e74c3c;
+    -fx-text-fill: #ffffff;
+    -fx-font-weight: 600;
+    -fx-padding: 10 16 10 16;
+    -fx-background-radius: 10;
+    -fx-cursor: hand;
+}
+
+.med-notes-btn-export:hover {
+    -fx-background-color: #c0392b;
+}
+
+.button.med-notes-btn-clear {
+    -fx-background-color: transparent;
+    -fx-text-fill: #b91c1c;
+    -fx-font-weight: 600;
+    -fx-padding: 10 14 10 14;
+    -fx-border-color: rgba(185, 28, 28, 0.45);
+    -fx-border-width: 1;
+    -fx-border-radius: 10;
+    -fx-background-radius: 10;
+    -fx-cursor: hand;
+}
+
+.button.med-notes-btn-clear:hover {
+    -fx-background-color: rgba(185, 28, 28, 0.08);
+}
+
+.med-notes-table {
+    -fx-background-radius: 10;
+    -fx-border-color: rgba(0, 0, 0, 0.08);
+    -fx-border-radius: 10;
+    -fx-border-width: 1;
+}
+
+.med-notes-table .column-header-background {
+    -fx-background-color: #f5f0e8;
+}
+
+.med-notes-table .column-header .label {
+    -fx-font-weight: 700;
+    -fx-text-fill: #4b5563;
+    -fx-font-size: 12px;
+}
+
+.med-notes-table .table-cell {
+    -fx-wrap-text: true;
+    -fx-font-size: 13px;
+}
+
+.med-notes-contenu-cell {
+    -fx-font-size: 13px;
+    -fx-text-fill: #374151;
+}
+
+.med-notes-table .table-row-cell:empty {
+    -fx-background-color: transparent;
+}
+
+.med-notes-table .placeholder .label {
+    -fx-text-fill: #9ca3af;
+    -fx-font-size: 14px;
+}
+
+.med-notes-mini-btn {
+    -fx-background-color: rgba(52, 152, 219, 0.15);
+    -fx-text-fill: #1e5a8a;
+    -fx-font-size: 11px;
+    -fx-font-weight: 600;
+    -fx-padding: 4 10 4 10;
+    -fx-background-radius: 8;
+    -fx-border-width: 0;
+    -fx-cursor: hand;
+}
+
+.med-notes-mini-btn:hover {
+    -fx-background-color: rgba(52, 152, 219, 0.28);
+}
+
+.button.med-notes-mini-btn-danger {
+    -fx-text-fill: #b91c1c;
+    -fx-background-color: rgba(239, 68, 68, 0.12);
+}
+
+.button.med-notes-mini-btn-danger:hover {
+    -fx-background-color: rgba(239, 68, 68, 0.22);
+}
+
+/* ---------- Page Rendez-vous médecin ---------- */
+
+.med-rdv-wrap {
+    -fx-padding: 24 28 40 28;
+    -fx-spacing: 20;
+    -fx-max-width: 1280;
+}
+
+.med-rdv-banner {
+    -fx-background-color: rgba(52, 152, 219, 0.14);
+    -fx-background-radius: 14;
+    -fx-border-color: rgba(52, 152, 219, 0.28);
+    -fx-border-radius: 14;
+    -fx-border-width: 1;
+    -fx-padding: 20 22 20 22;
+    -fx-alignment: center-left;
+}
+
+.med-rdv-banner-emoji {
+    -fx-font-size: 36px;
+}
+
+.med-rdv-banner-title {
+    -fx-font-size: 24px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #1e3a5f;
+}
+
+.med-rdv-banner-sub {
+    -fx-font-size: 14px;
+    -fx-text-fill: #4b5563;
+}
+
+.med-rdv-banner-statbox {
+    -fx-background-color: rgba(255, 255, 255, 0.92);
+    -fx-background-radius: 12;
+    -fx-padding: 14 22 14 22;
+    -fx-border-color: rgba(255, 255, 255, 0.85);
+    -fx-border-radius: 12;
+    -fx-border-width: 1;
+}
+
+.med-rdv-banner-count {
+    -fx-font-size: 32px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #2f3138;
+}
+
+.med-rdv-banner-stat-label {
+    -fx-font-size: 12px;
+    -fx-text-fill: #6b7280;
+}
+
+/* Ligne KPI RDV : réutilise .med-stat-card (même rendu que l’accueil médecin) */
+.med-rdv-stats-row {
+    -fx-padding: 2 0 4 0;
+}
+
+.med-rdv-toolbar {
+    -fx-spacing: 14;
+    -fx-alignment: center-left;
+}
+
+.med-rdv-toolbar-actions {
+    -fx-alignment: center-right;
+    -fx-padding: 4 0 0 0;
+}
+
+.med-rdv-toolbar-icon {
+    -fx-font-size: 16px;
+    -fx-opacity: 0.75;
+}
+
+.med-rdv-toolbar-search-wrap {
+    -fx-alignment: center-left;
+}
+
+.text-field.med-rdv-toolbar-search {
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 999;
+    -fx-border-radius: 999;
+    -fx-border-color: rgba(148, 163, 184, 0.4);
+    -fx-border-width: 1;
+    -fx-padding: 9 16 9 16;
+    -fx-prompt-text-fill: #94a3b8;
+    -fx-text-fill: #0f172a;
+    -fx-effect: dropshadow(gaussian, rgba(15, 23, 42, 0.05), 6, 0.25, 0, 1);
+}
+
+.text-field.med-rdv-toolbar-search:hover {
+    -fx-border-color: rgba(99, 102, 241, 0.35);
+}
+
+.text-field.med-rdv-toolbar-search:focused {
+    -fx-border-color: #6366f1;
+    -fx-effect: dropshadow(gaussian, rgba(99, 102, 241, 0.22), 10, 0.3, 0, 0);
+}
+
+/* Tri RDV : plat — Modena peint le dégradé sur .list-cell / flèche ; tout forcer ici */
+.combo-box-base.med-rdv-sort-combo,
+.combo-box.med-rdv-sort-combo {
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+    -fx-background-radius: 12;
+    -fx-border-color: rgba(148, 163, 184, 0.45);
+    -fx-border-radius: 12;
+    -fx-border-width: 1;
+    -fx-padding: 0;
+    -fx-effect: dropshadow(gaussian, rgba(15, 23, 42, 0.06), 8, 0.2, 0, 1);
+}
+
+.combo-box-base.med-rdv-sort-combo:hover,
+.combo-box.med-rdv-sort-combo:hover {
+    -fx-border-color: rgba(99, 102, 241, 0.4);
+}
+
+.combo-box-base.med-rdv-sort-combo:focused,
+.combo-box.med-rdv-sort-combo:focused {
+    -fx-border-color: #6366f1;
+    -fx-effect: dropshadow(gaussian, rgba(99, 102, 241, 0.2), 10, 0.28, 0, 0);
+}
+
+/* Zone texte : une seule couche (annule les 4 calques -fx-body-color Modena) */
+.combo-box-base.med-rdv-sort-combo > .list-cell,
+.combo-box.med-rdv-sort-combo > .list-cell {
+    -fx-background-color: #ffffff;
+    -fx-background-insets: 0;
+    -fx-background-radius: 11 0 0 11;
+    -fx-text-fill: #0f172a;
+    -fx-padding: 8 4 8 12;
+}
+
+.combo-box-base.med-rdv-sort-combo:hover > .list-cell,
+.combo-box.med-rdv-sort-combo:hover > .list-cell {
+    -fx-background-color: #f8fafc;
+}
+
+.combo-box-base.med-rdv-sort-combo:focused > .list-cell,
+.combo-box.med-rdv-sort-combo:focused > .list-cell,
+.combo-box-base.med-rdv-sort-combo:showing > .list-cell,
+.combo-box.med-rdv-sort-combo:showing > .list-cell {
+    -fx-background-color: #ffffff;
+}
+
+.combo-box-base.med-rdv-sort-combo > .list-cell:filled:selected,
+.combo-box.med-rdv-sort-combo > .list-cell:filled:selected {
+    -fx-background-color: #ffffff;
+    -fx-text-fill: #0f172a;
+}
+
+.combo-box-base.med-rdv-sort-combo > .arrow-button,
+.combo-box.med-rdv-sort-combo > .arrow-button {
+    -fx-background-color: #ffffff;
+    -fx-background-insets: 0;
+    -fx-background-radius: 0 11 11 0;
+    -fx-padding: 0 10 0 4;
+}
+
+.combo-box-base.med-rdv-sort-combo:hover > .arrow-button,
+.combo-box.med-rdv-sort-combo:hover > .arrow-button {
+    -fx-background-color: #f1f5f9;
+}
+
+.combo-box-base.med-rdv-sort-combo:focused > .arrow-button,
+.combo-box.med-rdv-sort-combo:focused > .arrow-button {
+    -fx-background-color: #ffffff;
+}
+
+.combo-box-base.med-rdv-sort-combo > .arrow-button:hover,
+.combo-box.med-rdv-sort-combo > .arrow-button:hover {
+    -fx-background-color: rgba(99, 102, 241, 0.1);
+}
+
+.combo-box-base.med-rdv-sort-combo > .arrow-button .arrow,
+.combo-box.med-rdv-sort-combo > .arrow-button .arrow {
+    -fx-background-color: #475569;
+}
+
+.med-rdv-filter-combo {
+    -fx-background-radius: 12;
+}
+
+.med-rdv-sort-combo {
+    -fx-background-radius: 12;
+}
+
+.med-rdv-list-host {
+    -fx-min-height: 320;
+}
+
+/* Kanban 3 colonnes */
+.med-rdv-kanban-row {
+    -fx-spacing: 14;
+}
+
+.med-rdv-kanban-col {
+    -fx-background-radius: 14;
+    -fx-border-radius: 14;
+    -fx-border-width: 1;
+    -fx-padding: 0;
+    -fx-spacing: 0;
+    -fx-effect: dropshadow(gaussian, rgba(15, 23, 42, 0.07), 18, 0.2, 0, 4);
+}
+
+.med-rdv-kanban-col-ok {
+    -fx-background-color: #e8f5f0;
+    -fx-border-color: rgba(21, 93, 72, 0.18);
+}
+
+.med-rdv-kanban-col-wait {
+    -fx-background-color: #fdf6e3;
+    -fx-border-color: rgba(212, 160, 23, 0.28);
+}
+
+.med-rdv-kanban-col-cancel {
+    -fx-background-color: #fceeee;
+    -fx-border-color: rgba(107, 15, 18, 0.22);
+}
+
+/*
+ * Titres colonnes RDV : .label + classes thème pour battre l’héritage éventuel (texte blanc).
+ * Bandeaux en dégradé léger + texte foncé très lisible sur fond lavande.
+ */
+.label.med-rdv-kanban-head {
+    -fx-font-size: 12px;
+    -fx-font-weight: 800;
+    -fx-padding: 14 16 14 16;
+    -fx-background-radius: 14 14 0 0;
+    -fx-background-insets: 0;
+    -fx-border-width: 0 0 3 0;
+    -fx-alignment: center-left;
+    -fx-max-width: infinity;
+    -fx-min-height: 48;
+    -fx-wrap-text: true;
+    -fx-text-overrun: clip;
+    -fx-letter-spacing: 0.04em;
+}
+
+.label.med-rdv-kanban-head.med-rdv-kanban-head-ok {
+    -fx-background-color: linear-gradient(to right, #6ee7b7 0%, #a7f3d0 35%, #d1fae5 100%);
+    -fx-text-fill: #047857;
+    -fx-border-color: #059669;
+    -fx-effect: dropshadow(gaussian, rgba(5, 150, 105, 0.2), 10, 0.2, 0, 2);
+}
+
+.label.med-rdv-kanban-head.med-rdv-kanban-head-wait {
+    -fx-background-color: linear-gradient(to right, #fcd34d 0%, #fde68a 40%, #fef3c7 100%);
+    -fx-text-fill: #c2410c;
+    -fx-border-color: #d97706;
+    -fx-effect: dropshadow(gaussian, rgba(217, 119, 6, 0.22), 10, 0.2, 0, 2);
+}
+
+.label.med-rdv-kanban-head.med-rdv-kanban-head-cancel {
+    -fx-background-color: linear-gradient(to right, #fda4af 0%, #fecdd3 38%, #ffe4e6 100%);
+    -fx-text-fill: #be123c;
+    -fx-border-color: #e11d48;
+    -fx-effect: dropshadow(gaussian, rgba(225, 29, 72, 0.2), 10, 0.2, 0, 2);
+}
+
+/* Marge : le fond teinté de la colonne reste visible sur les côtés, la zone centrale est bien blanche */
+.med-rdv-kanban-scroll {
+    -fx-background-color: transparent;
+    -fx-padding: 0 10 12 10;
+}
+
+.med-rdv-kanban-scroll .viewport {
+    -fx-background-color: #ffffff;
+}
+
+.med-rdv-kanban-col-ok .med-rdv-kanban-scroll .viewport,
+.med-rdv-kanban-col-wait .med-rdv-kanban-scroll .viewport,
+.med-rdv-kanban-col-cancel .med-rdv-kanban-scroll .viewport {
+    -fx-background-color: #ffffff;
+}
+
+.med-rdv-kanban-scroll-inner {
+    -fx-padding: 18 14 22 14;
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 0 0 12 12;
+    -fx-border-color: rgba(15, 23, 42, 0.1);
+    -fx-border-width: 0 1 1 1;
+    -fx-border-radius: 0 0 12 12;
+    -fx-effect: dropshadow(gaussian, rgba(15, 23, 42, 0.08), 14, 0.2, 0, 2);
+}
+
+.med-rdv-kanban-empty {
+    -fx-font-size: 14px;
+    -fx-font-weight: 600;
+    -fx-text-fill: #334155;
+    -fx-padding: 28 16 36 16;
+    -fx-wrap-text: true;
+    -fx-text-alignment: center;
+    -fx-alignment: center;
+    -fx-max-width: infinity;
+}
+
+.med-rdv-kanban-card {
+    -fx-background-radius: 12;
+    -fx-border-radius: 12;
+    -fx-border-width: 2;
+    -fx-padding: 14 14 12 14;
+    -fx-spacing: 10;
+    /* Ombre plus marquée pour détacher la carte du fond de colonne */
+    -fx-effect: dropshadow(gaussian, rgba(15, 23, 42, 0.14), 20, 0.25, 0, 4);
+}
+
+/* Fonds légèrement teintés : le bloc carte se lit clairement sur la zone scroll */
+.med-rdv-kanban-card-ok {
+    -fx-background-color: #f0faf6;
+    -fx-border-color: rgba(21, 93, 72, 0.42);
+}
+
+.med-rdv-kanban-card-wait {
+    -fx-background-color: #fff9ec;
+    -fx-border-color: rgba(212, 160, 23, 0.5);
+}
+
+.med-rdv-kanban-card-cancel {
+    -fx-background-color: #fff5f5;
+    -fx-border-color: rgba(107, 15, 18, 0.45);
+}
+
+.med-rdv-kanban-card-patient-row {
+    -fx-spacing: 10;
+    -fx-alignment: center-left;
+}
+
+.med-rdv-kanban-caption {
+    -fx-font-size: 10px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #94a3b8;
+    -fx-letter-spacing: 0.04em;
+}
+
+.med-rdv-kanban-patient-name {
+    -fx-font-size: 15px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #1e293b;
+}
+
+.med-rdv-kanban-value {
+    -fx-font-size: 13px;
+    -fx-text-fill: #334155;
+    -fx-wrap-text: true;
+}
+
+.med-rdv-kanban-actions {
+    -fx-spacing: 6;
+    -fx-alignment: center-left;
+    -fx-padding: 4 0 0 0;
+}
+
+.button.med-rdv-kanban-icon-btn {
+    -fx-min-width: 36;
+    -fx-min-height: 36;
+    -fx-max-width: 36;
+    -fx-max-height: 36;
+    -fx-padding: 0;
+    -fx-background-radius: 9;
+    -fx-border-radius: 9;
+    -fx-border-width: 1;
+    -fx-border-color: #dce4ef;
+    -fx-background-color: #f0f4fa;
+    -fx-font-size: 15px;
+    -fx-text-fill: #64748b;
+    -fx-cursor: hand;
+}
+
+.button.med-rdv-kanban-icon-btn:hover {
+    -fx-background-color: #e6edf7;
+    -fx-border-color: #cdd8e8;
+}
+
+.button.med-rdv-kanban-icon-btn:disabled {
+    -fx-opacity: 0.42;
+    -fx-cursor: default;
+}
+
+/* Actions secondaires : ton gris (modifier ✎) */
+.button.med-rdv-kanban-icon-btn.med-rdv-kanban-icon-muted {
+    -fx-text-fill: #7c8798;
+}
+
+/* Voir note : vert / teal */
+.button.med-rdv-kanban-icon-btn.med-rdv-kanban-icon-view {
+    -fx-background-color: #d1fae5;
+    -fx-border-color: rgba(5, 150, 105, 0.45);
+    -fx-text-fill: #047857;
+}
+
+.button.med-rdv-kanban-icon-btn.med-rdv-kanban-icon-view:hover {
+    -fx-background-color: #a7f3d0;
+    -fx-border-color: #059669;
+    -fx-text-fill: #065f46;
+}
+
+.button.med-rdv-kanban-icon-btn.med-rdv-kanban-icon-view:disabled {
+    -fx-background-color: #ecfdf5;
+    -fx-border-color: rgba(5, 150, 105, 0.2);
+    -fx-text-fill: #6ee7b7;
+}
+
+.button.med-rdv-kanban-icon-btn.med-rdv-kanban-icon-view .med-rdv-voir-icon {
+    -fx-text-fill: #047857;
+}
+
+.button.med-rdv-kanban-icon-btn.med-rdv-kanban-icon-view:hover .med-rdv-voir-icon {
+    -fx-text-fill: #065f46;
+}
+
+.button.med-rdv-kanban-icon-btn.med-rdv-kanban-icon-view:disabled .med-rdv-voir-icon {
+    -fx-text-fill: #9ca3af;
+}
+
+/* Supprimer : rouge */
+.button.med-rdv-kanban-icon-btn.med-rdv-kanban-icon-danger {
+    -fx-background-color: #fee2e2;
+    -fx-border-color: rgba(220, 38, 38, 0.45);
+    -fx-text-fill: #b91c1c;
+}
+
+.button.med-rdv-kanban-icon-btn.med-rdv-kanban-icon-danger:hover {
+    -fx-background-color: #fecaca;
+    -fx-border-color: #dc2626;
+    -fx-text-fill: #991b1b;
+}
+
+.med-rdv-empty {
+    -fx-padding: 48 24 48 24;
+}
+
+.med-rdv-empty-icon {
+    -fx-font-size: 56px;
+    -fx-opacity: 0.35;
+}
+
+.med-rdv-empty-title {
+    -fx-font-size: 18px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #4b5563;
+}
+
+.med-rdv-empty-sub {
+    -fx-font-size: 14px;
+    -fx-text-fill: #9ca3af;
+    -fx-text-alignment: center;
+    -fx-max-width: 400;
+}
+
+.med-rdv-list-inner {
+    -fx-padding: 4 0 12 0;
+}
+
+.med-rdv-item-card {
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 12;
+    -fx-padding: 16 18 16 18;
+    -fx-spacing: 8;
+    -fx-border-color: rgba(0, 0, 0, 0.07);
+    -fx-border-radius: 12;
+    -fx-border-width: 1;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.05), 10, 0, 0, 2);
+}
+
+.med-rdv-item-patient {
+    -fx-font-size: 15px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #2f3138;
+}
+
+.med-rdv-item-date {
+    -fx-font-size: 13px;
+    -fx-text-fill: #3498db;
+    -fx-font-weight: 600;
+}
+
+.med-rdv-item-motif {
+    -fx-font-size: 13px;
+    -fx-text-fill: #6b7280;
+}
+
+.med-rdv-badge {
+    -fx-padding: 4 10 4 10;
+    -fx-background-radius: 999;
+    -fx-font-size: 11px;
+    -fx-font-weight: 700;
+}
+
+/* Pastilles statut (alignées maquette : fond plein + texte blanc pour confirmé / annulé) */
+.med-rdv-badge-ok {
+    -fx-background-color: #155d48;
+    -fx-text-fill: #ffffff;
+}
+
+.med-rdv-badge-wait {
+    -fx-background-color: rgba(212, 160, 23, 0.35);
+    -fx-text-fill: #7c5a0a;
+}
+
+.med-rdv-badge-cancel {
+    -fx-background-color: #6b0f12;
+    -fx-text-fill: #ffffff;
+}
+
+.med-rdv-badge-pending {
+    -fx-background-color: #d4a017;
+    -fx-text-fill: #ffffff;
+}
+
+.med-rdv-badge-confirmed {
+    -fx-background-color: #155d48;
+    -fx-text-fill: #ffffff;
+}
+
+.med-rdv-badge-attente {
+    -fx-background-color: #d4a017;
+    -fx-text-fill: #ffffff;
+}
+
+/* Sections statut (liste RDV) */
+.med-rdv-section {
+    -fx-spacing: 0;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.07), 16, 0, 0, 2);
+}
+
+.med-rdv-section-head {
+    -fx-padding: 14 16 12 16;
+    -fx-alignment: center-left;
+    -fx-background-radius: 12 12 0 0;
+}
+
+.med-rdv-section-theme-ok .med-rdv-section-head {
+    -fx-background-color: #ecfdf5;
+}
+
+.med-rdv-section-theme-wait .med-rdv-section-head {
+    -fx-background-color: #fffbeb;
+}
+
+.med-rdv-section-theme-cancel .med-rdv-section-head {
+    -fx-background-color: #fef2f2;
+}
+
+.med-rdv-section-pill-ok {
+    -fx-background-color: #10b981;
+    -fx-background-radius: 4;
+}
+
+.med-rdv-section-pill-wait {
+    -fx-background-color: #f59e0b;
+    -fx-background-radius: 4;
+}
+
+.med-rdv-section-pill-cancel {
+    -fx-background-color: #ef4444;
+    -fx-background-radius: 4;
+}
+
+.med-rdv-section-title {
+    -fx-font-size: 15px;
+    -fx-font-weight: 800;
+}
+
+.med-rdv-section-theme-ok .med-rdv-section-title {
+    -fx-text-fill: #065f46;
+}
+
+.med-rdv-section-theme-wait .med-rdv-section-title {
+    -fx-text-fill: #92400e;
+}
+
+.med-rdv-section-theme-cancel .med-rdv-section-title {
+    -fx-text-fill: #991b1b;
+}
+
+.med-rdv-section-body {
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 0 0 14 14;
+    -fx-border-color: rgba(0, 0, 0, 0.06);
+    -fx-border-radius: 0 0 14 14;
+    -fx-border-width: 0 1 1 1;
+    -fx-padding: 0 0 16 0;
+}
+
+.med-rdv-section-theme-ok .med-rdv-section-body {
+    -fx-border-color: rgba(16, 185, 129, 0.2);
+}
+
+.med-rdv-section-theme-wait .med-rdv-section-body {
+    -fx-border-color: rgba(245, 158, 11, 0.25);
+}
+
+.med-rdv-section-theme-cancel .med-rdv-section-body {
+    -fx-border-color: rgba(239, 68, 68, 0.22);
+}
+
+.med-rdv-section-empty {
+    -fx-font-size: 14px;
+    -fx-text-fill: #9ca3af;
+    -fx-padding: 28 22 12 22;
+}
+
+.med-rdv-voir-icon {
+    -fx-font-size: 16px;
+    -fx-padding: 0;
+}
+
+.med-rdv-avatar-initials {
+    -fx-background-color: #bfdbfe;
+    -fx-text-fill: #1e40af;
+    -fx-font-size: 13px;
+    -fx-font-weight: 800;
+    -fx-background-radius: 999;
+}
+
+.med-rdv-btn-sms {
+    -fx-background-color: #10b981;
+    -fx-text-fill: #ffffff;
+    -fx-font-size: 12px;
+    -fx-font-weight: 700;
+    -fx-background-radius: 8;
+    -fx-padding: 8 14 8 14;
+    -fx-cursor: hand;
+}
+
+.med-rdv-btn-sms:hover {
+    -fx-background-color: #059669;
+}
+
+.med-rdv-icon-btn {
+    -fx-background-radius: 8;
+    -fx-padding: 0 0 0 0;
+    -fx-font-size: 14px;
+    -fx-cursor: hand;
+    -fx-min-width: 36;
+    -fx-min-height: 36;
+    -fx-pref-width: 36;
+    -fx-pref-height: 36;
+}
+
+.med-rdv-icon-btn-edit {
+    -fx-background-color: #dbeafe;
+    -fx-text-fill: #1d4ed8;
+    -fx-border-color: transparent;
+}
+
+.med-rdv-icon-btn-edit:hover {
+    -fx-background-color: #bfdbfe;
+}
+
+.med-rdv-icon-btn-del {
+    -fx-background-color: #fee2e2;
+    -fx-text-fill: #b91c1c;
+    -fx-border-color: transparent;
+}
+
+.med-rdv-icon-btn-del:hover {
+    -fx-background-color: #fecaca;
+}
+
+/* Modifier rendez-vous (dialogue) */
+.dialog-pane.med-rdv-edit-dialog-pane {
+    -fx-background-color: #f0ebe4;
+    -fx-padding: 0;
+}
+
+.med-rdv-edit-scroll {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+    -fx-border-width: 0;
+}
+
+.med-rdv-edit-scroll .viewport {
+    -fx-background-color: #f0ebe4;
+}
+
+.med-rdv-edit-root {
+    -fx-padding: 8 8 20 8;
+    -fx-spacing: 18;
+    -fx-background-color: #f0ebe4;
+}
+
+.med-rdv-edit-back {
+    -fx-background-color: transparent;
+    -fx-border-width: 0;
+    -fx-text-fill: #4b5563;
+    -fx-font-size: 13px;
+    -fx-font-weight: 600;
+    -fx-padding: 4 0 4 0;
+    -fx-cursor: hand;
+}
+
+.med-rdv-edit-back:hover {
+    -fx-text-fill: #111827;
+}
+
+.med-rdv-edit-page-title {
+    -fx-font-size: 22px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #374151;
+}
+
+.med-rdv-edit-card {
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 12;
+    -fx-border-color: rgba(0, 0, 0, 0.06);
+    -fx-border-radius: 12;
+    -fx-border-width: 1;
+    -fx-padding: 22 24 22 24;
+    -fx-spacing: 14;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.08), 14, 0, 0, 2);
+}
+
+.med-rdv-edit-section-title {
+    -fx-font-size: 15px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #1f2937;
+}
+
+.med-rdv-edit-data-grid {
+    -fx-padding: 4 0 0 0;
+}
+
+.med-rdv-edit-field-label {
+    -fx-font-size: 12px;
+    -fx-text-fill: #9ca3af;
+    -fx-font-weight: 600;
+}
+
+.med-rdv-edit-field-value {
+    -fx-font-size: 14px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #111827;
+}
+
+.med-rdv-edit-required {
+    -fx-text-fill: #dc2626;
+    -fx-font-weight: 700;
+}
+
+.med-rdv-edit-sep {
+    -fx-padding: 4 0 4 0;
+}
+
+.med-rdv-edit-status-combo {
+    -fx-background-radius: 8;
+    -fx-border-radius: 8;
+    -fx-pref-height: 40;
+}
+
+.med-rdv-edit-motif {
+    -fx-background-radius: 8;
+    -fx-border-radius: 8;
+    -fx-font-size: 13px;
+}
+
+.med-rdv-edit-footer {
+    -fx-padding: 4 0 0 0;
+}
+
+.med-rdv-edit-btn {
+    -fx-background-radius: 8;
+    -fx-border-radius: 8;
+    -fx-padding: 10 22 10 22;
+    -fx-font-size: 14px;
+    -fx-font-weight: 600;
+    -fx-cursor: hand;
+}
+
+.med-rdv-edit-btn-save {
+    -fx-background-color: #7eb8e8;
+    -fx-text-fill: #ffffff;
+    -fx-border-width: 0;
+}
+
+.med-rdv-edit-btn-save:hover {
+    -fx-background-color: #6aa8dc;
+}
+
+.med-rdv-edit-btn-cancel {
+    -fx-background-color: #ffffff;
+    -fx-text-fill: #374151;
+    -fx-border-color: #d1d5db;
+    -fx-border-width: 1;
+}
+
+.med-rdv-edit-btn-cancel:hover {
+    -fx-background-color: #f9fafb;
+}
+
+/* ---------- Page Notifications médecin ---------- */
+
+.med-notif-wrap {
+    -fx-padding: 24 28 40 28;
+    -fx-spacing: 20;
+    -fx-max-width: 1100;
+}
+
+.med-notif-banner {
+    -fx-background-color: rgba(52, 152, 219, 0.14);
+    -fx-background-radius: 14;
+    -fx-border-color: rgba(52, 152, 219, 0.28);
+    -fx-border-radius: 14;
+    -fx-border-width: 1;
+    -fx-padding: 20 22 20 22;
+}
+
+.med-notif-banner-title {
+    -fx-font-size: 24px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #1e3a5f;
+}
+
+.med-notif-banner-sub {
+    -fx-font-size: 14px;
+    -fx-text-fill: #4b5563;
+}
+
+.med-notif-banner-statbox {
+    -fx-background-color: rgba(255, 255, 255, 0.92);
+    -fx-background-radius: 12;
+    -fx-padding: 14 22 14 22;
+    -fx-border-color: rgba(255, 255, 255, 0.85);
+    -fx-border-radius: 12;
+    -fx-border-width: 1;
+}
+
+.med-notif-banner-count {
+    -fx-font-size: 32px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #2f3138;
+}
+
+.med-notif-banner-stat-label {
+    -fx-font-size: 12px;
+    -fx-text-fill: #6b7280;
+}
+
+/* KPI notifications : réutilise .med-stat-card (même rendu que tableau de bord / RDV) */
+.med-notif-stats-row {
+    -fx-padding: 2 0 4 0;
+}
+
+.med-notif-history-card {
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 14;
+    -fx-border-color: rgba(0, 0, 0, 0.07);
+    -fx-border-radius: 14;
+    -fx-border-width: 1;
+    -fx-padding: 20 22 22 22;
+    -fx-spacing: 12;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.05), 12, 0, 0, 2);
+}
+
+.med-notif-history-header {
+    -fx-padding: 0 0 2 0;
+}
+
+.med-notif-history-title {
+    -fx-font-size: 17px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #2f3138;
+}
+
+.med-notif-history-count {
+    -fx-font-size: 13px;
+    -fx-text-fill: #6b7280;
+}
+
+.med-notif-sep {
+    -fx-padding: 2 0 4 0;
+}
+
+.med-notif-history-body {
+    -fx-alignment: center;
+}
+
+.med-notif-empty {
+    -fx-font-size: 14px;
+    -fx-text-fill: #9ca3af;
+}
+
+.med-notif-demand-card {
+    -fx-background-color: linear-gradient(to bottom, rgba(254, 226, 226, 0.95) 0%, rgba(255, 247, 247, 0.98) 100%);
+    -fx-background-radius: 12;
+    -fx-border-color: rgba(220, 38, 38, 0.45);
+    -fx-border-radius: 12;
+    -fx-border-width: 2;
+    -fx-padding: 16 18 16 18;
+    -fx-spacing: 10;
+}
+
+.med-notif-demand-card-unread {
+    -fx-border-color: #dc2626;
+    -fx-border-width: 2;
+    -fx-effect: dropshadow(gaussian, rgba(220, 38, 38, 0.35), 10, 0.2, 0, 2);
+}
+
+.med-notif-demand-card-read {
+    -fx-background-color: linear-gradient(to bottom, rgba(243, 244, 246, 0.95) 0%, rgba(249, 250, 251, 0.98) 100%);
+    -fx-border-color: rgba(156, 163, 175, 0.55);
+    -fx-opacity: 0.92;
+}
+
+.med-notif-demand-title {
+    -fx-font-size: 15px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #991b1b;
+}
+
+.med-notif-demand-body {
+    -fx-font-size: 13px;
+    -fx-text-fill: #4b5563;
+}
+
+.button.med-notif-btn-accept {
+    -fx-padding: 8 16 8 16;
+}
+
+.button.med-notif-btn-refuse {
+    -fx-background-color: transparent;
+    -fx-text-fill: #991b1b;
+    -fx-border-color: rgba(153, 27, 27, 0.5);
+    -fx-border-width: 1;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-padding: 8 16 8 16;
+    -fx-cursor: hand;
+}
+
+.button.med-notif-btn-refuse:hover {
+    -fx-background-color: rgba(153, 27, 27, 0.08);
+}
+
+.med-notif-list-inner {
+    -fx-padding: 4 0 8 0;
+}
+
+.med-notif-item {
+    -fx-background-color: #fafafa;
+    -fx-background-radius: 10;
+    -fx-padding: 12 14 12 14;
+    -fx-border-color: rgba(0, 0, 0, 0.06);
+    -fx-border-radius: 10;
+    -fx-border-width: 1;
+    -fx-spacing: 4;
+}
+
+.med-notif-item-title {
+    -fx-font-size: 14px;
+    -fx-font-weight: 600;
+    -fx-text-fill: #2f3138;
+}
+
+.med-notif-item-meta {
+    -fx-font-size: 12px;
+    -fx-text-fill: #6b7280;
+}
+
+.med-notif-item-body {
+    -fx-font-size: 13px;
+    -fx-text-fill: #4b5563;
+    -fx-wrap-text: true;
+}
+
+.med-notif-section-title {
+    -fx-font-size: 15px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #1f2937;
+    -fx-padding: 12 0 4 0;
+}
+
+.med-notif-section-empty {
+    -fx-font-size: 13px;
+    -fx-text-fill: #6b7280;
+    -fx-padding: 0 0 8 0;
+}
+
+.med-notif-history-card {
+    -fx-background-color: linear-gradient(to bottom, rgba(243, 244, 246, 0.98) 0%, rgba(249, 250, 251, 0.99) 100%);
+    -fx-border-color: rgba(107, 114, 128, 0.35);
+    -fx-border-radius: 12;
+    -fx-background-radius: 12;
+    -fx-border-width: 1;
+    -fx-padding: 14 16 14 16;
+}
+
+.med-notif-history-title-ok {
+    -fx-font-size: 14px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #166534;
+}
+
+.med-notif-history-title-ko {
+    -fx-font-size: 14px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #991b1b;
+}
+
+.med-notif-history-hint {
+    -fx-font-size: 11px;
+    -fx-text-fill: #9ca3af;
+    -fx-font-style: italic;
+}
+
+/* — Détail note (dialogue Voir) — */
+.dialog-pane.med-note-detail-pane {
+    -fx-background-color: #f0ebe3;
+    -fx-padding: 0;
+}
+
+.dialog-pane.med-note-detail-pane > .content.label,
+.dialog-pane.med-note-detail-pane > *.label {
+    -fx-padding: 0;
+}
+
+.med-note-detail-root {
+    -fx-spacing: 0;
+    -fx-background-color: #faf7f2;
+    -fx-background-radius: 12;
+    -fx-border-color: rgba(180, 170, 155, 0.45);
+    -fx-border-radius: 12;
+    -fx-border-width: 1;
+    -fx-padding: 0;
+}
+
+.med-note-detail-header {
+    -fx-background-color: #e8e2d6;
+    -fx-padding: 20 22 16 22;
+    -fx-border-color: rgba(180, 170, 155, 0.35);
+    -fx-border-width: 0 0 1 0;
+    -fx-background-radius: 12 12 0 0;
+}
+
+.med-note-detail-title {
+    -fx-font-size: 22px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #2c3a4a;
+}
+
+.med-note-detail-meta {
+    -fx-font-size: 13px;
+    -fx-text-fill: #6b7280;
+}
+
+.med-note-detail-body-host {
+    -fx-background-color: #ffffff;
+}
+
+.med-note-detail-body-scroll {
+    -fx-background-color: #ffffff;
+    -fx-padding: 0;
+    -fx-border-width: 0;
+}
+
+.med-note-detail-body-scroll .viewport {
+    -fx-background-color: #ffffff;
+}
+
+.med-note-detail-body-inner {
+    -fx-padding: 18 22 18 22;
+    -fx-background-color: #ffffff;
+}
+
+.med-note-detail-body-text {
+    -fx-font-size: 14px;
+    -fx-text-fill: #374151;
+}
+
+.text-area.med-note-detail-plain-read {
+    -fx-control-inner-background: #ffffff;
+    -fx-background-color: #ffffff;
+    -fx-text-fill: #1f2937;
+    -fx-font-size: 14px;
+}
+
+.text-area.med-note-detail-plain-read .content {
+    -fx-cursor: default;
+}
+
+.text-area.med-note-detail-plain-edit {
+    -fx-control-inner-background: #ffffff;
+    -fx-text-fill: #1f2937;
+    -fx-font-size: 14px;
+}
+
+.med-note-detail-actions {
+    -fx-padding: 14 18 18 18;
+    -fx-background-color: #faf7f2;
+    -fx-background-radius: 0 0 12 12;
+}
+
+.med-note-detail-btn {
+    -fx-background-radius: 8;
+    -fx-border-radius: 8;
+    -fx-padding: 10 18 10 18;
+    -fx-font-size: 13px;
+    -fx-font-weight: 600;
+    -fx-cursor: hand;
+}
+
+.med-note-detail-btn-pdf {
+    -fx-background-color: #e11d48;
+    -fx-text-fill: #ffffff;
+    -fx-border-width: 0;
+}
+
+.med-note-detail-btn-pdf:hover {
+    -fx-background-color: #be123c;
+}
+
+.med-note-detail-btn-pdf .label {
+    -fx-text-fill: #ffffff;
+}
+
+.med-note-detail-pdf-glyph {
+    -fx-font-size: 10px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #ffffff;
+    -fx-padding: 2 5 2 5;
+    -fx-background-color: rgba(255, 255, 255, 0.25);
+    -fx-background-radius: 4;
+}
+
+.med-note-detail-btn-edit {
+    -fx-background-color: #7eb8e8;
+    -fx-text-fill: #ffffff;
+    -fx-border-width: 0;
+}
+
+.med-note-detail-btn-edit:hover {
+    -fx-background-color: #6aa8dc;
+}
+
+.med-note-detail-btn-save {
+    -fx-background-color: #059669;
+    -fx-text-fill: #ffffff;
+    -fx-border-width: 0;
+}
+
+.med-note-detail-btn-save:hover {
+    -fx-background-color: #047857;
+}
+
+.med-note-detail-btn-annul {
+    -fx-background-color: #ffffff;
+    -fx-text-fill: #4b5563;
+    -fx-border-color: #d1d5db;
+    -fx-border-width: 1;
+}
+
+.med-note-detail-btn-annul:hover {
+    -fx-background-color: #f3f4f6;
+}
+
+.med-note-detail-btn-back {
+    -fx-background-color: #ffffff;
+    -fx-text-fill: #374151;
+    -fx-border-color: #d1d5db;
+    -fx-border-width: 1;
+}
+
+.med-note-detail-btn-back:hover {
+    -fx-background-color: #f9fafb;
+}
+
+/* Titres kanban RDV : spécificité maximale (si un parent impose du blanc) */
+.med-rdv-wrap .label.med-rdv-kanban-head.med-rdv-kanban-head-ok {
+    -fx-text-fill: #047857;
+}
+
+.med-rdv-wrap .label.med-rdv-kanban-head.med-rdv-kanban-head-wait {
+    -fx-text-fill: #c2410c;
+}
+
+.med-rdv-wrap .label.med-rdv-kanban-head.med-rdv-kanban-head-cancel {
+    -fx-text-fill: #be123c;
+}
