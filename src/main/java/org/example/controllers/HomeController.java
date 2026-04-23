@@ -1,11 +1,9 @@
 package org.example.controllers;
 
-import javafx.animation.FadeTransition;
+import javafx.animation.Animation;
 import javafx.animation.Interpolator;
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
-import javafx.animation.ParallelTransition;
-import javafx.animation.PauseTransition;
 import javafx.animation.ScaleTransition;
 import javafx.animation.Timeline;
 import javafx.animation.TranslateTransition;
@@ -18,12 +16,16 @@ import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.CustomMenuItem;
 import javafx.scene.control.Hyperlink;
 import javafx.scene.control.Label;
+import javafx.scene.control.ContextMenu;
+import javafx.scene.control.MenuItem;
 import javafx.scene.control.ScrollPane;
-import javafx.scene.effect.GaussianBlur;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.geometry.Pos;
+import javafx.geometry.Side;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
@@ -35,16 +37,33 @@ import javafx.scene.shape.Rectangle;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
+import javafx.stage.Window;
 import javafx.util.Duration;
 import org.example.MainApp;
 import org.example.controllers.AdminMyProfileController;
 import org.example.models.Product;
+import org.example.models.Role;
+import org.example.models.User;
+import org.example.models.UserNotificationItem;
+import org.example.services.EventService;
 import org.example.services.ProductService;
+import org.example.services.UserNotificationService;
+import org.example.services.AppointmentService;
+import org.example.services.ProductService;
+import org.example.services.UserService;
+import org.example.models.Appointment;
 import org.example.utils.AppState;
+import org.example.utils.CombinedPublicNotifications;
 import org.example.utils.UserAvatarGraphic;
+import org.example.ui.product.ProductImagePlaceholder;
+import org.example.utils.ProductImageLoader;
+import org.example.utils.HomeHeroTicker;
+import org.example.utils.NewsTickerHeadlines;
 
 import java.io.IOException;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -52,53 +71,60 @@ import java.util.stream.Collectors;
 
 public class HomeController {
 
-    /** Fichiers dans src/main/resources/images/home/ (prioritaires si présents). */
-    private static final String[] HERO_SLIDE_NAMES = {
-            "hero-slide-1.png",
-            "hero-slide-2.png",
-            "hero-slide-3.jpg",
-            "hero-slide-4.jpg"
+    private static final java.time.format.DateTimeFormatter HOME_NOTIF_TIME_FMT =
+            java.time.format.DateTimeFormatter.ofPattern("dd/MM HH:mm", java.util.Locale.FRENCH);
+
+    /**
+     * Images locales (fournies par l'utilisateur) affichées en slider sur l'accueil.
+     * Ordre = ordre de défilement.
+     */
+    private static final String[] HOME_USER_SLIDER_IMAGE_PATHS = {
+            "C:/Users/Administrator/.cursor/projects/c-Users-Administrator-Desktop-eya-rendez-vous-Validation-java-Jeudi/assets/c__Users_Administrator_AppData_Roaming_Cursor_User_workspaceStorage_3937bc5d49a2c57ca8078ee8dc26d5b4_images_662339393_1682515246087110_420077270349823399_n-e207dc03-87fb-4139-8d21-038ad1f846c6.png",
+            "C:/Users/Administrator/.cursor/projects/c-Users-Administrator-Desktop-eya-rendez-vous-Validation-java-Jeudi/assets/c__Users_Administrator_AppData_Roaming_Cursor_User_workspaceStorage_3937bc5d49a2c57ca8078ee8dc26d5b4_images_649825682_1755182145458570_3568991923210223264_n__1_-266746d5-5656-4891-adfe-817f00b2af5c.png",
+            "C:/Users/Administrator/.cursor/projects/c-Users-Administrator-Desktop-eya-rendez-vous-Validation-java-Jeudi/assets/c__Users_Administrator_AppData_Roaming_Cursor_User_workspaceStorage_3937bc5d49a2c57ca8078ee8dc26d5b4_images_flat_750x_075_f-pad_750x1000_f8f8f8.u2-ec79f937-b43b-433b-8925-1e3e658add9e.png",
+            "C:/Users/Administrator/.cursor/projects/c-Users-Administrator-Desktop-eya-rendez-vous-Validation-java-Jeudi/assets/c__Users_Administrator_AppData_Roaming_Cursor_User_workspaceStorage_3937bc5d49a2c57ca8078ee8dc26d5b4_images_Capture-6826b853-01a0-4fa0-b738-d9377822d142.png",
+            "C:/Users/Administrator/.cursor/projects/c-Users-Administrator-Desktop-eya-rendez-vous-Validation-java-Jeudi/assets/c__Users_Administrator_AppData_Roaming_Cursor_User_workspaceStorage_3937bc5d49a2c57ca8078ee8dc26d5b4_images_65114438_s-a7c0e0a3-5497-4a8f-86c9-096bedef71e8.png"
+    };
+    /**
+     * Désactivé temporairement : certains fichiers importés génèrent un rendu visuel non souhaité
+     * (artefacts carrés au centre). Réactivez à true après remplacement par des visuels validés.
+     */
+    private static final boolean USE_USER_PROVIDED_HERO_SLIDES = false;
+
+    /**
+     * Fallback local (repo) si les images utilisateur ne sont pas trouvées.
+     */
+    private static final String[] HOME_SHARED_PHOTO_FILES = {
+            "home-shared-1.png",
+            "home-shared-2.png"
     };
 
-    /** Diaporama hero si aucun fichier local. */
-    private static final String[] HERO_FALLBACK_URLS = {
-            "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=1600&q=85",
-            "https://images.unsplash.com/photo-1580582932707-520edc937b0e?w=1600&q=85",
-            "https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?w=1600&q=85",
-            "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=1600&q=85"
-    };
-
-    private static final String[] TESTI_BG_URLS = {
-            "https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?w=1600&q=85",
-            "https://images.unsplash.com/photo-1587854692152-cbe660dbde88?w=1600&q=85",
-            "https://images.unsplash.com/photo-1503919545889-aef636e10ad4?w=1600&q=85"
-    };
-
-    /** Fond mission (diaporama léger derrière le voile). */
-    private static final String[] MISSION_BG_URLS = {
-            "https://images.unsplash.com/photo-1607619056574-7b8d3ee536b2?w=1600&q=85",
-            "https://images.unsplash.com/photo-1544776193-7d62c3841120?w=1600&q=85",
+    /** Si les fichiers locaux manquent : deux URL pour les diaporamas (hero, mission, témoignages). */
+    private static final String[] HOME_PHOTO_FALLBACK_URLS = {
             "https://images.unsplash.com/photo-1516627145497-ae6968895b74?w=1600&q=85",
-            "https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?w=1600&q=85"
+            "https://images.unsplash.com/photo-1544776193-7d62c3841120?w=1600&q=85"
     };
 
-    /** Fond global animé sur toute la page (style maquette). */
-    private static final String[] GLOBAL_BG_URLS = {
-            "https://images.unsplash.com/photo-1516627145497-ae6968895b74?w=2000&q=85",
-            "https://images.unsplash.com/photo-1544776193-7d62c3841120?w=2000&q=85",
-            "https://images.unsplash.com/photo-1607619056574-7b8d3ee536b2?w=2000&q=85",
-            "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=2000&q=85"
-    };
+    /** Fond global statique si aucun fichier {@link #HOME_SHARED_PHOTO_FILES}. */
+    private static final String GLOBAL_BG_FALLBACK_URL = HOME_PHOTO_FALLBACK_URLS[0];
 
-    private static final Duration HERO_SLIDE_INTERVAL = Duration.seconds(7);
-    private static final Duration HERO_CROSSFADE_DURATION = Duration.millis(1600);
-    private static final Duration MISSION_SLIDE_INTERVAL = Duration.seconds(10);
-    private static final Duration MISSION_CROSSFADE_DURATION = Duration.millis(2200);
-    private static final Duration GLOBAL_BG_SLIDE_INTERVAL = Duration.seconds(11);
-    private static final Duration GLOBAL_BG_CROSSFADE_DURATION = Duration.millis(2600);
+    /** Opacité max d’un calque photo (le voile CSS complète la lisibilité). */
+    private static final double GLOBAL_BG_MAX_OPACITY = 0.5;
 
-    private static final Duration AMBIENT_GRADIENT_INTERVAL = Duration.seconds(9);
-    private static final Duration AMBIENT_GRADIENT_FADE = Duration.millis(2800);
+    /** Défilement hero droite → gauche (images côte à côte), comme le bandeau actualités. */
+    private static final double HERO_TICKER_PIXELS_PER_SEC = 40;
+
+    private static final double NEWS_TICKER_PIXELS_PER_SEC = 44;
+    /** Hauteur fixe du bandeau / clip (évite hauteur 0 au 1er layout ou après maximisation). */
+    private static final double NEWS_TICKER_BAR_HEIGHT = 56;
+
+    /** Dernier recours cascade : styles CTA hero sur la Scene (voir {@link #ensureHeroCtaStylesOnScene()}). */
+    private static final String HERO_CTA_FORCE_CSS = urlToExternalForm(
+            HomeController.class.getResource("/styles/home-hero-cta-force.css"));
+
+    private static String urlToExternalForm(URL url) {
+        return url != null ? url.toExternalForm() : null;
+    }
 
     @FXML
     private ScrollPane scrollPane;
@@ -113,21 +139,7 @@ public class HomeController {
     @FXML
     private ImageView heroBgImageB;
     @FXML
-    private ImageView missionBgA;
-    @FXML
-    private ImageView missionBgB;
-    @FXML
-    private ImageView testiBgA;
-    @FXML
-    private ImageView testiBgB;
-    @FXML
-    private Region needBgA;
-    @FXML
-    private Region needBgB;
-    @FXML
-    private Region joinBgA;
-    @FXML
-    private Region joinBgB;
+    private ImageView missionImageView;
     @FXML
     private Button heroBtnProducts;
     @FXML
@@ -145,6 +157,11 @@ public class HomeController {
     @FXML
     private HBox guestNavActions;
     @FXML
+    private HBox loggedShortcutIcons;
+    private StackPane patientNotifBellHost;
+    @FXML
+    private Label patientNotifBadge;
+    @FXML
     private HBox loggedNavActions;
     @FXML
     private StackPane loggedAvatarHost;
@@ -152,6 +169,10 @@ public class HomeController {
     private Label loggedUserNameLabel;
     @FXML
     private Label loggedUserCodeLabel;
+    @FXML
+    private Label homeNotifBadgeLabel;
+    @FXML
+    private Button homeNotifMenuButton;
     @FXML
     private VBox homeFooterSection;
     @FXML
@@ -164,26 +185,18 @@ public class HomeController {
     private VBox sectionAnchorBlog;
     @FXML
     private VBox sectionAnchorCommunity;
-    private List<Image> heroSlides = new ArrayList<>();
-    private int heroSlideIndex = 0;
-    private boolean heroShowingA = true;
-
-    private List<Image> globalSlides = new ArrayList<>();
-    private int globalSlideIndex = 0;
-    private boolean globalShowingA = true;
-
-    private List<Image> missionSlides = new ArrayList<>();
-    private int missionSlideIndex = 0;
-    private boolean missionShowingA = true;
-
-    private List<Image> testiSlides = new ArrayList<>();
-    private int testiSlideIndex = 0;
-    private boolean testiShowingA = true;
-
-    private boolean needShowingA = true;
-    private boolean joinShowingA = true;
-
+    @FXML
+    private StackPane newsTickerViewport;
+    private HBox newsTickerTrack;
+    private HBox newsTickerSeg1;
+    private Timeline newsTickerTimeline;
+    private double newsTickerLastSegmentWidth = -1;
     private final ProductService productService = new ProductService();
+    private final UserNotificationService userNotificationService = new UserNotificationService();
+    private final AppointmentService appointmentService = new AppointmentService();
+    private final EventService eventService = new EventService();
+    private final UserService userService = new UserService();
+    private final ContextMenu homeNotifContextMenu = new ContextMenu();
 
     @FXML
     public void initialize() {
@@ -193,17 +206,127 @@ public class HomeController {
         }
         Platform.runLater(() -> {
             refreshTopNavState();
+            configureHomeNotificationsMenu();
             initGlobalBackground();
             initHeroBackground();
-            initMissionBackground();
-            initTestimonialBackground();
-            initAmbientGradients();
+            applyMissionImageClip();
             populateAiProducts();
             refreshCtaState();
             setupHeroPulse();
+            ensureHeroCtaStylesOnScene();
             setupScrollAnimations();
+            initNewsTicker();
             applyPendingHomeScroll();
+            ensureTopNavPinned(0);
         });
+    }
+
+    /** Après fond hero / ticker : garantit hauteur et visibilité de la barre (VBox + secours layout). */
+    private void ensureTopNavPinned(int attempt) {
+        if (scrollPane == null) {
+            return;
+        }
+        Scene sc = scrollPane.getScene();
+        if (sc == null && attempt < 16) {
+            Platform.runLater(() -> ensureTopNavPinned(attempt + 1));
+            return;
+        }
+        if (sc == null) {
+            return;
+        }
+        Node nav = sc.getRoot().lookup(".top-nav");
+        if (nav instanceof Region r) {
+            r.setMinHeight(88);
+            r.setPrefHeight(88);
+            r.setMaxHeight(120);
+            r.setVisible(true);
+            r.setManaged(true);
+        }
+    }
+
+    private void initNewsTicker() {
+        if (newsTickerViewport == null) {
+            return;
+        }
+        List<String> headlines = NewsTickerHeadlines.loadFromDatabase(eventService);
+        newsTickerTrack = new HBox(0);
+        newsTickerTrack.setAlignment(Pos.CENTER_LEFT);
+        newsTickerTrack.getStyleClass().add("home-news-ticker-track");
+        newsTickerSeg1 = buildNewsTickerSegment(headlines);
+        HBox seg2 = buildNewsTickerSegment(headlines);
+        newsTickerTrack.getChildren().setAll(newsTickerSeg1, seg2);
+        newsTickerViewport.getChildren().setAll(newsTickerTrack);
+        newsTickerViewport.setMinHeight(NEWS_TICKER_BAR_HEIGHT);
+        newsTickerViewport.setPrefHeight(NEWS_TICKER_BAR_HEIGHT);
+
+        Rectangle clip = new Rectangle();
+        clip.setHeight(NEWS_TICKER_BAR_HEIGHT);
+        clip.widthProperty().bind(newsTickerViewport.widthProperty());
+        newsTickerViewport.setClip(clip);
+
+        newsTickerSeg1.layoutBoundsProperty().addListener((obs, prev, cur) -> Platform.runLater(this::restartNewsTickerIfReady));
+        newsTickerViewport.widthProperty().addListener((o, prev, cur) -> {
+            if (cur != null && cur.doubleValue() > 8) {
+                Platform.runLater(this::restartNewsTickerIfReady);
+            }
+        });
+        Platform.runLater(this::restartNewsTickerIfReady);
+        Platform.runLater(() -> Platform.runLater(this::restartNewsTickerIfReady));
+    }
+
+    private static HBox buildNewsTickerSegment(List<String> headlines) {
+        List<String> lines = headlines == null || headlines.isEmpty()
+                ? List.of("Bienvenue sur AutiCare")
+                : headlines;
+        HBox seg = new HBox(8);
+        seg.setAlignment(Pos.CENTER_LEFT);
+        seg.getStyleClass().add("home-news-ticker-seg");
+        for (int i = 0; i < lines.size(); i++) {
+            if (i > 0) {
+                Label dot = new Label("•");
+                dot.getStyleClass().add("home-news-ticker-sep");
+                seg.getChildren().add(dot);
+            }
+            Label chev = new Label(">");
+            chev.getStyleClass().add("home-news-ticker-chev");
+            Label line = new Label(lines.get(i));
+            line.getStyleClass().add("home-news-ticker-item");
+            seg.getChildren().addAll(chev, line);
+        }
+        return seg;
+    }
+
+    private void restartNewsTickerIfReady() {
+        if (newsTickerTrack == null || newsTickerSeg1 == null || newsTickerViewport == null) {
+            return;
+        }
+        newsTickerTrack.applyCss();
+        newsTickerTrack.layout();
+        double segmentW = newsTickerSeg1.getBoundsInLocal().getWidth();
+        if (segmentW < 1) {
+            return;
+        }
+        if (Math.abs(segmentW - newsTickerLastSegmentWidth) < 0.5 && newsTickerTimeline != null
+                && newsTickerTimeline.getStatus() == Animation.Status.RUNNING) {
+            return;
+        }
+        newsTickerLastSegmentWidth = segmentW;
+        if (newsTickerTimeline != null) {
+            newsTickerTimeline.stop();
+        }
+        newsTickerTrack.setTranslateX(0);
+        double durationSec = clamp(segmentW / NEWS_TICKER_PIXELS_PER_SEC, 16, 90);
+        newsTickerTimeline = new Timeline(
+                new KeyFrame(Duration.ZERO,
+                        new KeyValue(newsTickerTrack.translateXProperty(), 0, Interpolator.LINEAR)),
+                new KeyFrame(Duration.seconds(durationSec),
+                        new KeyValue(newsTickerTrack.translateXProperty(), -segmentW, Interpolator.LINEAR)));
+        newsTickerTimeline.setCycleCount(Timeline.INDEFINITE);
+        newsTickerTimeline.play();
+    }
+
+    private static double clamp(double v, double lo, double hi) {
+        return Math.max(lo, Math.min(hi, v));
     }
 
     /** Après layout : défilement demandé depuis login / inscription / mot de passe oublié. */
@@ -230,6 +353,18 @@ public class HomeController {
             loggedNavActions.setVisible(logged);
             loggedNavActions.setManaged(logged);
         }
+        if (loggedUserCodeLabel != null) {
+            loggedUserCodeLabel.setVisible(false);
+            loggedUserCodeLabel.setManaged(false);
+        }
+        if (patientNotifBellHost != null) {
+            patientNotifBellHost.setVisible(false);
+            patientNotifBellHost.setManaged(false);
+        }
+        if (loggedShortcutIcons != null) {
+            loggedShortcutIcons.setVisible(logged);
+            loggedShortcutIcons.setManaged(logged);
+        }
         if (logged) {
             String name = ((u.getPrenom() != null ? u.getPrenom().trim() : "") + " "
                     + (u.getNom() != null ? u.getNom().trim() : "")).trim();
@@ -246,11 +381,234 @@ public class HomeController {
                 loggedAvatarHost.getChildren().setAll(
                         UserAvatarGraphic.build(u, 42, UserAvatarGraphic.initialsFor(u), "home-topbar-avatar"));
             }
+            refreshHomeNotificationBadge();
+        }
+    }
+
+    private void refreshHomeNotificationBadge() {
+        if (homeNotifBadgeLabel == null) {
+            return;
+        }
+        var user = AppState.getCurrentUser();
+        if (user == null) {
+            homeNotifBadgeLabel.setVisible(false);
+            homeNotifBadgeLabel.setManaged(false);
+            return;
+        }
+        try {
+            int unread = CombinedPublicNotifications.totalUnread(user, userNotificationService, appointmentService);
+            String badge = unread > 99 ? "99+" : String.valueOf(Math.max(0, unread));
+            homeNotifBadgeLabel.setText(badge);
+            homeNotifBadgeLabel.setVisible(unread > 0);
+            homeNotifBadgeLabel.setManaged(unread > 0);
+        } catch (SQLException ignored) {
+            homeNotifBadgeLabel.setVisible(false);
+            homeNotifBadgeLabel.setManaged(false);
+        }
+    }
+
+    private void configureHomeNotificationsMenu() {
+        if (homeNotifContextMenu != null) {
+            homeNotifContextMenu.getStyleClass().add("public-notif-context-menu");
+        }
+        if (homeNotifMenuButton != null) {
+            homeNotifMenuButton.setOnAction(e -> toggleHomeNotificationsMenu());
+        }
+    }
+
+    private void toggleHomeNotificationsMenu() {
+        if (homeNotifMenuButton == null) {
+            return;
+        }
+        if (homeNotifContextMenu.isShowing()) {
+            homeNotifContextMenu.hide();
+            return;
+        }
+        rebuildHomeNotificationsMenuItems();
+        homeNotifContextMenu.show(homeNotifMenuButton, Side.BOTTOM, 0, 6);
+    }
+
+    private void rebuildHomeNotificationsMenuItems() {
+        if (homeNotifMenuButton == null) {
+            return;
+        }
+        homeNotifContextMenu.getItems().clear();
+        var user = AppState.getCurrentUser();
+        if (user == null) {
+            return;
+        }
+        try {
+            Label headLbl = new Label("Notifications");
+            headLbl.getStyleClass().add("public-notif-popup-header");
+            CustomMenuItem header = new CustomMenuItem(headLbl, false);
+            header.setHideOnClick(false);
+            header.setDisable(true);
+            header.getStyleClass().add("public-notif-menu-header");
+            homeNotifContextMenu.getItems().add(header);
+            List<CombinedPublicNotifications.MergedPreview> merged =
+                    CombinedPublicNotifications.buildMenuPreview(user, userNotificationService, appointmentService);
+            if (merged.isEmpty()) {
+                MenuItem emptyItem = new MenuItem("Aucune notification.");
+                emptyItem.setDisable(true);
+                homeNotifContextMenu.getItems().add(emptyItem);
+            } else {
+                for (CombinedPublicNotifications.MergedPreview row : merged) {
+                    if (row.kind() == CombinedPublicNotifications.MergedKind.EVENT) {
+                        UserNotificationItem item = row.eventItem();
+                        if (item == null) {
+                            continue;
+                        }
+                        HBox card = new HBox(10);
+                        card.setPrefWidth(320);
+                        card.getStyleClass().add("public-notif-item");
+                        card.getStyleClass().add(notificationTypeStyleClass(item));
+                        Label icon = new Label(notificationIcon(item));
+                        icon.getStyleClass().add("public-notif-item-icon");
+                        Label title = new Label(item.getResume() != null ? item.getResume() : "Notification");
+                        title.setWrapText(true);
+                        title.getStyleClass().add("public-notif-item-title");
+                        String ts = item.getDateCreation() != null ? HOME_NOTIF_TIME_FMT.format(item.getDateCreation()) : "";
+                        Label meta = new Label(ts);
+                        meta.getStyleClass().add("public-notif-item-meta");
+                        VBox textCol = new VBox(2, title, meta);
+                        card.getChildren().addAll(icon, textCol);
+                        CustomMenuItem menuItem = new CustomMenuItem(card, true);
+                        menuItem.setOnAction(e -> onHomeNotificationClick(item));
+                        homeNotifContextMenu.getItems().add(menuItem);
+                    } else {
+                        Appointment ap = row.rdv();
+                        if (ap == null) {
+                            continue;
+                        }
+                        HBox card = new HBox(10);
+                        card.setPrefWidth(320);
+                        card.getStyleClass().add("public-notif-item");
+                        card.getStyleClass().add("public-notif-item-rdv");
+                        Label icon = new Label("📅");
+                        icon.getStyleClass().add("public-notif-item-icon");
+                        String summary = PatientRdvNotificationsDialog.summaryForMenu(ap, userService);
+                        Label title = new Label(summary);
+                        title.setWrapText(true);
+                        title.getStyleClass().add("public-notif-item-title");
+                        String ts = ap.getDateHeure() != null ? HOME_NOTIF_TIME_FMT.format(ap.getDateHeure()) : "";
+                        Label meta = new Label("Rendez-vous · " + ts);
+                        meta.getStyleClass().add("public-notif-item-meta");
+                        VBox textCol = new VBox(2, title, meta);
+                        card.getChildren().addAll(icon, textCol);
+                        CustomMenuItem menuItem = new CustomMenuItem(card, true);
+                        menuItem.setOnAction(e -> onMergedRdvHomeNotificationClick(ap));
+                        homeNotifContextMenu.getItems().add(menuItem);
+                    }
+                }
+            }
+            Label allLabel = new Label("Voir\u00A0toutes\u00A0les\u00A0notifications");
+            allLabel.getStyleClass().add("public-notif-see-all");
+            allLabel.setWrapText(false);
+            allLabel.setMinWidth(Region.USE_PREF_SIZE);
+            HBox allWrap = new HBox(allLabel);
+            allWrap.setAlignment(Pos.CENTER);
+            allWrap.setPrefWidth(320);
+            allWrap.getStyleClass().add("public-notif-see-all-wrap");
+            CustomMenuItem allItem = new CustomMenuItem(allWrap, true);
+            allItem.setOnAction(e -> onOpenAllNotificationsPage());
+            homeNotifContextMenu.getItems().add(allItem);
+            refreshHomeNotificationBadge();
+        } catch (SQLException e) {
+            MenuItem errorItem = new MenuItem("Impossible de charger les notifications.");
+            errorItem.setDisable(true);
+            homeNotifContextMenu.getItems().add(errorItem);
+        }
+    }
+
+    private static String notificationTypeStyleClass(UserNotificationItem item) {
+        String code = item != null && item.getTypeCode() != null ? item.getTypeCode() : "";
+        return switch (code) {
+            case UserNotificationService.TYPE_EVENT_MESSAGE_REPLY -> "public-notif-item-msg";
+            case UserNotificationService.TYPE_EVENT_REGISTRATION_REFUSED,
+                 UserNotificationService.TYPE_RDV_REFUSED,
+                 UserNotificationService.TYPE_RDV_CANCELLED -> "public-notif-item-refused";
+            case UserNotificationService.TYPE_EVENT_REGISTRATION_PENDING -> "public-notif-item-pending";
+            case UserNotificationService.TYPE_RDV_ACCEPTED -> "public-notif-item-accepted";
+            default -> "public-notif-item-accepted";
+        };
+    }
+
+    private static String notificationIcon(UserNotificationItem item) {
+        String code = item != null && item.getTypeCode() != null ? item.getTypeCode() : "";
+        return switch (code) {
+            case UserNotificationService.TYPE_EVENT_MESSAGE_REPLY -> "\u2709";
+            case UserNotificationService.TYPE_EVENT_REGISTRATION_REFUSED,
+                 UserNotificationService.TYPE_RDV_REFUSED,
+                 UserNotificationService.TYPE_RDV_CANCELLED -> "\u2716";
+            case UserNotificationService.TYPE_EVENT_REGISTRATION_PENDING -> "\u23F3";
+            case UserNotificationService.TYPE_RDV_ACCEPTED -> "\u2713";
+            default -> "\u2713";
+        };
+    }
+
+    private void onHomeNotificationClick(UserNotificationItem item) {
+        if (item == null) {
+            return;
+        }
+        try {
+            userNotificationService.markAsRead(item.getId());
+            String c = item.getTypeCode() != null ? item.getTypeCode() : "";
+            if (UserNotificationService.TYPE_RDV_ACCEPTED.equals(c)
+                    || UserNotificationService.TYPE_RDV_REFUSED.equals(c)
+                    || UserNotificationService.TYPE_RDV_CANCELLED.equals(c)) {
+                MainApp.showPublicPage("rdv");
+            } else if (item.getEvenementId() != null && item.getEvenementId() > 0) {
+                AppState.setPendingPublicEventDetailId(item.getEvenementId());
+                MainApp.showPublicPage("event-detail");
+            } else {
+                MainApp.showPublicPage("notifications");
+            }
+            homeNotifContextMenu.hide();
+            refreshHomeNotificationBadge();
+        } catch (Exception e) {
+            alert(Alert.AlertType.ERROR, "Notifications", e.getMessage());
+        }
+    }
+
+    private void onMergedRdvHomeNotificationClick(Appointment ap) {
+        User u = AppState.getCurrentUser();
+        if (ap == null || u == null) {
+            return;
+        }
+        try {
+            appointmentService.markPatientDecisionRead(ap.getId(), u.getId());
+            MainApp.showPublicPage("rdv");
+            homeNotifContextMenu.hide();
+            refreshHomeNotificationBadge();
+        } catch (Exception ex) {
+            alert(Alert.AlertType.ERROR, "Notifications",
+                    ex.getMessage() != null ? ex.getMessage() : "Impossible de mettre à jour la notification.");
+        }
+    }
+
+    private void onOpenAllNotificationsPage() {
+        try {
+            MainApp.showPublicPage("notifications");
+        } catch (IOException e) {
+            alert(Alert.AlertType.ERROR, "Notifications", e.getMessage());
         }
     }
 
     private void openDashboardTab(int tabIndex) {
         try {
+            User u = AppState.getCurrentUser();
+            if (u == null) {
+                MainApp.showLogin();
+                return;
+            }
+            if (u.getRole() == Role.MEDECIN) {
+                MainApp.showMedecinDashboard();
+                return;
+            }
+            if (u.getRole() == Role.ADMIN) {
+                MainApp.showAdminUsers();
+                return;
+            }
             MainApp.showDashboard(tabIndex);
         } catch (IOException e) {
             alert(Alert.AlertType.ERROR, "Erreur", e.getMessage());
@@ -263,31 +621,31 @@ public class HomeController {
     private void navigateHomeScroll(String key) {
         switch (key.toLowerCase()) {
             case "produits" -> {
-                if (isLoggedIn()) {
-                    openDashboardTab(1);
-                } else {
-                    scrollToSection(productScrollTarget());
+                try {
+                    MainApp.showPublicPage("produits");
+                } catch (IOException e) {
+                    alert(Alert.AlertType.ERROR, "Navigation", e.getMessage());
                 }
             }
             case "rdv" -> {
-                if (isLoggedIn()) {
-                    openDashboardTab(2);
-                } else {
-                    scrollToSection(homeFooterSection);
+                try {
+                    MainApp.showPublicPage("rdv");
+                } catch (IOException e) {
+                    alert(Alert.AlertType.ERROR, "Navigation", e.getMessage());
                 }
             }
             case "events" -> {
-                if (isLoggedIn()) {
-                    openDashboardTab(4);
-                } else {
-                    scrollToSection(sectionAnchorEvents);
+                try {
+                    MainApp.showPublicPage("events");
+                } catch (IOException e) {
+                    alert(Alert.AlertType.ERROR, "Navigation", e.getMessage());
                 }
             }
             case "blog" -> {
-                if (isLoggedIn()) {
-                    openDashboardTab(7);
-                } else {
-                    scrollToSection(sectionAnchorBlog);
+                try {
+                    MainApp.showPublicPage("blog");
+                } catch (IOException e) {
+                    alert(Alert.AlertType.ERROR, "Navigation", e.getMessage());
                 }
             }
             case "contact" -> scrollToSection(homeFooterSection);
@@ -297,42 +655,35 @@ public class HomeController {
         }
     }
 
-    private Node productScrollTarget() {
-        if (aiProductsSection != null && aiProductsSection.isVisible()) {
-            return aiProductsSection;
-        }
-        return sectionAnchorProduits != null ? sectionAnchorProduits : sectionAnchorEvents;
-    }
-
     private void navigateToProducts() {
-        if (isLoggedIn()) {
-            openDashboardTab(1);
-        } else {
-            scrollToSection(productScrollTarget());
+        try {
+            MainApp.showPublicPage("produits");
+        } catch (IOException e) {
+            alert(Alert.AlertType.ERROR, "Navigation", e.getMessage());
         }
     }
 
     private void navigateToRdv() {
-        if (isLoggedIn()) {
-            openDashboardTab(2);
-        } else {
-            scrollToSection(homeFooterSection);
+        try {
+            MainApp.showPublicPage("rdv");
+        } catch (IOException e) {
+            alert(Alert.AlertType.ERROR, "Navigation", e.getMessage());
         }
     }
 
     private void navigateToEvents() {
-        if (isLoggedIn()) {
-            openDashboardTab(4);
-        } else {
-            scrollToSection(sectionAnchorEvents);
+        try {
+            MainApp.showPublicPage("events");
+        } catch (IOException e) {
+            alert(Alert.AlertType.ERROR, "Navigation", e.getMessage());
         }
     }
 
     private void navigateToBlog() {
-        if (isLoggedIn()) {
-            openDashboardTab(7);
-        } else {
-            scrollToSection(sectionAnchorBlog);
+        try {
+            MainApp.showPublicPage("blog");
+        } catch (IOException e) {
+            alert(Alert.AlertType.ERROR, "Navigation", e.getMessage());
         }
     }
 
@@ -395,23 +746,22 @@ public class HomeController {
         imgView.setSmooth(true);
         String path = p.getImagePath();
         if (path != null && !path.isBlank()) {
-            if (path.startsWith("http://") || path.startsWith("https://")) {
-                imgView.setImage(new Image(path, true));
-            } else {
+            Image loaded = ProductImageLoader.loadForDisplay(path, 260, 120);
+            if (loaded == null && !path.trim().startsWith("http://") && !path.trim().startsWith("https://")) {
                 URL u = getClass().getResource(path.startsWith("/") ? path : "/" + path);
                 if (u == null) {
                     u = getClass().getResource("/images/" + path);
                 }
                 if (u != null) {
-                    imgView.setImage(new Image(u.toExternalForm(), true));
+                    loaded = new Image(u.toExternalForm(), true);
                 }
+            }
+            if (loaded != null && !loaded.isError()) {
+                imgView.setImage(loaded);
             }
         }
         if (imgView.getImage() == null) {
-            Region ph = new Region();
-            ph.setMinHeight(120);
-            ph.setStyle("-fx-background-color: #cdb4db;");
-            imgFrame.getChildren().add(ph);
+            imgFrame.getChildren().add(ProductImagePlaceholder.create(260, 120));
         } else {
             imgFrame.getChildren().add(imgView);
         }
@@ -462,22 +812,13 @@ public class HomeController {
     }
 
     private void onAiProductClick(int productId) {
-        if (isLoggedIn()) {
-            openDashboardTab(1);
-        } else {
-            navigateToProducts();
-        }
-    }
-
-    @FXML
-    public void onAiSeeAllProducts() {
         navigateToProducts();
     }
 
     @FXML
     public void onCtaProfile() {
         try {
-            MainApp.showDashboard();
+            MainApp.openManagementSpace();
         } catch (IOException e) {
             alert(Alert.AlertType.ERROR, "Erreur", e.getMessage());
         }
@@ -493,349 +834,150 @@ public class HomeController {
         navigateToEvents();
     }
 
+    private List<Image> loadHomeSharedImages() {
+        List<Image> out = new ArrayList<>();
+        for (String name : HOME_SHARED_PHOTO_FILES) {
+            URL u = getClass().getResource("/images/home/" + name);
+            if (u != null) {
+                out.add(new Image(u.toExternalForm(), true));
+            }
+        }
+        return out;
+    }
+
+    private List<Image> loadHomeUserSliderImages() {
+        List<Image> out = new ArrayList<>();
+        for (String rawPath : HOME_USER_SLIDER_IMAGE_PATHS) {
+            if (rawPath == null || rawPath.isBlank()) {
+                continue;
+            }
+            try {
+                Path p = Path.of(rawPath);
+                if (!Files.isRegularFile(p)) {
+                    continue;
+                }
+                out.add(new Image(p.toUri().toString(), true));
+            } catch (Exception ignored) {
+                // Chemin invalide ou inaccessible : on continue avec les autres images.
+            }
+        }
+        return out;
+    }
+
+    /** Deux images pour hero / mission / témoignages (locales ou secours URL). */
+    private List<Image> slidesForHomeDiaporamas() {
+        if (USE_USER_PROVIDED_HERO_SLIDES) {
+            List<Image> slides = loadHomeUserSliderImages();
+            if (slides.size() >= 2) {
+                return slides;
+            }
+        }
+        List<Image> slides = loadHomeSharedImages();
+        if (slides.size() >= 2) {
+            return slides;
+        }
+        if (slides.size() == 1) {
+            slides.add(slides.get(0));
+            return slides;
+        }
+        slides.clear();
+        for (String url : HOME_PHOTO_FALLBACK_URLS) {
+            slides.add(new Image(url, true));
+        }
+        return slides;
+    }
+
     private void initGlobalBackground() {
         if (globalBgA == null || globalBgB == null) {
             return;
         }
-        globalSlides = new ArrayList<>();
-        for (String url : GLOBAL_BG_URLS) {
-            globalSlides.add(new Image(url, true));
-        }
+        List<Image> shared = loadHomeSharedImages();
+        Image chosen = shared.isEmpty() ? new Image(GLOBAL_BG_FALLBACK_URL, true) : shared.get(0);
+
         StackPane wrap = (StackPane) globalBgA.getParent();
         for (ImageView iv : new ImageView[]{globalBgA, globalBgB}) {
             iv.setPreserveRatio(false);
             iv.setSmooth(true);
+            iv.setTranslateX(0);
             iv.fitWidthProperty().bind(wrap.widthProperty());
             iv.fitHeightProperty().bind(wrap.heightProperty());
         }
-        if (globalSlides.size() < 2) {
-            if (globalSlides.size() == 1) {
-                globalBgA.setImage(globalSlides.get(0));
-                globalBgA.setOpacity(1);
-                globalBgB.setOpacity(0);
-                globalBgB.setVisible(false);
-            }
-            return;
-        }
-        globalSlideIndex = 0;
-        globalShowingA = true;
-        globalBgA.setImage(globalSlides.get(0));
-        globalBgA.setOpacity(1);
-        globalBgB.setImage(globalSlides.get(1 % globalSlides.size()));
-        globalBgB.setOpacity(0);
-        PauseTransition pause = new PauseTransition(GLOBAL_BG_SLIDE_INTERVAL);
-        pause.setOnFinished(e -> crossfadeGlobalBgNext());
-        pause.play();
-    }
 
-    private void crossfadeGlobalBgNext() {
-        if (globalSlides.size() < 2 || globalBgA == null || globalBgB == null) {
-            return;
-        }
-        int nextIdx = (globalSlideIndex + 1) % globalSlides.size();
-        ImageView from = globalShowingA ? globalBgA : globalBgB;
-        ImageView to = globalShowingA ? globalBgB : globalBgA;
-        to.setImage(globalSlides.get(nextIdx));
-        to.setOpacity(0);
-        from.setOpacity(1);
-        FadeTransition fadeOut = new FadeTransition(GLOBAL_BG_CROSSFADE_DURATION, from);
-        fadeOut.setFromValue(1);
-        fadeOut.setToValue(0);
-        FadeTransition fadeIn = new FadeTransition(GLOBAL_BG_CROSSFADE_DURATION, to);
-        fadeIn.setFromValue(0);
-        fadeIn.setToValue(1);
-        ParallelTransition cross = new ParallelTransition(fadeOut, fadeIn);
-        cross.setOnFinished(e -> {
-            globalSlideIndex = nextIdx;
-            globalShowingA = !globalShowingA;
-            ImageView hidden = globalShowingA ? globalBgB : globalBgA;
-            hidden.setOpacity(0);
-            hidden.setImage(globalSlides.get((globalSlideIndex + 1) % globalSlides.size()));
-            PauseTransition pause = new PauseTransition(GLOBAL_BG_SLIDE_INTERVAL);
-            pause.setOnFinished(ev -> crossfadeGlobalBgNext());
-            pause.play();
-        });
-        cross.play();
+        globalBgA.setImage(chosen);
+        globalBgA.setOpacity(GLOBAL_BG_MAX_OPACITY);
+        globalBgB.setImage(null);
+        globalBgB.setOpacity(0);
+        globalBgB.setVisible(false);
     }
 
     private void initHeroBackground() {
         if (heroBgImageA == null || heroBgImageB == null) {
             return;
         }
-        heroSlides = new ArrayList<>();
-        for (String name : HERO_SLIDE_NAMES) {
-            URL u = getClass().getResource("/images/home/" + name);
-            if (u != null) {
-                heroSlides.add(new Image(u.toExternalForm(), true));
-            }
-        }
-        if (heroSlides.isEmpty()) {
-            for (String url : HERO_FALLBACK_URLS) {
-                heroSlides.add(new Image(url, true));
-            }
-        }
         StackPane wrap = (StackPane) heroBgImageA.getParent();
-        for (ImageView iv : new ImageView[]{heroBgImageA, heroBgImageB}) {
-            iv.setPreserveRatio(false);
-            iv.setSmooth(true);
-            iv.fitWidthProperty().bind(wrap.widthProperty());
-            iv.fitHeightProperty().bind(wrap.heightProperty());
-        }
-        if (heroSlides.size() < 2) {
-            if (heroSlides.size() == 1) {
-                heroBgImageA.setImage(heroSlides.get(0));
-                heroBgImageA.setOpacity(1);
-                heroBgImageB.setOpacity(0);
-                heroBgImageB.setVisible(false);
-            }
+        List<Image> slides = resolveHeroBackgroundImages();
+        if (slides.isEmpty()) {
             return;
         }
-        heroSlideIndex = 0;
-        heroShowingA = true;
-        heroBgImageA.setImage(heroSlides.get(0));
-        heroBgImageA.setOpacity(1);
-        heroBgImageB.setImage(heroSlides.get(1 % heroSlides.size()));
-        heroBgImageB.setOpacity(0);
-        PauseTransition pause = new PauseTransition(HERO_SLIDE_INTERVAL);
-        pause.setOnFinished(e -> crossfadeHeroNext());
-        pause.play();
+        HomeHeroTicker.install(wrap, heroBgImageA, heroBgImageB, slides, HERO_TICKER_PIXELS_PER_SEC);
+        HomeHeroTicker.bindPhotoWrapFullViewportBelowNav(wrap);
     }
 
-    private void crossfadeHeroNext() {
-        if (heroSlides.size() < 2 || heroBgImageA == null || heroBgImageB == null) {
+    /** Arrondi réel de la photo mission via clip (le CSS seul n'arrondit pas les pixels d'une ImageView). */
+    private void applyMissionImageClip() {
+        if (missionImageView == null) {
             return;
         }
-        int nextIdx = (heroSlideIndex + 1) % heroSlides.size();
-        ImageView from = heroShowingA ? heroBgImageA : heroBgImageB;
-        ImageView to = heroShowingA ? heroBgImageB : heroBgImageA;
-        to.setImage(heroSlides.get(nextIdx));
-        to.setOpacity(0);
-        from.setOpacity(1);
-        FadeTransition fadeOut = new FadeTransition(HERO_CROSSFADE_DURATION, from);
-        fadeOut.setFromValue(1);
-        fadeOut.setToValue(0);
-        FadeTransition fadeIn = new FadeTransition(HERO_CROSSFADE_DURATION, to);
-        fadeIn.setFromValue(0);
-        fadeIn.setToValue(1);
-        ParallelTransition cross = new ParallelTransition(fadeOut, fadeIn);
-        cross.setOnFinished(e -> {
-            heroSlideIndex = nextIdx;
-            heroShowingA = !heroShowingA;
-            ImageView hidden = heroShowingA ? heroBgImageB : heroBgImageA;
-            hidden.setOpacity(0);
-            hidden.setImage(heroSlides.get((heroSlideIndex + 1) % heroSlides.size()));
-            PauseTransition pause = new PauseTransition(HERO_SLIDE_INTERVAL);
-            pause.setOnFinished(ev -> crossfadeHeroNext());
-            pause.play();
-        });
-        cross.play();
+        Rectangle clip = new Rectangle();
+        clip.setArcWidth(26);
+        clip.setArcHeight(26);
+        clip.widthProperty().bind(missionImageView.fitWidthProperty());
+        clip.heightProperty().bind(missionImageView.fitHeightProperty());
+        missionImageView.setClip(clip);
     }
 
-    private void initMissionBackground() {
-        if (missionBgA == null || missionBgB == null) {
-            return;
+    /** PNG {@code hero-ticker-0x} dans /images/home/, sinon repli diaporama (URLs). */
+    private List<Image> resolveHeroBackgroundImages() {
+        List<Image> ticker = HomeHeroTicker.loadFromResources(getClass());
+        if (ticker.size() >= 2) {
+            return ticker;
         }
-        missionSlides = new ArrayList<>();
-        for (String url : MISSION_BG_URLS) {
-            missionSlides.add(new Image(url, true));
-        }
-        StackPane wrap = (StackPane) missionBgA.getParent();
-        for (ImageView iv : new ImageView[]{missionBgA, missionBgB}) {
-            iv.setPreserveRatio(false);
-            iv.setSmooth(true);
-            iv.fitWidthProperty().bind(wrap.widthProperty());
-            iv.fitHeightProperty().bind(wrap.heightProperty());
-        }
-        if (missionSlides.size() < 2) {
-            if (missionSlides.size() == 1) {
-                missionBgA.setImage(missionSlides.get(0));
-                missionBgA.setOpacity(1);
-                missionBgB.setOpacity(0);
-                missionBgB.setVisible(false);
-            }
-            return;
-        }
-        missionSlideIndex = 0;
-        missionShowingA = true;
-        missionBgA.setImage(missionSlides.get(0));
-        missionBgA.setOpacity(1);
-        missionBgB.setImage(missionSlides.get(1 % missionSlides.size()));
-        missionBgB.setOpacity(0);
-        PauseTransition pause = new PauseTransition(MISSION_SLIDE_INTERVAL);
-        pause.setOnFinished(e -> crossfadeMissionNext());
-        pause.play();
-    }
-
-    private void crossfadeMissionNext() {
-        if (missionSlides.size() < 2 || missionBgA == null || missionBgB == null) {
-            return;
-        }
-        int nextIdx = (missionSlideIndex + 1) % missionSlides.size();
-        ImageView from = missionShowingA ? missionBgA : missionBgB;
-        ImageView to = missionShowingA ? missionBgB : missionBgA;
-        to.setImage(missionSlides.get(nextIdx));
-        to.setOpacity(0);
-        from.setOpacity(1);
-        FadeTransition fadeOut = new FadeTransition(MISSION_CROSSFADE_DURATION, from);
-        fadeOut.setFromValue(1);
-        fadeOut.setToValue(0);
-        FadeTransition fadeIn = new FadeTransition(MISSION_CROSSFADE_DURATION, to);
-        fadeIn.setFromValue(0);
-        fadeIn.setToValue(1);
-        ParallelTransition cross = new ParallelTransition(fadeOut, fadeIn);
-        cross.setOnFinished(e -> {
-            missionSlideIndex = nextIdx;
-            missionShowingA = !missionShowingA;
-            ImageView hidden = missionShowingA ? missionBgB : missionBgA;
-            hidden.setOpacity(0);
-            hidden.setImage(missionSlides.get((missionSlideIndex + 1) % missionSlides.size()));
-            PauseTransition pause = new PauseTransition(MISSION_SLIDE_INTERVAL);
-            pause.setOnFinished(ev -> crossfadeMissionNext());
-            pause.play();
-        });
-        cross.play();
-    }
-
-    private void initTestimonialBackground() {
-        if (testiBgA == null || testiBgB == null) {
-            return;
-        }
-        testiSlides = new ArrayList<>();
-        for (String url : TESTI_BG_URLS) {
-            testiSlides.add(new Image(url, true));
-        }
-        if (testiSlides.size() < 2) {
-            StackPane wrapSingle = (StackPane) testiBgA.getParent();
-            for (ImageView iv : new ImageView[]{testiBgA, testiBgB}) {
-                iv.setEffect(new GaussianBlur(8));
-                iv.setPreserveRatio(false);
-                iv.setSmooth(true);
-                iv.fitWidthProperty().bind(wrapSingle.widthProperty());
-                iv.fitHeightProperty().bind(wrapSingle.heightProperty());
-            }
-            if (testiSlides.size() == 1) {
-                testiBgA.setImage(testiSlides.get(0));
-                testiBgA.setOpacity(1);
-                testiBgB.setOpacity(0);
-                testiBgB.setVisible(false);
-            }
-            return;
-        }
-        StackPane wrap = (StackPane) testiBgA.getParent();
-        for (ImageView iv : new ImageView[]{testiBgA, testiBgB}) {
-            iv.setEffect(new GaussianBlur(8));
-            iv.setPreserveRatio(false);
-            iv.setSmooth(true);
-            iv.fitWidthProperty().bind(wrap.widthProperty());
-            iv.fitHeightProperty().bind(wrap.heightProperty());
-        }
-        testiSlideIndex = 0;
-        testiShowingA = true;
-        testiBgA.setImage(testiSlides.get(0));
-        testiBgA.setOpacity(1);
-        testiBgB.setImage(testiSlides.get(1 % testiSlides.size()));
-        testiBgB.setOpacity(0);
-        PauseTransition pause = new PauseTransition(Duration.seconds(8));
-        pause.setOnFinished(e -> crossfadeTestiNext());
-        pause.play();
-    }
-
-    private void crossfadeTestiNext() {
-        if (testiSlides.size() < 2 || testiBgA == null || testiBgB == null) {
-            return;
-        }
-        int nextIdx = (testiSlideIndex + 1) % testiSlides.size();
-        ImageView from = testiShowingA ? testiBgA : testiBgB;
-        ImageView to = testiShowingA ? testiBgB : testiBgA;
-        to.setImage(testiSlides.get(nextIdx));
-        to.setOpacity(0);
-        from.setOpacity(1);
-        FadeTransition fadeOut = new FadeTransition(Duration.millis(2200), from);
-        fadeOut.setFromValue(1);
-        fadeOut.setToValue(0);
-        FadeTransition fadeIn = new FadeTransition(Duration.millis(2200), to);
-        fadeIn.setFromValue(0);
-        fadeIn.setToValue(1);
-        ParallelTransition cross = new ParallelTransition(fadeOut, fadeIn);
-        cross.setOnFinished(e -> {
-            testiSlideIndex = nextIdx;
-            testiShowingA = !testiShowingA;
-            ImageView hidden = testiShowingA ? testiBgB : testiBgA;
-            hidden.setOpacity(0);
-            hidden.setImage(testiSlides.get((testiSlideIndex + 1) % testiSlides.size()));
-            PauseTransition pause = new PauseTransition(Duration.seconds(8));
-            pause.setOnFinished(ev -> crossfadeTestiNext());
-            pause.play();
-        });
-        cross.play();
-    }
-
-    private void initAmbientGradients() {
-        if (needBgA != null && needBgB != null) {
-            needBgB.setOpacity(0);
-            PauseTransition pause = new PauseTransition(AMBIENT_GRADIENT_INTERVAL);
-            pause.setOnFinished(e -> crossfadeNeedGradient());
-            pause.play();
-        }
-        if (joinBgA != null && joinBgB != null) {
-            joinBgB.setOpacity(0);
-            PauseTransition pause = new PauseTransition(AMBIENT_GRADIENT_INTERVAL);
-            pause.setOnFinished(e -> crossfadeJoinGradient());
-            pause.play();
-        }
-    }
-
-    private void crossfadeNeedGradient() {
-        if (needBgA == null || needBgB == null) {
-            return;
-        }
-        Region from = needShowingA ? needBgA : needBgB;
-        Region to = needShowingA ? needBgB : needBgA;
-        FadeTransition fadeOut = new FadeTransition(AMBIENT_GRADIENT_FADE, from);
-        fadeOut.setFromValue(1);
-        fadeOut.setToValue(0);
-        FadeTransition fadeIn = new FadeTransition(AMBIENT_GRADIENT_FADE, to);
-        fadeIn.setFromValue(0);
-        fadeIn.setToValue(1);
-        ParallelTransition cross = new ParallelTransition(fadeOut, fadeIn);
-        cross.setOnFinished(e -> {
-            needShowingA = !needShowingA;
-            PauseTransition pause = new PauseTransition(AMBIENT_GRADIENT_INTERVAL);
-            pause.setOnFinished(ev -> crossfadeNeedGradient());
-            pause.play();
-        });
-        cross.play();
-    }
-
-    private void crossfadeJoinGradient() {
-        if (joinBgA == null || joinBgB == null) {
-            return;
-        }
-        Region from = joinShowingA ? joinBgA : joinBgB;
-        Region to = joinShowingA ? joinBgB : joinBgA;
-        FadeTransition fadeOut = new FadeTransition(AMBIENT_GRADIENT_FADE, from);
-        fadeOut.setFromValue(1);
-        fadeOut.setToValue(0);
-        FadeTransition fadeIn = new FadeTransition(AMBIENT_GRADIENT_FADE, to);
-        fadeIn.setFromValue(0);
-        fadeIn.setToValue(1);
-        ParallelTransition cross = new ParallelTransition(fadeOut, fadeIn);
-        cross.setOnFinished(e -> {
-            joinShowingA = !joinShowingA;
-            PauseTransition pause = new PauseTransition(AMBIENT_GRADIENT_INTERVAL);
-            pause.setOnFinished(ev -> crossfadeJoinGradient());
-            pause.play();
-        });
-        cross.play();
+        return slidesForHomeDiaporamas();
     }
 
     /** Pulsation légère en boucle (2e bouton décalé comme animation-delay: 0.4s) ; pause au survol. */
     private void setupHeroPulse() {
         if (heroBtnProducts != null) {
+            heroBtnProducts.setDefaultButton(false);
             attachPulseStopOnHover(heroBtnProducts, Duration.ZERO);
         }
         if (heroBtnEvents != null) {
+            heroBtnEvents.setDefaultButton(false);
             attachPulseStopOnHover(heroBtnEvents, Duration.millis(400));
+        }
+    }
+
+    /**
+     * Ajoute une feuille sur la {@link Scene} après le premier affichage : sur certaines configs,
+     * les styles du BorderPane ne suffisent pas à remplacer le dégradé Modena des {@link Button}.
+     */
+    private void ensureHeroCtaStylesOnScene() {
+        if (HERO_CTA_FORCE_CSS == null || heroBtnProducts == null) {
+            return;
+        }
+        Platform.runLater(() -> attachHeroCtaCssIfNeeded(0));
+    }
+
+    private void attachHeroCtaCssIfNeeded(int attempt) {
+        Scene sc = heroBtnProducts.getScene();
+        if (sc != null) {
+            if (!sc.getStylesheets().contains(HERO_CTA_FORCE_CSS)) {
+                sc.getStylesheets().add(HERO_CTA_FORCE_CSS);
+            }
+            return;
+        }
+        if (attempt < 12) {
+            Platform.runLater(() -> attachHeroCtaCssIfNeeded(attempt + 1));
         }
     }
 
@@ -914,7 +1056,8 @@ public class HomeController {
             return;
         }
         Node first = card.getChildren().get(0);
-        if (!(first instanceof StackPane frame)) {
+        if (!(first instanceof StackPane frame)
+                || !frame.getStyleClass().contains("home-feature-img-frame")) {
             return;
         }
         if (frame.getChildren().isEmpty()) {
@@ -927,11 +1070,18 @@ public class HomeController {
         clip.widthProperty().bind(frame.widthProperty());
         clip.heightProperty().bind(frame.heightProperty());
         frame.setClip(clip);
-        ScaleTransition zoomIn = new ScaleTransition(Duration.millis(300), inner);
+        Node zoomTarget = inner;
+        if (!(inner instanceof ImageView) && !(inner instanceof HBox)) {
+            return;
+        }
+        if (inner instanceof HBox h && !h.getStyleClass().contains("home-feature-img-track")) {
+            return;
+        }
+        ScaleTransition zoomIn = new ScaleTransition(Duration.millis(300), zoomTarget);
         zoomIn.setToX(1.07);
         zoomIn.setToY(1.07);
         zoomIn.setInterpolator(Interpolator.EASE_BOTH);
-        ScaleTransition zoomOut = new ScaleTransition(Duration.millis(300), inner);
+        ScaleTransition zoomOut = new ScaleTransition(Duration.millis(300), zoomTarget);
         zoomOut.setToX(1);
         zoomOut.setToY(1);
         zoomOut.setInterpolator(Interpolator.EASE_BOTH);
@@ -1002,6 +1152,7 @@ public class HomeController {
             Scene scene = new Scene(root);
             scene.setFill(Color.TRANSPARENT);
             dialog.setScene(scene);
+            MainApp.applyThemeToScene(scene);
             Stage owner = MainApp.getPrimaryStage();
             if (owner != null) {
                 dialog.setWidth(owner.getWidth());
@@ -1035,6 +1186,29 @@ public class HomeController {
     @FXML
     public void onToggleTheme() {
         MainApp.toggleTheme();
+    }
+
+    @FXML
+    public void onUserShortcutBookFromHome() {
+        navigateToBlog();
+    }
+
+    @FXML
+    public void onUserShortcutBagFromHome() {
+        navigateToProducts();
+    }
+
+    @FXML
+    public void onUserShortcutNotificationsFromHome() {
+        toggleHomeNotificationsMenu();
+    }
+
+    @FXML
+    public void onPatientNotifBell(MouseEvent event) {
+        if (event != null) {
+            event.consume();
+        }
+        toggleHomeNotificationsMenu();
     }
 
     @FXML

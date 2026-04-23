@@ -1,6 +1,14 @@
 package org.example.utils;
 
+import org.example.models.ModuleContent;
+import org.example.models.Ressource;
 import org.example.models.User;
+
+
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 public class AppState {
     private static User currentUser;
@@ -14,6 +22,15 @@ public class AppState {
     private static User adminDeleteUser;
     /** Si vrai, « Annuler » sur l’écran suppression renvoie vers la fiche détail. */
     private static boolean adminDeleteReturnToDetail;
+    /** Module en cours d’édition (écran « Modifier le module »). */
+    private static ModuleContent adminEditModule;
+    private static Ressource adminEditRessource;
+    /** Section à ouvrir automatiquement dans l'espace admin utilisateurs (events/thematiques). */
+    private static String pendingAdminUsersSection;
+    /** Panier invité (clé = productId, valeur = quantity). */
+    private static final Map<Integer, Integer> guestCart = new LinkedHashMap<>();
+    /** Listeners UI déclenchés après mise à jour du panier invité. */
+    private static final List<Runnable> cartChangeListeners = new ArrayList<>();
 
     private AppState() {
     }
@@ -31,6 +48,12 @@ public class AppState {
         adminDetailUser = null;
         clearAdminEditContext();
         clearAdminDeleteContext();
+        clearAdminModuleEditContext();
+        clearAdminRessourceEditContext();
+        clearPendingAdminUsersSection();
+        clearPendingPublicRdvBooking();
+        clearPendingPublicEventDetailId();
+        guestCartClear();
     }
 
     public static User getAdminDetailUser() {
@@ -79,5 +102,172 @@ public class AppState {
     public static void clearAdminDeleteContext() {
         adminDeleteUser = null;
         adminDeleteReturnToDetail = false;
+    }
+
+    public static void beginAdminModuleEdit(ModuleContent module) {
+        adminEditModule = module;
+    }
+
+    public static ModuleContent getAdminEditModule() {
+        return adminEditModule;
+    }
+
+    public static void clearAdminModuleEditContext() {
+        adminEditModule = null;
+    }
+
+    public static void beginAdminRessourceEdit(Ressource ressource) {
+        adminEditRessource = ressource;
+    }
+
+    public static Ressource getAdminEditRessource() {
+        return adminEditRessource;
+    }
+
+    public static void clearAdminRessourceEditContext() {
+        adminEditRessource = null;
+    }
+
+    public static void setPendingAdminUsersSection(String sectionKey) {
+        if (sectionKey == null || sectionKey.isBlank()) {
+            pendingAdminUsersSection = null;
+            return;
+        }
+        pendingAdminUsersSection = sectionKey.trim().toLowerCase();
+    }
+
+    public static String consumePendingAdminUsersSection() {
+        String section = pendingAdminUsersSection;
+        pendingAdminUsersSection = null;
+        return section;
+    }
+
+    public static void clearPendingAdminUsersSection() {
+        pendingAdminUsersSection = null;
+    }
+
+    private static String pendingPublicRdvDoctorName;
+    private static int pendingPublicRdvDoctorId = -1;
+    /** Créneau choisi à l’étape 1 (réaffichage si retour depuis l’étape 2). */
+    private static int pendingPublicRdvAvailabilityId = -1;
+    private static String pendingPublicRdvConsultTypeLabel;
+    private static String pendingPublicRdvMotif;
+
+    /** > 0 : ouvrir la fiche événement public après chargement de {@code page-event-detail.fxml}. */
+    private static int pendingPublicEventDetailId = -1;
+
+    public static void setPendingPublicEventDetailId(int eventId) {
+        pendingPublicEventDetailId = eventId > 0 ? eventId : -1;
+    }
+
+    public static int getPendingPublicEventDetailId() {
+        return pendingPublicEventDetailId;
+    }
+
+    public static int consumePendingPublicEventDetailId() {
+        int id = pendingPublicEventDetailId;
+        pendingPublicEventDetailId = -1;
+        return id;
+    }
+
+    public static void clearPendingPublicEventDetailId() {
+        pendingPublicEventDetailId = -1;
+    }
+
+    public static void beginPublicRdvBooking(int doctorId, String displayName) {
+        pendingPublicRdvDoctorId = doctorId;
+        pendingPublicRdvDoctorName = displayName != null ? displayName : "";
+        pendingPublicRdvAvailabilityId = -1;
+        pendingPublicRdvConsultTypeLabel = null;
+        pendingPublicRdvMotif = null;
+    }
+
+    public static int getPendingPublicRdvDoctorId() {
+        return pendingPublicRdvDoctorId;
+    }
+
+    public static String getPendingPublicRdvDoctorName() {
+        return pendingPublicRdvDoctorName != null ? pendingPublicRdvDoctorName : "";
+    }
+
+    public static void clearPendingPublicRdvBooking() {
+        pendingPublicRdvDoctorId = -1;
+        pendingPublicRdvDoctorName = null;
+        pendingPublicRdvAvailabilityId = -1;
+        pendingPublicRdvConsultTypeLabel = null;
+        pendingPublicRdvMotif = null;
+    }
+
+    public static Map<Integer, Integer> guestCartSnapshot() {
+        return new LinkedHashMap<>(guestCart);
+    }
+
+    public static int guestCartGetQty(int productId) {
+        return guestCart.getOrDefault(productId, 0);
+    }
+
+    public static void guestCartAdd(int productId, int qty) {
+        if (qty <= 0) return;
+        guestCart.put(productId, guestCartGetQty(productId) + qty);
+    }
+
+    public static void guestCartSetQty(int productId, int qty) {
+        if (qty <= 0) {
+            guestCart.remove(productId);
+            return;
+        }
+        guestCart.put(productId, qty);
+    }
+
+    public static void guestCartRemove(int productId) {
+        guestCart.remove(productId);
+    }
+
+    public static void guestCartClear() {
+        guestCart.clear();
+    }
+
+    public static void addCartChangeListener(Runnable listener) {
+        if (listener != null) {
+            cartChangeListeners.add(listener);
+        }
+    }
+
+    public static void removeCartChangeListener(Runnable listener) {
+        cartChangeListeners.remove(listener);
+    }
+
+    public static void notifyCartChanged() {
+        for (Runnable listener : List.copyOf(cartChangeListeners)) {
+            try {
+                listener.run();
+            } catch (Exception ignored) {
+                // Do not block cart updates if a listener fails.
+            }
+        }
+    }
+
+    public static int getPendingPublicRdvAvailabilityId() {
+        return pendingPublicRdvAvailabilityId;
+    }
+
+    public static void setPendingPublicRdvAvailabilityId(int availabilityId) {
+        pendingPublicRdvAvailabilityId = availabilityId;
+    }
+
+    public static String getPendingPublicRdvConsultTypeLabel() {
+        return pendingPublicRdvConsultTypeLabel != null ? pendingPublicRdvConsultTypeLabel : "";
+    }
+
+    public static void setPendingPublicRdvConsultTypeLabel(String label) {
+        pendingPublicRdvConsultTypeLabel = label;
+    }
+
+    public static String getPendingPublicRdvMotif() {
+        return pendingPublicRdvMotif != null ? pendingPublicRdvMotif : "";
+    }
+
+    public static void setPendingPublicRdvMotif(String motif) {
+        pendingPublicRdvMotif = motif;
     }
 }

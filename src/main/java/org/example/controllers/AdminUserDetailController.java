@@ -43,8 +43,6 @@ public class AdminUserDetailController {
     @FXML
     private Label detailActifBadge;
     @FXML
-    private Label valIdLabel;
-    @FXML
     private Label valNomLabel;
     @FXML
     private Label valPrenomLabel;
@@ -112,7 +110,6 @@ public class AdminUserDetailController {
         detailActifBadge.getStyleClass().removeAll("admin-badge-actif", "admin-badge-inactif");
         detailActifBadge.getStyleClass().add(u.isActif() ? "admin-badge-actif" : "admin-badge-inactif");
 
-        valIdLabel.setText(String.valueOf(u.getId()));
         valNomLabel.setText(emptyDash(nom));
         valPrenomLabel.setText(emptyDash(prenom));
         valEmailLabel.setText(emptyDash(u.getEmail()));
@@ -235,7 +232,7 @@ public class AdminUserDetailController {
     @FXML
     public void onNavProducts() {
         try {
-            MainApp.showDashboard(1);
+            MainApp.showAdminProducts();
         } catch (IOException e) {
             alert(Alert.AlertType.ERROR, "Erreur", e.getMessage());
         }
@@ -244,7 +241,7 @@ public class AdminUserDetailController {
     @FXML
     public void onNavStocks() {
         try {
-            MainApp.showDashboard(1);
+            MainApp.showAdminStocks();
         } catch (IOException e) {
             alert(Alert.AlertType.ERROR, "Erreur", e.getMessage());
         }
@@ -253,7 +250,7 @@ public class AdminUserDetailController {
     @FXML
     public void onNavOrders() {
         try {
-            MainApp.showDashboard(1);
+            MainApp.showAdminOrders();
         } catch (IOException e) {
             alert(Alert.AlertType.ERROR, "Erreur", e.getMessage());
         }
@@ -280,6 +277,7 @@ public class AdminUserDetailController {
     @FXML
     public void onNavModules() {
         try {
+            MainApp.showAdminModules();
             MainApp.showDashboard(6);
         } catch (IOException e) {
             alert(Alert.AlertType.ERROR, "Erreur", e.getMessage());

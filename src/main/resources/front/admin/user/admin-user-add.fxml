@@ -53,7 +53,6 @@
                         <TextField fx:id="topSearchField" promptText="Rechercher" styleClass="admin-search" HBox.hgrow="ALWAYS"/>
                     </HBox>
                     <Region minWidth="16"/>
-                    <Label text="🔔"/>
                     <Region minWidth="12"/>
                     <HBox alignment="CENTER_LEFT" onMouseClicked="#onOpenMyProfile" spacing="10" styleClass="admin-topbar-profile">
                         <StackPane fx:id="topbarAvatarHost" styleClass="admin-topbar-avatar-host"/>
@@ -92,6 +91,7 @@
                                     <HBox alignment="CENTER_LEFT" spacing="10" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="7">
                                         <Button onAction="#onChoosePhoto" styleClass="admin-btn-outline" text="Choisir un fichier"/>
                                         <Label fx:id="photoPathLabel" styleClass="admin-form-hint" text="Aucun fichier choisi"/>
+                                        <ImageView fx:id="photoPreviewImage" fitHeight="84.0" fitWidth="84.0" managed="false" pickOnBounds="true" preserveRatio="true" visible="false"/>
                                     </HBox>
                                     <Label styleClass="admin-form-label" text="Mot de passe *" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="8"/>
                                     <PasswordField fx:id="passwordField" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="9"/>

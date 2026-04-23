@@ -1,0 +1,88 @@
+/* Dialogue notifications patient (réponses RDV) — thème rouge */
+
+.patient-rdv-notif-dialog {
+    -fx-background-color: #fff5f5;
+}
+
+.patient-rdv-notif-root {
+    -fx-background-color: #fff5f5;
+}
+
+.patient-rdv-notif-header {
+    -fx-font-size: 15px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #b91c1c;
+}
+
+.patient-rdv-notif-hint {
+    -fx-font-size: 12px;
+    -fx-text-fill: #7f1d1d;
+}
+
+.patient-rdv-notif-subtitle {
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #991b1b;
+}
+
+.patient-rdv-notif-empty {
+    -fx-text-fill: #7f1d1d;
+    -fx-font-size: 13px;
+}
+
+.patient-rdv-notif-scroll {
+    -fx-background-color: transparent;
+    -fx-border-color: #fecaca;
+    -fx-border-radius: 8px;
+    -fx-background-radius: 8px;
+}
+
+.patient-rdv-notif-scroll .viewport {
+    -fx-background-color: #fffafa;
+}
+
+.patient-rdv-notif-line {
+    -fx-padding: 10 12 10 12;
+    -fx-background-radius: 8px;
+    -fx-border-radius: 8px;
+}
+
+.patient-rdv-notif-line-unread {
+    -fx-background-color: #fee2e2;
+    -fx-border-color: #ef4444;
+    -fx-border-width: 0 0 0 4px;
+}
+
+.patient-rdv-notif-line-read {
+    -fx-background-color: #fef2f2;
+    -fx-border-color: transparent transparent transparent #fca5a5;
+    -fx-border-width: 0 0 0 3px;
+}
+
+.patient-rdv-notif-line-text {
+    -fx-text-fill: #450a0a;
+    -fx-font-size: 13px;
+}
+
+.patient-rdv-notif-line-unread .patient-rdv-notif-line-text {
+    -fx-font-weight: bold;
+}
+
+.patient-rdv-notif-badge {
+    -fx-text-fill: #ffffff;
+    -fx-background-color: #dc2626;
+    -fx-padding: 2 8 2 8;
+    -fx-background-radius: 4px;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+}
+
+.patient-rdv-notif-dialog .button {
+    -fx-background-color: #b91c1c;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+}
+
+.patient-rdv-notif-dialog .button:hover {
+    -fx-background-color: #991b1b;
+}

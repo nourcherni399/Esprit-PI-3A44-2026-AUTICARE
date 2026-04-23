@@ -51,17 +51,21 @@
     -fx-background-color: white;
     -fx-border-color: #c5d9f0;
     -fx-border-radius: 8;
+    -fx-selection-bar: #4a90d9;
+    -fx-selection-bar-non-focused: #4a90d9;
 }
 
 .signup-profile-combo .list-cell {
     -fx-padding: 8 12 8 12;
+    -fx-text-fill: #1e2740;
 }
 
 .signup-profile-combo .list-cell:hover {
     -fx-background-color: #eef6fc;
 }
 
-.signup-profile-combo .list-cell:selected {
+.signup-profile-combo .list-cell:filled:selected,
+.signup-profile-combo .list-cell:filled:selected:hover {
     -fx-background-color: #4a90d9;
     -fx-text-fill: white;
 }

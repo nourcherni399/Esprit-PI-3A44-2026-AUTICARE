@@ -2,16 +2,27 @@ package org.example.controllers;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 
+import java.io.File;
 import java.util.Map;
 import javafx.stage.FileChooser;
 import javafx.stage.Window;
 import org.example.MainApp;
+import org.example.models.AdminUser;
+import org.example.models.Medecin;
 import org.example.models.Role;
 import org.example.models.User;
+import org.example.models.UserFactory;
+import org.example.services.FaceBiometricException;
+import org.example.services.FaceBiometricService;
+import org.example.services.FaceIdClientService;
+import org.example.services.FaceIdConfig;
 import org.example.services.GoogleOAuthService;
 import org.example.services.UserService;
 import org.example.utils.AppState;
@@ -21,10 +32,14 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.regex.Pattern;
 
-public class SignupController {
+public class SignupController implements PublicShellAware {
+
+    private PublicShellController shell;
 
     @FXML
     private BorderPane root;
+    @FXML
+    private VBox signupPageRoot;
 
     private static final Map<String, Role> PROFILE_TO_ROLE = Map.of(
             "Personne concernée (patient)", Role.PATIENT,
@@ -59,6 +74,8 @@ public class SignupController {
     @FXML
     private Label biometricPathLabel;
     @FXML
+    private ImageView biometricPreviewImage;
+    @FXML
     private Button chooseFileBtn;
     @FXML
     private VBox patientFieldsBox;
@@ -74,17 +91,35 @@ public class SignupController {
     private TextField relationParentField;
 
     private final UserService userService = new UserService();
+    private final FaceIdConfig faceIdConfig = new FaceIdConfig();
+    private final FaceBiometricService faceBiometricService = new FaceIdClientService(faceIdConfig);
+    private File biometricFile;
+
+    @Override
+    public void setPublicShell(PublicShellController shell) {
+        this.shell = shell;
+    }
 
     @FXML
     public void initialize() {
-        if (root != null) {
-            root.getStylesheets().add(getClass().getResource("/styles/signup.css").toExternalForm());
+        Region styleHost = signupPageRoot != null ? signupPageRoot : root;
+        if (styleHost != null) {
+            var signupCss = getClass().getResource("/styles/signup.css");
+            if (signupCss != null) {
+                String ext = signupCss.toExternalForm();
+                if (!styleHost.getStylesheets().contains(ext)) {
+                    styleHost.getStylesheets().add(ext);
+                }
+            }
         }
-        if (langCombo != null) {
+        boolean embedded = signupPageRoot != null;
+        if (!embedded && langCombo != null) {
             langCombo.getItems().addAll("FR", "EN");
             langCombo.getSelectionModel().selectFirst();
         }
-        AuthPageController.attachAnimatedAuthBackground(langCombo != null ? langCombo : root);
+        if (!embedded) {
+            AuthPageController.attachAnimatedAuthBackground(langCombo != null ? langCombo : root);
+        }
         profileCombo.setPromptText("Sélectionnez votre profil");
         profileCombo.getItems().setAll(
                 "Personne concernée (patient)",
@@ -98,7 +133,13 @@ public class SignupController {
             sexeCombo.getItems().setAll("Choisir", "Femme", "Homme");
             sexeCombo.getSelectionModel().selectFirst();
         }
+        biometricFile = null;
         biometricPathLabel.setText("Aucun fichier choisi");
+        if (biometricPreviewImage != null) {
+            biometricPreviewImage.setImage(null);
+            biometricPreviewImage.setVisible(false);
+            biometricPreviewImage.setManaged(false);
+        }
         if (passwordField != null) {
             passwordField.textProperty().addListener((obs, o, n) -> updatePasswordRules(n));
             updatePasswordRules(passwordField.getText());
@@ -114,7 +155,24 @@ public class SignupController {
         Window w = chooseFileBtn.getScene().getWindow();
         java.io.File f = chooser.showOpenDialog(w);
         if (f != null) {
-            biometricPathLabel.setText(f.getName());
+            biometricFile = f;
+            Image img = new Image(f.toURI().toString(), 84, 84, true, true);
+            if (img.isError()) {
+                biometricPathLabel.setText("Image invalide");
+                biometricFile = null;
+                if (biometricPreviewImage != null) {
+                    biometricPreviewImage.setImage(null);
+                    biometricPreviewImage.setVisible(false);
+                    biometricPreviewImage.setManaged(false);
+                }
+                return;
+            }
+            if (biometricPreviewImage != null) {
+                biometricPreviewImage.setImage(img);
+                biometricPreviewImage.setVisible(true);
+                biometricPreviewImage.setManaged(true);
+            }
+            biometricPathLabel.setText("Image sélectionnée");
         }
     }
 
@@ -172,13 +230,27 @@ public class SignupController {
                 alert(Alert.AlertType.WARNING, "Email", "Un compte existe déjà avec cet email.");
                 return;
             }
-            User u = new User();
+            User u = UserFactory.createByRole(role);
             u.setPrenom(prenom);
             u.setNom(nom);
             u.setEmail(email);
             u.setTelephone(tel);
             u.setMotDePasseHash(PasswordUtil.hash(pwd));
             u.setRole(role);
+            if (faceIdConfig.isEnabled()) {
+                if (biometricFile == null) {
+                    alert(Alert.AlertType.WARNING, "Face ID",
+                            "Veuillez choisir une image visage pour activer la connexion Face ID.");
+                    return;
+                }
+                try {
+                    String templateJson = faceBiometricService.enrollFromImage(biometricFile);
+                    u.setDataFaceApi(templateJson);
+                } catch (FaceBiometricException ex) {
+                    alert(Alert.AlertType.WARNING, "Face ID", faceMessageForCode(ex));
+                    return;
+                }
+            }
             if (role == Role.PATIENT) {
                 u.setDateNaissance(dateNaissancePicker.getValue());
                 u.setAdresse(trim(adresseField));
@@ -194,7 +266,7 @@ public class SignupController {
             userService.add(u);
             alert(Alert.AlertType.INFORMATION, "Compte créé",
                     "Vous pouvez maintenant vous connecter avec votre email.");
-            MainApp.showLogin();
+            goToLoginPage();
         } catch (SQLException e) {
             alert(Alert.AlertType.ERROR, "Erreur", e.getMessage());
         } catch (IOException e) {
@@ -202,10 +274,18 @@ public class SignupController {
         }
     }
 
+    private void goToLoginPage() throws IOException {
+        if (shell != null) {
+            shell.loadPage("login");
+        } else {
+            MainApp.showLogin();
+        }
+    }
+
     @FXML
     public void onBackToLogin() {
         try {
-            MainApp.showLogin();
+            goToLoginPage();
         } catch (IOException e) {
             alert(Alert.AlertType.ERROR, "Erreur", e.getMessage());
         }
@@ -217,8 +297,10 @@ public class SignupController {
         try {
             User u = google.signInWithGoogle();
             AppState.setCurrentUser(u);
-            if (u.getRole() == Role.ADMIN) {
+            if (u instanceof AdminUser) {
                 MainApp.showAdminUsers();
+            } else if (u instanceof Medecin) {
+                MainApp.showMedecinDashboard();
             } else {
                 MainApp.showHome();
             }
@@ -231,13 +313,19 @@ public class SignupController {
     }
 
     @FXML
-    public void onNavConnexion() throws IOException {
-        MainApp.showLogin();
+    public void onNavConnexion() {
+        try {
+            goToLoginPage();
+        } catch (IOException e) {
+            alert(Alert.AlertType.ERROR, "Erreur", e.getMessage());
+        }
     }
 
     @FXML
     public void onRegister() {
-        prenomField.requestFocus();
+        if (prenomField != null) {
+            prenomField.requestFocus();
+        }
     }
 
     @FXML
@@ -256,27 +344,31 @@ public class SignupController {
 
     @FXML
     public void onNavProduits(MouseEvent e) {
-        goHomeSection("produits");
+        navigateToPublicPage("produits");
     }
 
     @FXML
     public void onNavRdv(MouseEvent e) {
-        goHomeSection("rdv");
+        navigateToPublicPage("rdv");
     }
 
     @FXML
     public void onNavEvents(MouseEvent e) {
-        goHomeSection("events");
+        navigateToPublicPage("events");
     }
 
     @FXML
     public void onNavBlog(MouseEvent e) {
-        goHomeSection("blog");
+        navigateToPublicPage("blog");
     }
 
-    private void goHomeSection(String key) {
+    private void navigateToPublicPage(String pageId) {
         try {
-            MainApp.showHomeScrollTo(key);
+            if (shell != null) {
+                shell.loadPage(pageId);
+            } else {
+                MainApp.showPublicPage(pageId);
+            }
         } catch (IOException ex) {
             alert(Alert.AlertType.ERROR, "Erreur", ex.getMessage());
         }
@@ -293,22 +385,22 @@ public class SignupController {
 
     @FXML
     public void onFooterNavProduits() {
-        goHomeSection("produits");
+        navigateToPublicPage("produits");
     }
 
     @FXML
     public void onFooterNavRdv() {
-        goHomeSection("rdv");
+        navigateToPublicPage("rdv");
     }
 
     @FXML
     public void onFooterNavEvents() {
-        goHomeSection("events");
+        navigateToPublicPage("events");
     }
 
     @FXML
     public void onFooterNavBlog() {
-        goHomeSection("blog");
+        navigateToPublicPage("blog");
     }
 
     @FXML
@@ -319,7 +411,11 @@ public class SignupController {
 
     @FXML
     public void onFooterContact() {
-        goHomeSection("contact");
+        try {
+            MainApp.showHomeScrollTo("contact");
+        } catch (IOException ex) {
+            alert(Alert.AlertType.ERROR, "Erreur", ex.getMessage());
+        }
     }
 
     @FXML
@@ -348,6 +444,22 @@ public class SignupController {
 
     private static String trim(TextField f) {
         return f.getText() == null ? "" : f.getText().trim();
+    }
+
+    private static String faceMessageForCode(FaceBiometricException ex) {
+        if (ex == null) {
+            return "Erreur Face ID.";
+        }
+        String code = ex.getCode() != null ? ex.getCode().trim().toUpperCase() : "";
+        return switch (code) {
+            case "NO_FACE" -> "Aucun visage détecté. Utilisez une photo nette du visage.";
+            case "MULTIPLE_FACES" -> "Plusieurs visages détectés. Utilisez une image avec un seul visage.";
+            case "INVALID_IMAGE" -> "Image invalide. Veuillez choisir un fichier image valide.";
+            case "SERVICE_UNAVAILABLE" -> "Service Face ID indisponible. Réessayez plus tard.";
+            default -> (ex.getMessage() != null && !ex.getMessage().isBlank())
+                    ? ex.getMessage()
+                    : "Erreur Face ID.";
+        };
     }
 
     private void alert(Alert.AlertType type, String title, String msg) {

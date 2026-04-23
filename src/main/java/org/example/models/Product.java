@@ -7,8 +7,16 @@ public class Product {
     private double prix;
     private String categorie;
     private int stock;
+    private int stockId;
     private String imagePath;
+    private boolean disponible = true;
     private boolean publie;
+    private boolean valide = true;
+    private boolean genereParIa;
+    private String sku;
+    private Integer seuilAlerte;
+    private Integer userId;
+    private String statutPublication;
     private Double noteMoyenne;
 
     public int getId() { return id; }
@@ -23,10 +31,26 @@ public class Product {
     public void setCategorie(String categorie) { this.categorie = categorie; }
     public int getStock() { return stock; }
     public void setStock(int stock) { this.stock = stock; }
+    public int getStockId() { return stockId; }
+    public void setStockId(int stockId) { this.stockId = stockId; }
     public String getImagePath() { return imagePath; }
     public void setImagePath(String imagePath) { this.imagePath = imagePath; }
+    public boolean isDisponible() { return disponible; }
+    public void setDisponible(boolean disponible) { this.disponible = disponible; }
     public boolean isPublie() { return publie; }
     public void setPublie(boolean publie) { this.publie = publie; }
+    public boolean isValide() { return valide; }
+    public void setValide(boolean valide) { this.valide = valide; }
+    public boolean isGenereParIa() { return genereParIa; }
+    public void setGenereParIa(boolean genereParIa) { this.genereParIa = genereParIa; }
+    public String getSku() { return sku; }
+    public void setSku(String sku) { this.sku = sku; }
+    public Integer getSeuilAlerte() { return seuilAlerte; }
+    public void setSeuilAlerte(Integer seuilAlerte) { this.seuilAlerte = seuilAlerte; }
+    public Integer getUserId() { return userId; }
+    public void setUserId(Integer userId) { this.userId = userId; }
+    public String getStatutPublication() { return statutPublication; }
+    public void setStatutPublication(String statutPublication) { this.statutPublication = statutPublication; }
     public Double getNoteMoyenne() { return noteMoyenne; }
     public void setNoteMoyenne(Double noteMoyenne) { this.noteMoyenne = noteMoyenne; }
 

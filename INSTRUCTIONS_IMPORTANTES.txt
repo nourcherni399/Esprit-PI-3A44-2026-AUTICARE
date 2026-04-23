@@ -1,0 +1,61 @@
+═══════════════════════════════════════════════════════════════════════
+  INSTRUCTIONS POUR APPLIQUER LES STYLES (3 MÉTHODES)
+═══════════════════════════════════════════════════════════════════════
+
+Les modifications CSS sont CORRECTES dans les fichiers. Le problème est
+que JavaFX/Maven/IntelliJ gardent les ANCIENS fichiers en cache.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+MÉTHODE 1 : Script automatique (RECOMMANDÉ)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. FERME complètement l'application si elle tourne
+2. Double-clique sur : SOLUTION_FINALE.bat
+3. Attends que l'app se lance automatiquement
+4. Tu DOIS voir les changements
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+MÉTHODE 2 : Dans IntelliJ IDEA
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. FERME complètement l'application (Stop, pas juste Run)
+2. Menu : Build → Rebuild Project (PAS "Build Project", REBUILD!)
+3. Attends la fin complète (barre de progression en bas)
+4. Menu : Run → Run 'AutiCare (javafx:run)'
+5. Tu DOIS voir les changements
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+MÉTHODE 3 : Ligne de commande manuelle
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Ouvre PowerShell dans le dossier du projet et tape :
+
+    Remove-Item -Recurse -Force target
+    .\mvnw.cmd clean compile
+    .\mvnw.cmd javafx:run
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+CE QUE TU DOIS VOIR APRÈS :
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✓ Trait NOIR ÉPAIS (2px) sous chaque en-tête de carte
+✓ ESPACE de 36px entre le trait et la barre de recherche/boutons
+✓ En-têtes de tableau avec DÉGRADÉ GRIS et texte BLANC CENTRÉ
+✓ GRILLE COMPLÈTE : bordures entre toutes les cellules
+✓ Carte "Gestion des ressources" avec fond blanc + ombre
+✓ Titre en GRAS, description en gris
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+SI ÇA NE MARCHE TOUJOURS PAS :
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Envoie-moi une capture d'écran de :
+1. L'application qui tourne
+2. Le contenu du dossier target/classes/styles/ (si il existe)
+
+═══════════════════════════════════════════════════════════════════════

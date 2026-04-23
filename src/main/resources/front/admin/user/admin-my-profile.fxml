@@ -6,6 +6,7 @@
 <?import javafx.scene.control.ProgressBar?>
 <?import javafx.scene.control.Separator?>
 <?import javafx.scene.control.TextField?>
+<?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.ColumnConstraints?>
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.HBox?>
@@ -91,6 +92,7 @@
                 <HBox alignment="CENTER_LEFT" spacing="12">
                     <Button fx:id="choosePhotoButton" onAction="#onChoosePhoto" styleClass="admin-profile-choose-file" text="Choisir un fichier"/>
                     <Label fx:id="photoPathLabel" styleClass="admin-profile-photo-hint" text="Aucun fichier choisi" wrapText="true"/>
+                    <ImageView fx:id="photoPreviewImage" fitHeight="84.0" fitWidth="84.0" managed="false" pickOnBounds="true" preserveRatio="true" visible="false"/>
                 </HBox>
                 <Label styleClass="admin-profile-form-hint" text="Formats : JPG, PNG, GIF, WebP. Poids max. 5 Mo."/>
                 <Region VBox.vgrow="ALWAYS"/>

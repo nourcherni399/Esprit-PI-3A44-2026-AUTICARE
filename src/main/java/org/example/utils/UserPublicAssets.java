@@ -19,10 +19,23 @@ public final class UserPublicAssets {
 
     private static final String PROP = "auticare.public.root";
     private static final String ENV = "AUTICARE_PUBLIC_ROOT";
-    /** Dossier {@code public} par défaut — aligné sur le logo admin (logo sous {@code public/images}). */
-    private static final Path DEFAULT_PUBLIC = Path.of("C:/Users/comme/Desktop/PI/public");
 
     private UserPublicAssets() {
+    }
+
+    /**
+     * Racine {@code public} par défaut : {@code %USERPROFILE%\.auticare\public} (Windows)
+     * ou équivalent, toujours accessible en écriture pour l’utilisateur courant.
+     * <p>
+     * Surcharge possible : propriété système {@code -Dauticare.public.root=...}
+     * ou variable d’environnement {@code AUTICARE_PUBLIC_ROOT}.
+     */
+    private static Path defaultPublicRoot() {
+        String home = System.getProperty("user.home");
+        if (home == null || home.isBlank()) {
+            home = System.getProperty("user.dir", ".");
+        }
+        return Path.of(home, ".auticare", "public");
     }
 
     public static Path getPublicRoot() {
@@ -34,7 +47,7 @@ public final class UserPublicAssets {
         if (e != null && !e.isBlank()) {
             return Path.of(e.trim()).toAbsolutePath().normalize();
         }
-        return DEFAULT_PUBLIC.toAbsolutePath().normalize();
+        return defaultPublicRoot().toAbsolutePath().normalize();
     }
 
     /**
@@ -64,5 +77,15 @@ public final class UserPublicAssets {
     public static boolean imageFileExists(String relativePath) {
         Path p = resolvePublicRelative(relativePath);
         return p != null && Files.isRegularFile(p);
+    }
+
+    /**
+     * Compatibilité avec les anciens appels utilitaires.
+     *
+     * @return fichier existant sous {@code public}, sinon {@code null}
+     */
+    public static Path findPublicRelativeFile(String relativePath) {
+        Path p = resolvePublicRelative(relativePath);
+        return (p != null && Files.isRegularFile(p)) ? p : null;
     }
 }

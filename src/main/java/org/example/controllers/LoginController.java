@@ -8,8 +8,15 @@ import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.VBox;
+import javafx.stage.FileChooser;
 import org.example.MainApp;
-import org.example.models.Role;
+import org.example.models.AdminUser;
+import org.example.models.Medecin;
+import org.example.models.User;
+import org.example.services.FaceBiometricException;
+import org.example.services.FaceBiometricService;
+import org.example.services.FaceIdClientService;
+import org.example.services.FaceIdConfig;
 import org.example.services.GoogleOAuthService;
 import org.example.services.UserService;
 import org.example.utils.AppState;
@@ -17,8 +24,16 @@ import org.example.utils.PasswordRecoveryState;
 import org.example.utils.PasswordUtil;
 
 import java.io.IOException;
+import java.io.File;
+import java.sql.SQLException;
+import java.util.List;
 
-public class LoginController {
+public class LoginController implements PublicShellAware {
+
+    private PublicShellController shell;
+
+    @FXML
+    private VBox loginPageRoot;
     @FXML
     private TextField emailField;
     @FXML
@@ -45,18 +60,40 @@ public class LoginController {
     private TextField pinCodeField;
 
     private final UserService userService = new UserService();
+    private final FaceIdConfig faceIdConfig = new FaceIdConfig();
+    private final FaceBiometricService faceBiometricService = new FaceIdClientService(faceIdConfig);
     private boolean passwordVisible;
+
+    @Override
+    public void setPublicShell(PublicShellController shell) {
+        this.shell = shell;
+    }
 
     @FXML
     public void initialize() {
-        if (langCombo != null) {
+        boolean embedded = loginPageRoot != null;
+        if (!embedded && langCombo != null) {
             langCombo.getItems().addAll("FR", "EN");
             langCombo.getSelectionModel().selectFirst();
         }
-        AuthPageController.attachAnimatedAuthBackground(langCombo);
+        if (!embedded) {
+            AuthPageController.attachAnimatedAuthBackground(langCombo);
+        }
         if (passwordVisibleField != null) {
             passwordVisibleField.setVisible(false);
             passwordVisibleField.setManaged(false);
+        }
+    }
+
+    private void navigateToPublicPage(String pageId) {
+        try {
+            if (shell != null) {
+                shell.loadPage(pageId);
+            } else {
+                MainApp.showPublicPage(pageId);
+            }
+        } catch (IOException e) {
+            show(Alert.AlertType.ERROR, "Navigation", e.getMessage());
         }
     }
 
@@ -82,9 +119,15 @@ public class LoginController {
             }
             var u = cand;
             AppState.setCurrentUser(u);
-            if (u.getRole() == Role.ADMIN) {
+            if (u instanceof AdminUser) {
                 MainApp.showAdminUsers();
+            } else if (u instanceof Medecin) {
+                MainApp.showMedecinDashboard();
             } else {
+                if (AppState.getPendingPublicEventDetailId() > 0) {
+                    MainApp.showPublicPage("event-detail");
+                    return;
+                }
                 MainApp.showHome();
             }
         } catch (Exception e) {
@@ -206,8 +249,10 @@ public class LoginController {
         try {
             var u = google.signInWithGoogle();
             AppState.setCurrentUser(u);
-            if (u.getRole() == Role.ADMIN) {
+            if (u instanceof AdminUser) {
                 MainApp.showAdminUsers();
+            } else if (u instanceof Medecin) {
+                MainApp.showMedecinDashboard();
             } else {
                 MainApp.showHome();
             }
@@ -221,16 +266,74 @@ public class LoginController {
 
     @FXML
     public void onFaceIdSignIn() {
-        show(Alert.AlertType.INFORMATION, "Face ID", "Face ID non disponible sur cette plateforme.");
+        if (!faceIdConfig.isEnabled()) {
+            show(Alert.AlertType.INFORMATION, "Face ID", "Face ID est désactivé.");
+            return;
+        }
+        if (faceIdConfig.isRequireHealthy() && faceBiometricService instanceof FaceIdClientService client && !client.isHealthy()) {
+            show(Alert.AlertType.WARNING, "Face ID", "Service Face ID indisponible.");
+            return;
+        }
+        FileChooser chooser = new FileChooser();
+        chooser.setTitle("Image de vérification Face ID");
+        chooser.getExtensionFilters().add(
+                new FileChooser.ExtensionFilter("Images", "*.png", "*.jpg", "*.jpeg", "*.gif", "*.webp"));
+        File probe = chooser.showOpenDialog(emailField != null && emailField.getScene() != null
+                ? emailField.getScene().getWindow()
+                : null);
+        if (probe == null) {
+            return;
+        }
+        try {
+            List<User> users = userService.findAll().stream()
+                    .filter(User::isActif)
+                    .filter(u -> u.getDataFaceApi() != null && !u.getDataFaceApi().isBlank())
+                    .toList();
+            if (users.isEmpty()) {
+                show(Alert.AlertType.INFORMATION, "Face ID", "Aucun utilisateur enrôlé Face ID.");
+                return;
+            }
+            User bestUser = null;
+            double bestScore = -1.0;
+            for (User user : users) {
+                try {
+                    double score = faceBiometricService.similarity(user.getDataFaceApi(), probe);
+                    if (score > bestScore) {
+                        bestScore = score;
+                        bestUser = user;
+                    }
+                } catch (FaceBiometricException ex) {
+                    String code = ex.getCode() != null ? ex.getCode().trim().toUpperCase() : "";
+                    if ("NO_FACE".equals(code) || "MULTIPLE_FACES".equals(code) || "INVALID_IMAGE".equals(code)) {
+                        show(Alert.AlertType.WARNING, "Face ID", faceMessageForCode(ex));
+                        return;
+                    }
+                }
+            }
+            if (bestUser == null || bestScore < faceIdConfig.threshold()) {
+                show(Alert.AlertType.INFORMATION, "Face ID", "Aucun visage reconnu.");
+                return;
+            }
+            AppState.setCurrentUser(bestUser);
+            if (bestUser instanceof AdminUser) {
+                MainApp.showAdminUsers();
+            } else if (bestUser instanceof Medecin) {
+                MainApp.showMedecinDashboard();
+            } else {
+                MainApp.showHome();
+            }
+        } catch (FaceBiometricException ex) {
+            show(Alert.AlertType.WARNING, "Face ID", faceMessageForCode(ex));
+        } catch (SQLException e) {
+            show(Alert.AlertType.ERROR, "Erreur", e.getMessage());
+        } catch (Exception e) {
+            show(Alert.AlertType.ERROR, "Face ID", "Erreur lors de la connexion Face ID.");
+        }
     }
 
     @FXML
     public void onRegister() {
-        try {
-            MainApp.showSignup();
-        } catch (IOException e) {
-            show(Alert.AlertType.ERROR, "Erreur", e.getMessage());
-        }
+        navigateToPublicPage("signup");
     }
 
     @FXML
@@ -254,30 +357,22 @@ public class LoginController {
 
     @FXML
     public void onNavProduits(MouseEvent event) {
-        goHomeSection("produits");
+        navigateToPublicPage("produits");
     }
 
     @FXML
     public void onNavRdv(MouseEvent event) {
-        goHomeSection("rdv");
+        navigateToPublicPage("rdv");
     }
 
     @FXML
     public void onNavEvents(MouseEvent event) {
-        goHomeSection("events");
+        navigateToPublicPage("events");
     }
 
     @FXML
     public void onNavBlog(MouseEvent event) {
-        goHomeSection("blog");
-    }
-
-    private void goHomeSection(String key) {
-        try {
-            MainApp.showHomeScrollTo(key);
-        } catch (IOException e) {
-            show(Alert.AlertType.ERROR, "Erreur", e.getMessage());
-        }
+        navigateToPublicPage("blog");
     }
 
     @FXML
@@ -291,22 +386,22 @@ public class LoginController {
 
     @FXML
     public void onFooterNavProduits() {
-        goHomeSection("produits");
+        navigateToPublicPage("produits");
     }
 
     @FXML
     public void onFooterNavRdv() {
-        goHomeSection("rdv");
+        navigateToPublicPage("rdv");
     }
 
     @FXML
     public void onFooterNavEvents() {
-        goHomeSection("events");
+        navigateToPublicPage("events");
     }
 
     @FXML
     public void onFooterNavBlog() {
-        goHomeSection("blog");
+        navigateToPublicPage("blog");
     }
 
     @FXML
@@ -317,7 +412,11 @@ public class LoginController {
 
     @FXML
     public void onFooterContact() {
-        goHomeSection("contact");
+        try {
+            MainApp.showHomeScrollTo("contact");
+        } catch (IOException e) {
+            show(Alert.AlertType.ERROR, "Erreur", e.getMessage());
+        }
     }
 
     @FXML
@@ -350,5 +449,21 @@ public class LoginController {
         alert.setHeaderText(null);
         alert.setContentText(message);
         alert.showAndWait();
+    }
+
+    private static String faceMessageForCode(FaceBiometricException ex) {
+        if (ex == null) {
+            return "Erreur Face ID.";
+        }
+        String code = ex.getCode() != null ? ex.getCode().trim().toUpperCase() : "";
+        return switch (code) {
+            case "NO_FACE" -> "Aucun visage détecté. Utilisez une photo nette du visage.";
+            case "MULTIPLE_FACES" -> "Plusieurs visages détectés. Utilisez une image avec un seul visage.";
+            case "INVALID_IMAGE" -> "Image invalide. Veuillez choisir un fichier image valide.";
+            case "SERVICE_UNAVAILABLE" -> "Service Face ID indisponible. Réessayez plus tard.";
+            default -> (ex.getMessage() != null && !ex.getMessage().isBlank())
+                    ? ex.getMessage()
+                    : "Erreur Face ID.";
+        };
     }
 }

@@ -198,12 +198,31 @@
 }
 
 .login-card-left {
-    -fx-background-color: #f4f6f9;
+    -fx-background-color: #f8f9fa;
     -fx-background-radius: 20 0 0 20;
     -fx-padding: 36 32 36 32;
     -fx-spacing: 16;
     -fx-alignment: top-left;
     -fx-pref-width: 380;
+}
+
+.login-brand-stack {
+    -fx-alignment: top-left;
+}
+
+.login-brand-text-block {
+    -fx-padding: 4 0 0 0;
+}
+
+.auth-brand-name {
+    -fx-font-size: 28px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #2563eb;
+}
+
+.auth-brand-tagline {
+    -fx-font-size: 13px;
+    -fx-text-fill: #4b5563;
 }
 
 .welcome-label {
@@ -461,4 +480,19 @@
 .pwd-rule-valid {
     -fx-text-fill: #16a34a;
     -fx-font-weight: 600;
+}
+
+/* Connexion / inscription (coque public-shell, mode auth) : cartes légèrement transparentes pour laisser voir le fond accueil (hero) */
+.home-scroll-content.public-shell--auth-mode .login-card {
+    -fx-background-color: rgba(255, 255, 255, 0.9);
+}
+.home-scroll-content.public-shell--auth-mode .login-card-left {
+    -fx-background-color: rgba(248, 249, 250, 0.82);
+}
+.home-scroll-content.public-shell--auth-mode .login-card-right {
+    -fx-background-color: rgba(255, 255, 255, 0.88);
+}
+.home-scroll-content.public-shell--auth-mode .signup-scroll,
+.home-scroll-content.public-shell--auth-mode .signup-scroll .viewport {
+    -fx-background-color: transparent;
 }

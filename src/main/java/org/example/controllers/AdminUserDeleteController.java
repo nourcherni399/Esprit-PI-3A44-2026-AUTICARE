@@ -166,7 +166,7 @@ public class AdminUserDeleteController {
     public void onNavProducts() {
         AppState.clearAdminDeleteContext();
         try {
-            MainApp.showDashboard(1);
+            MainApp.showAdminProducts();
         } catch (IOException e) {
             alert(Alert.AlertType.ERROR, "Erreur", e.getMessage());
         }
@@ -176,7 +176,7 @@ public class AdminUserDeleteController {
     public void onNavStocks() {
         AppState.clearAdminDeleteContext();
         try {
-            MainApp.showDashboard(1);
+            MainApp.showAdminStocks();
         } catch (IOException e) {
             alert(Alert.AlertType.ERROR, "Erreur", e.getMessage());
         }
@@ -186,7 +186,7 @@ public class AdminUserDeleteController {
     public void onNavOrders() {
         AppState.clearAdminDeleteContext();
         try {
-            MainApp.showDashboard(1);
+            MainApp.showAdminOrders();
         } catch (IOException e) {
             alert(Alert.AlertType.ERROR, "Erreur", e.getMessage());
         }
@@ -216,6 +216,7 @@ public class AdminUserDeleteController {
     public void onNavModules() {
         AppState.clearAdminDeleteContext();
         try {
+            MainApp.showAdminModules();
             MainApp.showDashboard(6);
         } catch (IOException e) {
             alert(Alert.AlertType.ERROR, "Erreur", e.getMessage());

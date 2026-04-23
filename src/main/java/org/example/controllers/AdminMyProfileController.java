@@ -9,6 +9,8 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.control.TextField;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.StackPane;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
@@ -22,9 +24,11 @@ import org.example.services.UserService;
 import org.example.utils.AppState;
 import org.example.utils.UserAvatarGraphic;
 import org.example.utils.UserImageStorage;
+import org.example.utils.UserPublicAssets;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.sql.SQLException;
 import java.util.Locale;
 import java.util.Optional;
@@ -57,6 +61,8 @@ public class AdminMyProfileController {
     private TextField telephoneField;
     @FXML
     private Label photoPathLabel;
+    @FXML
+    private ImageView photoPreviewImage;
     @FXML
     private Button choosePhotoButton;
 
@@ -110,10 +116,19 @@ public class AdminMyProfileController {
         chosenPhoto = null;
         String img = u.getImage();
         if (img != null && !img.isBlank()) {
-            int sl = Math.max(img.lastIndexOf('/'), img.lastIndexOf('\\'));
-            photoPathLabel.setText(sl >= 0 ? img.substring(sl + 1) : img);
+            Path p = UserPublicAssets.resolvePublicRelative(img);
+            if (setPreviewFromPath(p != null ? p.toUri().toString() : null)) {
+                photoPathLabel.setText("Image actuelle");
+            } else {
+                photoPathLabel.setText("Aucun fichier choisi");
+            }
         } else {
             photoPathLabel.setText("Aucun fichier choisi");
+            if (photoPreviewImage != null) {
+                photoPreviewImage.setImage(null);
+                photoPreviewImage.setVisible(false);
+                photoPreviewImage.setManaged(false);
+            }
         }
     }
 
@@ -206,7 +221,11 @@ public class AdminMyProfileController {
                 return;
             }
             chosenPhoto = f;
-            photoPathLabel.setText(f.getName());
+            if (setPreviewFromPath(f.toURI().toString())) {
+                photoPathLabel.setText("Image sélectionnée");
+            } else {
+                photoPathLabel.setText("Image invalide");
+            }
         }
     }
 
@@ -305,6 +324,30 @@ public class AdminMyProfileController {
             return "";
         }
         return f.getText().trim();
+    }
+
+    private boolean setPreviewFromPath(String uri) {
+        if (photoPreviewImage == null || uri == null || uri.isBlank()) {
+            return false;
+        }
+        try {
+            Image image = new Image(uri, 84, 84, true, true, true);
+            if (image.isError()) {
+                photoPreviewImage.setImage(null);
+                photoPreviewImage.setVisible(false);
+                photoPreviewImage.setManaged(false);
+                return false;
+            }
+            photoPreviewImage.setImage(image);
+            photoPreviewImage.setVisible(true);
+            photoPreviewImage.setManaged(true);
+            return true;
+        } catch (Exception ignored) {
+            photoPreviewImage.setImage(null);
+            photoPreviewImage.setVisible(false);
+            photoPreviewImage.setManaged(false);
+            return false;
+        }
     }
 
     private void alert(Alert.AlertType type, String title, String msg) {
