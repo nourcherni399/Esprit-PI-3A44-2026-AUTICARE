@@ -14,7 +14,15 @@ public class UserNotificationService {
 
     public static final String TYPE_EVENT_REGISTRATION_ACCEPTED = "EVENT_REGISTRATION_ACCEPTED";
     public static final String TYPE_EVENT_REGISTRATION_REFUSED = "EVENT_REGISTRATION_REFUSED";
+    /** Inscription enregistrée, en attente de validation par l’admin. */
+    public static final String TYPE_EVENT_REGISTRATION_PENDING = "EVENT_REGISTRATION_PENDING";
     public static final String TYPE_EVENT_MESSAGE_REPLY = "EVENT_MESSAGE_REPLY";
+    /** Demande de RDV acceptée par le médecin (passage en planifié). */
+    public static final String TYPE_RDV_ACCEPTED = "RDV_ACCEPTED";
+    /** Demande de RDV refusée / annulée par le médecin (refus de la demande). */
+    public static final String TYPE_RDV_REFUSED = "RDV_REFUSED";
+    /** Rendez-vous déjà planifié annulé par le médecin. */
+    public static final String TYPE_RDV_CANCELLED = "RDV_CANCELLED";
 
     public void addNotification(int userId, String typeCode, Integer eventId, String summary) throws SQLException {
         String sql = "INSERT INTO notifications_user(utilisateur_id, type_code, evenement_id, resume, lu, date_creation) "

@@ -1,39 +1,47 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.scene.chart.CategoryAxis?>
+<?import javafx.scene.chart.LineChart?>
+<?import javafx.scene.chart.NumberAxis?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.*?>
+<?import javafx.scene.web.HTMLEditor?>
 
 <BorderPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="org.example.controllers.MedecinDashboardController"
             styleClass="med-root"
             stylesheets="@../styles/app.css,@../styles/medecin-dashboard.css">
     <left>
-        <VBox styleClass="med-sidebar" spacing="6">
-            <HBox alignment="CENTER_LEFT" spacing="10">
-                <ImageView fitHeight="36" fitWidth="36" preserveRatio="true" smooth="true">
-                    <image>
-                        <Image url="@../images/brand/auticare-logo.png"/>
-                    </image>
-                </ImageView>
-                <VBox spacing="2">
-                    <Label styleClass="med-brand" text="AutiCare"/>
-                    <Label style="-fx-font-size: 11px; -fx-text-fill: #6b7280;" text="Médecin"/>
+        <StackPane styleClass="med-sidebar-wrap">
+            <VBox styleClass="med-sidebar" spacing="6">
+                <VBox fx:id="medSidebarBrandBox" spacing="6" styleClass="med-sidebar-brand">
+                    <ImageView fitHeight="72" pickOnBounds="true" preserveRatio="true" styleClass="med-brand-logo-auth-img">
+                        <image>
+                            <Image url="@../images/brand/auticare-logo-auth.png"/>
+                        </image>
+                    </ImageView>
+                    <Label styleClass="med-brand-role" text="Médecin"/>
                 </VBox>
-            </HBox>
-            <Region prefHeight="8"/>
-            <Button fx:id="navBtnDashboard" mnemonicParsing="false" onAction="#onNavTableauBord" styleClass="med-nav-item" text="Tableau de bord"/>
-            <Button fx:id="navBtnDispo" mnemonicParsing="false" onAction="#onNavDisponibilites" styleClass="med-nav-item" text="Disponibilités"/>
-            <Button fx:id="navBtnNotes" mnemonicParsing="false" onAction="#onNavNotes" styleClass="med-nav-item" text="📝 Notes"/>
-            <Button fx:id="navBtnRdv" mnemonicParsing="false" onAction="#onNavRendezVous" styleClass="med-nav-item" text="📅 Rendez-vous"/>
-            <Button fx:id="navBtnNotif" mnemonicParsing="false" onAction="#onNavNotifications" styleClass="med-nav-item" text="🔔 Notifications"/>
-            <Region VBox.vgrow="ALWAYS"/>
-            <VBox styleClass="med-sidebar-footer">
-                <Hyperlink text="Accueil médecin" styleClass="med-link-subtle" onAction="#onNavTableauBord"/>
-                <Hyperlink text="Retour au site" styleClass="med-link-subtle" onAction="#onBackToSite"/>
+                <Region prefHeight="8"/>
+                <Button fx:id="navBtnDashboard" mnemonicParsing="false" onAction="#onNavTableauBord" styleClass="med-nav-item"
+                        text="📊  Tableau de bord"/>
+                <Button fx:id="navBtnDispo" mnemonicParsing="false" onAction="#onNavDisponibilites" styleClass="med-nav-item"
+                        text="🗓  Disponibilités"/>
+                <Button fx:id="navBtnNotes" mnemonicParsing="false" onAction="#onNavNotes" styleClass="med-nav-item" text="📝  Notes"/>
+                <Button fx:id="navBtnRdv" mnemonicParsing="false" onAction="#onNavRendezVous" styleClass="med-nav-item"
+                        text="📅  Rendez-vous"/>
+                <Button fx:id="navBtnNotif" mnemonicParsing="false" onAction="#onNavNotifications" styleClass="med-nav-item"
+                        text="🔔  Notifications"/>
+                <Region VBox.vgrow="ALWAYS" minHeight="8"/>
+                <VBox fx:id="medSidebarFooterBox" styleClass="med-sidebar-footer">
+                    <Hyperlink fx:id="medSidebarLinkAccueil" text="Accueil médecin" styleClass="med-link-subtle" onAction="#onNavTableauBord"/>
+                    <Hyperlink fx:id="medSidebarLinkRetour" text="Retour à l’accueil médecin" styleClass="med-link-subtle" onAction="#onBackToSite"/>
+                </VBox>
+                <Region styleClass="med-sidebar-deco" prefHeight="88" maxHeight="120" minHeight="56"/>
             </VBox>
-        </VBox>
+        </StackPane>
     </left>
     <center>
         <BorderPane maxHeight="Infinity" maxWidth="Infinity">
@@ -41,10 +49,11 @@
                 <HBox styleClass="med-topbar" alignment="CENTER_LEFT" spacing="14">
                     <TextField fx:id="searchField" promptText="Rechercher..." styleClass="med-search"/>
                     <Region HBox.hgrow="ALWAYS"/>
-                    <Label text="🔔" style="-fx-font-size: 16px; -fx-cursor: hand;" onMouseClicked="#onNotificationsBell"/>
+                    <Label fx:id="medTopbarBellLabel" styleClass="med-topbar-bell" text="🔔" onMouseClicked="#onNotificationsBell"/>
                     <StackPane fx:id="medAvatarHost" prefHeight="40" prefWidth="40" maxHeight="40" maxWidth="40"/>
                     <VBox spacing="2">
-                        <Label fx:id="medUserNameLabel" styleClass="med-user-name"/>
+                        <Label fx:id="medUserNameLabel" styleClass="med-user-name med-user-name-link"
+                               onMouseClicked="#onTopbarNameClick"/>
                         <Label fx:id="medUserEmailLabel" styleClass="med-user-email"/>
                     </VBox>
                     <Button text="Se déconnecter" styleClass="med-btn-ghost" onAction="#onLogout"/>
@@ -58,45 +67,87 @@
                                 <Label fx:id="medWelcomeTitleLabel" styleClass="med-welcome-title"/>
                                 <Label text="Consultez vos rendez-vous et votre activité." styleClass="med-welcome-sub"/>
                             </VBox>
-                            <HBox spacing="14" alignment="CENTER_LEFT">
-                                <VBox styleClass="med-stat-card">
-                                    <Label text="Patients suivis" styleClass="med-stat-label"/>
-                                    <Label fx:id="statPatientsLabel" text="0" styleClass="med-stat-value"/>
-                                    <Label text="Total unique" styleClass="med-stat-hint"/>
+                            <HBox spacing="16" alignment="CENTER_LEFT" styleClass="med-stat-row med-stat-rows">
+                                <VBox styleClass="med-stat-card" HBox.hgrow="SOMETIMES">
+                                    <HBox alignment="TOP_LEFT" spacing="10">
+                                        <Label text="Patients suivis" styleClass="med-stat-label" wrapText="true" HBox.hgrow="ALWAYS"/>
+                                        <StackPane styleClass="med-stat-icon-badge med-stat-icon-badge-round med-stat-icon-badge-amber">
+                                            <Label styleClass="med-stat-emoji-in-badge" text="👤"/>
+                                        </StackPane>
+                                    </HBox>
+                                    <VBox styleClass="med-profile-inner med-stat-kpi-inner" spacing="4" VBox.vgrow="ALWAYS">
+                                        <Label fx:id="statPatientsLabel" text="0" styleClass="med-stat-value"/>
+                                        <Label text="Total unique" styleClass="med-stat-hint"/>
+                                    </VBox>
                                 </VBox>
-                                <VBox styleClass="med-stat-card">
-                                    <Label text="Rendez-vous" styleClass="med-stat-label"/>
-                                    <Label fx:id="statRdvLabel" text="0" styleClass="med-stat-value"/>
-                                    <Label text="Aujourd'hui" styleClass="med-stat-hint"/>
+                                <VBox styleClass="med-stat-card" HBox.hgrow="SOMETIMES">
+                                    <HBox alignment="TOP_LEFT" spacing="10">
+                                        <Label text="Rendez-vous" styleClass="med-stat-label" wrapText="true" HBox.hgrow="ALWAYS"/>
+                                        <StackPane styleClass="med-stat-icon-badge med-stat-icon-badge-square med-stat-icon-badge-purple">
+                                            <Label styleClass="med-stat-emoji-in-badge" text="🗓"/>
+                                        </StackPane>
+                                    </HBox>
+                                    <VBox styleClass="med-profile-inner med-stat-kpi-inner" spacing="4" VBox.vgrow="ALWAYS">
+                                        <Label fx:id="statRdvLabel" text="0" styleClass="med-stat-value"/>
+                                        <Label text="Aujourd'hui" styleClass="med-stat-hint"/>
+                                    </VBox>
                                 </VBox>
-                                <VBox styleClass="med-stat-card">
-                                    <Label text="Notes rédigées" styleClass="med-stat-label"/>
-                                    <Label fx:id="statNotesLabel" text="0" styleClass="med-stat-value"/>
-                                    <Label text="Total notes" styleClass="med-stat-hint"/>
+                                <VBox styleClass="med-stat-card" HBox.hgrow="SOMETIMES">
+                                    <HBox alignment="TOP_LEFT" spacing="10">
+                                        <Label text="Notes rédigées" styleClass="med-stat-label" wrapText="true" HBox.hgrow="ALWAYS"/>
+                                        <StackPane styleClass="med-stat-icon-badge med-stat-icon-badge-round med-stat-icon-badge-coral">
+                                            <Label styleClass="med-stat-emoji-in-badge" text="📝"/>
+                                        </StackPane>
+                                    </HBox>
+                                    <VBox styleClass="med-profile-inner med-stat-kpi-inner" spacing="4" VBox.vgrow="ALWAYS">
+                                        <Label fx:id="statNotesLabel" text="0" styleClass="med-stat-value"/>
+                                        <Label text="Total notes" styleClass="med-stat-hint"/>
+                                    </VBox>
                                 </VBox>
-                                <VBox styleClass="med-stat-card">
-                                    <Label text="Disponibilités" styleClass="med-stat-label"/>
-                                    <Label fx:id="statDispoLabel" text="Actif" styleClass="med-stat-value" style="-fx-font-size: 18px;"/>
-                                    <Label text="Statut" styleClass="med-stat-hint"/>
+                                <VBox styleClass="med-stat-card" HBox.hgrow="SOMETIMES">
+                                    <HBox alignment="TOP_LEFT" spacing="10">
+                                        <Label text="Disponibilité" styleClass="med-stat-label" wrapText="true" HBox.hgrow="ALWAYS"/>
+                                        <StackPane styleClass="med-stat-icon-badge med-stat-icon-badge-round med-stat-icon-badge-mint-soft">
+                                            <Region styleClass="med-stat-dot-in-badge"/>
+                                        </StackPane>
+                                    </HBox>
+                                    <VBox styleClass="med-profile-inner med-stat-kpi-inner" spacing="4" VBox.vgrow="ALWAYS">
+                                        <Label fx:id="statDispoLabel" text="Actif" styleClass="med-stat-value med-stat-value-sm"/>
+                                        <Label text="Statut" styleClass="med-stat-hint"/>
+                                    </VBox>
                                 </VBox>
                             </HBox>
                             <HBox spacing="20" alignment="TOP_LEFT">
                                 <VBox spacing="16" HBox.hgrow="ALWAYS" minWidth="360">
-                                    <VBox styleClass="med-panel" prefHeight="180" spacing="8">
-                                        <Label text="Activité" styleClass="med-panel-title"/>
-                                        <Label text="Graphique d'activité sur les 6 derniers mois (à connecter aux données)." styleClass="med-panel-body" wrapText="true"/>
+                                    <VBox styleClass="med-panel med-panel-chart" spacing="10" minHeight="280" prefHeight="300">
+                                        <VBox spacing="4">
+                                            <Label text="Activité (6 mois)" styleClass="med-panel-title"/>
+                                            <Label text="Tendances liées à vos rendez-vous et à votre activité." styleClass="med-chart-caption"
+                                                   wrapText="true"/>
+                                        </VBox>
+                                        <LineChart fx:id="medActivityChart" legendVisible="true" animated="false"
+                                                   styleClass="med-activity-chart" minHeight="220" prefHeight="240" VBox.vgrow="ALWAYS">
+                                            <xAxis>
+                                                <CategoryAxis side="BOTTOM"/>
+                                            </xAxis>
+                                            <yAxis>
+                                                <NumberAxis side="LEFT" minorTickCount="0" autoRanging="true"/>
+                                            </yAxis>
+                                        </LineChart>
                                     </VBox>
                                     <VBox styleClass="med-panel" spacing="12" VBox.vgrow="ALWAYS">
                                         <Label text="Prochains rendez-vous" styleClass="med-panel-title"/>
-                                        <Label text="Aucun rendez-vous à venir" styleClass="med-panel-body"/>
+                                        <Label text="Aucun rendez-vous à venir pour l’instant." styleClass="med-panel-body" wrapText="true"/>
                                         <Hyperlink text="Ajouter des créneaux" styleClass="med-link-subtle" onAction="#onQuickNewSlot"/>
                                     </VBox>
                                 </VBox>
                                 <VBox spacing="16" prefWidth="300" minWidth="260">
                                     <VBox styleClass="med-panel" spacing="10">
                                         <Label text="Mon profil" styleClass="med-panel-title"/>
-                                        <Label fx:id="medProfileNameLabel" styleClass="med-panel-body"/>
-                                        <Label fx:id="medProfileEmailLabel" styleClass="med-panel-body"/>
+                                        <VBox styleClass="med-profile-inner" spacing="6">
+                                            <Label fx:id="medProfileNameLabel" styleClass="med-profile-inner-name"/>
+                                            <Label fx:id="medProfileEmailLabel" styleClass="med-profile-inner-email"/>
+                                        </VBox>
                                         <Button text="Voir le profil" styleClass="med-btn-primary" onAction="#onViewProfile"/>
                                     </VBox>
                                     <VBox styleClass="med-panel" spacing="10">
@@ -109,7 +160,7 @@
                                     </VBox>
                                 </VBox>
                             </HBox>
-                            <Label text="Actions rapides" styleClass="med-panel-title"/>
+                            <Label text="Actions rapides" styleClass="med-section-heading"/>
                             <HBox spacing="14" alignment="CENTER_LEFT">
                                 <VBox styleClass="med-quick-card" HBox.hgrow="ALWAYS" onMouseClicked="#onQuickNewSlot">
                                     <Label text="Nouveau créneau" styleClass="med-quick-title"/>
@@ -131,7 +182,9 @@
                         <VBox styleClass="med-dispo-wrap" fillWidth="true">
                             <Label text="Gestion des disponibilités" styleClass="med-dispo-main-title"/>
                             <HBox alignment="CENTER_LEFT" spacing="14" styleClass="med-dispo-toolbar">
-                                <TextField fx:id="dispoSlotSearchField" promptText="Rechercher un créneau..." styleClass="med-dispo-search" HBox.hgrow="ALWAYS"/>
+                                <TextField fx:id="dispoSlotSearchField"
+                                              promptText="Créneau, heure, jour (ex. lundi) ou date (jj/mm/aaaa)…"
+                                              styleClass="med-dispo-search" HBox.hgrow="ALWAYS"/>
                                 <Region HBox.hgrow="ALWAYS"/>
                                 <Button text="Nouvelle disponibilité" styleClass="med-btn-dispo-primary" onAction="#onNouvelleDisponibilite"/>
                             </HBox>
@@ -163,13 +216,36 @@
                                     <Label text="Documentez la progression de vos patients." styleClass="med-notes-card-sub"/>
                                 </VBox>
                                 <Separator styleClass="med-notes-sep"/>
+                                <VBox spacing="12" styleClass="med-notes-form">
+                                    <Label text="Patient" styleClass="med-notes-form-label"/>
+                                    <ComboBox fx:id="notesPatientCombo" maxWidth="Infinity" promptText="Choisir un patient…"
+                                              styleClass="med-notes-combo"/>
+                                    <Label text="Contenu de la note *" styleClass="med-notes-form-label"/>
+                                    <HTMLEditor fx:id="notesHtmlEditor" prefHeight="300" styleClass="med-notes-htmleditor"/>
+                                    <HBox alignment="CENTER_RIGHT" spacing="10">
+                                        <Button mnemonicParsing="false" onAction="#onSavePatientNote" styleClass="med-btn-primary"
+                                                text="Enregistrer la note"/>
+                                    </HBox>
+                                </VBox>
                                 <Label fx:id="medNotesNewHint" wrapText="true" styleClass="med-notes-placeholder"/>
                             </VBox>
                             <VBox spacing="14" styleClass="med-notes-card" VBox.vgrow="ALWAYS">
                                 <HBox alignment="CENTER_LEFT" spacing="12">
                                     <Label text="Notes enregistrées" styleClass="med-notes-section-title" HBox.hgrow="ALWAYS"/>
+                                    <Button mnemonicParsing="false" onAction="#onClearAllNotes" styleClass="med-notes-btn-clear"
+                                            text="🗑 Vider toute la liste"/>
                                     <Button mnemonicParsing="false" onAction="#onExportNotesPdf" styleClass="med-notes-btn-export"
                                             text="📄 Exporter en PDF"/>
+                                </HBox>
+                                <HBox alignment="CENTER_LEFT" spacing="12" styleClass="med-notes-filter-row">
+                                    <Label text="Recherche patient" styleClass="med-notes-form-label"/>
+                                    <TextField fx:id="notesTableSearchPatientField" promptText="Nom ou prénom…" prefWidth="220"
+                                               styleClass="med-notes-search-field" HBox.hgrow="SOMETIMES"/>
+                                    <Label text="Date" styleClass="med-notes-form-label"/>
+                                    <DatePicker fx:id="notesTableDateFilterPicker" promptText="Toutes les dates" prefWidth="168"
+                                                styleClass="med-notes-datepicker"/>
+                                    <Button mnemonicParsing="false" onAction="#onResetNotesTableFilters" styleClass="med-notes-mini-btn"
+                                            text="Réinitialiser filtres"/>
                                 </HBox>
                                 <TableView fx:id="notesTableView" styleClass="med-notes-table" minHeight="240" prefHeight="360" VBox.vgrow="ALWAYS"/>
                             </VBox>
@@ -190,38 +266,110 @@
                                     <Label text="Total rendez-vous" styleClass="med-rdv-banner-stat-label"/>
                                 </VBox>
                             </HBox>
-                            <HBox spacing="14" alignment="CENTER_LEFT" styleClass="med-rdv-stats-row">
-                                <VBox styleClass="med-rdv-stat-card med-rdv-stat-ok" spacing="4" HBox.hgrow="ALWAYS">
-                                    <Label fx:id="rdvStatConfirmesLabel" text="0" styleClass="med-rdv-stat-value"/>
-                                    <Label text="Confirmés" styleClass="med-rdv-stat-caption"/>
+                            <HBox spacing="16" alignment="CENTER_LEFT" styleClass="med-rdv-stats-row med-stat-row med-stat-rows">
+                                <VBox styleClass="med-stat-card" HBox.hgrow="SOMETIMES">
+                                    <HBox alignment="TOP_LEFT" spacing="10">
+                                        <Label text="Confirmés (validés)" styleClass="med-stat-label" wrapText="true" HBox.hgrow="ALWAYS"/>
+                                        <StackPane styleClass="med-stat-icon-badge med-stat-icon-badge-round med-stat-icon-badge-mint-soft">
+                                            <Label styleClass="med-stat-emoji-in-badge" text="✓"/>
+                                        </StackPane>
+                                    </HBox>
+                                    <VBox styleClass="med-profile-inner med-stat-kpi-inner" spacing="4" VBox.vgrow="ALWAYS">
+                                        <Label fx:id="rdvStatConfirmesLabel" text="0" styleClass="med-stat-value"/>
+                                        <Label text="Rendez-vous planifiés" styleClass="med-stat-hint"/>
+                                    </VBox>
                                 </VBox>
-                                <VBox styleClass="med-rdv-stat-card med-rdv-stat-wait" spacing="4" HBox.hgrow="ALWAYS">
-                                    <Label fx:id="rdvStatAttenteLabel" text="0" styleClass="med-rdv-stat-value"/>
-                                    <Label text="En attente" styleClass="med-rdv-stat-caption"/>
+                                <VBox styleClass="med-stat-card" HBox.hgrow="SOMETIMES">
+                                    <HBox alignment="TOP_LEFT" spacing="10">
+                                        <Label text="Demandes à valider" styleClass="med-stat-label" wrapText="true" HBox.hgrow="ALWAYS"/>
+                                        <StackPane styleClass="med-stat-icon-badge med-stat-icon-badge-round med-stat-icon-badge-amber">
+                                            <Label styleClass="med-stat-emoji-in-badge" text="⏳"/>
+                                        </StackPane>
+                                    </HBox>
+                                    <VBox styleClass="med-profile-inner med-stat-kpi-inner" spacing="4" VBox.vgrow="ALWAYS">
+                                        <Label fx:id="rdvStatAttenteLabel" text="0" styleClass="med-stat-value"/>
+                                        <Label text="En attente de réponse" styleClass="med-stat-hint"/>
+                                    </VBox>
                                 </VBox>
-                                <VBox styleClass="med-rdv-stat-card med-rdv-stat-cancel" spacing="4" HBox.hgrow="ALWAYS">
-                                    <Label fx:id="rdvStatAnnulesLabel" text="0" styleClass="med-rdv-stat-value"/>
-                                    <Label text="Annulés" styleClass="med-rdv-stat-caption"/>
+                                <VBox styleClass="med-stat-card" HBox.hgrow="SOMETIMES">
+                                    <HBox alignment="TOP_LEFT" spacing="10">
+                                        <Label text="Annulés" styleClass="med-stat-label" wrapText="true" HBox.hgrow="ALWAYS"/>
+                                        <StackPane styleClass="med-stat-icon-badge med-stat-icon-badge-round med-stat-icon-badge-coral">
+                                            <Label styleClass="med-stat-emoji-in-badge" text="✕"/>
+                                        </StackPane>
+                                    </HBox>
+                                    <VBox styleClass="med-profile-inner med-stat-kpi-inner" spacing="4" VBox.vgrow="ALWAYS">
+                                        <Label fx:id="rdvStatAnnulesLabel" text="0" styleClass="med-stat-value"/>
+                                        <Label text="Refus ou annulations" styleClass="med-stat-hint"/>
+                                    </VBox>
                                 </VBox>
-                                <VBox styleClass="med-rdv-stat-card med-rdv-stat-today" spacing="4" HBox.hgrow="ALWAYS">
-                                    <Label fx:id="rdvStatAujourdhuiLabel" text="0" styleClass="med-rdv-stat-value"/>
-                                    <Label text="Aujourd'hui" styleClass="med-rdv-stat-caption"/>
+                                <VBox styleClass="med-stat-card" HBox.hgrow="SOMETIMES">
+                                    <HBox alignment="TOP_LEFT" spacing="10">
+                                        <Label text="Aujourd'hui" styleClass="med-stat-label" wrapText="true" HBox.hgrow="ALWAYS"/>
+                                        <StackPane styleClass="med-stat-icon-badge med-stat-icon-badge-square med-stat-icon-badge-purple">
+                                            <Label styleClass="med-stat-emoji-in-badge" text="🗓"/>
+                                        </StackPane>
+                                    </HBox>
+                                    <VBox styleClass="med-profile-inner med-stat-kpi-inner" spacing="4" VBox.vgrow="ALWAYS">
+                                        <Label fx:id="rdvStatAujourdhuiLabel" text="0" styleClass="med-stat-value"/>
+                                        <Label text="Rendez-vous ce jour" styleClass="med-stat-hint"/>
+                                    </VBox>
                                 </VBox>
                             </HBox>
-                            <HBox alignment="CENTER_LEFT" spacing="14" styleClass="med-rdv-toolbar">
-                                <ComboBox fx:id="rdvSortCombo" styleClass="med-rdv-sort-combo" prefWidth="320"/>
+                            <HBox alignment="CENTER_LEFT" spacing="12" styleClass="med-rdv-toolbar med-rdv-toolbar-actions">
+                                <Region HBox.hgrow="ALWAYS" minWidth="8"/>
+                                <HBox spacing="8" alignment="CENTER_LEFT" styleClass="med-rdv-toolbar-search-wrap"
+                                       minWidth="260" prefWidth="360" maxWidth="520" HBox.hgrow="NEVER">
+                                    <Label text="🔍" styleClass="med-rdv-toolbar-icon"/>
+                                    <TextField fx:id="rdvSearchField" promptText="Rechercher…"
+                                               styleClass="med-rdv-toolbar-search" onAction="#onRdvSearchAction"
+                                               HBox.hgrow="ALWAYS" minWidth="140"/>
+                                </HBox>
+                                <ComboBox fx:id="rdvSortCombo" styleClass="med-rdv-sort-combo med-rdv-filter-combo"
+                                          prefWidth="280" minWidth="220"/>
                             </HBox>
-                            <StackPane styleClass="med-rdv-list-host" minHeight="280" VBox.vgrow="ALWAYS">
+                            <StackPane styleClass="med-rdv-list-host" minHeight="400" VBox.vgrow="ALWAYS">
                                 <VBox fx:id="rdvEmptyState" alignment="CENTER" spacing="14" styleClass="med-rdv-empty">
                                     <Label text="🗓" styleClass="med-rdv-empty-icon"/>
                                     <Label text="Aucun rendez-vous" styleClass="med-rdv-empty-title"/>
                                     <Label text="Vous n'avez pas encore de rendez-vous programmés"
                                            styleClass="med-rdv-empty-sub" wrapText="true"/>
                                 </VBox>
-                                <ScrollPane fx:id="rdvListScroll" fitToWidth="true" maxHeight="Infinity" visible="false" managed="false"
-                                            style="-fx-background: transparent; -fx-background-color: transparent;">
-                                    <VBox fx:id="rdvListContainer" spacing="12" styleClass="med-rdv-list-inner"/>
-                                </ScrollPane>
+                                <VBox fx:id="rdvBoardRoot" spacing="0" fillWidth="true" visible="false" managed="false">
+                                    <HBox spacing="14" alignment="TOP_LEFT" styleClass="med-rdv-kanban-row" VBox.vgrow="ALWAYS"
+                                          minHeight="280">
+                                        <VBox styleClass="med-rdv-kanban-col med-rdv-kanban-col-ok" spacing="0"
+                                              HBox.hgrow="ALWAYS" minWidth="200">
+                                            <Label fx:id="rdvKanbanTitleConfirm" styleClass="med-rdv-kanban-head med-rdv-kanban-head-ok"
+                                                   text="PROCHAINS CONFIRMÉS (0)" wrapText="true" maxWidth="Infinity"/>
+                                            <ScrollPane fitToWidth="true" maxHeight="Infinity" VBox.vgrow="ALWAYS"
+                                                        styleClass="med-rdv-kanban-scroll"
+                                                        style="-fx-background: transparent; -fx-background-color: transparent;">
+                                                <VBox fx:id="rdvKanbanBodyConfirm" spacing="12" styleClass="med-rdv-kanban-scroll-inner"/>
+                                            </ScrollPane>
+                                        </VBox>
+                                        <VBox styleClass="med-rdv-kanban-col med-rdv-kanban-col-wait" spacing="0"
+                                              HBox.hgrow="ALWAYS" minWidth="200">
+                                            <Label fx:id="rdvKanbanTitleWait" styleClass="med-rdv-kanban-head med-rdv-kanban-head-wait"
+                                                   text="EN ATTENTE D'ACTION (0)" wrapText="true" maxWidth="Infinity"/>
+                                            <ScrollPane fitToWidth="true" maxHeight="Infinity" VBox.vgrow="ALWAYS"
+                                                        styleClass="med-rdv-kanban-scroll"
+                                                        style="-fx-background: transparent; -fx-background-color: transparent;">
+                                                <VBox fx:id="rdvKanbanBodyWait" spacing="12" styleClass="med-rdv-kanban-scroll-inner"/>
+                                            </ScrollPane>
+                                        </VBox>
+                                        <VBox styleClass="med-rdv-kanban-col med-rdv-kanban-col-cancel" spacing="0"
+                                              HBox.hgrow="ALWAYS" minWidth="200">
+                                            <Label fx:id="rdvKanbanTitleCancel" styleClass="med-rdv-kanban-head med-rdv-kanban-head-cancel"
+                                                   text="ANNULATIONS RÉCENTES (0)" wrapText="true" maxWidth="Infinity"/>
+                                            <ScrollPane fitToWidth="true" maxHeight="Infinity" VBox.vgrow="ALWAYS"
+                                                        styleClass="med-rdv-kanban-scroll"
+                                                        style="-fx-background: transparent; -fx-background-color: transparent;">
+                                                <VBox fx:id="rdvKanbanBodyCancel" spacing="12" styleClass="med-rdv-kanban-scroll-inner"/>
+                                            </ScrollPane>
+                                        </VBox>
+                                    </HBox>
+                                </VBox>
                             </StackPane>
                         </VBox>
                     </ScrollPane>
@@ -239,22 +387,54 @@
                                     <Label text="Total des notifications" styleClass="med-notif-banner-stat-label"/>
                                 </VBox>
                             </HBox>
-                            <HBox spacing="14" alignment="CENTER_LEFT" styleClass="med-notif-stats-row">
-                                <VBox styleClass="med-notif-stat-card med-notif-stat-unread" spacing="4" HBox.hgrow="ALWAYS">
-                                    <Label fx:id="notifStatNonLuesLabel" text="0" styleClass="med-notif-stat-value"/>
-                                    <Label text="Non lues" styleClass="med-notif-stat-caption"/>
+                            <HBox spacing="16" alignment="CENTER_LEFT" styleClass="med-notif-stats-row med-stat-row med-stat-rows">
+                                <VBox styleClass="med-stat-card" HBox.hgrow="SOMETIMES">
+                                    <HBox alignment="TOP_LEFT" spacing="10">
+                                        <Label text="Non lues" styleClass="med-stat-label" wrapText="true" HBox.hgrow="ALWAYS"/>
+                                        <StackPane styleClass="med-stat-icon-badge med-stat-icon-badge-round med-stat-icon-badge-coral">
+                                            <Label styleClass="med-stat-emoji-in-badge" text="🔔"/>
+                                        </StackPane>
+                                    </HBox>
+                                    <VBox styleClass="med-profile-inner med-stat-kpi-inner" spacing="4" VBox.vgrow="ALWAYS">
+                                        <Label fx:id="notifStatNonLuesLabel" text="0" styleClass="med-stat-value"/>
+                                        <Label text="À consulter" styleClass="med-stat-hint"/>
+                                    </VBox>
                                 </VBox>
-                                <VBox styleClass="med-notif-stat-card med-notif-stat-pending" spacing="4" HBox.hgrow="ALWAYS">
-                                    <Label fx:id="notifStatDemandesLabel" text="0" styleClass="med-notif-stat-value"/>
-                                    <Label text="Demandes en attente" styleClass="med-notif-stat-caption"/>
+                                <VBox styleClass="med-stat-card" HBox.hgrow="SOMETIMES">
+                                    <HBox alignment="TOP_LEFT" spacing="10">
+                                        <Label text="Demandes en attente" styleClass="med-stat-label" wrapText="true" HBox.hgrow="ALWAYS"/>
+                                        <StackPane styleClass="med-stat-icon-badge med-stat-icon-badge-round med-stat-icon-badge-amber">
+                                            <Label styleClass="med-stat-emoji-in-badge" text="⏳"/>
+                                        </StackPane>
+                                    </HBox>
+                                    <VBox styleClass="med-profile-inner med-stat-kpi-inner" spacing="4" VBox.vgrow="ALWAYS">
+                                        <Label fx:id="notifStatDemandesLabel" text="0" styleClass="med-stat-value"/>
+                                        <Label text="Décision requise" styleClass="med-stat-hint"/>
+                                    </VBox>
                                 </VBox>
-                                <VBox styleClass="med-notif-stat-card med-notif-stat-today" spacing="4" HBox.hgrow="ALWAYS">
-                                    <Label fx:id="notifStatAujourdhuiLabel" text="0" styleClass="med-notif-stat-value"/>
-                                    <Label text="Aujourd'hui" styleClass="med-notif-stat-caption"/>
+                                <VBox styleClass="med-stat-card" HBox.hgrow="SOMETIMES">
+                                    <HBox alignment="TOP_LEFT" spacing="10">
+                                        <Label text="Aujourd'hui" styleClass="med-stat-label" wrapText="true" HBox.hgrow="ALWAYS"/>
+                                        <StackPane styleClass="med-stat-icon-badge med-stat-icon-badge-square med-stat-icon-badge-purple">
+                                            <Label styleClass="med-stat-emoji-in-badge" text="🗓"/>
+                                        </StackPane>
+                                    </HBox>
+                                    <VBox styleClass="med-profile-inner med-stat-kpi-inner" spacing="4" VBox.vgrow="ALWAYS">
+                                        <Label fx:id="notifStatAujourdhuiLabel" text="0" styleClass="med-stat-value"/>
+                                        <Label text="Reçues ce jour" styleClass="med-stat-hint"/>
+                                    </VBox>
                                 </VBox>
-                                <VBox styleClass="med-notif-stat-card med-notif-stat-week" spacing="4" HBox.hgrow="ALWAYS">
-                                    <Label fx:id="notifStatSemaineLabel" text="0" styleClass="med-notif-stat-value"/>
-                                    <Label text="Cette semaine" styleClass="med-notif-stat-caption"/>
+                                <VBox styleClass="med-stat-card" HBox.hgrow="SOMETIMES">
+                                    <HBox alignment="TOP_LEFT" spacing="10">
+                                        <Label text="Cette semaine" styleClass="med-stat-label" wrapText="true" HBox.hgrow="ALWAYS"/>
+                                        <StackPane styleClass="med-stat-icon-badge med-stat-icon-badge-round med-stat-icon-badge-mint-soft">
+                                            <Label styleClass="med-stat-emoji-in-badge" text="📅"/>
+                                        </StackPane>
+                                    </HBox>
+                                    <VBox styleClass="med-profile-inner med-stat-kpi-inner" spacing="4" VBox.vgrow="ALWAYS">
+                                        <Label fx:id="notifStatSemaineLabel" text="0" styleClass="med-stat-value"/>
+                                        <Label text="7 derniers jours" styleClass="med-stat-hint"/>
+                                    </VBox>
                                 </VBox>
                             </HBox>
                             <VBox spacing="0" styleClass="med-notif-history-card" VBox.vgrow="ALWAYS">

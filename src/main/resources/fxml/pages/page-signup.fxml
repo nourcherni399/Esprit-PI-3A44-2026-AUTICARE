@@ -14,18 +14,20 @@
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
 
-<VBox fx:id="signupPageRoot" maxWidth="1180" spacing="0" styleClass="public-auth-page" stylesheets="@../../styles/login.css,@../../styles/public-page.css"
+<VBox fx:id="signupPageRoot" maxWidth="1180" spacing="0" styleClass="public-auth-page" stylesheets="@../styles/login.css,@../styles/signup.css,@../styles/public-page.css"
       xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.example.controllers.SignupController">
     <VBox alignment="CENTER" maxWidth="Infinity" styleClass="login-center" VBox.vgrow="ALWAYS">
         <HBox alignment="CENTER" maxWidth="920" prefHeight="520" styleClass="login-card">
             <VBox maxWidth="Infinity" styleClass="login-card-left" HBox.hgrow="SOMETIMES">
                 <Label styleClass="welcome-label" text="Rejoignez-nous"/>
                 <Region minHeight="12" VBox.vgrow="ALWAYS"/>
-                <ImageView fitWidth="240" pickOnBounds="true" preserveRatio="true" styleClass="auth-brand-imageview">
-                    <image>
-                        <Image url="@../../images/brand/auticare-logo-auth.png"/>
-                    </image>
-                </ImageView>
+                <VBox alignment="CENTER_LEFT" spacing="10" styleClass="login-brand-stack">
+                    <ImageView fitWidth="240" pickOnBounds="true" preserveRatio="true" styleClass="auth-brand-imageview">
+                        <image>
+                            <Image url="@../../images/brand/auticare-logo-auth.png"/>
+                        </image>
+                    </ImageView>
+                </VBox>
                 <Region minHeight="12" VBox.vgrow="ALWAYS"/>
                 <HBox alignment="CENTER_LEFT" spacing="6">
                     <Label styleClass="footer-link" text="Déjà membre ?"/>

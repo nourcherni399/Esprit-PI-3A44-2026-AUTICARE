@@ -43,7 +43,6 @@
                         <Label fx:id="typeSidebarPhone" styleClass="rdv-booking-contact-line" text="📞 —"/>
                         <Label fx:id="typeSidebarEmail" styleClass="rdv-booking-contact-line" text="✉ —"/>
                     </VBox>
-                    <Label styleClass="rdv-booking-price" text="0 DT Tarif de la consultation"/>
                 </VBox>
 
                 <VBox spacing="8" styleClass="rdv-booking-voice-box">

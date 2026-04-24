@@ -17,6 +17,8 @@ public class User {
     private String relationParent;
     private LocalDate dateNaissance;
     private String adresse;
+    /** Tarif consultation (DT), colonne {@code tarif_consultation} si migration appliquée. */
+    private String tarifConsultation;
     private String sexe;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
@@ -52,6 +54,8 @@ public class User {
     public void setDateNaissance(LocalDate dateNaissance) { this.dateNaissance = dateNaissance; }
     public String getAdresse() { return adresse; }
     public void setAdresse(String adresse) { this.adresse = adresse; }
+    public String getTarifConsultation() { return tarifConsultation; }
+    public void setTarifConsultation(String tarifConsultation) { this.tarifConsultation = tarifConsultation; }
     public String getSexe() { return sexe; }
     public void setSexe(String sexe) { this.sexe = sexe; }
     public LocalDateTime getCreatedAt() { return createdAt; }

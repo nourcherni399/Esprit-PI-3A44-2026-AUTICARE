@@ -17,6 +17,7 @@ CREATE TABLE IF NOT EXISTS users (
     relation_parent VARCHAR(100),
     date_naissance TEXT,
     adresse VARCHAR(255),
+    tarif_consultation VARCHAR(32),
     sexe VARCHAR(20),
     created_at TEXT DEFAULT CURRENT_TIMESTAMP,
     updated_at TEXT DEFAULT CURRENT_TIMESTAMP
@@ -50,6 +51,7 @@ CREATE TABLE IF NOT EXISTS rendez_vous (
     motif VARCHAR(255),
     statut TEXT DEFAULT 'PLANIFIE' CHECK (statut IN ('PLANIFIE','ANNULE','TERMINE')),
     notes TEXT,
+    patient_reponse_lue INTEGER NOT NULL DEFAULT 1,
     FOREIGN KEY (medecin_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (patient_id) REFERENCES users(id) ON DELETE CASCADE
 );
@@ -99,6 +101,19 @@ CREATE TABLE IF NOT EXISTS articles (
     module_id INTEGER,
     FOREIGN KEY (auteur_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (module_id) REFERENCES modules(id) ON DELETE SET NULL
+);
+
+CREATE TABLE IF NOT EXISTS medecin_rating (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    medecin_id INTEGER NOT NULL,
+    patient_id INTEGER NOT NULL,
+    stars INTEGER NOT NULL,
+    commentaire TEXT,
+    created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+    updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE (medecin_id, patient_id),
+    FOREIGN KEY (medecin_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (patient_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
 INSERT INTO users (nom, prenom, email, telephone, mot_de_passe_hash, role, actif)

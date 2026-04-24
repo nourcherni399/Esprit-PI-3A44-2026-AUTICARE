@@ -42,112 +42,6 @@
                 <Label fx:id="lieuMetaLabel" styleClass="event-detail-meta event-detail-meta-place" text=""/>
             </HBox>
 
-            <VBox maxWidth="Infinity" spacing="0" styleClass="event-weather-mock">
-                <VBox maxWidth="Infinity" spacing="10" styleClass="event-weather-mock-hero">
-                    <HBox alignment="TOP_LEFT" maxWidth="Infinity" spacing="12">
-                        <VBox spacing="4">
-                            <Label fx:id="weatherMockDateHero" styleClass="event-weather-mock-date-hero" text="—"/>
-                            <Label styleClass="event-weather-mock-temp-hero" text="13°"/>
-                        </VBox>
-                        <Region HBox.hgrow="ALWAYS"/>
-                        <VBox alignment="TOP_RIGHT" spacing="4">
-                            <Label styleClass="event-weather-mock-condition" text="Nuageux"/>
-                            <Label styleClass="event-weather-mock-icon" text="☁"/>
-                        </VBox>
-                    </HBox>
-                    <Label styleClass="event-weather-mock-subtitle" text="Prévision horaire (démonstration — API à brancher)"/>
-                    <ScrollPane fitToHeight="true" hbarPolicy="AS_NEEDED" maxWidth="Infinity" pannable="true" styleClass="event-weather-mock-scroll" vbarPolicy="NEVER">
-                        <HBox alignment="CENTER_LEFT" spacing="8" styleClass="event-weather-mock-hour-row">
-                            <VBox alignment="TOP_CENTER" spacing="4" styleClass="event-weather-mock-hour-cell">
-                                <Label styleClass="event-weather-mock-hour-h" text="0h"/>
-                                <Label styleClass="event-weather-mock-hour-ico" text="☁"/>
-                                <Label styleClass="event-weather-mock-hour-t" text="3°"/>
-                            </VBox>
-                            <VBox alignment="TOP_CENTER" spacing="4" styleClass="event-weather-mock-hour-cell">
-                                <Label styleClass="event-weather-mock-hour-h" text="1h"/>
-                                <Label styleClass="event-weather-mock-hour-ico" text="☁"/>
-                                <Label styleClass="event-weather-mock-hour-t" text="4°"/>
-                            </VBox>
-                            <VBox alignment="TOP_CENTER" spacing="4" styleClass="event-weather-mock-hour-cell">
-                                <Label styleClass="event-weather-mock-hour-h" text="2h"/>
-                                <Label styleClass="event-weather-mock-hour-ico" text="☁"/>
-                                <Label styleClass="event-weather-mock-hour-t" text="5°"/>
-                            </VBox>
-                            <VBox alignment="TOP_CENTER" spacing="4" styleClass="event-weather-mock-hour-cell">
-                                <Label styleClass="event-weather-mock-hour-h" text="3h"/>
-                                <Label styleClass="event-weather-mock-hour-ico" text="☁"/>
-                                <Label styleClass="event-weather-mock-hour-t" text="6°"/>
-                            </VBox>
-                            <VBox alignment="TOP_CENTER" spacing="4" styleClass="event-weather-mock-hour-cell">
-                                <Label styleClass="event-weather-mock-hour-h" text="4h"/>
-                                <Label styleClass="event-weather-mock-hour-ico" text="☁"/>
-                                <Label styleClass="event-weather-mock-hour-t" text="7°"/>
-                            </VBox>
-                            <VBox alignment="TOP_CENTER" spacing="4" styleClass="event-weather-mock-hour-cell">
-                                <Label styleClass="event-weather-mock-hour-h" text="5h"/>
-                                <Label styleClass="event-weather-mock-hour-ico" text="☁"/>
-                                <Label styleClass="event-weather-mock-hour-t" text="8°"/>
-                            </VBox>
-                            <VBox alignment="TOP_CENTER" spacing="4" styleClass="event-weather-mock-hour-cell">
-                                <Label styleClass="event-weather-mock-hour-h" text="6h"/>
-                                <Label styleClass="event-weather-mock-hour-ico" text="☁"/>
-                                <Label styleClass="event-weather-mock-hour-t" text="9°"/>
-                            </VBox>
-                            <VBox alignment="TOP_CENTER" spacing="4" styleClass="event-weather-mock-hour-cell">
-                                <Label styleClass="event-weather-mock-hour-h" text="7h"/>
-                                <Label styleClass="event-weather-mock-hour-ico" text="☁"/>
-                                <Label styleClass="event-weather-mock-hour-t" text="10°"/>
-                            </VBox>
-                            <VBox alignment="TOP_CENTER" spacing="4" styleClass="event-weather-mock-hour-cell">
-                                <Label styleClass="event-weather-mock-hour-h" text="8h"/>
-                                <Label styleClass="event-weather-mock-hour-ico" text="☁"/>
-                                <Label styleClass="event-weather-mock-hour-t" text="11°"/>
-                            </VBox>
-                            <VBox alignment="TOP_CENTER" spacing="4" styleClass="event-weather-mock-hour-cell">
-                                <Label styleClass="event-weather-mock-hour-h" text="9h"/>
-                                <Label styleClass="event-weather-mock-hour-ico" text="☁"/>
-                                <Label styleClass="event-weather-mock-hour-t" text="10°"/>
-                            </VBox>
-                            <VBox alignment="TOP_CENTER" spacing="4" styleClass="event-weather-mock-hour-cell">
-                                <Label styleClass="event-weather-mock-hour-h" text="10h"/>
-                                <Label styleClass="event-weather-mock-hour-ico" text="☁"/>
-                                <Label styleClass="event-weather-mock-hour-t" text="9°"/>
-                            </VBox>
-                            <VBox alignment="TOP_CENTER" spacing="4" styleClass="event-weather-mock-hour-cell">
-                                <Label styleClass="event-weather-mock-hour-h" text="11h"/>
-                                <Label styleClass="event-weather-mock-hour-ico" text="☁"/>
-                                <Label styleClass="event-weather-mock-hour-t" text="8°"/>
-                            </VBox>
-                        </HBox>
-                    </ScrollPane>
-                </VBox>
-                <VBox maxWidth="Infinity" spacing="8" styleClass="event-weather-mock-bottom">
-                    <HBox alignment="CENTER_LEFT" maxWidth="Infinity" spacing="10" styleClass="event-weather-mock-bottom-row">
-                        <VBox minWidth="120" spacing="2" styleClass="event-weather-mock-bottom-left">
-                            <Label fx:id="weatherMockDateBottom" styleClass="event-weather-mock-date-bottom" text="—"/>
-                            <Label styleClass="event-weather-mock-day-caption" text="Jour de l'événement"/>
-                        </VBox>
-                        <HBox alignment="CENTER" maxWidth="Infinity" spacing="6" HBox.hgrow="ALWAYS" styleClass="event-weather-mock-center-col">
-                            <VBox alignment="CENTER" spacing="2" styleClass="event-weather-mock-center-stack">
-                                <Label styleClass="event-weather-mock-center-main" text="Nuageux"/>
-                                <Label styleClass="event-weather-mock-center-sub" text="Ressenti 11° · Humidité 65% · Vent modéré" wrapText="true"/>
-                            </VBox>
-                        </HBox>
-                        <HBox alignment="CENTER_RIGHT" minWidth="100" spacing="8" styleClass="event-weather-mock-minmax">
-                            <Label styleClass="event-weather-mock-ico-small" text="☀"/>
-                            <VBox alignment="CENTER_RIGHT" spacing="0">
-                                <Label styleClass="event-weather-mock-max" text="13°"/>
-                                <Label styleClass="event-weather-mock-min" text="3°"/>
-                            </VBox>
-                        </HBox>
-                    </HBox>
-                    <HBox alignment="CENTER" maxWidth="Infinity" spacing="6" styleClass="event-weather-mock-more">
-                        <Label styleClass="event-weather-mock-more-text" text="Plus d'infos"/>
-                        <Label styleClass="event-weather-mock-chevron" text="⌄"/>
-                    </HBox>
-                </VBox>
-            </VBox>
-
             <Separator/>
 
             <Label styleClass="event-detail-section-title" text="À propos de cet événement"/>
@@ -170,6 +64,28 @@
                 <Label styleClass="event-detail-map-hint" text="Carte : renseignez un lien Google Maps ou des coordonnées dans l’administration." wrapText="true"/>
             </StackPane>
             <Hyperlink onAction="#onOpenMapsExternal" styleClass="event-detail-link" text="Ouvrir dans Google Maps"/>
+
+            <VBox fx:id="organizerContactCard" managed="false" spacing="10" styleClass="event-detail-organizer-card" visible="false">
+                <HBox alignment="TOP_LEFT" spacing="12" styleClass="event-detail-organizer-header">
+                    <StackPane maxHeight="40" maxWidth="40" minHeight="40" minWidth="40" styleClass="event-detail-organizer-icon-wrap" prefHeight="40" prefWidth="40">
+                        <Label styleClass="event-detail-organizer-icon" text="💬"/>
+                    </StackPane>
+                    <VBox spacing="4" HBox.hgrow="ALWAYS">
+                        <Label styleClass="event-detail-organizer-title" text="Contacter l'organisateur" wrapText="true"/>
+                        <Label styleClass="event-detail-organizer-sub" text="Posez une question ou envoyez un message. L'équipe vous répondra ici." wrapText="true"/>
+                    </VBox>
+                </HBox>
+                <ScrollPane fitToWidth="true" minHeight="220" prefHeight="320" styleClass="event-detail-discussion-scroll" vbarPolicy="AS_NEEDED" VBox.vgrow="ALWAYS">
+                    <VBox fx:id="discussionThreadBox" spacing="8" styleClass="event-detail-discussion-thread"/>
+                </ScrollPane>
+                <VBox spacing="4">
+                    <Label styleClass="event-detail-msg-field-label" text="Votre message *"/>
+                    <TextArea fx:id="organizerMessageArea" prefRowCount="4" promptText="Écrivez votre question…" styleClass="event-detail-organizer-textarea" wrapText="true"/>
+                </VBox>
+                <HBox alignment="CENTER_LEFT" maxWidth="Infinity" styleClass="event-detail-sidebar-btn-row">
+                    <Button id="eventDetailSendMsgBtn" mnemonicParsing="false" onAction="#onSendOrganizerMessage" styleClass="event-detail-btn-primary event-detail-sidebar-btn event-detail-sidebar-btn-blue" text="✈ Envoyer le message"/>
+                </HBox>
+            </VBox>
         </VBox>
 
         <VBox alignment="TOP_LEFT" maxWidth="340" minWidth="280" prefWidth="320" spacing="12" styleClass="event-detail-sidebar">
@@ -179,8 +95,6 @@
                 <Button id="eventDetailSidebarMapBtn" mnemonicParsing="false" onAction="#onOpenMapsExternal" styleClass="event-detail-btn-map event-detail-sidebar-btn event-detail-sidebar-btn-blue" text="📍 Voir la localisation"/>
             </HBox>
             <Hyperlink onAction="#onOpenMapsExternal" styleClass="event-detail-link event-detail-sidebar-link" text="Ouvrir dans Google Maps"/>
-
-            <Separator styleClass="event-detail-sidebar-sep"/>
 
             <VBox fx:id="guestAuthBox" alignment="TOP_LEFT" spacing="10" styleClass="event-detail-auth-block">
                 <Label styleClass="event-detail-auth-lead" text="Connectez-vous pour vous inscrire à cet événement." wrapText="true"/>
@@ -194,30 +108,6 @@
             </VBox>
 
             <VBox fx:id="loggedParticipantSidebarBox" alignment="TOP_LEFT" managed="false" spacing="12" styleClass="event-detail-logged-participant" visible="false">
-                <VBox fx:id="organizerContactCard" spacing="10" styleClass="event-detail-organizer-card">
-                    <HBox alignment="TOP_LEFT" spacing="12" styleClass="event-detail-organizer-header">
-                        <StackPane maxHeight="40" maxWidth="40" minHeight="40" minWidth="40" styleClass="event-detail-organizer-icon-wrap" prefHeight="40" prefWidth="40">
-                            <Label styleClass="event-detail-organizer-icon" text="💬"/>
-                        </StackPane>
-                        <VBox spacing="4" HBox.hgrow="ALWAYS">
-                            <Label styleClass="event-detail-organizer-title" text="Contacter l'organisateur"/>
-                            <Label styleClass="event-detail-organizer-sub" text="Posez une question ou envoyez un message. L'équipe vous répondra ici." wrapText="true"/>
-                        </VBox>
-                    </HBox>
-                    <ScrollPane fitToWidth="true" maxHeight="140" minHeight="72" prefHeight="120" styleClass="event-detail-discussion-scroll" vbarPolicy="AS_NEEDED">
-                        <VBox fx:id="discussionThreadBox" spacing="8" styleClass="event-detail-discussion-thread"/>
-                    </ScrollPane>
-                    <VBox spacing="4">
-                        <Label styleClass="event-detail-msg-field-label" text="Votre message *"/>
-                        <TextArea fx:id="organizerMessageArea" prefRowCount="4" promptText="Écrivez votre question…" styleClass="event-detail-organizer-textarea" wrapText="true"/>
-                    </VBox>
-                    <HBox alignment="CENTER_LEFT" maxWidth="Infinity" styleClass="event-detail-sidebar-btn-row">
-                        <Button id="eventDetailSendMsgBtn" mnemonicParsing="false" onAction="#onSendOrganizerMessage" styleClass="event-detail-btn-primary event-detail-sidebar-btn event-detail-sidebar-btn-blue" text="✈ Envoyer le message"/>
-                    </HBox>
-                </VBox>
-
-                <Separator styleClass="event-detail-sidebar-sep"/>
-
                 <VBox fx:id="loggedBox" alignment="TOP_LEFT" spacing="10" styleClass="event-detail-auth-block">
                     <HBox alignment="CENTER" maxWidth="Infinity" styleClass="event-detail-sidebar-btn-row">
                         <Button id="eventDetailSidebarRegisterBtn" fx:id="registerBtn" mnemonicParsing="false" onAction="#onRegisterForEvent" styleClass="event-detail-btn-primary event-detail-sidebar-btn event-detail-sidebar-btn-blue" text="S'inscrire à cet événement"/>

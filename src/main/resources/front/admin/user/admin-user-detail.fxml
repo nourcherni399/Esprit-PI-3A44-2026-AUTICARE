@@ -49,7 +49,6 @@
                         <TextField fx:id="topSearchField" promptText="Rechercher..." styleClass="admin-search" HBox.hgrow="ALWAYS"/>
                     </HBox>
                     <Region minWidth="16"/>
-                    <Label text="🔔"/>
                     <Region minWidth="12"/>
                     <HBox alignment="CENTER_LEFT" onMouseClicked="#onOpenMyProfile" spacing="10" styleClass="admin-topbar-profile">
                         <StackPane fx:id="topbarAvatarHost" styleClass="admin-topbar-avatar-host"/>
@@ -92,18 +91,16 @@
                                             <ColumnConstraints hgrow="NEVER" minWidth="140" prefWidth="160"/>
                                             <ColumnConstraints hgrow="ALWAYS" minWidth="200"/>
                                         </columnConstraints>
-                                        <Label styleClass="admin-detail-field-label" text="Id" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
-                                        <Label fx:id="valIdLabel" styleClass="admin-detail-field-value" text="—" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
-                                        <Label styleClass="admin-detail-field-label" text="Nom" GridPane.columnIndex="2" GridPane.rowIndex="0"/>
-                                        <Label fx:id="valNomLabel" styleClass="admin-detail-field-value" text="—" GridPane.columnIndex="3" GridPane.rowIndex="0"/>
-                                        <Label styleClass="admin-detail-field-label" text="Prénom" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
-                                        <Label fx:id="valPrenomLabel" styleClass="admin-detail-field-value" text="—" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
-                                        <Label styleClass="admin-detail-field-label" text="Email" GridPane.columnIndex="2" GridPane.rowIndex="1"/>
-                                        <Label fx:id="valEmailLabel" styleClass="admin-detail-field-value" text="—" GridPane.columnIndex="3" GridPane.rowIndex="1"/>
-                                        <Label styleClass="admin-detail-field-label" text="Téléphone" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
-                                        <Label fx:id="valTelLabel" styleClass="admin-detail-field-value" text="—" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
-                                        <Label styleClass="admin-detail-field-label" text="Actif" GridPane.columnIndex="2" GridPane.rowIndex="2"/>
-                                        <Label fx:id="valActifLabel" styleClass="admin-detail-field-value" text="—" GridPane.columnIndex="3" GridPane.rowIndex="2"/>
+                                        <Label styleClass="admin-detail-field-label" text="Nom" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+                                        <Label fx:id="valNomLabel" styleClass="admin-detail-field-value" text="—" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+                                        <Label styleClass="admin-detail-field-label" text="Prénom" GridPane.columnIndex="2" GridPane.rowIndex="0"/>
+                                        <Label fx:id="valPrenomLabel" styleClass="admin-detail-field-value" text="—" GridPane.columnIndex="3" GridPane.rowIndex="0"/>
+                                        <Label styleClass="admin-detail-field-label" text="Email" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+                                        <Label fx:id="valEmailLabel" styleClass="admin-detail-field-value" text="—" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+                                        <Label styleClass="admin-detail-field-label" text="Téléphone" GridPane.columnIndex="2" GridPane.rowIndex="1"/>
+                                        <Label fx:id="valTelLabel" styleClass="admin-detail-field-value" text="—" GridPane.columnIndex="3" GridPane.rowIndex="1"/>
+                                        <Label styleClass="admin-detail-field-label" text="Actif" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
+                                        <Label fx:id="valActifLabel" styleClass="admin-detail-field-value" text="—" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
                                         <Label styleClass="admin-detail-field-label" text="Créé le" GridPane.columnIndex="0" GridPane.rowIndex="3"/>
                                         <Label fx:id="valCreatedLabel" styleClass="admin-detail-field-value" text="—" GridPane.columnIndex="1" GridPane.rowIndex="3"/>
                                         <Label styleClass="admin-detail-field-label" text="Mis à jour le" GridPane.columnIndex="2" GridPane.rowIndex="3"/>

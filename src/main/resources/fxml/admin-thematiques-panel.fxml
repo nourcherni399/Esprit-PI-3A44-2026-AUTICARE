@@ -119,7 +119,7 @@
             <StackPane alignment="CENTER" maxHeight="Infinity" maxWidth="Infinity"
                        AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
             <VBox fx:id="formLayer" alignment="TOP_LEFT" maxHeight="Infinity" minWidth="680" spacing="0" styleClass="admin-new-event-layer">
-            <padding><Insets bottom="8" left="0" right="0" top="12"/></padding>
+            <padding><Insets bottom="20" left="0" right="0" top="12"/></padding>
             <VBox alignment="TOP_LEFT" maxWidth="Infinity" spacing="16" styleClass="admin-form-stack-inner" VBox.vgrow="ALWAYS">
                 <VBox maxWidth="Infinity" spacing="6" styleClass="admin-form-hero">
                     <Button alignment="BASELINE_LEFT" onAction="#onCloseForm" styleClass="admin-new-event-back-link" text="← Retour aux thématiques"/>
@@ -131,7 +131,7 @@
                     <Label styleClass="admin-form-section-title" text="Identité"/>
                     <VBox spacing="6" maxWidth="Infinity">
                         <Label styleClass="admin-new-event-label" text="Nom de la thématique *"/>
-                        <TextField fx:id="formNom" maxWidth="Infinity" promptText="Ex. Art &amp; sensoriel" styleClass="admin-new-event-input"/>
+                        <TextField fx:id="formNom" maxWidth="Infinity" promptText="Lettres uniquement — ex. Art et sensoriel" styleClass="admin-new-event-input"/>
                     </VBox>
                     <VBox spacing="6" maxWidth="Infinity">
                         <Label styleClass="admin-new-event-label" text="Code thématique *"/>
@@ -156,12 +156,18 @@
                         </VBox>
                         <VBox spacing="6" HBox.hgrow="ALWAYS" maxWidth="Infinity" minWidth="200">
                             <Label styleClass="admin-new-event-label" text="Sous-titre *"/>
-                            <TextField fx:id="formSousTitre" maxWidth="Infinity" promptText="Accroche courte" styleClass="admin-new-event-input"/>
+                            <TextField fx:id="formSousTitre" maxWidth="Infinity" promptText="Accroche courte — lettres uniquement" styleClass="admin-new-event-input"/>
                         </VBox>
                     </HBox>
                     <VBox spacing="6" maxWidth="Infinity">
                         <Label styleClass="admin-new-event-label" text="Image (JPG, PNG, GIF, WebP) *"/>
                         <Button onAction="#onPickImage" styleClass="admin-new-event-btn-secondary" text="Choisir un fichier"/>
+                        <VBox fx:id="formImagePreviewArea" alignment="TOP_LEFT" managed="false" spacing="8" styleClass="admin-thematique-form-preview-box" visible="false">
+                            <StackPane alignment="CENTER" maxWidth="Infinity" styleClass="admin-thematique-form-preview-frame">
+                                <ImageView fx:id="formImagePreview" fitHeight="160" fitWidth="280" pickOnBounds="true" preserveRatio="true" smooth="true"/>
+                            </StackPane>
+                            <Label fx:id="formImageFileName" maxWidth="Infinity" styleClass="admin-thematiques-card-ordre" wrapText="true"/>
+                        </VBox>
                     </VBox>
                 </VBox>
 

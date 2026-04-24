@@ -47,7 +47,6 @@
                         <Label fx:id="infoSidebarPhone" styleClass="rdv-booking-contact-line" text="📞 —"/>
                         <Label fx:id="infoSidebarEmail" styleClass="rdv-booking-contact-line" text="✉ —"/>
                     </VBox>
-                    <Label styleClass="rdv-booking-price" text="0 DT Tarif de la consultation"/>
                 </VBox>
 
                 <VBox spacing="8" styleClass="rdv-booking-voice-box">
@@ -121,7 +120,6 @@
                             <Label fx:id="recapType" styleClass="rdv-info-recap-line" text="Type : —" wrapText="true"/>
                             <Label fx:id="recapMode" styleClass="rdv-info-recap-line" text="Mode : Au cabinet"/>
                             <Label fx:id="recapMotif" styleClass="rdv-info-recap-line" text="Motif : —" wrapText="true"/>
-                            <Label fx:id="recapTarif" styleClass="rdv-info-recap-line" text="Tarif : 0 DT"/>
                         </VBox>
 
                         <HBox alignment="CENTER_LEFT" spacing="8" styleClass="rdv-info-actions">

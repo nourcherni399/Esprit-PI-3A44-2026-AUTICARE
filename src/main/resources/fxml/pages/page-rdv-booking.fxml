@@ -12,13 +12,13 @@
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 
-<VBox maxWidth="1180" spacing="0" styleClass="rdv-booking-root" xmlns="http://javafx.com/javafx/21"
+<VBox alignment="TOP_CENTER" maxWidth="1040" spacing="0" styleClass="rdv-booking-root" xmlns="http://javafx.com/javafx/21"
       xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.example.controllers.PageRdvBookingController">
     <padding>
         <Insets bottom="28" left="16" right="16" top="12"/>
     </padding>
 
-    <HBox alignment="CENTER_LEFT" spacing="16" styleClass="rdv-booking-topbar">
+    <HBox alignment="CENTER_LEFT" maxWidth="960" spacing="14" styleClass="rdv-booking-topbar">
         <Hyperlink onAction="#onBackToList" styleClass="rdv-booking-back" text="← Retour à la liste"/>
         <Region HBox.hgrow="ALWAYS" minWidth="12"/>
         <HBox fx:id="bookingStepperBox" alignment="CENTER_RIGHT" spacing="4" styleClass="rdv-booking-stepper"/>
@@ -26,9 +26,9 @@
 
     <Region prefHeight="12"/>
 
-    <HBox alignment="TOP_LEFT" spacing="28" styleClass="rdv-booking-main" VBox.vgrow="ALWAYS" maxHeight="Infinity">
+    <HBox alignment="TOP_LEFT" maxWidth="960" spacing="20" styleClass="rdv-booking-main" VBox.vgrow="ALWAYS" maxHeight="Infinity">
         <!-- Colonne médecin -->
-        <VBox minWidth="268" prefWidth="300" spacing="16" styleClass="rdv-booking-sidebar">
+        <VBox minWidth="236" prefWidth="260" spacing="14" styleClass="rdv-booking-sidebar">
             <VBox spacing="14" styleClass="rdv-booking-profile-card">
                 <StackPane styleClass="rdv-booking-avatar-wrap">
                     <Label fx:id="bookingAvatarInitials" styleClass="rdv-booking-avatar-text" text="DR"/>
@@ -44,7 +44,6 @@
                     <Label fx:id="bookingSidebarPhone" styleClass="rdv-booking-contact-line" text="📞 —"/>
                     <Label fx:id="bookingSidebarEmail" styleClass="rdv-booking-contact-line" text="✉ —"/>
                 </VBox>
-                <Label styleClass="rdv-booking-price" text="0 DT — Tarif de la consultation"/>
             </VBox>
 
             <VBox spacing="12" styleClass="rdv-booking-voice-box">

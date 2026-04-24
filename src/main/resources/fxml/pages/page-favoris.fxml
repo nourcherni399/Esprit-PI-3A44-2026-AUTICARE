@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.layout.FlowPane?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox alignment="TOP_CENTER" maxWidth="960" spacing="14" styleClass="public-page" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.example.controllers.PageFavorisController">
+    <padding><Insets bottom="24" left="16" right="16" top="16"/></padding>
+    <Label styleClass="public-page-kicker" text="SÉLECTION" />
+    <Label styleClass="public-page-title" text="Mes favoris" textAlignment="CENTER" wrapText="true" />
+    <Label styleClass="public-page-lead" text="Produits que vous avez enregistrés pour les retrouver facilement." textAlignment="CENTER" wrapText="true" />
+    <Button fx:id="refreshBtn" mnemonicParsing="false" styleClass="catalog-add-cart-btn" text="Rafraîchir" />
+    <ScrollPane fx:id="favScroll" fitToWidth="true" style="-fx-background: transparent; -fx-background-color: transparent;">
+        <FlowPane fx:id="favoritesFlow" alignment="TOP_CENTER" hgap="18" vgap="18" />
+    </ScrollPane>
+</VBox>

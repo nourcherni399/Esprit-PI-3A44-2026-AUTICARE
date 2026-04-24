@@ -481,3 +481,18 @@
     -fx-text-fill: #16a34a;
     -fx-font-weight: 600;
 }
+
+/* Connexion / inscription (coque public-shell, mode auth) : cartes légèrement transparentes pour laisser voir le fond accueil (hero) */
+.home-scroll-content.public-shell--auth-mode .login-card {
+    -fx-background-color: rgba(255, 255, 255, 0.9);
+}
+.home-scroll-content.public-shell--auth-mode .login-card-left {
+    -fx-background-color: rgba(248, 249, 250, 0.82);
+}
+.home-scroll-content.public-shell--auth-mode .login-card-right {
+    -fx-background-color: rgba(255, 255, 255, 0.88);
+}
+.home-scroll-content.public-shell--auth-mode .signup-scroll,
+.home-scroll-content.public-shell--auth-mode .signup-scroll .viewport {
+    -fx-background-color: transparent;
+}

@@ -2,11 +2,11 @@ package org.example.controllers;
 
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
-import javafx.geometry.Pos;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.control.Alert;
@@ -19,15 +19,14 @@ import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
+import javafx.scene.control.TabPane;
 import javafx.scene.control.TextField;
-import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
-import javafx.scene.control.TabPane;
 import org.example.MainApp;
 import org.example.models.Role;
 import org.example.models.User;
@@ -44,8 +43,8 @@ import java.text.Collator;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
-import java.util.function.Predicate;
 import java.time.format.DateTimeFormatter;
+import java.util.function.Predicate;
 
 public class AdminUsersController {
 
@@ -67,6 +66,7 @@ public class AdminUsersController {
     private HBox statsRow;
     @FXML
     private TableView<User> usersTable;
+
     @FXML
     private ScrollPane usersHomeScroll;
     @FXML
@@ -106,6 +106,13 @@ public class AdminUsersController {
         if (topSearchField != null) {
             topSearchField.textProperty().addListener((o, old, v) -> applyFilters());
         }
+
+        String pendingSection = AppState.consumePendingAdminUsersSection();
+        if ("events".equals(pendingSection)) {
+            showEmbeddedDashboardSafely(4);
+        } else if ("thematiques".equals(pendingSection)) {
+            showEmbeddedThematiquesSafely();
+        }
     }
 
     private void configureNotificationsUi() {
@@ -138,6 +145,15 @@ public class AdminUsersController {
         notificationsMenuButton.getItems().clear();
         try {
             List<AdminNotificationItem> notifications = adminNotificationService.listLatest(8);
+            int total = notifications.size();
+
+            Label headerLabel = new Label(notificationGroupLabel(notifications) + " (" + total + ")");
+            headerLabel.getStyleClass().add("admin-notif-menu-header");
+            CustomMenuItem headerItem = new CustomMenuItem(headerLabel, false);
+            headerItem.getStyleClass().add("admin-notif-menu-header-item");
+            headerItem.setDisable(true);
+            notificationsMenuButton.getItems().add(headerItem);
+
             if (notifications.isEmpty()) {
                 MenuItem emptyItem = new MenuItem("Aucune notification.");
                 emptyItem.setDisable(true);
@@ -145,26 +161,15 @@ public class AdminUsersController {
                 return;
             }
             for (AdminNotificationItem item : notifications) {
-                HBox card = new HBox(10);
-                card.setPrefWidth(485);
-                card.getStyleClass().addAll("admin-notif-item", notificationTypeStyleClass(item));
-
-                Label icon = new Label(notificationIcon(item));
-                icon.getStyleClass().add("admin-notif-item-icon");
-
-                Label title = new Label(notificationTitle(item));
+                VBox card = new VBox(3);
+                card.getStyleClass().add("admin-notif-item");
+                Label title = new Label(notificationCompactText(item));
                 title.getStyleClass().add("admin-notif-item-title");
-
-                Label body = new Label(item.getResume() != null ? item.getResume() : "");
-                body.getStyleClass().add("admin-notif-item-body");
-                body.setWrapText(true);
-
                 String when = item.getDateCreation() != null ? NOTIF_TIME_FMT.format(item.getDateCreation()) : "";
-                Label meta = new Label(item.getExpediteurNom() + (when.isBlank() ? "" : " • " + when));
+                String actionLabel = notificationActionLabel(item);
+                Label meta = new Label(when.isBlank() ? actionLabel : actionLabel + " • " + when);
                 meta.getStyleClass().add("admin-notif-item-meta");
-                VBox textCol = new VBox(4, title, body, meta);
-                HBox.setHgrow(textCol, Priority.ALWAYS);
-                card.getChildren().addAll(icon, textCol);
+                card.getChildren().addAll(title, meta);
 
                 CustomMenuItem menuItem = new CustomMenuItem(card, true);
                 menuItem.setOnAction(e -> onNotificationClick(item));
@@ -177,49 +182,51 @@ public class AdminUsersController {
         }
     }
 
-    private static String notificationTitle(AdminNotificationItem item) {
+    private static String notificationGroupLabel(List<AdminNotificationItem> notifications) {
+        if (notifications == null || notifications.isEmpty()) {
+            return "Notifications";
+        }
+        long inscriptionsCount = notifications.stream()
+                .filter(item -> item != null && AdminNotificationService.TYPE_INSCRIPTION_DEMANDE.equals(item.getTypeCode()))
+                .count();
+        if (inscriptionsCount == notifications.size()) {
+            return "Inscriptions événements";
+        }
+        if (inscriptionsCount > 0) {
+            return "Messages & inscriptions";
+        }
+        return "Messages événements";
+    }
+
+    private static String notificationCompactText(AdminNotificationItem item) {
+        if (item == null) {
+            return "Notification";
+        }
+        String sender = item.getExpediteurNom() != null && !item.getExpediteurNom().isBlank()
+                ? item.getExpediteurNom()
+                : "Utilisateur";
+        String eventTitle = item.getEvenementTitre() != null && !item.getEvenementTitre().isBlank()
+                ? item.getEvenementTitre()
+                : "Événement";
+        String action = AdminNotificationService.TYPE_MESSAGE_EVENEMENT.equals(item.getTypeCode())
+                ? "a envoyé un message"
+                : AdminNotificationService.TYPE_INSCRIPTION_DEMANDE.equals(item.getTypeCode())
+                ? "a demandé une inscription"
+                : "a envoyé une notification";
+        return sender + " " + action + " • " + eventTitle;
+    }
+
+    private static String notificationActionLabel(AdminNotificationItem item) {
         if (item == null) {
             return "Notification";
         }
         if (AdminNotificationService.TYPE_MESSAGE_EVENEMENT.equals(item.getTypeCode())) {
-            String title = item.getEvenementTitre();
-            return title != null && !title.isBlank()
-                    ? "Messages événements • " + title
-                    : "Messages événements";
+            return "Cliquer pour répondre au message";
         }
         if (AdminNotificationService.TYPE_INSCRIPTION_DEMANDE.equals(item.getTypeCode())) {
-            String title = item.getEvenementTitre();
-            return title != null && !title.isBlank()
-                    ? "Demandes d'inscription • " + title
-                    : "Demandes d'inscription";
+            return "Cliquer pour accepter/refuser l'inscription";
         }
-        return "Notification";
-    }
-
-    private static String notificationTypeStyleClass(AdminNotificationItem item) {
-        if (item == null) {
-            return "admin-notif-item-accept";
-        }
-        if (AdminNotificationService.TYPE_MESSAGE_EVENEMENT.equals(item.getTypeCode())) {
-            return "admin-notif-item-msg";
-        }
-        if (AdminNotificationService.TYPE_INSCRIPTION_DEMANDE.equals(item.getTypeCode())) {
-            return "admin-notif-item-pending";
-        }
-        return "admin-notif-item-accept";
-    }
-
-    private static String notificationIcon(AdminNotificationItem item) {
-        if (item == null) {
-            return "\u2713";
-        }
-        if (AdminNotificationService.TYPE_MESSAGE_EVENEMENT.equals(item.getTypeCode())) {
-            return "\u2709";
-        }
-        if (AdminNotificationService.TYPE_INSCRIPTION_DEMANDE.equals(item.getTypeCode())) {
-            return "\u263A";
-        }
-        return "\u2713";
+        return "Cliquer pour ouvrir";
     }
 
     private void onNotificationClick(AdminNotificationItem item) {
@@ -388,6 +395,8 @@ public class AdminUsersController {
         });
 
         usersTable.getColumns().setAll(colPhoto, colNom, colEmail, colRole, colActions);
+        /* Évite la « colonne vide » à droite lorsque la table est plus large que la somme des prefWidth. */
+        usersTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
     }
 
     private void doViewUser(User u) {
@@ -530,22 +539,31 @@ public class AdminUsersController {
     @FXML
     public void onNavDashboard() {
         try {
-            showEmbeddedDashboard(0);
+            MainApp.showDashboard(0);
         } catch (IOException e) {
+            showEmbeddedDashboardSafely(0);
+        } catch (Exception e) {
             alert(Alert.AlertType.ERROR, "Erreur", formatErr(e));
         }
     }
 
     @FXML
     public void onNavUsers() {
+        try {
+            MainApp.showAdminUsers();
+        } catch (IOException e) {
+            alert(Alert.AlertType.ERROR, "Erreur", e.getMessage());
+        }
         showUsersHome();
     }
 
     @FXML
     public void onNavProducts() {
         try {
-            showEmbeddedDashboard(1);
+            MainApp.showAdminProducts();
         } catch (IOException e) {
+            alert(Alert.AlertType.ERROR, "Erreur", formatErr(e));
+        } catch (Exception e) {
             alert(Alert.AlertType.ERROR, "Erreur", formatErr(e));
         }
     }
@@ -553,8 +571,10 @@ public class AdminUsersController {
     @FXML
     public void onNavStocks() {
         try {
-            showEmbeddedDashboard(1);
+            MainApp.showAdminStocks();
         } catch (IOException e) {
+            alert(Alert.AlertType.ERROR, "Erreur", formatErr(e));
+        } catch (Exception e) {
             alert(Alert.AlertType.ERROR, "Erreur", formatErr(e));
         }
     }
@@ -562,8 +582,10 @@ public class AdminUsersController {
     @FXML
     public void onNavOrders() {
         try {
-            showEmbeddedDashboard(1);
+            MainApp.showAdminOrders();
         } catch (IOException e) {
+            showEmbeddedDashboardSafely(1);
+        } catch (Exception e) {
             alert(Alert.AlertType.ERROR, "Erreur", formatErr(e));
         }
     }
@@ -571,11 +593,13 @@ public class AdminUsersController {
     @FXML
     public void onNavEvents() {
         try {
-            showEmbeddedDashboard(4);
+            MainApp.showDashboard(4);
+        } catch (IOException e) {
+            showEmbeddedDashboardSafely(4);
             if (embeddedEventsController != null) {
                 embeddedEventsController.showListView();
             }
-        } catch (IOException e) {
+        } catch (Exception e) {
             alert(Alert.AlertType.ERROR, "Erreur", formatErr(e));
         }
     }
@@ -583,11 +607,13 @@ public class AdminUsersController {
     @FXML
     public void onNavTopics() {
         try {
-            showEmbeddedThematiques();
+            MainApp.showDashboard(7);
+        } catch (IOException e) {
+            showEmbeddedThematiquesSafely();
             if (embeddedThematiquesController != null) {
                 embeddedThematiquesController.showListView();
             }
-        } catch (IOException e) {
+        } catch (Exception e) {
             alert(Alert.AlertType.ERROR, "Erreur", formatErr(e));
         }
     }
@@ -595,8 +621,10 @@ public class AdminUsersController {
     @FXML
     public void onNavModules() {
         try {
-            showEmbeddedDashboard(6);
+            MainApp.showAdminModules();
         } catch (IOException e) {
+            showEmbeddedDashboardSafely(6);
+        } catch (Exception e) {
             alert(Alert.AlertType.ERROR, "Erreur", formatErr(e));
         }
     }
@@ -604,9 +632,27 @@ public class AdminUsersController {
     @FXML
     public void onNavSettings() {
         try {
-            showEmbeddedDashboard(0);
+            MainApp.showDashboard(0);
         } catch (IOException e) {
+            showEmbeddedDashboardSafely(0);
+        } catch (Exception e) {
             alert(Alert.AlertType.ERROR, "Erreur", formatErr(e));
+        }
+    }
+
+    private void showEmbeddedDashboardSafely(int tabIndex) {
+        try {
+            showEmbeddedDashboard(tabIndex);
+        } catch (IOException ex) {
+            alert(Alert.AlertType.ERROR, "Erreur", formatErr(ex));
+        }
+    }
+
+    private void showEmbeddedThematiquesSafely() {
+        try {
+            showEmbeddedThematiques();
+        } catch (IOException ex) {
+            alert(Alert.AlertType.ERROR, "Erreur", formatErr(ex));
         }
     }
 

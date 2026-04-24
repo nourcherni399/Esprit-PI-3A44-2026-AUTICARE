@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<ScrollPane fitToWidth="true" hbarPolicy="NEVER" maxHeight="Infinity" maxWidth="Infinity"
+            styleClass="med-profile-scroll"
+            stylesheets="@../styles/app.css,@../styles/medecin-my-profile.css"
+            xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="org.example.controllers.MedecinMyProfileController">
+    <StackPane styleClass="med-profile-scroll-inner">
+        <VBox styleClass="med-profile-card" spacing="0" maxWidth="860">
+            <padding>
+                <Insets bottom="28" left="36" right="36" top="32"/>
+            </padding>
+
+            <!-- Informations personnelles -->
+            <Label styleClass="med-profile-section-title" text="Informations personnelles"/>
+            <Region prefHeight="18"/>
+
+            <HBox spacing="28" alignment="TOP_LEFT">
+                <!-- Avatar + ajout photo -->
+                <VBox spacing="10" alignment="TOP_CENTER" styleClass="med-profile-avatar-col">
+                    <StackPane styleClass="med-profile-avatar-frame">
+                        <StackPane fx:id="avatarHost" styleClass="med-profile-avatar-host" minWidth="120" minHeight="120"
+                                   prefWidth="120" prefHeight="120" maxWidth="120" maxHeight="120"/>
+                        <Button fx:id="photoFabButton" mnemonicParsing="false" onAction="#onChoosePhoto"
+                                pickOnBounds="false" styleClass="med-profile-fab-add" text="+"
+                                StackPane.alignment="BOTTOM_RIGHT"/>
+                    </StackPane>
+                    <Label fx:id="photoPathLabel" styleClass="med-profile-photo-caption" text="Aucun fichier choisi"
+                           wrapText="true" maxWidth="140"/>
+                </VBox>
+
+                <VBox HBox.hgrow="ALWAYS" spacing="0" minWidth="0">
+                    <GridPane hgap="20" vgap="16" styleClass="med-profile-grid">
+                        <columnConstraints>
+                            <ColumnConstraints hgrow="ALWAYS" minWidth="160" prefWidth="280"/>
+                            <ColumnConstraints hgrow="ALWAYS" minWidth="160" prefWidth="280"/>
+                        </columnConstraints>
+                        <VBox spacing="6" GridPane.columnIndex="0" GridPane.rowIndex="0">
+                            <Label styleClass="med-profile-field-label" text="Prénom *"/>
+                            <TextField fx:id="prenomField" styleClass="med-profile-input"/>
+                        </VBox>
+                        <VBox spacing="6" GridPane.columnIndex="1" GridPane.rowIndex="0">
+                            <Label styleClass="med-profile-field-label" text="Nom *"/>
+                            <TextField fx:id="nomField" styleClass="med-profile-input"/>
+                        </VBox>
+                        <VBox spacing="6" GridPane.columnIndex="0" GridPane.rowIndex="1">
+                            <Label styleClass="med-profile-field-label" text="✉  Adresse e-mail *"/>
+                            <TextField fx:id="emailField" styleClass="med-profile-input"/>
+                            <Label styleClass="med-profile-hint" text="Un e-mail de confirmation sera envoyé."
+                                   wrapText="true"/>
+                        </VBox>
+                        <VBox spacing="6" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                            <Label styleClass="med-profile-field-label" text="📞  Téléphone *"/>
+                            <TextField fx:id="telephoneField" styleClass="med-profile-input"/>
+                        </VBox>
+                    </GridPane>
+                </VBox>
+            </HBox>
+
+            <Region prefHeight="28"/>
+            <HBox alignment="CENTER" styleClass="med-profile-divider-row">
+                <Region styleClass="med-profile-divider-line" HBox.hgrow="ALWAYS"/>
+                <Label styleClass="med-profile-divider-star" text="✦"/>
+                <Region styleClass="med-profile-divider-line" HBox.hgrow="ALWAYS"/>
+            </HBox>
+            <Region prefHeight="24"/>
+
+            <!-- Cabinet & activité -->
+            <Label styleClass="med-profile-section-title" text="Cabinet &amp; activité"/>
+            <Region prefHeight="16"/>
+
+            <GridPane hgap="20" vgap="16" styleClass="med-profile-grid">
+                <columnConstraints>
+                    <ColumnConstraints hgrow="ALWAYS" minWidth="160" prefWidth="280"/>
+                    <ColumnConstraints hgrow="ALWAYS" minWidth="160" prefWidth="280"/>
+                </columnConstraints>
+                <VBox spacing="6" GridPane.columnIndex="0" GridPane.rowIndex="0">
+                    <Label styleClass="med-profile-field-label" text="🏥  Spécialité *"/>
+                    <TextField fx:id="specialiteField" promptText="Ex. Psychiatrie, pédiatrie…" styleClass="med-profile-input"/>
+                </VBox>
+                <VBox spacing="6" GridPane.columnIndex="1" GridPane.rowIndex="0">
+                    <Label styleClass="med-profile-field-label" text="🏢  Nom du cabinet *"/>
+                    <TextField fx:id="cabinetNameField" promptText="Nom de votre cabinet" styleClass="med-profile-input"/>
+                </VBox>
+                <VBox spacing="6" GridPane.columnIndex="0" GridPane.rowIndex="1">
+                    <Label styleClass="med-profile-field-label" text="🏥  Téléphone du cabinet *"/>
+                    <TextField fx:id="cabinetTelephoneField" promptText="01 23 45 67 89" styleClass="med-profile-input"/>
+                </VBox>
+                <VBox spacing="6" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                    <Label styleClass="med-profile-field-label" text="🧮  Tarif consultation (DT) *"/>
+                    <TextField fx:id="tarifField" promptText="Ex. 80" styleClass="med-profile-input"/>
+                </VBox>
+                <VBox spacing="8" GridPane.columnIndex="0" GridPane.rowIndex="2" GridPane.columnSpan="2">
+                    <Label styleClass="med-profile-field-label" text="📍  Adresse du cabinet *"/>
+                    <TextField fx:id="adresseCabinetField" promptText="Adresse complète du cabinet" styleClass="med-profile-input"/>
+                </VBox>
+            </GridPane>
+
+            <Region prefHeight="8"/>
+            <HBox styleClass="med-profile-footer">
+                <Button fx:id="saveButton" mnemonicParsing="false" onAction="#onSave" text="Enregistrer"
+                        styleClass="med-profile-btn-primary"/>
+                <Button fx:id="modifyButton" mnemonicParsing="false" onAction="#onModify" text="Modifier"
+                        styleClass="med-profile-btn-primary"/>
+                <Button mnemonicParsing="false" onAction="#onBack" text="←  Retour" styleClass="med-profile-btn-outline"/>
+            </HBox>
+        </VBox>
+    </StackPane>
+</ScrollPane>

@@ -119,6 +119,16 @@ public class EventMessageService {
         }
     }
 
+    public boolean updateOwnMessage(int messageId, int senderUserId, String newBody) throws SQLException {
+        String sql = "UPDATE evenement_messages SET corps=? WHERE id=? AND expediteur_user_id=?";
+        try (PreparedStatement ps = MyDatabase.getConnection().prepareStatement(sql)) {
+            ps.setString(1, newBody);
+            ps.setInt(2, messageId);
+            ps.setInt(3, senderUserId);
+            return ps.executeUpdate() > 0;
+        }
+    }
+
     private static EventMessage map(ResultSet rs) throws SQLException {
         EventMessage m = new EventMessage();
         m.setId(rs.getInt("id"));

@@ -1,12 +1,15 @@
 package org.example.controllers;
 
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.DateCell;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
+import javafx.scene.control.TextFormatter;
 import javafx.scene.layout.HBox;
 import org.example.models.Appointment;
 import org.example.models.AppointmentStatus;
@@ -21,9 +24,12 @@ import org.example.utils.PublicRdvDoctorSidebarHelper;
 import org.example.utils.RdvPublicBookingStepper;
 
 import java.sql.SQLException;
+import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
 import java.util.Optional;
+import java.util.function.UnaryOperator;
+import java.util.regex.Pattern;
 
 /**
  * Étape « Vos informations » : formulaire, récapitulatif et envoi de la demande de RDV.
@@ -35,6 +41,12 @@ public class PageRdvInfoController implements PublicShellAware {
             DateTimeFormatter.ofPattern("EEEE dd/MM/yyyy", FR);
     private static final DateTimeFormatter HM = DateTimeFormatter.ofPattern("HH:mm", FR);
     private static final DateTimeFormatter DOB_FMT = DateTimeFormatter.ofPattern("dd/MM/yyyy", FR);
+
+    private static final int MIN_NOM_PRENOM_LEN = 3;
+    private static final int MIN_PHONE_DIGITS = 8;
+    /** Format e-mail raisonnable (local@domaine.tld). */
+    private static final Pattern EMAIL_PATTERN = Pattern.compile(
+            "^[a-zA-Z0-9_+&.-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$");
 
     private PublicShellController shell;
 
@@ -74,8 +86,6 @@ public class PageRdvInfoController implements PublicShellAware {
     private Label recapMode;
     @FXML
     private Label recapMotif;
-    @FXML
-    private Label recapTarif;
 
     @Override
     public void setPublicShell(PublicShellController shell) {
@@ -107,15 +117,43 @@ public class PageRdvInfoController implements PublicShellAware {
         if (infoPrenom != null && session != null && session.getPrenom() != null) {
             infoPrenom.setText(session.getPrenom().trim());
         }
-        if (infoTel != null && session != null && session.getTelephone() != null && !session.getTelephone().isBlank()) {
-            infoTel.setText(session.getTelephone().trim());
+        if (infoTel != null) {
+            UnaryOperator<TextFormatter.Change> digitsOnly = c -> {
+                String t = c.getControlNewText();
+                return t.matches("\\d*") ? c : null;
+            };
+            infoTel.setTextFormatter(new TextFormatter<>(digitsOnly));
+            if (session != null && session.getTelephone() != null && !session.getTelephone().isBlank()) {
+                infoTel.setText(session.getTelephone().replaceAll("\\D", ""));
+            }
+        }
+        if (infoDob != null) {
+            LocalDate todayDob = LocalDate.now();
+            infoDob.setDayCellFactory(picker -> new DateCell() {
+                @Override
+                public void updateItem(LocalDate date, boolean empty) {
+                    super.updateItem(date, empty);
+                    setDisable(empty || date.isAfter(todayDob));
+                }
+            });
+            Platform.runLater(() -> {
+                TextField ed = infoDob.getEditor();
+                if (ed == null) {
+                    return;
+                }
+                UnaryOperator<TextFormatter.Change> dobChars = c -> {
+                    String t = c.getControlNewText();
+                    if (t.length() > 10) {
+                        return null;
+                    }
+                    return t.matches("[0-9/.\\-]*") ? c : null;
+                };
+                ed.setTextFormatter(new TextFormatter<>(dobChars));
+            });
         }
         fillRecap();
         if (recapMode != null) {
             recapMode.setText("Mode : Au cabinet");
-        }
-        if (recapTarif != null) {
-            recapTarif.setText("Tarif : 0 DT");
         }
     }
 
@@ -201,6 +239,14 @@ public class PageRdvInfoController implements PublicShellAware {
                 return;
             }
             Availability slot = avOpt.get();
+            AppointmentService rdvSvc = new AppointmentService();
+            if (rdvSvc.hasConflict(medId, slot.getDebut())
+                    || rdvSvc.hasConflictForDisponibiliteSlot(availId)) {
+                alertWarn(
+                        "Créneau indisponible",
+                        "Ce créneau a été confirmé entre-temps par le médecin. Revenez à l’étape précédente pour en choisir un autre.");
+                return;
+            }
             String email = infoEmail.getText().trim();
             int patientId = resolvePatientId(email);
             if (patientId <= 0) {
@@ -218,15 +264,21 @@ public class PageRdvInfoController implements PublicShellAware {
             Appointment appt = new Appointment();
             appt.setMedecinId(medId);
             appt.setPatientId(patientId);
+            appt.setPatientNom(infoNom.getText().trim());
+            appt.setPatientPrenom(infoPrenom.getText().trim());
             appt.setDateHeure(slot.getDebut());
+            appt.setDisponibiliteId(availId);
             appt.setMotif(motif);
-            appt.setStatus(AppointmentStatus.PLANIFIE);
+            appt.setStatus(AppointmentStatus.EN_ATTENTE);
+            appt.setMedecinDemandeLue(false);
+            appt.setPatientReponseLue(true);
             appt.setNotes(notes);
-            new AppointmentService().add(appt);
+            rdvSvc.add(appt);
             Alert ok = new Alert(Alert.AlertType.INFORMATION);
             ok.setTitle("Demande envoyée");
             ok.setHeaderText(null);
-            ok.setContentText("Votre rendez-vous a été enregistré. Vous recevrez une confirmation à l’adresse indiquée.");
+            ok.setContentText(
+                    "Votre demande a été transmise au médecin. Vous serez notifié ici (icône cloche) lorsqu’il l’aura acceptée ou refusée.");
             ok.showAndWait();
             AppState.clearPendingPublicRdvBooking();
             if (shell != null) {
@@ -274,13 +326,40 @@ public class PageRdvInfoController implements PublicShellAware {
             alertWarn("Champs requis", "Veuillez remplir tous les champs obligatoires (*).");
             return false;
         }
+        String nom = infoNom.getText().trim();
+        String prenom = infoPrenom.getText().trim();
+        if (nom.length() < MIN_NOM_PRENOM_LEN) {
+            alertWarn("Nom", "Le nom doit contenir au moins " + MIN_NOM_PRENOM_LEN + " caractères.");
+            return false;
+        }
+        if (prenom.length() < MIN_NOM_PRENOM_LEN) {
+            alertWarn("Prénom", "Le prénom doit contenir au moins " + MIN_NOM_PRENOM_LEN + " caractères.");
+            return false;
+        }
+        String telDigits = infoTel.getText() != null ? infoTel.getText().replaceAll("\\D", "") : "";
+        if (telDigits.length() < MIN_PHONE_DIGITS) {
+            alertWarn(
+                    "Téléphone",
+                    "Saisissez uniquement des chiffres, avec au moins " + MIN_PHONE_DIGITS + " chiffres pour un numéro valide.");
+            return false;
+        }
         String email = infoEmail.getText().trim();
-        if (!email.contains("@") || email.length() < 5) {
-            alertWarn("E-mail", "Veuillez saisir une adresse e-mail valide.");
+        if (!EMAIL_PATTERN.matcher(email).matches()) {
+            alertWarn("E-mail", "Veuillez saisir une adresse e-mail au format valide (ex. : nom@domaine.fr).");
             return false;
         }
         if (infoDob.getValue() == null) {
             alertWarn("Date de naissance", "Veuillez indiquer la date de naissance du patient.");
+            return false;
+        }
+        LocalDate dob = infoDob.getValue();
+        LocalDate today = LocalDate.now();
+        if (dob.isAfter(today)) {
+            alertWarn("Date de naissance", "La date de naissance ne peut pas être postérieure à aujourd’hui.");
+            return false;
+        }
+        if (dob.isBefore(today.minusYears(130))) {
+            alertWarn("Date de naissance", "La date de naissance semble invalide.");
             return false;
         }
         return true;

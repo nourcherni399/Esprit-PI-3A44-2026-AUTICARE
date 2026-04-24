@@ -7,7 +7,7 @@
 <VBox alignment="TOP_LEFT" maxWidth="Infinity" spacing="14" styleClass="public-page events-page" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.example.controllers.PageNotificationsController">
     <VBox spacing="3" styleClass="events-header">
         <Label styleClass="events-page-title" text="Mes notifications"/>
-        <Label styleClass="events-page-subtitle" text="Retrouvez ici les réponses de l'équipe et le statut de vos inscriptions aux événements."/>
+        <Label styleClass="events-page-subtitle" text="Réponses de l'équipe, inscriptions aux événements et mises à jour de vos rendez-vous (acceptation, refus, annulation)."/>
     </VBox>
 
     <VBox maxWidth="Infinity" spacing="14" styleClass="public-white-sheet">

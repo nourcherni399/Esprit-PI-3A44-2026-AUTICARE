@@ -21,6 +21,9 @@ public class AdminNotificationService {
 
     public void addNotification(String typeCode, Integer evenementId, int expediteurUserId, String resume)
             throws SQLException {
+        if (isAdminSender(expediteurUserId)) {
+            return;
+        }
         String sql = "INSERT INTO notifications_admin(type_code, evenement_id, expediteur_user_id, resume, lu, date_creation) "
                 + "VALUES(?,?,?,?,0,NOW())";
         try (PreparedStatement ps = MyDatabase.getConnection().prepareStatement(sql)) {
@@ -37,7 +40,11 @@ public class AdminNotificationService {
     }
 
     public int countUnread() throws SQLException {
-        String sql = "SELECT COUNT(*) AS total FROM notifications_admin WHERE lu = 0";
+        String sql = "SELECT COUNT(*) AS total "
+                + "FROM notifications_admin n "
+                + "LEFT JOIN `user` u ON u.id = n.expediteur_user_id "
+                + "WHERE n.lu = 0 "
+                + "AND (u.role IS NULL OR (u.role <> 'ADMIN' AND u.role <> 'ROLE_ADMIN'))";
         try (PreparedStatement ps = MyDatabase.getConnection().prepareStatement(sql)) {
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
@@ -54,6 +61,7 @@ public class AdminNotificationService {
                 + "FROM notifications_admin n "
                 + "LEFT JOIN `user` u ON u.id = n.expediteur_user_id "
                 + "LEFT JOIN evenements e ON e.id = n.evenement_id "
+                + "WHERE (u.role IS NULL OR (u.role <> 'ADMIN' AND u.role <> 'ROLE_ADMIN')) "
                 + "ORDER BY n.lu ASC, n.date_creation DESC "
                 + "LIMIT ?";
         List<AdminNotificationItem> list = new ArrayList<>();
@@ -99,5 +107,20 @@ public class AdminNotificationService {
             return "";
         }
         return s.length() <= max ? s : s.substring(0, max) + "…";
+    }
+
+    private static boolean isAdminSender(int userId) {
+        String sql = "SELECT role FROM `user` WHERE id = ?";
+        try (PreparedStatement ps = MyDatabase.getConnection().prepareStatement(sql)) {
+            ps.setInt(1, userId);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                String role = rs.getString("role");
+                return "ADMIN".equalsIgnoreCase(role) || "ROLE_ADMIN".equalsIgnoreCase(role);
+            }
+        } catch (SQLException ignored) {
+            // En cas d'erreur de lecture du rôle, on laisse la logique existante continuer.
+        }
+        return false;
     }
 }

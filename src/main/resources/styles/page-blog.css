@@ -1,0 +1,1086 @@
+/* Page Blog — catégories + détail modules */
+
+.blog-page-root {
+    -fx-font-family: "Nunito", "Nunito Sans", "Segoe UI", "Segoe UI Variable", system-ui, sans-serif;
+    -fx-background-color: transparent;
+    -fx-max-width: Infinity;
+    -fx-spacing: 0;
+    -fx-alignment: TOP_CENTER;
+}
+
+/* ═══════════════════ HERO ═══════════════════ */
+.blog-hero-band {
+    -fx-min-height: 280;
+    -fx-padding: 18 0 0 0;
+    -fx-max-width: Infinity;
+    -fx-alignment: CENTER;
+}
+
+.blog-hero-bg-layer {
+    -fx-background-color: transparent;
+}
+
+.blog-hero-inner {
+    -fx-padding: 0;
+    -fx-max-width: 1100;
+    -fx-alignment: CENTER;
+}
+
+.blog-hero-card-shell {
+    -fx-max-width: 1060;
+    -fx-padding: 0;
+}
+
+.blog-hero-card-bg {
+    -fx-background-color: #fdeef0;
+    -fx-background-insets: 0;
+    -fx-background-radius: 28;
+    -fx-border-color: #9fb198;
+    -fx-border-width: 2;
+    -fx-border-radius: 28;
+    -fx-effect: dropshadow(gaussian, rgba(60, 72, 88, 0.14), 20, 0.12, 0, 3);
+}
+
+.blog-hero-card-stack {
+    -fx-padding: 32 24 32 24;
+    -fx-alignment: CENTER;
+}
+
+.blog-hero-text-col {
+    -fx-spacing: 16;
+    -fx-alignment: CENTER;
+    -fx-padding: 12 0 12 0;
+    -fx-max-width: Infinity;
+}
+
+.blog-hero-icon-ring {
+    -fx-padding: 8;
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 999;
+    -fx-border-color: #9fb198;
+    -fx-border-width: 3;
+    -fx-border-radius: 999;
+    -fx-max-width: 100;
+    -fx-max-height: 100;
+    -fx-min-width: 100;
+    -fx-min-height: 100;
+    -fx-alignment: CENTER;
+}
+
+.blog-hero-title {
+    -fx-font-size: 28px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #3c4858;
+    -fx-wrap-text: true;
+    -fx-text-alignment: CENTER;
+    -fx-alignment: CENTER;
+    -fx-max-width: 800;
+    -fx-padding: 0 40 0 40;
+}
+
+.blog-hero-subtitle {
+    -fx-font-size: 15px;
+    -fx-font-weight: 400;
+    -fx-text-fill: #64748b;
+    -fx-line-spacing: 4px;
+    -fx-wrap-text: true;
+    -fx-text-alignment: CENTER;
+    -fx-alignment: CENTER;
+    -fx-max-width: 700;
+    -fx-padding: 0 40 0 40;
+}
+
+.blog-hero-illustration {
+    -fx-smooth: true;
+    -fx-translate-y: -16;
+    -fx-translate-x: 8;
+}
+
+/* ═══════════════════ BARRE RECHERCHE ═══════════════════ */
+.blog-search-bar-row {
+    -fx-padding: 20 28 8 28;
+    -fx-alignment: CENTER_LEFT;
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 999;
+    -fx-border-color: #cbd5e1;
+    -fx-border-radius: 999;
+    -fx-border-width: 1.5;
+    -fx-max-width: 480;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.05), 8, 0, 0, 2);
+    -fx-translate-y: -6;
+}
+
+.blog-search-icon {
+    -fx-font-size: 14px;
+    -fx-text-fill: #94a3b8;
+}
+
+.blog-search-field {
+    -fx-background-color: transparent;
+    -fx-border-width: 0;
+    -fx-padding: 2 4 2 4;
+    -fx-font-size: 14px;
+    -fx-text-fill: #3c4858;
+    -fx-prompt-text-fill: #94a3b8;
+}
+
+/* ═══════════════════ VUE CATÉGORIES ═══════════════════ */
+.blog-main-row {
+    -fx-padding: 24 28 48 28;
+    -fx-alignment: TOP_CENTER;
+    -fx-max-width: Infinity;
+}
+
+.blog-left-col {
+    -fx-padding: 0;
+}
+
+.blog-cats-heading {
+    -fx-font-size: 22px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #3c4858;
+}
+
+.blog-cats-flow {
+    -fx-padding: 0;
+    -fx-pref-wrap-length: 1060;
+}
+
+/* ── Carte catégorie (style RDV : pastel vert/mauve) ── */
+.blog-cat-card {
+    -fx-background-color: rgba(255, 255, 255, 0.97);
+    -fx-background-radius: 14;
+    -fx-border-color: rgba(159, 177, 152, 0.3);
+    -fx-border-radius: 14;
+    -fx-border-width: 1;
+    -fx-effect: dropshadow(gaussian, rgba(107, 92, 122, 0.12), 12, 0.15, 0, 2);
+    -fx-cursor: hand;
+}
+
+.blog-cat-card:hover {
+    -fx-effect: dropshadow(gaussian, rgba(107, 92, 122, 0.22), 16, 0.2, 0, 4);
+    -fx-background-color: rgba(255, 255, 255, 1.0);
+}
+
+.blog-cat-card-gradient {
+    -fx-background-color: linear-gradient(to top, rgba(20, 20, 35, 0.70) 0%, rgba(20, 20, 35, 0.20) 50%, transparent 75%);
+    -fx-background-radius: 14;
+}
+
+.blog-cat-card-overlay {
+    -fx-padding: 16;
+}
+
+.blog-cat-card-title {
+    -fx-font-size: 18px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #ffffff;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.45), 4, 0, 0, 1);
+    -fx-wrap-text: true;
+}
+
+.blog-cat-card-btn {
+    -fx-background-color: rgba(255, 255, 255, 0.92);
+    -fx-text-fill: #3c4858;
+    -fx-font-weight: 700;
+    -fx-font-size: 12px;
+    -fx-padding: 7 16 7 16;
+    -fx-background-radius: 999;
+    -fx-border-width: 0;
+    -fx-cursor: hand;
+}
+
+.blog-cat-card-btn:hover {
+    -fx-background-color: #ffffff;
+}
+
+/* ── Colonne droite (témoignage) ── */
+.blog-right-col {
+    -fx-padding: 28 0 0 0;
+}
+
+.blog-story-card {
+    -fx-background-color: #ffffff;
+    -fx-background-insets: 0;
+    -fx-background-radius: 22;
+    -fx-padding: 22 24 24 24;
+    -fx-border-color: #9fb198;
+    -fx-border-radius: 22;
+    -fx-border-width: 2;
+    -fx-spacing: 10;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.06), 14, 0, 0, 2);
+}
+
+.blog-story-icon-circle {
+    -fx-min-width: 44;
+    -fx-min-height: 44;
+    -fx-max-width: 44;
+    -fx-max-height: 44;
+    -fx-background-color: #f1f5f9;
+    -fx-background-radius: 999;
+    -fx-border-color: #e2e8f0;
+    -fx-border-radius: 999;
+    -fx-border-width: 1;
+}
+
+.blog-story-pencil {
+    -fx-font-size: 17px;
+    -fx-text-fill: #64748b;
+}
+
+.blog-story-heading {
+    -fx-font-size: 18px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #3c4858;
+}
+
+.blog-story-body {
+    -fx-font-size: 13px;
+    -fx-text-fill: #64748b;
+    -fx-wrap-text: true;
+    -fx-line-spacing: 2px;
+}
+
+/* ═══════════════════ VUE DÉTAIL CATÉGORIE ═══════════════════ */
+.blog-detail-topbar {
+    -fx-padding: 16 28 8 28;
+}
+
+.blog-back-btn {
+    -fx-background-color: #f3f0ff;
+    -fx-text-fill: #6d28d9;
+    -fx-font-weight: 700;
+    -fx-font-size: 13px;
+    -fx-padding: 8 18 8 18;
+    -fx-background-radius: 999;
+    -fx-border-color: #c4b5fd;
+    -fx-border-radius: 999;
+    -fx-border-width: 1.5;
+    -fx-cursor: hand;
+}
+
+.blog-back-btn:hover {
+    -fx-background-color: #ede9fe;
+}
+
+.blog-detail-header {
+    -fx-padding: 16 28 20 28;
+    -fx-background-color: #fef7f0;
+    -fx-background-radius: 18;
+    -fx-border-color: #e8ddd4;
+    -fx-border-radius: 18;
+    -fx-border-width: 1;
+    -fx-max-width: 1060;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.04), 10, 0, 0, 2);
+}
+
+.blog-detail-header-img-wrap {
+    -fx-min-width: 120;
+    -fx-min-height: 120;
+    -fx-max-width: 120;
+    -fx-max-height: 120;
+}
+
+.blog-detail-cat-title {
+    -fx-font-size: 24px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #3c4858;
+}
+
+.blog-detail-cat-desc {
+    -fx-font-size: 14px;
+    -fx-text-fill: #64748b;
+    -fx-wrap-text: true;
+}
+
+.blog-modules-flow {
+    -fx-padding: 20 28 48 28;
+}
+
+.blog-empty-label {
+    -fx-font-size: 15px;
+    -fx-text-fill: #94a3b8;
+    -fx-padding: 24;
+}
+
+/* ── Carte module ── */
+/* Carte module (style RDV : fond blanc pastel avec bordure vert/mauve) */
+.blog-mod-card {
+    -fx-background-color: rgba(255, 255, 255, 0.98);
+    -fx-background-radius: 16;
+    -fx-border-color: rgba(159, 177, 152, 0.35);
+    -fx-border-radius: 16;
+    -fx-border-width: 1.5;
+    -fx-effect: dropshadow(gaussian, rgba(107, 92, 122, 0.14), 14, 0.18, 0, 3);
+    -fx-cursor: hand;
+}
+
+.blog-mod-card:hover {
+    -fx-effect: dropshadow(gaussian, rgba(107, 92, 122, 0.25), 18, 0.22, 0, 5);
+    -fx-border-color: rgba(159, 177, 152, 0.5);
+}
+
+.blog-mod-card-img-wrap {
+    -fx-background-radius: 15 15 0 0;
+    -fx-background-color: rgba(212, 229, 208, 0.3);
+}
+
+.blog-mod-badge {
+    -fx-font-size: 11px;
+    -fx-font-weight: 700;
+    -fx-padding: 5 14 5 14;
+    -fx-background-radius: 999;
+    -fx-text-fill: #ffffff;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.2), 4, 0.3, 0, 1);
+}
+
+/* Badges niveau avec couleurs pastel douces */
+.blog-mod-badge-facile {
+    -fx-background-color: #a8d5ba;
+    -fx-text-fill: #2d5f3f;
+}
+
+.blog-mod-badge-moyen {
+    -fx-background-color: #f9d5a7;
+    -fx-text-fill: #8b5a00;
+}
+
+.blog-mod-badge-difficile {
+    -fx-background-color: #f5b5b5;
+    -fx-text-fill: #8b2c2c;
+}
+
+.blog-mod-card-info {
+    -fx-padding: 16 18 18 18;
+    -fx-background-color: rgba(255, 255, 255, 0.95);
+    -fx-background-radius: 0 0 15 15;
+}
+
+.blog-mod-card-cat {
+    -fx-font-size: 11px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #6b5c7a;
+    -fx-padding: 0 0 4 0;
+}
+
+.blog-mod-card-title {
+    -fx-font-size: 17px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #2f3138;
+    -fx-wrap-text: true;
+}
+
+.blog-mod-card-desc {
+    -fx-font-size: 13px;
+    -fx-text-fill: #64748b;
+    -fx-wrap-text: true;
+    -fx-line-spacing: 2px;
+}
+
+.blog-mod-read-btn {
+    -fx-background-color: #d4e5d0;
+    -fx-text-fill: #4a6b45;
+    -fx-font-weight: 700;
+    -fx-font-size: 13px;
+    -fx-padding: 8 18 8 18;
+    -fx-background-radius: 999;
+    -fx-border-width: 0;
+    -fx-cursor: hand;
+}
+
+.blog-mod-read-btn:hover {
+    -fx-background-color: #c2d6bd;
+}
+
+.blog-mod-read-btn:hover {
+    -fx-background-color: rgba(167, 139, 250, 0.15);
+}
+
+.blog-mod-bookmark {
+    -fx-font-size: 18px;
+    -fx-text-fill: #9fb198;
+    -fx-cursor: hand;
+}
+
+.blog-mod-bookmark:hover {
+    -fx-text-fill: #6b5c7a;
+}
+
+/* ═══════════════════ VUE 3 : DÉTAIL MODULE ═══════════════════ */
+.blog-module-detail-row {
+    -fx-padding: 8 28 48 28;
+    -fx-alignment: TOP_LEFT;
+    -fx-fill-height: false;
+}
+
+/* ── Colonne gauche (module) ── */
+/* Carte module : bande image = pleine largeur utile, hauteur 150px */
+.blog-module-detail-left {
+    -fx-background-color: rgba(255, 255, 255, 0.97);
+    -fx-background-radius: 14;
+    -fx-border-color: rgba(159, 177, 152, 0.4);
+    -fx-border-radius: 14;
+    -fx-border-width: 1.5;
+    -fx-padding: 20 22 22 22;
+    -fx-effect: dropshadow(gaussian, rgba(60, 55, 80, 0.1), 12, 0.15, 0, 2);
+    -fx-min-width: 404;
+    -fx-pref-width: 404;
+    -fx-max-width: 404;
+    /* Pas de plafond de hauteur : tout le contenu (texte long) reste visible dans la carte */
+}
+
+.blog-md-title {
+    -fx-font-size: 22px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #2f3138;
+    -fx-max-width: 360;
+}
+
+/* Badge niveau (style RDV : mauve pastel) */
+.blog-md-niveau-badge {
+    -fx-font-size: 11px;
+    -fx-font-weight: 600;
+    -fx-padding: 3 10 3 10;
+    -fx-background-radius: 999;
+    -fx-border-width: 0;
+    -fx-text-fill: #6b5c7a;
+    -fx-background-color: rgba(205, 180, 219, 0.5);
+}
+
+.blog-md-date {
+    -fx-font-size: 12px;
+    -fx-text-fill: #6b7280;
+}
+
+/* Boutons d'action (style RDV : mauve pastel) */
+.blog-md-action-btn {
+    -fx-min-width: 32;
+    -fx-min-height: 32;
+    -fx-max-width: 32;
+    -fx-max-height: 32;
+    -fx-background-color: rgba(205, 180, 219, 0.5);
+    -fx-text-fill: #6b5c7a;
+    -fx-font-size: 13px;
+    -fx-background-radius: 999;
+    -fx-border-width: 0;
+    -fx-cursor: hand;
+    -fx-alignment: CENTER;
+}
+
+.blog-md-action-btn:hover {
+    -fx-background-color: rgba(205, 180, 219, 0.7);
+}
+
+.blog-md-desc {
+    -fx-font-size: 13px;
+    -fx-text-fill: #5c5c5c;
+    -fx-line-spacing: 3px;
+    -fx-max-width: 360;
+}
+
+/* Ligne pleine largeur pour centrer le bandeau image (300px) */
+.blog-md-image-row {
+    -fx-min-width: 0;
+    -fx-max-width: Infinity;
+    -fx-alignment: CENTER;
+}
+
+/* Bandeau 300×150 — clip dans le contrôleur */
+.blog-md-image-wrap {
+    -fx-min-width: 300;
+    -fx-max-width: 300;
+    -fx-pref-width: 300;
+    -fx-min-height: 150;
+    -fx-max-height: 150;
+    -fx-pref-height: 150;
+    -fx-padding: 6 0 12 0;
+}
+
+.blog-md-image {
+    -fx-smooth: true;
+}
+
+.blog-md-contenu {
+    -fx-font-size: 13px;
+    -fx-text-fill: #5c5c5c;
+    -fx-line-spacing: 3px;
+    -fx-max-width: 360;
+}
+
+/* Titre de section (style RDV : mauve) */
+.blog-md-section-title {
+    -fx-font-size: 16px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #6b5c7a;
+    -fx-padding: 6 0 0 0;
+}
+
+/* Container pour les ressources */
+.blog-md-ressources-container {
+    -fx-spacing: 12;
+}
+
+.blog-md-ressources-text {
+    -fx-font-size: 12px;
+    -fx-text-fill: #94a3b8;
+}
+
+/* Carte de ressource (style RDV pastel) */
+.blog-ressource-card {
+    -fx-background-color: rgba(244, 240, 255, 0.5);
+    -fx-background-radius: 12;
+    -fx-border-color: rgba(205, 180, 219, 0.3);
+    -fx-border-radius: 12;
+    -fx-border-width: 1;
+    -fx-effect: dropshadow(gaussian, rgba(107, 92, 122, 0.08), 8, 0.1, 0, 1);
+}
+
+.blog-ressource-name {
+    -fx-font-size: 14px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #2f3138;
+}
+
+.blog-ressource-type-badge {
+    -fx-font-size: 10px;
+    -fx-font-weight: 600;
+    -fx-text-fill: #6b5c7a;
+    -fx-background-color: rgba(205, 180, 219, 0.4);
+    -fx-background-radius: 999;
+    -fx-padding: 3 10 3 10;
+}
+
+.blog-ressource-download-btn {
+    -fx-min-width: 28;
+    -fx-min-height: 28;
+    -fx-max-width: 28;
+    -fx-max-height: 28;
+    -fx-background-color: #d4e5d0;
+    -fx-text-fill: #4a6b45;
+    -fx-font-size: 12px;
+    -fx-background-radius: 999;
+    -fx-border-width: 0;
+    -fx-cursor: hand;
+}
+
+.blog-ressource-download-btn:hover {
+    -fx-background-color: #c2d6bd;
+}
+
+/* Bouton quiz avec couleur pastel verte */
+.blog-md-quiz-btn {
+    -fx-background-color: #d4e5d0;
+    -fx-text-fill: #4a6b45;
+    -fx-font-weight: 700;
+    -fx-font-size: 13px;
+    -fx-padding: 10 22;
+    -fx-background-radius: 999;
+    -fx-border-width: 0;
+    -fx-cursor: hand;
+}
+
+.blog-md-quiz-btn:hover {
+    -fx-background-color: #c2d6bd;
+}
+
+/* Lien (style RDV : mauve) */
+.blog-md-link {
+    -fx-font-size: 13px;
+    -fx-text-fill: #6b5c7a;
+    -fx-font-weight: 700;
+    -fx-border-width: 0;
+    -fx-padding: 2 0;
+}
+
+.blog-md-link:hover {
+    -fx-text-fill: #4a3d52;
+}
+
+.blog-md-social-bar {
+    -fx-padding: 4 0 0 0;
+}
+
+/* Icônes sociales (style RDV : vert pastel) */
+.blog-md-social-icon {
+    -fx-min-width: 32;
+    -fx-min-height: 32;
+    -fx-max-width: 32;
+    -fx-max-height: 32;
+    -fx-background-color: #d4e5d0;
+    -fx-text-fill: #4a6b45;
+    -fx-font-size: 16px;
+    -fx-cursor: hand;
+    -fx-alignment: CENTER;
+    -fx-background-radius: 999;
+}
+
+.blog-md-social-icon:hover {
+    -fx-background-color: #c2d6bd;
+}
+
+/* ── Colonne droite (articles) : léger décalage visuel en plus du spacing HBox */
+.blog-module-detail-right {
+    -fx-padding: 0 0 0 8;
+    -fx-spacing: 0;
+}
+
+.blog-art-heading {
+    -fx-font-size: 17px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #3c4858;
+    -fx-padding: 0 0 0 0;
+}
+
+.blog-art-search-bar {
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 10;
+    -fx-border-color: #cbd5e1;
+    -fx-border-radius: 10;
+    -fx-border-width: 1;
+    -fx-padding: 6 14;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.04), 6, 0, 0, 1);
+    margin: 0 0 20 0;
+}
+
+.blog-art-search-icon {
+    -fx-font-size: 14px;
+    -fx-text-fill: #94a3b8;
+    -fx-padding: 0 6 0 0;
+}
+
+.blog-art-search-field {
+    -fx-background-color: transparent;
+    -fx-border-width: 0;
+    -fx-padding: 2 0;
+    -fx-font-size: 13px;
+    -fx-text-fill: #3c4858;
+    -fx-prompt-text-fill: #94a3b8;
+}
+
+.blog-art-scroll {
+    -fx-background-color: transparent;
+    -fx-background: transparent;
+    -fx-border-width: 0;
+    -fx-padding: 14 0 0 0;
+}
+
+.blog-art-scroll .viewport {
+    -fx-background-color: transparent;
+}
+
+.blog-art-scroll .scroll-bar {
+    -fx-background-color: transparent;
+}
+
+.blog-art-list {
+    -fx-padding: 20 0 20 0;
+    -fx-spacing: 18;
+}
+
+/* ── Carte article (dans la liste) ── */
+/* Carte article (style RDV : fond blanc avec bordure pastel) */
+.blog-art-card {
+    -fx-background-color: rgba(255, 255, 255, 0.97);
+    -fx-background-radius: 14;
+    -fx-border-color: rgba(205, 180, 219, 0.4);
+    -fx-border-radius: 14;
+    -fx-border-width: 1.5;
+    -fx-padding: 16 18 16 18;
+    -fx-effect: dropshadow(gaussian, rgba(107, 92, 122, 0.12), 12, 0.15, 0, 2);
+}
+
+.blog-art-card:hover {
+    -fx-effect: dropshadow(gaussian, rgba(107, 92, 122, 0.2), 14, 0.18, 0, 3);
+    -fx-border-color: rgba(205, 180, 219, 0.6);
+}
+
+/* Message de connexion simple (style léger avec lien) */
+.blog-login-prompt-simple {
+    -fx-background-color: rgba(224, 242, 254, 0.5);
+    -fx-background-radius: 10;
+    -fx-border-color: rgba(186, 230, 253, 0.6);
+    -fx-border-radius: 10;
+    -fx-border-width: 1;
+    -fx-padding: 14 18 14 18;
+    -fx-alignment: center;
+}
+
+.blog-login-prompt-simple-text {
+    -fx-font-size: 14px;
+    -fx-font-weight: 400;
+    -fx-text-fill: #64748b;
+}
+
+.blog-login-prompt-simple-link {
+    -fx-font-size: 14px;
+    -fx-font-weight: 600;
+    -fx-text-fill: #6b5c7a;
+    -fx-underline: true;
+    -fx-border-width: 0;
+    -fx-padding: 0;
+}
+
+.blog-login-prompt-simple-link:hover {
+    -fx-text-fill: #4a3d52;
+}
+
+.blog-art-card-title {
+    -fx-font-size: 16px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #3c4858;
+}
+
+/* Badges type article avec couleurs pastel */
+.blog-art-type-badge {
+    -fx-font-size: 11px;
+    -fx-font-weight: 700;
+    -fx-padding: 4 12 4 12;
+    -fx-background-radius: 999;
+}
+
+.blog-art-type-plainte {
+    -fx-background-color: rgba(205, 180, 219, 0.6);
+    -fx-text-fill: #6b5c7a;
+}
+
+.blog-art-type-recommandation {
+    -fx-background-color: rgba(168, 213, 186, 0.6);
+    -fx-text-fill: #2d5f3f;
+}
+
+.blog-art-type-question {
+    -fx-background-color: rgba(173, 216, 230, 0.6);
+    -fx-text-fill: #2c5f7a;
+}
+
+.blog-art-type-experience {
+    -fx-background-color: rgba(249, 213, 167, 0.6);
+    -fx-text-fill: #8b5a00;
+}
+
+.blog-art-author {
+    -fx-font-size: 12px;
+    -fx-text-fill: #64748b;
+}
+
+.blog-art-date {
+    -fx-font-size: 11px;
+    -fx-text-fill: #94a3b8;
+}
+
+.blog-art-content {
+    -fx-font-size: 13px;
+    -fx-text-fill: #475569;
+    -fx-line-spacing: 1px;
+}
+
+/* Boutons sociaux avec couleur pastel verte */
+.blog-art-social {
+    -fx-min-width: 32;
+    -fx-min-height: 32;
+    -fx-max-width: 32;
+    -fx-max-height: 32;
+    -fx-background-color: #d4e5d0;
+    -fx-background-radius: 999;
+    -fx-text-fill: #4a6b45;
+    -fx-font-size: 14px;
+    -fx-cursor: hand;
+    -fx-alignment: CENTER;
+}
+
+.blog-art-social:hover {
+    -fx-background-color: #c2d6bd;
+}
+
+.blog-art-icon-btn-green {
+    -fx-min-width: 30;
+    -fx-min-height: 30;
+    -fx-max-width: 30;
+    -fx-max-height: 30;
+    -fx-background-color: #dcfce7;
+    -fx-background-radius: 999;
+    -fx-text-fill: #16a34a;
+    -fx-font-size: 12px;
+    -fx-border-width: 0;
+    -fx-cursor: hand;
+    -fx-alignment: CENTER;
+}
+
+.blog-art-icon-btn-green:hover {
+    -fx-background-color: #bbf7d0;
+}
+
+.blog-art-icon-btn-red {
+    -fx-min-width: 30;
+    -fx-min-height: 30;
+    -fx-max-width: 30;
+    -fx-max-height: 30;
+    -fx-background-color: #fee2e2;
+    -fx-background-radius: 999;
+    -fx-text-fill: #dc2626;
+    -fx-font-size: 12px;
+    -fx-border-width: 0;
+    -fx-cursor: hand;
+    -fx-alignment: CENTER;
+}
+
+.blog-art-icon-btn-red:hover {
+    -fx-background-color: #fecaca;
+}
+
+.blog-md-articles-empty {
+    -fx-font-size: 14px;
+    -fx-text-fill: #64748b;
+    -fx-text-alignment: CENTER;
+    -fx-padding: 20 0;
+}
+
+.blog-md-articles-hint {
+    -fx-font-size: 13px;
+    -fx-text-fill: #94a3b8;
+    -fx-text-alignment: CENTER;
+    -fx-padding: 0 0 16 0;
+}
+
+/* ═══════════════════ FORMULAIRE ARTICLE ═══════════════════ */
+.blog-article-form-card {
+    -fx-background-color: rgba(255, 255, 255, 0.98);
+    -fx-background-radius: 16;
+    -fx-border-color: rgba(205, 180, 219, 0.4);
+    -fx-border-radius: 16;
+    -fx-border-width: 1.5;
+    -fx-padding: 26 24 30 24;
+    -fx-effect: dropshadow(gaussian, rgba(107, 92, 122, 0.12), 12, 0.15, 0, 2);
+    margin: 20 0 0 0;
+}
+
+.blog-form-heading {
+    -fx-font-size: 20px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #3c4858;
+    -fx-padding: 0 0 4 0;
+}
+
+.blog-form-label {
+    -fx-font-size: 13px;
+    -fx-font-weight: 600;
+    -fx-text-fill: #475569;
+    -fx-padding: 4 0 0 0;
+}
+
+.blog-form-textfield {
+    -fx-background-color: #ffffff;
+    -fx-border-color: #cbd5e1;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-border-width: 1;
+    -fx-padding: 8 12;
+    -fx-font-size: 13px;
+    -fx-prompt-text-fill: #94a3b8;
+}
+
+.blog-form-textfield:focused {
+    -fx-border-color: #7c3aed;
+    -fx-effect: dropshadow(gaussian, rgba(124, 58, 237, 0.15), 6, 0, 0, 0);
+}
+
+.blog-form-textarea,
+.blog-form-textarea-small {
+    -fx-background-color: #ffffff;
+    -fx-border-color: #cbd5e1;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-border-width: 1;
+    -fx-padding: 6;
+    -fx-font-size: 13px;
+    -fx-prompt-text-fill: #94a3b8;
+}
+
+.blog-form-textarea:focused,
+.blog-form-textarea-small:focused {
+    -fx-border-color: #7c3aed;
+    -fx-effect: dropshadow(gaussian, rgba(124, 58, 237, 0.15), 6, 0, 0, 0);
+}
+
+.blog-form-textarea .content {
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 8;
+}
+
+.blog-form-textarea-small .content {
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 8;
+}
+
+.blog-form-combo {
+    -fx-background-color: #ffffff;
+    -fx-border-color: #cbd5e1;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-border-width: 1;
+    -fx-padding: 4 8;
+    -fx-font-size: 13px;
+}
+
+.blog-form-combo:focused {
+    -fx-border-color: #7c3aed;
+}
+
+/* ── Section IA ── */
+.blog-ai-section {
+    -fx-background-color: #faf5ff;
+    -fx-background-radius: 14;
+    -fx-border-color: #e9d5ff;
+    -fx-border-radius: 14;
+    -fx-border-width: 1;
+    -fx-padding: 16 16 16 16;
+}
+
+.blog-ai-title {
+    -fx-font-size: 15px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #6d28d9;
+}
+
+.blog-ai-desc {
+    -fx-font-size: 12px;
+    -fx-text-fill: #64748b;
+    -fx-line-spacing: 1px;
+}
+
+.blog-ai-generate-btn {
+    -fx-background-color: #7c3aed;
+    -fx-text-fill: #ffffff;
+    -fx-font-weight: 700;
+    -fx-font-size: 13px;
+    -fx-padding: 8 20;
+    -fx-background-radius: 8;
+    -fx-border-width: 0;
+    -fx-cursor: hand;
+}
+
+.blog-ai-generate-btn:hover {
+    -fx-background-color: #6d28d9;
+}
+
+/* ── Section hashtags ── */
+.blog-hashtag-section {
+    -fx-background-color: #faf5ff;
+    -fx-background-radius: 14;
+    -fx-border-color: #e9d5ff;
+    -fx-border-radius: 14;
+    -fx-border-width: 1;
+    -fx-padding: 14 16;
+}
+
+.blog-hashtag-title {
+    -fx-font-size: 14px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #6d28d9;
+}
+
+.blog-hashtag-desc {
+    -fx-font-size: 12px;
+    -fx-text-fill: #64748b;
+}
+
+/* ── Upload fichier ── */
+.blog-form-file-row {
+    -fx-padding: 4 0;
+}
+
+.blog-form-file-btn {
+    -fx-background-color: #ffffff;
+    -fx-border-color: #cbd5e1;
+    -fx-border-radius: 6;
+    -fx-background-radius: 6;
+    -fx-border-width: 1;
+    -fx-padding: 6 14;
+    -fx-font-size: 12px;
+    -fx-cursor: hand;
+    -fx-text-fill: #3c4858;
+}
+
+.blog-form-file-btn:hover {
+    -fx-background-color: #f8fafc;
+}
+
+.blog-form-file-label {
+    -fx-font-size: 12px;
+    -fx-text-fill: #94a3b8;
+}
+
+/* ── Boutons publier / annuler ── */
+.blog-form-publish-btn {
+    -fx-background-color: #7c3aed;
+    -fx-text-fill: #ffffff;
+    -fx-font-weight: 700;
+    -fx-font-size: 13px;
+    -fx-padding: 9 24;
+    -fx-background-radius: 8;
+    -fx-border-width: 0;
+    -fx-cursor: hand;
+}
+
+.blog-form-publish-btn:hover {
+    -fx-background-color: #6d28d9;
+}
+
+.blog-form-cancel-btn {
+    -fx-background-color: #ffffff;
+    -fx-border-color: #cbd5e1;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-border-width: 1;
+    -fx-padding: 9 24;
+    -fx-font-size: 13px;
+    -fx-cursor: hand;
+    -fx-text-fill: #3c4858;
+}
+
+.blog-form-cancel-btn:hover {
+    -fx-background-color: #f8fafc;
+}
+
+/* ── Formulaire modifier article (vue 4) ── */
+.blog-edit-form-wrapper {
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 18;
+    -fx-border-color: #d4cfc8;
+    -fx-border-radius: 18;
+    -fx-border-width: 1;
+    -fx-padding: 28 32 32 32;
+    -fx-spacing: 12;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.06), 12, 0, 0, 2);
+}
+
+/* Login hint (réutilisé dans module detail) */
+.blog-login-hint {
+    -fx-background-color: rgba(167, 243, 208, 0.30);
+    -fx-background-radius: 12;
+    -fx-border-color: rgba(52, 211, 153, 0.40);
+    -fx-border-radius: 12;
+    -fx-border-width: 1;
+    -fx-padding: 10 14;
+}
+
+.blog-login-flow {
+    -fx-text-alignment: left;
+}
+
+.blog-login-text {
+    -fx-font-size: 13px;
+    -fx-fill: #475569;
+}
+
+.blog-login-link {
+    -fx-font-size: 13px;
+    -fx-text-fill: #059669;
+    -fx-border-width: 0;
+    -fx-padding: 0;
+    -fx-underline: true;
+}
+
+.blog-login-link:hover {
+    -fx-text-fill: #047857;
+}

@@ -1,9 +1,11 @@
 package org.example.controllers;
 
+import javafx.collections.FXCollections;
+import javafx.fxml.FXML;
+import javafx.scene.control.*;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.fxml.FXML;
 import javafx.geometry.Pos;
 import javafx.scene.chart.PieChart;
 import javafx.scene.control.*;
@@ -12,9 +14,12 @@ import org.example.MainApp;
 import org.example.models.*;
 import org.example.services.*;
 import org.example.utils.AppState;
-import org.example.utils.PasswordUtil;
+import org.example.utils.ModuleCategorieStringConverter;
 
 import java.time.LocalDateTime;
+import org.example.utils.PasswordUtil;
+
+import java.sql.SQLException;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -83,6 +88,7 @@ public class MainController {
     @FXML private Label dashStatBigTotal;
     @FXML private Label dashStatBigVenir;
     @FXML private Label dashStatBigInscTotal;
+    @FXML private ListView<Event> eventsList;
     @FXML private TextField regIdField;
     @FXML private TextField regEventIdField;
     @FXML private TextField regUserIdField;
@@ -92,9 +98,15 @@ public class MainController {
     @FXML private TextField moduleIdField;
     @FXML private TextField moduleTitreField;
     @FXML private TextArea moduleDescriptionField;
+    @FXML private TextArea moduleContenuField;
+    @FXML private ComboBox<ModuleNiveau> moduleNiveauBox;
+    @FXML private ComboBox<ModuleCategorie> moduleCategorieBox;
+    @FXML private TextField moduleImageField;
+    @FXML private CheckBox modulePublishedBox;
     @FXML private TextField moduleCategorieField;
     @FXML private TextField moduleLienField;
     @FXML private ListView<ModuleContent> modulesList;
+    private Integer moduleEditingAdminId;
 
     @FXML private TextField articleIdField;
     @FXML private TextField articleTitreField;
@@ -122,6 +134,9 @@ public class MainController {
         apptStatusBox.setItems(FXCollections.observableArrayList(AppointmentStatus.values()));
         eventStatusBox.setItems(FXCollections.observableArrayList(EventStatus.values()));
         regStatusBox.setItems(FXCollections.observableArrayList(RegistrationStatus.values()));
+        moduleNiveauBox.setItems(FXCollections.observableArrayList(ModuleNiveau.values()));
+        moduleCategorieBox.setItems(FXCollections.observableArrayList(ModuleCategorie.values()));
+        moduleCategorieBox.setConverter(ModuleCategorieStringConverter.INSTANCE);
         setupAdminEventsUi();
         EventStatsPieCharts.configure(dashPiePeriodChart, true);
         EventStatsPieCharts.configure(dashPieRegsChart, false);
@@ -254,7 +269,18 @@ public class MainController {
             a.setMotif(apptMotifField.getText());
             a.setStatus(apptStatusBox.getValue() == null ? AppointmentStatus.PLANIFIE : apptStatusBox.getValue());
             a.setNotes(apptNotesField.getText());
-            if (a.getId() > 0) appointmentService.update(a); else appointmentService.add(a);
+            enrichAppointmentPatientNomPrenom(a);
+            if (a.getId() > 0) {
+                var ex = appointmentService.findById(a.getId());
+                if (ex.isPresent()) {
+                    Appointment prev = ex.get();
+                    a.setPatientReponseLue(prev.isPatientReponseLue());
+                    a.setMedecinDemandeLue(prev.isMedecinDemandeLue());
+                }
+                appointmentService.update(a);
+            } else {
+                appointmentService.add(a);
+            }
             refreshAppointments();
         } catch (Exception e) { showError(e); }
     }
@@ -315,6 +341,24 @@ public class MainController {
         apptNotesField.setText(a.getNotes());
     }
 
+    /** Renseigne {@code nom}/{@code prenom} si la table MySQL {@code rendez_vous} les exige (schéma Symfony, etc.). */
+    private void enrichAppointmentPatientNomPrenom(Appointment a) throws SQLException {
+        if (a.getPatientId() <= 0) {
+            a.setPatientNom("");
+            a.setPatientPrenom("");
+            return;
+        }
+        var opt = userService.findById(a.getPatientId());
+        if (opt.isEmpty()) {
+            a.setPatientNom("");
+            a.setPatientPrenom("");
+            return;
+        }
+        User p = opt.get();
+        a.setPatientNom(p.getNom() != null ? p.getNom().trim() : "");
+        a.setPatientPrenom(p.getPrenom() != null ? p.getPrenom().trim() : "");
+    }
+
     @FXML
     public void onSaveEvent() {
         try {
@@ -325,7 +369,7 @@ public class MainController {
             e.setDateDebut(LocalDateTime.parse(eventStartField.getText()));
             e.setDateFin(LocalDateTime.parse(eventEndField.getText()));
             e.setLieu(eventLieuField.getText());
-            e.setThematique(null);
+            e.setThematiqueNom(null);
             e.setModeEvenement(null);
             e.setLienGoogleMaps(null);
             e.setPlacesMax(Integer.parseInt(eventPlacesField.getText()));
@@ -413,7 +457,7 @@ public class MainController {
         TableColumn<Event, String> colTheme = new TableColumn<>("THÉMATIQUE");
         colTheme.setCellValueFactory(c -> {
             Event ev = c.getValue();
-            String t = ev != null ? ev.getThematique() : null;
+            String t = ev != null ? ev.getThematiqueNom() : null;
             return new ReadOnlyObjectWrapper<>(t != null && !t.isBlank() ? t : "—");
         });
         TableColumn<Event, Event> colActions = new TableColumn<>("ACTIONS");
@@ -489,7 +533,7 @@ public class MainController {
         if (containsDashboard(e.getLieu(), q)) {
             return true;
         }
-        if (containsDashboard(e.getThematique(), q)) {
+        if (containsDashboard(e.getThematiqueNom(), q)) {
             return true;
         }
         if (e.getDateDebut() != null && containsDashboard(e.getDateDebut().toString(), q)) {
@@ -526,9 +570,18 @@ public class MainController {
             if (!moduleIdField.getText().isBlank()) m.setId(Integer.parseInt(moduleIdField.getText()));
             m.setTitre(moduleTitreField.getText());
             m.setDescription(moduleDescriptionField.getText());
-            m.setCategorie(moduleCategorieField.getText());
-            m.setRessourcesLien(moduleLienField.getText());
-            if (m.getId() > 0) moduleService.update(m); else moduleService.add(m);
+            m.setContenu(moduleContenuField.getText());
+            m.setNiveau(moduleNiveauBox.getValue() != null ? moduleNiveauBox.getValue() : ModuleNiveau.moyen);
+            m.setCategorieEnum(moduleCategorieBox.getValue() != null ? moduleCategorieBox.getValue() : ModuleCategorie.NON_DEFINI);
+            m.setImage(moduleImageField.getText());
+            m.setPublished(modulePublishedBox.isSelected());
+            if (m.getId() > 0) {
+                m.setAdminId(moduleEditingAdminId);
+                moduleService.update(m);
+            } else {
+                m.setAdminId(null);
+                moduleService.add(m);
+            }
             refreshModules();
         } catch (Exception e) { showError(e); }
     }
@@ -547,11 +600,15 @@ public class MainController {
     public void onModuleSelected() {
         ModuleContent m = modulesList.getSelectionModel().getSelectedItem();
         if (m == null) return;
+        moduleEditingAdminId = m.getAdminId();
         moduleIdField.setText(String.valueOf(m.getId()));
         moduleTitreField.setText(m.getTitre());
         moduleDescriptionField.setText(m.getDescription());
-        moduleCategorieField.setText(m.getCategorie());
-        moduleLienField.setText(m.getRessourcesLien());
+        moduleContenuField.setText(m.getContenu());
+        moduleNiveauBox.setValue(m.getNiveau() != null ? m.getNiveau() : ModuleNiveau.moyen);
+        moduleCategorieBox.setValue(m.getCategorieEnum());
+        moduleImageField.setText(m.getImage());
+        modulePublishedBox.setSelected(m.isPublished());
     }
 
     @FXML
@@ -561,10 +618,11 @@ public class MainController {
             if (!articleIdField.getText().isBlank()) a.setId(Integer.parseInt(articleIdField.getText()));
             a.setTitre(articleTitreField.getText());
             a.setContenu(articleContenuField.getText());
-            a.setAuteurId(Integer.parseInt(articleAuteurIdField.getText()));
-            a.setCategorie(articleCategorieField.getText());
-            a.setSlug(articleSlugField.getText());
+            a.setType(articleCategorieField.getText());
+            a.setPublished(true);
+            a.setVisible(true);
             if (articleModuleBox.getValue() != null) a.setModuleId(articleModuleBox.getValue().getId());
+            try { a.setUserId(Integer.parseInt(articleAuteurIdField.getText())); } catch (NumberFormatException ignored) {}
             if (a.getId() > 0) blogService.update(a); else blogService.add(a);
             refreshArticles();
         } catch (Exception e) { showError(e); }
@@ -586,10 +644,10 @@ public class MainController {
         if (a == null) return;
         articleIdField.setText(String.valueOf(a.getId()));
         articleTitreField.setText(a.getTitre());
-        articleContenuField.setText(a.getContenu());
-        articleAuteurIdField.setText(String.valueOf(a.getAuteurId()));
-        articleCategorieField.setText(a.getCategorie());
-        articleSlugField.setText(a.getSlug());
+        articleContenuField.setText(a.getContenu() != null ? a.getContenu() : "");
+        articleAuteurIdField.setText(a.getUserId() != null ? String.valueOf(a.getUserId()) : "");
+        articleCategorieField.setText(a.getType() != null ? a.getType() : "");
+        articleSlugField.setText("");
     }
 
     @FXML

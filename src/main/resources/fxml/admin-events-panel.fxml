@@ -104,7 +104,7 @@
             <StackPane alignment="CENTER" maxHeight="Infinity" maxWidth="Infinity"
                        AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
             <VBox fx:id="newEventFormLayer" alignment="TOP_LEFT" maxHeight="Infinity" minWidth="680" spacing="0" styleClass="admin-new-event-layer">
-            <padding><Insets bottom="8" left="0" right="0" top="12"/></padding>
+            <padding><Insets bottom="20" left="0" right="0" top="12"/></padding>
             <VBox alignment="TOP_LEFT" maxWidth="Infinity" spacing="16" styleClass="admin-form-stack-inner" VBox.vgrow="ALWAYS">
                 <VBox maxWidth="Infinity" spacing="6" styleClass="admin-form-hero">
                     <Button alignment="BASELINE_LEFT" onAction="#onCloseNewEventForm" styleClass="admin-new-event-back-link" text="← Retour aux événements"/>
@@ -116,7 +116,7 @@
                     <Label styleClass="admin-form-section-title" text="Informations générales"/>
                     <VBox spacing="6" maxWidth="Infinity">
                         <Label styleClass="admin-new-event-label" text="Titre *"/>
-                        <TextField fx:id="formTitre" maxWidth="Infinity" promptText="Ex. Atelier sensoriel" styleClass="admin-new-event-input"/>
+                        <TextField fx:id="formTitre" maxWidth="Infinity" promptText="Lettres uniquement — ex. Atelier sensoriel" styleClass="admin-new-event-input"/>
                     </VBox>
                     <VBox spacing="6" maxWidth="Infinity">
                         <Label styleClass="admin-new-event-label" text="Description *"/>
@@ -171,8 +171,8 @@
                             <TextField fx:id="formLieu" maxWidth="Infinity" promptText="Ex. Salle principale" styleClass="admin-new-event-input"/>
                         </VBox>
                         <VBox spacing="6" maxWidth="Infinity">
-                            <Label styleClass="admin-new-event-label" text="Lien Google Maps"/>
-                            <TextField fx:id="formLienMaps" maxWidth="Infinity" promptText="Collez le lien de partage Google Maps" styleClass="admin-new-event-input"/>
+                            <Label styleClass="admin-new-event-label" text="Lien carte"/>
+                            <TextField fx:id="formLienMaps" maxWidth="Infinity" promptText="Collez le lien de la carte" styleClass="admin-new-event-input"/>
                         </VBox>
                         <HBox alignment="CENTER_LEFT" maxWidth="Infinity" spacing="16">
                             <VBox spacing="6" HBox.hgrow="ALWAYS" maxWidth="Infinity" minWidth="180">
@@ -186,6 +186,9 @@
                             <Region HBox.hgrow="ALWAYS" minWidth="8"/>
                             <Button onAction="#onFormFetchCoords" styleClass="admin-new-event-btn-coords" text="Récupérer les coordonnées (lieu)" wrapText="true"/>
                         </HBox>
+                        <StackPane fx:id="formMapPreviewHost" minHeight="220" prefHeight="260" maxWidth="Infinity" styleClass="event-detail-map-wrap">
+                            <Label styleClass="event-detail-map-hint" text="La mini-carte s'affichera ici après récupération des coordonnées." wrapText="true"/>
+                        </StackPane>
                     </VBox>
                     <VBox fx:id="sectionVisio" maxWidth="Infinity" spacing="6">
                         <Label styleClass="admin-new-event-label" text="Lien réunion Zoom / visio *"/>
@@ -277,7 +280,7 @@
                                 <Label fx:id="detailSelectedConversationTitle" styleClass="admin-event-detail-conv-title" text="Conversation"/>
                                 <Label fx:id="detailSelectedConversationSub" styleClass="admin-event-detail-conv-sub" text=""/>
                             </VBox>
-                            <ScrollPane fitToWidth="true" hbarPolicy="NEVER" prefHeight="190" styleClass="admin-event-detail-msg-scroll" vbarPolicy="AS_NEEDED" VBox.vgrow="ALWAYS">
+                            <ScrollPane fx:id="detailConversationMessagesScroll" fitToWidth="true" hbarPolicy="NEVER" minHeight="280" prefHeight="380" styleClass="admin-event-detail-msg-scroll" vbarPolicy="AS_NEEDED" VBox.vgrow="ALWAYS">
                                 <content>
                                     <VBox fx:id="detailConversationMessagesBox" spacing="10"/>
                                 </content>

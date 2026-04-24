@@ -5,16 +5,23 @@ import javafx.fxml.FXML;
 import javafx.geometry.Pos;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonBar;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import javafx.scene.image.ImageView;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.text.Text;
+import javafx.scene.text.TextAlignment;
+import javafx.scene.text.TextFlow;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.web.WebView;
 import javafx.concurrent.Worker;
-import org.example.utils.GoogleMapsEmbedUrls;
+import org.example.utils.MapEmbedUrls;
 import org.example.utils.HeroImageLoader;
 import org.example.utils.ThematiqueHeroImages;
 import org.example.utils.UserPublicAssets;
@@ -31,7 +38,9 @@ import org.example.services.AdminNotificationService;
 import org.example.services.EventMessageService;
 import org.example.services.EventRegistrationService;
 import org.example.services.EventService;
+import org.example.services.OpenStreetMapService;
 import org.example.services.ThematiqueService;
+import org.example.services.UserNotificationService;
 import org.example.utils.AppState;
 
 import java.awt.Desktop;
@@ -64,7 +73,9 @@ public class PageEventDetailController implements PublicShellAware {
     private final EventRegistrationService registrationService = new EventRegistrationService();
     private final EventMessageService eventMessageService = new EventMessageService();
     private final AdminNotificationService adminNotificationService = new AdminNotificationService();
+    private final UserNotificationService userNotificationService = new UserNotificationService();
     private final ThematiqueService thematiqueService = new ThematiqueService();
+    private final OpenStreetMapService openStreetMapService = new OpenStreetMapService();
     private int eventId = -1;
     private Event loaded;
     private boolean heroChromeInstalled;
@@ -92,10 +103,6 @@ public class PageEventDetailController implements PublicShellAware {
     @FXML
     private Label sidebarLieuLabel;
     @FXML
-    private Label weatherMockDateHero;
-    @FXML
-    private Label weatherMockDateBottom;
-    @FXML
     private StackPane mapPlaceholder;
     @FXML
     private javafx.scene.layout.VBox guestAuthBox;
@@ -105,6 +112,8 @@ public class PageEventDetailController implements PublicShellAware {
     private javafx.scene.layout.VBox loggedStaffSidebarBox;
     @FXML
     private javafx.scene.layout.VBox loggedBox;
+    @FXML
+    private VBox organizerContactCard;
     @FXML
     private VBox discussionThreadBox;
     @FXML
@@ -163,7 +172,7 @@ public class PageEventDetailController implements PublicShellAware {
         String dateStr = DATE_FMT.format(e.getDateDebut().toLocalDate());
         applyThematiqueHeroImage(e);
         if (thematiquePill != null) {
-            String th = e.getThematique();
+            String th = e.getThematiqueNom();
             if (th != null && !th.isBlank()) {
                 thematiquePill.setText(th.trim());
                 thematiquePill.setVisible(true);
@@ -182,12 +191,6 @@ public class PageEventDetailController implements PublicShellAware {
         addressLabel.setText(lieu);
         String desc = e.getDescription() != null && !e.getDescription().isBlank() ? e.getDescription() : "—";
         descriptionLabel.setText(desc);
-        if (weatherMockDateHero != null) {
-            weatherMockDateHero.setText(dateStr);
-        }
-        if (weatherMockDateBottom != null) {
-            weatherMockDateBottom.setText(dateStr);
-        }
         refreshMapPreview();
     }
 
@@ -212,7 +215,7 @@ public class PageEventDetailController implements PublicShellAware {
      * sinon image de secours distante (Picsum) selon le libellé.
      */
     private String resolveThematiqueHeroImageSource(Event e) {
-        String nomEvt = e.getThematique();
+        String nomEvt = e.getThematiqueNom();
         if (nomEvt != null && !nomEvt.isBlank()) {
             try {
                 Optional<Thematique> opt = thematiqueService.findByNomAffiche(nomEvt.trim());
@@ -229,7 +232,7 @@ public class PageEventDetailController implements PublicShellAware {
                 /* table absente ou erreur : repli Picsum */
             }
         }
-        return ThematiqueHeroImages.urlForThematique(e.getThematique());
+        return ThematiqueHeroImages.urlForThematique(e.getThematiqueNom());
     }
 
     private void ensureHeroChrome() {
@@ -265,8 +268,15 @@ public class PageEventDetailController implements PublicShellAware {
             return;
         }
         mapPlaceholder.getChildren().clear();
-        String url = resolveMapDisplayUrl(loaded);
-        if (url != null) {
+        Optional<double[]> coords = resolveMapPreviewCoordinates(loaded);
+        if (coords.isPresent()) {
+            double[] ll = coords.get();
+            String googleEmbedUrl = String.format(
+                    Locale.US,
+                    "https://www.google.com/maps?ll=%f,%f&z=16&t=m&output=embed&hl=fr",
+                    ll[0],
+                    ll[1]);
+            String osmEmbedUrl = MapEmbedUrls.openStreetMapEmbedUrlForCoordinates(ll[0], ll[1]);
             WebView web = new WebView();
             web.setPrefHeight(360);
             web.setMinHeight(280);
@@ -276,110 +286,127 @@ public class PageEventDetailController implements PublicShellAware {
             web.getEngine().setUserAgent(
                     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36");
             mapPlaceholder.getChildren().add(web);
-            if (GoogleMapsEmbedUrls.requiresIframeDocument(url)) {
-                web.getEngine().loadContent(GoogleMapsEmbedUrls.htmlDocumentWithMapIframe(url));
-            } else {
-                web.getEngine().load(url);
-            }
-            installGoogleTilesRecovery(web, loaded);
+            web.getEngine().loadContent(MapEmbedUrls.htmlDocumentWithMapIframe(googleEmbedUrl));
+            installMapRobustRecovery(web, googleEmbedUrl, osmEmbedUrl);
             return;
         }
         Label fallback = new Label(
-                "Aucun lien Google Maps ni coordonnées : collez un lien dans le formulaire administrateur (champ « Lien Google Maps »), "
+                "Aucun lien carte ni coordonnées : collez un lien dans le formulaire administrateur (champ « Lien carte »), "
                         + "ou renseignez latitude / longitude.");
         fallback.getStyleClass().add("event-detail-map-hint");
         fallback.setWrapText(true);
         mapPlaceholder.getChildren().add(fallback);
     }
 
-    private void installGoogleTilesRecovery(WebView web, Event event) {
-        if (web == null || event == null) {
+    private void installMapRobustRecovery(WebView web, String googleEmbedUrl, String osmEmbedUrl) {
+        if (web == null || googleEmbedUrl == null || googleEmbedUrl.isBlank()) {
             return;
         }
-        final boolean[] retried = {false};
+        final int[] step = {0}; // 0=google, 1=osm, 2=done
         web.getEngine().getLoadWorker().stateProperty().addListener((obs, oldState, newState) -> {
-            if (retried[0] || newState != Worker.State.SUCCEEDED) {
+            if (step[0] >= 2) {
+                return;
+            }
+            if (newState == Worker.State.FAILED || newState == Worker.State.CANCELLED) {
+                if (step[0] == 0 && osmEmbedUrl != null && !osmEmbedUrl.isBlank()) {
+                    step[0] = 1;
+                    web.getEngine().loadContent(MapEmbedUrls.htmlDocumentWithMapIframe(osmEmbedUrl));
+                } else {
+                    step[0] = 2;
+                    showMapPreviewUnavailable();
+                }
+                return;
+            }
+            if (newState != Worker.State.SUCCEEDED) {
                 return;
             }
             try {
                 Object text = web.getEngine().executeScript("document && document.body ? document.body.innerText : ''");
                 String body = text != null ? text.toString().toLowerCase(Locale.ROOT) : "";
-                if (body.contains("aucune image n'est disponible pour cette zone")
-                        || body.contains("no imagery here")
-                        || body.contains("no imagery available")) {
-                    String retryUrl = buildGoogleRoadmapRetryUrl(event);
-                    if (retryUrl != null) {
-                        retried[0] = true;
-                        web.getEngine().loadContent(GoogleMapsEmbedUrls.htmlDocumentWithMapIframe(retryUrl));
-                    }
+                boolean blocked = body.contains("no imagery")
+                        || body.contains("aucune image n'est disponible")
+                        || body.contains("access blocked")
+                        || body.contains("forbidden")
+                        || body.contains("referrer is required")
+                        || body.contains("denied");
+                if (!blocked) {
+                    step[0] = 2;
+                    return;
+                }
+                if (step[0] == 0 && osmEmbedUrl != null && !osmEmbedUrl.isBlank()) {
+                    step[0] = 1;
+                    web.getEngine().loadContent(MapEmbedUrls.htmlDocumentWithMapIframe(osmEmbedUrl));
+                } else {
+                    step[0] = 2;
+                    showMapPreviewUnavailable();
                 }
             } catch (Exception ignored) {
-                /* non bloquant */
+                if (step[0] == 0 && osmEmbedUrl != null && !osmEmbedUrl.isBlank()) {
+                    step[0] = 1;
+                    web.getEngine().loadContent(MapEmbedUrls.htmlDocumentWithMapIframe(osmEmbedUrl));
+                } else {
+                    step[0] = 2;
+                    showMapPreviewUnavailable();
+                }
             }
         });
     }
 
-    private static String buildGoogleRoadmapRetryUrl(Event e) {
-        if (e == null) {
-            return null;
+    private void showMapPreviewUnavailable() {
+        if (mapPlaceholder == null) {
+            return;
         }
-        if (e.getLatitude() != null && e.getLongitude() != null) {
-            return String.format(Locale.US,
-                    "https://www.google.com/maps?ll=%f,%f&z=15&t=m&output=embed&hl=fr",
-                    e.getLatitude(), e.getLongitude());
-        }
-        String lieu = e.getLieu();
-        if (lieu == null || lieu.isBlank()) {
-            return null;
-        }
-        try {
-            return "https://www.google.com/maps?q=" + URLEncoder.encode(lieu.trim(), StandardCharsets.UTF_8)
-                    + "&z=15&t=m&output=embed&hl=fr";
-        } catch (Exception ignored) {
-            return null;
-        }
+        Label fallback = new Label("Aperçu carte indisponible sur cette machine. Utilisez « Ouvrir dans Google Maps ».");
+        fallback.getStyleClass().add("event-detail-map-hint");
+        fallback.setWrapText(true);
+        mapPlaceholder.getChildren().setAll(fallback);
     }
 
-    /**
-     * URL chargée dans le WebView : vue « embed » (carte + repère, sans panneau latéral type recherche),
-     * comme la capture 2. Priorité aux coordonnées extraites du lien ou stockées en base.
-     */
-    private static String resolveMapDisplayUrl(Event e) {
+    private Optional<double[]> resolveMapPreviewCoordinates(Event e) {
         if (e == null) {
-            return null;
+            return Optional.empty();
         }
         String link = e.getLienGoogleMaps();
         String t = link != null ? link.trim() : "";
         boolean hasHttpLink = !t.isEmpty() && (t.startsWith("http://") || t.startsWith("https://"));
-
-        /* 1) Coordonnées dans le lien collé (évite une iframe Street View « sans imagerie »). */
+        /* 1) Priorité aux coordonnées dans le lien collé. */
         if (hasHttpLink) {
-            Optional<double[]> fromLink = GoogleMapsEmbedUrls.tryExtractLatLng(t);
+            Optional<double[]> fromLink = MapEmbedUrls.tryExtractLatLng(t);
             if (fromLink.isPresent()) {
-                double[] ll = fromLink.get();
-                return GoogleMapsEmbedUrls.embedUrlForCoordinates(ll[0], ll[1], 17);
+                return fromLink;
             }
-            String queryFromLink = extractGoogleQueryText(t);
+            String queryFromLink = extractMapQueryText(t);
             if (queryFromLink != null && !queryFromLink.isBlank()) {
-                return buildGoogleEmbedFromQuery(queryFromLink);
+                try {
+                    Optional<double[]> coords = openStreetMapService.geocodeAddress(queryFromLink);
+                    if (coords.isPresent()) {
+                        return coords;
+                    }
+                } catch (Exception ignored) {
+                    /* non bloquant */
+                }
             }
         }
-        /* 2) Coordonnées en base */
+        /* 2) Coordonnées enregistrées en base */
         if (e.getLatitude() != null && e.getLongitude() != null) {
-            return GoogleMapsEmbedUrls.embedUrlForCoordinates(e.getLatitude(), e.getLongitude(), 17);
+            return Optional.of(new double[] {e.getLatitude(), e.getLongitude()});
         }
-        /* 3) Lien « Intégrer » sans lat/lng extractible : repli carte par adresse si possible. */
-        if (hasHttpLink) {
-            return GoogleMapsEmbedUrls.forWebViewEmbed(t);
-        }
+        /* 3) Géocodage du lieu texte */
         String lieu = e.getLieu();
         if (lieu != null && !lieu.isBlank()) {
-            return buildGoogleEmbedFromQuery(lieu.trim());
+            try {
+                Optional<double[]> coords = openStreetMapService.geocodeAddress(lieu.trim());
+                if (coords.isPresent()) {
+                    return coords;
+                }
+            } catch (Exception ignored) {
+                /* non bloquant, affichage fallback texte */
+            }
         }
-        return null;
+        return Optional.empty();
     }
 
-    private static String extractGoogleQueryText(String mapsUrl) {
+    private static String extractMapQueryText(String mapsUrl) {
         if (mapsUrl == null || mapsUrl.isBlank()) {
             return null;
         }
@@ -409,15 +436,6 @@ public class PageEventDetailController implements PublicShellAware {
             }
         }
         return null;
-    }
-
-    private static String buildGoogleEmbedFromQuery(String queryText) {
-        try {
-            return "https://www.google.com/maps?q=" + URLEncoder.encode(queryText, StandardCharsets.UTF_8)
-                    + "&z=15&t=m&output=embed&hl=fr";
-        } catch (Exception ignored) {
-            return null;
-        }
     }
 
     private static String buildMapsSearchUri(Event e) {
@@ -464,6 +482,10 @@ public class PageEventDetailController implements PublicShellAware {
         if (loggedParticipantSidebarBox != null) {
             loggedParticipantSidebarBox.setVisible(participant);
             loggedParticipantSidebarBox.setManaged(participant);
+        }
+        if (organizerContactCard != null) {
+            organizerContactCard.setVisible(participant);
+            organizerContactCard.setManaged(participant);
         }
         if (loggedStaffSidebarBox != null) {
             boolean staff = logged && !participant;
@@ -557,18 +579,39 @@ public class PageEventDetailController implements PublicShellAware {
             for (EventMessage m : msgs) {
                 VBox bubble = new VBox(4);
                 bubble.getStyleClass().add("event-detail-discussion-bubble");
+                bubble.setFillWidth(true);
+                bubble.setMaxWidth(Double.MAX_VALUE);
                 String when = m.getDateEnvoi() != null ? MSG_TIME_FMT.format(m.getDateEnvoi()) : "";
                 Label meta = new Label(when);
                 meta.getStyleClass().add("event-detail-discussion-bubble-meta");
-                Label body = new Label(m.getCorps());
-                body.setWrapText(true);
-                body.getStyleClass().add("event-detail-discussion-body");
+                TextFlow body = new TextFlow();
+                body.getStyleClass().add("event-detail-discussion-body-flow");
+                body.setTextAlignment(TextAlignment.LEFT);
+                Text bodyText = new Text(m.getCorps() != null ? m.getCorps() : "");
+                bodyText.getStyleClass().add("event-detail-discussion-body-text");
+                body.getChildren().add(bodyText);
+                if (discussionThreadBox != null) {
+                    var wrapW = discussionThreadBox.widthProperty().subtract(28);
+                    body.prefWidthProperty().bind(wrapW);
+                    Runnable applyWrap = () -> bodyText.setWrappingWidth(Math.max(40, wrapW.get()));
+                    applyWrap.run();
+                    wrapW.addListener((obs, o, n) -> applyWrap.run());
+                }
                 bubble.getChildren().addAll(meta, body);
                 if (m.getExpediteurUserId() == u.getId()) {
+                    HBox ownActions = new HBox(8);
+                    Button editBtn = new Button("Modifier");
+                    editBtn.getStyleClass().add("event-detail-discussion-edit-btn");
+                    editBtn.setMinWidth(96);
+                    editBtn.setPrefWidth(96);
+                    editBtn.setOnAction(evt -> onEditOwnMessage(m));
                     Button deleteBtn = new Button("Supprimer");
                     deleteBtn.getStyleClass().add("event-detail-discussion-delete-btn");
+                    deleteBtn.setMinWidth(96);
+                    deleteBtn.setPrefWidth(96);
                     deleteBtn.setOnAction(evt -> onDeleteOwnMessage(m));
-                    bubble.getChildren().add(deleteBtn);
+                    ownActions.getChildren().addAll(editBtn, deleteBtn);
+                    bubble.getChildren().add(ownActions);
                 }
                 discussionThreadBox.getChildren().add(bubble);
             }
@@ -604,6 +647,47 @@ public class PageEventDetailController implements PublicShellAware {
             reloadDiscussionThread();
         } catch (SQLException ex) {
             alert(Alert.AlertType.ERROR, "Suppression", "Impossible de supprimer le message.");
+        }
+    }
+
+    private void onEditOwnMessage(EventMessage msg) {
+        User u = AppState.getCurrentUser();
+        if (u == null || msg == null) {
+            return;
+        }
+        if (msg.getExpediteurUserId() != u.getId()) {
+            alert(Alert.AlertType.WARNING, "Modification", "Vous ne pouvez modifier que vos propres messages.");
+            return;
+        }
+        String current = msg.getCorps() != null ? msg.getCorps() : "";
+        Dialog<String> dialog = new Dialog<>();
+        dialog.setTitle("Modifier le message");
+        dialog.setHeaderText(null);
+        ButtonType saveBtn = new ButtonType("Enregistrer", ButtonBar.ButtonData.OK_DONE);
+        dialog.getDialogPane().getButtonTypes().addAll(saveBtn, ButtonType.CANCEL);
+        TextArea area = new TextArea(current);
+        area.setWrapText(true);
+        area.setPrefWidth(520);
+        area.setPrefHeight(180);
+        dialog.getDialogPane().setContent(area);
+        dialog.setResultConverter(bt -> bt == saveBtn ? area.getText() : null);
+        Optional<String> result = dialog.showAndWait();
+        if (result.isEmpty()) {
+            return;
+        }
+        String edited = result.get() != null ? result.get().trim() : "";
+        if (edited.isBlank()) {
+            alert(Alert.AlertType.WARNING, "Modification", "Le message ne peut pas être vide.");
+            return;
+        }
+        try {
+            boolean updated = eventMessageService.updateOwnMessage(msg.getId(), u.getId(), edited);
+            if (!updated) {
+                alert(Alert.AlertType.INFORMATION, "Modification", "Ce message n'est plus disponible.");
+            }
+            reloadDiscussionThread();
+        } catch (SQLException ex) {
+            alert(Alert.AlertType.ERROR, "Modification", "Impossible de modifier le message.");
         }
     }
 
@@ -687,6 +771,11 @@ public class PageEventDetailController implements PublicShellAware {
                         eventId,
                         u.getId(),
                         "Inscription demandée : « " + titre + " » — en attente de validation.");
+                userNotificationService.addNotification(
+                        u.getId(),
+                        UserNotificationService.TYPE_EVENT_REGISTRATION_PENDING,
+                        eventId,
+                        "Votre inscription à « " + titre + " » est en liste d'attente.");
             } catch (SQLException ignored) {
                 /* notification secondaire : l’inscription est déjà enregistrée */
             }

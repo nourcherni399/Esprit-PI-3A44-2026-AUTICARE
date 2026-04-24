@@ -1,6 +1,7 @@
 package org.example.controllers;
 
 import javafx.fxml.FXML;
+import javafx.scene.Cursor;
 import javafx.scene.Node;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
@@ -10,6 +11,7 @@ import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import org.example.models.Availability;
+import org.example.services.AppointmentService;
 import org.example.services.AvailabilityService;
 import org.example.utils.AppState;
 import org.example.utils.PublicRdvDoctorSidebarHelper;
@@ -17,6 +19,7 @@ import org.example.utils.RdvPublicBookingStepper;
 
 import java.sql.SQLException;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 /**
@@ -102,7 +105,15 @@ public class PageRdvBookingController implements PublicShellAware {
         }
         try {
             List<Availability> list = new AvailabilityService().findByDoctor(doctorId);
-            if (list.isEmpty()) {
+            AppointmentService apptSvc = new AppointmentService();
+            List<Availability> valides = new ArrayList<>();
+            for (Availability a : list) {
+                if (a.getDebut() == null || a.getFin() == null) {
+                    continue;
+                }
+                valides.add(a);
+            }
+            if (valides.isEmpty()) {
                 Label empty = new Label(
                         "Aucun créneau disponible pour l’instant. Le médecin peut en ajouter depuis son portail AutiCare.");
                 empty.setWrapText(true);
@@ -110,16 +121,29 @@ public class PageRdvBookingController implements PublicShellAware {
                 bookingSlotsFlow.getChildren().add(empty);
                 return;
             }
-            for (Availability a : list) {
-                if (a.getDebut() == null || a.getFin() == null) {
-                    continue;
+            boolean anyFree = false;
+            for (Availability a : valides) {
+                boolean occupe = apptSvc.hasConflict(doctorId, a.getDebut())
+                        || apptSvc.hasConflictForDisponibiliteSlot(a.getId());
+                if (!occupe) {
+                    anyFree = true;
                 }
-                bookingSlotsFlow.getChildren().add(buildSlotCard(a));
+                bookingSlotsFlow.getChildren().add(buildSlotCard(a, occupe));
+            }
+            if (!anyFree) {
+                Label hint = new Label(
+                        "Tous les créneaux affichés sont déjà confirmés par le médecin (cartes en rouge). Revenez plus tard ou contactez le cabinet.");
+                hint.setWrapText(true);
+                hint.getStyleClass().addAll("rdv-booking-hint", "rdv-booking-hint-blocked");
+                bookingSlotsFlow.getChildren().add(0, hint);
             }
             int savedId = AppState.getPendingPublicRdvAvailabilityId();
             if (savedId > 0) {
                 for (Node n : bookingSlotsFlow.getChildren()) {
-                    if (n instanceof VBox v && v.getUserData() instanceof Availability av && av.getId() == savedId) {
+                    if (n instanceof VBox v
+                            && v.getUserData() instanceof Availability av
+                            && av.getId() == savedId
+                            && !isBlockedSlotCard(v)) {
                         selectSlotCard(v, av);
                         break;
                     }
@@ -133,38 +157,56 @@ public class PageRdvBookingController implements PublicShellAware {
         }
     }
 
-    private VBox buildSlotCard(Availability a) {
+    private static boolean isBlockedSlotCard(VBox card) {
+        return card.getStyleClass().contains("rdv-slot-card-blocked");
+    }
+
+    private VBox buildSlotCard(Availability a, boolean blocked) {
         VBox card = new VBox(10);
         card.getStyleClass().add("rdv-slot-card");
+        if (blocked) {
+            card.getStyleClass().add("rdv-slot-card-blocked");
+            card.setCursor(Cursor.DEFAULT);
+        } else {
+            card.setCursor(Cursor.HAND);
+        }
         card.setMinWidth(200);
         card.setPrefWidth(220);
 
         String dayRaw = a.getDebut().format(DAY_NAME);
         String dayCap = dayRaw.isEmpty() ? "" : Character.toUpperCase(dayRaw.charAt(0)) + dayRaw.substring(1);
         Label badge = new Label(dayCap);
-        badge.getStyleClass().add("rdv-slot-badge");
+        badge.getStyleClass().add(blocked ? "rdv-slot-badge-blocked" : "rdv-slot-badge");
 
         String range = a.getDebut().format(HM) + " – " + a.getFin().format(HM);
         Label timeBig = new Label(range);
-        timeBig.getStyleClass().add("rdv-slot-time-big");
+        timeBig.getStyleClass().add(blocked ? "rdv-slot-time-big-blocked" : "rdv-slot-time-big");
 
         String rawLine = a.getDebut().format(LINE_DETAIL);
         String detail = (rawLine.isEmpty()
                 ? rawLine
                 : Character.toUpperCase(rawLine.charAt(0)) + rawLine.substring(1)) + ", " + range;
         Label line = new Label(detail);
-        line.getStyleClass().add("rdv-slot-detail");
+        line.getStyleClass().add(blocked ? "rdv-slot-detail-blocked" : "rdv-slot-detail");
         line.setWrapText(true);
 
         card.getChildren().addAll(badge, timeBig, line);
+        if (blocked) {
+            Label stamp = new Label("Indisponible");
+            stamp.getStyleClass().add("rdv-slot-blocked-stamp");
+            stamp.setWrapText(true);
+            card.getChildren().add(stamp);
+        }
         card.setUserData(a);
-        card.setOnMouseClicked(ev -> selectSlotCard(card, a));
+        if (!blocked) {
+            card.setOnMouseClicked(ev -> selectSlotCard(card, a));
+        }
         return card;
     }
 
     private void selectSlotCard(VBox card, Availability a) {
         for (Node n : bookingSlotsFlow.getChildren()) {
-            if (n instanceof VBox v) {
+            if (n instanceof VBox v && !isBlockedSlotCard(v)) {
                 v.getStyleClass().remove("rdv-slot-card-selected");
             }
         }

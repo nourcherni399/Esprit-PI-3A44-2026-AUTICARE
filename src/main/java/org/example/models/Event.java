@@ -16,7 +16,7 @@ public class Event {
     /** Lien réunion Zoom / visio (En ligne, Hybride). */
     private String lienZoomVisio;
     /** Thématique (ex. « Famille & Loisirs ») — affichage cartes par thème côté public. */
-    private String thematique;
+    private Thematique thematique;
     private Double latitude;
     private Double longitude;
     private int placesMax;
@@ -40,8 +40,18 @@ public class Event {
     public void setLienGoogleMaps(String lienGoogleMaps) { this.lienGoogleMaps = lienGoogleMaps; }
     public String getLienZoomVisio() { return lienZoomVisio; }
     public void setLienZoomVisio(String lienZoomVisio) { this.lienZoomVisio = lienZoomVisio; }
-    public String getThematique() { return thematique; }
-    public void setThematique(String thematique) { this.thematique = thematique; }
+    public Thematique getThematique() { return thematique; }
+    public void setThematique(Thematique thematique) { this.thematique = thematique; }
+    public String getThematiqueNom() { return thematique != null ? thematique.getNom() : null; }
+    public void setThematiqueNom(String thematiqueNom) {
+        if (thematiqueNom == null || thematiqueNom.isBlank()) {
+            this.thematique = null;
+            return;
+        }
+        Thematique t = new Thematique();
+        t.setNom(thematiqueNom.trim());
+        this.thematique = t;
+    }
     public Double getLatitude() { return latitude; }
     public void setLatitude(Double latitude) { this.latitude = latitude; }
     public Double getLongitude() { return longitude; }

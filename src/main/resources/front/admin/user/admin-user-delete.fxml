@@ -49,7 +49,6 @@
                         <TextField fx:id="topSearchField" promptText="Rechercher..." styleClass="admin-search" HBox.hgrow="ALWAYS"/>
                     </HBox>
                     <Region minWidth="16"/>
-                    <Label text="🔔"/>
                     <Region minWidth="12"/>
                     <HBox alignment="CENTER_LEFT" onMouseClicked="#onOpenMyProfile" spacing="10" styleClass="admin-topbar-profile">
                         <StackPane fx:id="topbarAvatarHost" styleClass="admin-topbar-avatar-host"/>

@@ -1,12 +1,9 @@
 package org.example.controllers;
 
 import javafx.animation.Animation;
-import javafx.animation.FadeTransition;
 import javafx.animation.Interpolator;
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
-import javafx.animation.ParallelTransition;
-import javafx.animation.PauseTransition;
 import javafx.animation.ScaleTransition;
 import javafx.animation.Timeline;
 import javafx.animation.TranslateTransition;
@@ -40,6 +37,7 @@ import javafx.scene.shape.Rectangle;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
+import javafx.stage.Window;
 import javafx.util.Duration;
 import org.example.MainApp;
 import org.example.controllers.AdminMyProfileController;
@@ -47,13 +45,25 @@ import org.example.models.Product;
 import org.example.models.Role;
 import org.example.models.User;
 import org.example.models.UserNotificationItem;
+import org.example.services.EventService;
 import org.example.services.ProductService;
 import org.example.services.UserNotificationService;
+import org.example.services.AppointmentService;
+import org.example.services.ProductService;
+import org.example.services.UserService;
+import org.example.models.Appointment;
 import org.example.utils.AppState;
+import org.example.utils.CombinedPublicNotifications;
 import org.example.utils.UserAvatarGraphic;
+import org.example.ui.product.ProductImagePlaceholder;
+import org.example.utils.ProductImageLoader;
+import org.example.utils.HomeHeroTicker;
+import org.example.utils.NewsTickerHeadlines;
 
 import java.io.IOException;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -61,9 +71,28 @@ import java.util.stream.Collectors;
 
 public class HomeController {
 
+    private static final java.time.format.DateTimeFormatter HOME_NOTIF_TIME_FMT =
+            java.time.format.DateTimeFormatter.ofPattern("dd/MM HH:mm", java.util.Locale.FRENCH);
+
     /**
-     * Duo de photos unique pour toute la page d'accueil (fond global, hero, mission, témoignages).
-     * Fichiers dans {@code src/main/resources/images/home/}.
+     * Images locales (fournies par l'utilisateur) affichées en slider sur l'accueil.
+     * Ordre = ordre de défilement.
+     */
+    private static final String[] HOME_USER_SLIDER_IMAGE_PATHS = {
+            "C:/Users/Administrator/.cursor/projects/c-Users-Administrator-Desktop-eya-rendez-vous-Validation-java-Jeudi/assets/c__Users_Administrator_AppData_Roaming_Cursor_User_workspaceStorage_3937bc5d49a2c57ca8078ee8dc26d5b4_images_662339393_1682515246087110_420077270349823399_n-e207dc03-87fb-4139-8d21-038ad1f846c6.png",
+            "C:/Users/Administrator/.cursor/projects/c-Users-Administrator-Desktop-eya-rendez-vous-Validation-java-Jeudi/assets/c__Users_Administrator_AppData_Roaming_Cursor_User_workspaceStorage_3937bc5d49a2c57ca8078ee8dc26d5b4_images_649825682_1755182145458570_3568991923210223264_n__1_-266746d5-5656-4891-adfe-817f00b2af5c.png",
+            "C:/Users/Administrator/.cursor/projects/c-Users-Administrator-Desktop-eya-rendez-vous-Validation-java-Jeudi/assets/c__Users_Administrator_AppData_Roaming_Cursor_User_workspaceStorage_3937bc5d49a2c57ca8078ee8dc26d5b4_images_flat_750x_075_f-pad_750x1000_f8f8f8.u2-ec79f937-b43b-433b-8925-1e3e658add9e.png",
+            "C:/Users/Administrator/.cursor/projects/c-Users-Administrator-Desktop-eya-rendez-vous-Validation-java-Jeudi/assets/c__Users_Administrator_AppData_Roaming_Cursor_User_workspaceStorage_3937bc5d49a2c57ca8078ee8dc26d5b4_images_Capture-6826b853-01a0-4fa0-b738-d9377822d142.png",
+            "C:/Users/Administrator/.cursor/projects/c-Users-Administrator-Desktop-eya-rendez-vous-Validation-java-Jeudi/assets/c__Users_Administrator_AppData_Roaming_Cursor_User_workspaceStorage_3937bc5d49a2c57ca8078ee8dc26d5b4_images_65114438_s-a7c0e0a3-5497-4a8f-86c9-096bedef71e8.png"
+    };
+    /**
+     * Désactivé temporairement : certains fichiers importés génèrent un rendu visuel non souhaité
+     * (artefacts carrés au centre). Réactivez à true après remplacement par des visuels validés.
+     */
+    private static final boolean USE_USER_PROVIDED_HERO_SLIDES = false;
+
+    /**
+     * Fallback local (repo) si les images utilisateur ne sont pas trouvées.
      */
     private static final String[] HOME_SHARED_PHOTO_FILES = {
             "home-shared-1.png",
@@ -82,17 +111,20 @@ public class HomeController {
     /** Opacité max d’un calque photo (le voile CSS complète la lisibilité). */
     private static final double GLOBAL_BG_MAX_OPACITY = 0.5;
 
-    /** Diaporama hero : pas de translation (évite bandes GPU) ; enchaînement par fondu. */
-    private static final Duration HERO_SLIDE_INTERVAL = Duration.seconds(7);
-    private static final Duration HERO_CROSSFADE_DURATION = Duration.millis(1600);
-
-    /** Libellés du bandeau actualités (défilant sous la navbar). */
-    private static final List<String> NEWS_TICKER_HEADLINES = List.of(
-            "Move Your Body 1.0 : Quand sport et créativité s'unissent",
-            "Hackathon H12 Innovation : innover pour l'inclusion",
-            "Ateliers sensoriels : découverte des outils d'apaisement");
+    /** Défilement hero droite → gauche (images côte à côte), comme le bandeau actualités. */
+    private static final double HERO_TICKER_PIXELS_PER_SEC = 40;
 
     private static final double NEWS_TICKER_PIXELS_PER_SEC = 44;
+    /** Hauteur fixe du bandeau / clip (évite hauteur 0 au 1er layout ou après maximisation). */
+    private static final double NEWS_TICKER_BAR_HEIGHT = 56;
+
+    /** Dernier recours cascade : styles CTA hero sur la Scene (voir {@link #ensureHeroCtaStylesOnScene()}). */
+    private static final String HERO_CTA_FORCE_CSS = urlToExternalForm(
+            HomeController.class.getResource("/styles/home-hero-cta-force.css"));
+
+    private static String urlToExternalForm(URL url) {
+        return url != null ? url.toExternalForm() : null;
+    }
 
     @FXML
     private ScrollPane scrollPane;
@@ -106,6 +138,8 @@ public class HomeController {
     private ImageView heroBgImageA;
     @FXML
     private ImageView heroBgImageB;
+    @FXML
+    private ImageView missionImageView;
     @FXML
     private Button heroBtnProducts;
     @FXML
@@ -124,6 +158,9 @@ public class HomeController {
     private HBox guestNavActions;
     @FXML
     private HBox loggedShortcutIcons;
+    private StackPane patientNotifBellHost;
+    @FXML
+    private Label patientNotifBadge;
     @FXML
     private HBox loggedNavActions;
     @FXML
@@ -154,12 +191,11 @@ public class HomeController {
     private HBox newsTickerSeg1;
     private Timeline newsTickerTimeline;
     private double newsTickerLastSegmentWidth = -1;
-    private final List<Image> heroSlides = new ArrayList<>();
-    private int heroSlideIndex;
-    private boolean heroShowingA = true;
-
     private final ProductService productService = new ProductService();
     private final UserNotificationService userNotificationService = new UserNotificationService();
+    private final AppointmentService appointmentService = new AppointmentService();
+    private final EventService eventService = new EventService();
+    private final UserService userService = new UserService();
     private final ContextMenu homeNotifContextMenu = new ContextMenu();
 
     @FXML
@@ -173,41 +209,79 @@ public class HomeController {
             configureHomeNotificationsMenu();
             initGlobalBackground();
             initHeroBackground();
+            applyMissionImageClip();
             populateAiProducts();
             refreshCtaState();
             setupHeroPulse();
+            ensureHeroCtaStylesOnScene();
             setupScrollAnimations();
             initNewsTicker();
             applyPendingHomeScroll();
+            ensureTopNavPinned(0);
         });
+    }
+
+    /** Après fond hero / ticker : garantit hauteur et visibilité de la barre (VBox + secours layout). */
+    private void ensureTopNavPinned(int attempt) {
+        if (scrollPane == null) {
+            return;
+        }
+        Scene sc = scrollPane.getScene();
+        if (sc == null && attempt < 16) {
+            Platform.runLater(() -> ensureTopNavPinned(attempt + 1));
+            return;
+        }
+        if (sc == null) {
+            return;
+        }
+        Node nav = sc.getRoot().lookup(".top-nav");
+        if (nav instanceof Region r) {
+            r.setMinHeight(88);
+            r.setPrefHeight(88);
+            r.setMaxHeight(120);
+            r.setVisible(true);
+            r.setManaged(true);
+        }
     }
 
     private void initNewsTicker() {
         if (newsTickerViewport == null) {
             return;
         }
+        List<String> headlines = NewsTickerHeadlines.loadFromDatabase(eventService);
         newsTickerTrack = new HBox(0);
         newsTickerTrack.setAlignment(Pos.CENTER_LEFT);
         newsTickerTrack.getStyleClass().add("home-news-ticker-track");
-        newsTickerSeg1 = buildNewsTickerSegment(NEWS_TICKER_HEADLINES);
-        HBox seg2 = buildNewsTickerSegment(NEWS_TICKER_HEADLINES);
+        newsTickerSeg1 = buildNewsTickerSegment(headlines);
+        HBox seg2 = buildNewsTickerSegment(headlines);
         newsTickerTrack.getChildren().setAll(newsTickerSeg1, seg2);
         newsTickerViewport.getChildren().setAll(newsTickerTrack);
+        newsTickerViewport.setMinHeight(NEWS_TICKER_BAR_HEIGHT);
+        newsTickerViewport.setPrefHeight(NEWS_TICKER_BAR_HEIGHT);
 
         Rectangle clip = new Rectangle();
+        clip.setHeight(NEWS_TICKER_BAR_HEIGHT);
         clip.widthProperty().bind(newsTickerViewport.widthProperty());
-        clip.heightProperty().bind(newsTickerViewport.heightProperty());
         newsTickerViewport.setClip(clip);
 
         newsTickerSeg1.layoutBoundsProperty().addListener((obs, prev, cur) -> Platform.runLater(this::restartNewsTickerIfReady));
+        newsTickerViewport.widthProperty().addListener((o, prev, cur) -> {
+            if (cur != null && cur.doubleValue() > 8) {
+                Platform.runLater(this::restartNewsTickerIfReady);
+            }
+        });
         Platform.runLater(this::restartNewsTickerIfReady);
+        Platform.runLater(() -> Platform.runLater(this::restartNewsTickerIfReady));
     }
 
     private static HBox buildNewsTickerSegment(List<String> headlines) {
+        List<String> lines = headlines == null || headlines.isEmpty()
+                ? List.of("Bienvenue sur AutiCare")
+                : headlines;
         HBox seg = new HBox(8);
         seg.setAlignment(Pos.CENTER_LEFT);
         seg.getStyleClass().add("home-news-ticker-seg");
-        for (int i = 0; i < headlines.size(); i++) {
+        for (int i = 0; i < lines.size(); i++) {
             if (i > 0) {
                 Label dot = new Label("•");
                 dot.getStyleClass().add("home-news-ticker-sep");
@@ -215,7 +289,7 @@ public class HomeController {
             }
             Label chev = new Label(">");
             chev.getStyleClass().add("home-news-ticker-chev");
-            Label line = new Label(headlines.get(i));
+            Label line = new Label(lines.get(i));
             line.getStyleClass().add("home-news-ticker-item");
             seg.getChildren().addAll(chev, line);
         }
@@ -279,6 +353,14 @@ public class HomeController {
             loggedNavActions.setVisible(logged);
             loggedNavActions.setManaged(logged);
         }
+        if (loggedUserCodeLabel != null) {
+            loggedUserCodeLabel.setVisible(false);
+            loggedUserCodeLabel.setManaged(false);
+        }
+        if (patientNotifBellHost != null) {
+            patientNotifBellHost.setVisible(false);
+            patientNotifBellHost.setManaged(false);
+        }
         if (loggedShortcutIcons != null) {
             loggedShortcutIcons.setVisible(logged);
             loggedShortcutIcons.setManaged(logged);
@@ -314,8 +396,9 @@ public class HomeController {
             return;
         }
         try {
-            int unread = userNotificationService.countUnreadForUser(user.getId());
-            homeNotifBadgeLabel.setText(String.valueOf(unread));
+            int unread = CombinedPublicNotifications.totalUnread(user, userNotificationService, appointmentService);
+            String badge = unread > 99 ? "99+" : String.valueOf(Math.max(0, unread));
+            homeNotifBadgeLabel.setText(badge);
             homeNotifBadgeLabel.setVisible(unread > 0);
             homeNotifBadgeLabel.setManaged(unread > 0);
         } catch (SQLException ignored) {
@@ -325,6 +408,9 @@ public class HomeController {
     }
 
     private void configureHomeNotificationsMenu() {
+        if (homeNotifContextMenu != null) {
+            homeNotifContextMenu.getStyleClass().add("public-notif-context-menu");
+        }
         if (homeNotifMenuButton != null) {
             homeNotifMenuButton.setOnAction(e -> toggleHomeNotificationsMenu());
         }
@@ -352,35 +438,67 @@ public class HomeController {
             return;
         }
         try {
-            MenuItem header = new MenuItem("Notifications");
+            Label headLbl = new Label("Notifications");
+            headLbl.getStyleClass().add("public-notif-popup-header");
+            CustomMenuItem header = new CustomMenuItem(headLbl, false);
+            header.setHideOnClick(false);
             header.setDisable(true);
+            header.getStyleClass().add("public-notif-menu-header");
             homeNotifContextMenu.getItems().add(header);
-            List<UserNotificationItem> notifications = userNotificationService.listLatestForUser(user.getId(), 5);
-            if (notifications.isEmpty()) {
+            List<CombinedPublicNotifications.MergedPreview> merged =
+                    CombinedPublicNotifications.buildMenuPreview(user, userNotificationService, appointmentService);
+            if (merged.isEmpty()) {
                 MenuItem emptyItem = new MenuItem("Aucune notification.");
                 emptyItem.setDisable(true);
                 homeNotifContextMenu.getItems().add(emptyItem);
             } else {
-                for (UserNotificationItem item : notifications) {
-                    HBox card = new HBox(10);
-                    card.setPrefWidth(320);
-                    card.getStyleClass().add("public-notif-item");
-                    card.getStyleClass().add(notificationTypeStyleClass(item));
-                    Label icon = new Label(notificationIcon(item));
-                    icon.getStyleClass().add("public-notif-item-icon");
-                    Label title = new Label(item.getResume() != null ? item.getResume() : "Notification");
-                    title.setWrapText(true);
-                    title.getStyleClass().add("public-notif-item-title");
-                    String ts = item.getDateCreation() != null
-                            ? item.getDateCreation().format(java.time.format.DateTimeFormatter.ofPattern("dd/MM HH:mm"))
-                            : "";
-                    Label meta = new Label(ts);
-                    meta.getStyleClass().add("public-notif-item-meta");
-                    VBox textCol = new VBox(2, title, meta);
-                    card.getChildren().addAll(icon, textCol);
-                    CustomMenuItem menuItem = new CustomMenuItem(card, true);
-                    menuItem.setOnAction(e -> onHomeNotificationClick(item));
-                    homeNotifContextMenu.getItems().add(menuItem);
+                for (CombinedPublicNotifications.MergedPreview row : merged) {
+                    if (row.kind() == CombinedPublicNotifications.MergedKind.EVENT) {
+                        UserNotificationItem item = row.eventItem();
+                        if (item == null) {
+                            continue;
+                        }
+                        HBox card = new HBox(10);
+                        card.setPrefWidth(320);
+                        card.getStyleClass().add("public-notif-item");
+                        card.getStyleClass().add(notificationTypeStyleClass(item));
+                        Label icon = new Label(notificationIcon(item));
+                        icon.getStyleClass().add("public-notif-item-icon");
+                        Label title = new Label(item.getResume() != null ? item.getResume() : "Notification");
+                        title.setWrapText(true);
+                        title.getStyleClass().add("public-notif-item-title");
+                        String ts = item.getDateCreation() != null ? HOME_NOTIF_TIME_FMT.format(item.getDateCreation()) : "";
+                        Label meta = new Label(ts);
+                        meta.getStyleClass().add("public-notif-item-meta");
+                        VBox textCol = new VBox(2, title, meta);
+                        card.getChildren().addAll(icon, textCol);
+                        CustomMenuItem menuItem = new CustomMenuItem(card, true);
+                        menuItem.setOnAction(e -> onHomeNotificationClick(item));
+                        homeNotifContextMenu.getItems().add(menuItem);
+                    } else {
+                        Appointment ap = row.rdv();
+                        if (ap == null) {
+                            continue;
+                        }
+                        HBox card = new HBox(10);
+                        card.setPrefWidth(320);
+                        card.getStyleClass().add("public-notif-item");
+                        card.getStyleClass().add("public-notif-item-rdv");
+                        Label icon = new Label("📅");
+                        icon.getStyleClass().add("public-notif-item-icon");
+                        String summary = PatientRdvNotificationsDialog.summaryForMenu(ap, userService);
+                        Label title = new Label(summary);
+                        title.setWrapText(true);
+                        title.getStyleClass().add("public-notif-item-title");
+                        String ts = ap.getDateHeure() != null ? HOME_NOTIF_TIME_FMT.format(ap.getDateHeure()) : "";
+                        Label meta = new Label("Rendez-vous · " + ts);
+                        meta.getStyleClass().add("public-notif-item-meta");
+                        VBox textCol = new VBox(2, title, meta);
+                        card.getChildren().addAll(icon, textCol);
+                        CustomMenuItem menuItem = new CustomMenuItem(card, true);
+                        menuItem.setOnAction(e -> onMergedRdvHomeNotificationClick(ap));
+                        homeNotifContextMenu.getItems().add(menuItem);
+                    }
                 }
             }
             Label allLabel = new Label("Voir\u00A0toutes\u00A0les\u00A0notifications");
@@ -406,7 +524,11 @@ public class HomeController {
         String code = item != null && item.getTypeCode() != null ? item.getTypeCode() : "";
         return switch (code) {
             case UserNotificationService.TYPE_EVENT_MESSAGE_REPLY -> "public-notif-item-msg";
-            case UserNotificationService.TYPE_EVENT_REGISTRATION_REFUSED -> "public-notif-item-refused";
+            case UserNotificationService.TYPE_EVENT_REGISTRATION_REFUSED,
+                 UserNotificationService.TYPE_RDV_REFUSED,
+                 UserNotificationService.TYPE_RDV_CANCELLED -> "public-notif-item-refused";
+            case UserNotificationService.TYPE_EVENT_REGISTRATION_PENDING -> "public-notif-item-pending";
+            case UserNotificationService.TYPE_RDV_ACCEPTED -> "public-notif-item-accepted";
             default -> "public-notif-item-accepted";
         };
     }
@@ -415,7 +537,11 @@ public class HomeController {
         String code = item != null && item.getTypeCode() != null ? item.getTypeCode() : "";
         return switch (code) {
             case UserNotificationService.TYPE_EVENT_MESSAGE_REPLY -> "\u2709";
-            case UserNotificationService.TYPE_EVENT_REGISTRATION_REFUSED -> "\u2716";
+            case UserNotificationService.TYPE_EVENT_REGISTRATION_REFUSED,
+                 UserNotificationService.TYPE_RDV_REFUSED,
+                 UserNotificationService.TYPE_RDV_CANCELLED -> "\u2716";
+            case UserNotificationService.TYPE_EVENT_REGISTRATION_PENDING -> "\u23F3";
+            case UserNotificationService.TYPE_RDV_ACCEPTED -> "\u2713";
             default -> "\u2713";
         };
     }
@@ -426,15 +552,37 @@ public class HomeController {
         }
         try {
             userNotificationService.markAsRead(item.getId());
-            if (item.getEvenementId() != null && item.getEvenementId() > 0) {
+            String c = item.getTypeCode() != null ? item.getTypeCode() : "";
+            if (UserNotificationService.TYPE_RDV_ACCEPTED.equals(c)
+                    || UserNotificationService.TYPE_RDV_REFUSED.equals(c)
+                    || UserNotificationService.TYPE_RDV_CANCELLED.equals(c)) {
+                MainApp.showPublicPage("rdv");
+            } else if (item.getEvenementId() != null && item.getEvenementId() > 0) {
                 AppState.setPendingPublicEventDetailId(item.getEvenementId());
                 MainApp.showPublicPage("event-detail");
             } else {
                 MainApp.showPublicPage("notifications");
             }
             homeNotifContextMenu.hide();
+            refreshHomeNotificationBadge();
         } catch (Exception e) {
             alert(Alert.AlertType.ERROR, "Notifications", e.getMessage());
+        }
+    }
+
+    private void onMergedRdvHomeNotificationClick(Appointment ap) {
+        User u = AppState.getCurrentUser();
+        if (ap == null || u == null) {
+            return;
+        }
+        try {
+            appointmentService.markPatientDecisionRead(ap.getId(), u.getId());
+            MainApp.showPublicPage("rdv");
+            homeNotifContextMenu.hide();
+            refreshHomeNotificationBadge();
+        } catch (Exception ex) {
+            alert(Alert.AlertType.ERROR, "Notifications",
+                    ex.getMessage() != null ? ex.getMessage() : "Impossible de mettre à jour la notification.");
         }
     }
 
@@ -598,23 +746,22 @@ public class HomeController {
         imgView.setSmooth(true);
         String path = p.getImagePath();
         if (path != null && !path.isBlank()) {
-            if (path.startsWith("http://") || path.startsWith("https://")) {
-                imgView.setImage(new Image(path, true));
-            } else {
+            Image loaded = ProductImageLoader.loadForDisplay(path, 260, 120);
+            if (loaded == null && !path.trim().startsWith("http://") && !path.trim().startsWith("https://")) {
                 URL u = getClass().getResource(path.startsWith("/") ? path : "/" + path);
                 if (u == null) {
                     u = getClass().getResource("/images/" + path);
                 }
                 if (u != null) {
-                    imgView.setImage(new Image(u.toExternalForm(), true));
+                    loaded = new Image(u.toExternalForm(), true);
                 }
+            }
+            if (loaded != null && !loaded.isError()) {
+                imgView.setImage(loaded);
             }
         }
         if (imgView.getImage() == null) {
-            Region ph = new Region();
-            ph.setMinHeight(120);
-            ph.setStyle("-fx-background-color: #cdb4db;");
-            imgFrame.getChildren().add(ph);
+            imgFrame.getChildren().add(ProductImagePlaceholder.create(260, 120));
         } else {
             imgFrame.getChildren().add(imgView);
         }
@@ -669,11 +816,6 @@ public class HomeController {
     }
 
     @FXML
-    public void onAiSeeAllProducts() {
-        navigateToProducts();
-    }
-
-    @FXML
     public void onCtaProfile() {
         try {
             MainApp.openManagementSpace();
@@ -703,8 +845,33 @@ public class HomeController {
         return out;
     }
 
+    private List<Image> loadHomeUserSliderImages() {
+        List<Image> out = new ArrayList<>();
+        for (String rawPath : HOME_USER_SLIDER_IMAGE_PATHS) {
+            if (rawPath == null || rawPath.isBlank()) {
+                continue;
+            }
+            try {
+                Path p = Path.of(rawPath);
+                if (!Files.isRegularFile(p)) {
+                    continue;
+                }
+                out.add(new Image(p.toUri().toString(), true));
+            } catch (Exception ignored) {
+                // Chemin invalide ou inaccessible : on continue avec les autres images.
+            }
+        }
+        return out;
+    }
+
     /** Deux images pour hero / mission / témoignages (locales ou secours URL). */
     private List<Image> slidesForHomeDiaporamas() {
+        if (USE_USER_PROVIDED_HERO_SLIDES) {
+            List<Image> slides = loadHomeUserSliderImages();
+            if (slides.size() >= 2) {
+                return slides;
+            }
+        }
         List<Image> slides = loadHomeSharedImages();
         if (slides.size() >= 2) {
             return slides;
@@ -747,82 +914,70 @@ public class HomeController {
         if (heroBgImageA == null || heroBgImageB == null) {
             return;
         }
-        heroSlides.clear();
-        heroSlides.addAll(slidesForHomeDiaporamas());
-        if (heroSlides.isEmpty()) {
-            return;
-        }
-
         StackPane wrap = (StackPane) heroBgImageA.getParent();
-        for (ImageView iv : new ImageView[]{heroBgImageA, heroBgImageB}) {
-            iv.setPreserveRatio(false);
-            iv.setSmooth(true);
-            iv.setTranslateX(0);
-            iv.fitWidthProperty().bind(wrap.widthProperty());
-            iv.fitHeightProperty().bind(wrap.heightProperty());
-        }
-
-        if (heroSlides.size() < 2) {
-            heroBgImageA.setImage(heroSlides.get(0));
-            heroBgImageA.setOpacity(1);
-            heroBgImageB.setImage(null);
-            heroBgImageB.setOpacity(0);
-            heroBgImageB.setVisible(false);
+        List<Image> slides = resolveHeroBackgroundImages();
+        if (slides.isEmpty()) {
             return;
         }
-
-        heroSlideIndex = 0;
-        heroShowingA = true;
-        heroBgImageA.setImage(heroSlides.get(0));
-        heroBgImageA.setOpacity(1);
-        heroBgImageA.setVisible(true);
-        heroBgImageB.setImage(heroSlides.get(1));
-        heroBgImageB.setOpacity(0);
-        heroBgImageB.setVisible(true);
-
-        PauseTransition pause = new PauseTransition(HERO_SLIDE_INTERVAL);
-        pause.setOnFinished(e -> crossfadeHeroNext(pause));
-        pause.play();
+        HomeHeroTicker.install(wrap, heroBgImageA, heroBgImageB, slides, HERO_TICKER_PIXELS_PER_SEC);
+        HomeHeroTicker.bindPhotoWrapFullViewportBelowNav(wrap);
     }
 
-    private void crossfadeHeroNext(PauseTransition pause) {
-        if (heroSlides.size() < 2 || pause == null) {
+    /** Arrondi réel de la photo mission via clip (le CSS seul n'arrondit pas les pixels d'une ImageView). */
+    private void applyMissionImageClip() {
+        if (missionImageView == null) {
             return;
         }
+        Rectangle clip = new Rectangle();
+        clip.setArcWidth(26);
+        clip.setArcHeight(26);
+        clip.widthProperty().bind(missionImageView.fitWidthProperty());
+        clip.heightProperty().bind(missionImageView.fitHeightProperty());
+        missionImageView.setClip(clip);
+    }
 
-        ImageView visible = heroShowingA ? heroBgImageA : heroBgImageB;
-        ImageView hidden = heroShowingA ? heroBgImageB : heroBgImageA;
-
-        int nextIdx = (heroSlideIndex + 1) % heroSlides.size();
-        hidden.setImage(heroSlides.get(nextIdx));
-        hidden.setOpacity(0);
-        hidden.setVisible(true);
-
-        FadeTransition fadeOut = new FadeTransition(HERO_CROSSFADE_DURATION, visible);
-        fadeOut.setFromValue(1);
-        fadeOut.setToValue(0);
-        FadeTransition fadeIn = new FadeTransition(HERO_CROSSFADE_DURATION, hidden);
-        fadeIn.setFromValue(0);
-        fadeIn.setToValue(1);
-
-        ParallelTransition crossfade = new ParallelTransition(fadeOut, fadeIn);
-        crossfade.setOnFinished(e -> {
-            visible.setOpacity(0);
-            visible.setVisible(false);
-            heroSlideIndex = nextIdx;
-            heroShowingA = !heroShowingA;
-            pause.playFromStart();
-        });
-        crossfade.play();
+    /** PNG {@code hero-ticker-0x} dans /images/home/, sinon repli diaporama (URLs). */
+    private List<Image> resolveHeroBackgroundImages() {
+        List<Image> ticker = HomeHeroTicker.loadFromResources(getClass());
+        if (ticker.size() >= 2) {
+            return ticker;
+        }
+        return slidesForHomeDiaporamas();
     }
 
     /** Pulsation légère en boucle (2e bouton décalé comme animation-delay: 0.4s) ; pause au survol. */
     private void setupHeroPulse() {
         if (heroBtnProducts != null) {
+            heroBtnProducts.setDefaultButton(false);
             attachPulseStopOnHover(heroBtnProducts, Duration.ZERO);
         }
         if (heroBtnEvents != null) {
+            heroBtnEvents.setDefaultButton(false);
             attachPulseStopOnHover(heroBtnEvents, Duration.millis(400));
+        }
+    }
+
+    /**
+     * Ajoute une feuille sur la {@link Scene} après le premier affichage : sur certaines configs,
+     * les styles du BorderPane ne suffisent pas à remplacer le dégradé Modena des {@link Button}.
+     */
+    private void ensureHeroCtaStylesOnScene() {
+        if (HERO_CTA_FORCE_CSS == null || heroBtnProducts == null) {
+            return;
+        }
+        Platform.runLater(() -> attachHeroCtaCssIfNeeded(0));
+    }
+
+    private void attachHeroCtaCssIfNeeded(int attempt) {
+        Scene sc = heroBtnProducts.getScene();
+        if (sc != null) {
+            if (!sc.getStylesheets().contains(HERO_CTA_FORCE_CSS)) {
+                sc.getStylesheets().add(HERO_CTA_FORCE_CSS);
+            }
+            return;
+        }
+        if (attempt < 12) {
+            Platform.runLater(() -> attachHeroCtaCssIfNeeded(attempt + 1));
         }
     }
 
@@ -997,6 +1152,7 @@ public class HomeController {
             Scene scene = new Scene(root);
             scene.setFill(Color.TRANSPARENT);
             dialog.setScene(scene);
+            MainApp.applyThemeToScene(scene);
             Stage owner = MainApp.getPrimaryStage();
             if (owner != null) {
                 dialog.setWidth(owner.getWidth());
@@ -1044,6 +1200,14 @@ public class HomeController {
 
     @FXML
     public void onUserShortcutNotificationsFromHome() {
+        toggleHomeNotificationsMenu();
+    }
+
+    @FXML
+    public void onPatientNotifBell(MouseEvent event) {
+        if (event != null) {
+            event.consume();
+        }
         toggleHomeNotificationsMenu();
     }
 

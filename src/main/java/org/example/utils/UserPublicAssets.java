@@ -78,4 +78,14 @@ public final class UserPublicAssets {
         Path p = resolvePublicRelative(relativePath);
         return p != null && Files.isRegularFile(p);
     }
+
+    /**
+     * Compatibilité avec les anciens appels utilitaires.
+     *
+     * @return fichier existant sous {@code public}, sinon {@code null}
+     */
+    public static Path findPublicRelativeFile(String relativePath) {
+        Path p = resolvePublicRelative(relativePath);
+        return (p != null && Files.isRegularFile(p)) ? p : null;
+    }
 }

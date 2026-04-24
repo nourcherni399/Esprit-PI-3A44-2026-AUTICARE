@@ -5,6 +5,7 @@ import org.example.models.User;
 import org.example.utils.MyDatabase;
 import org.example.utils.PasswordUtil;
 
+import java.math.BigDecimal;
 import java.sql.*;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
@@ -20,13 +21,13 @@ public class UserService implements IService<User> {
     private static final String MYSQL_USER_SELECT =
             "SELECT id, nom, prenom, email, CAST(telephone AS CHAR) AS telephone, password AS mot_de_passe_hash, "
                     + "is_active AS actif, role, specialite, nom_cabinet AS cabinet, relation_avec_patient AS relation_parent, "
-                    + "date_naissance, adresse, sexe, created_at, updated_at, image FROM `user` WHERE ";
+                    + "date_naissance, adresse, tarif_consultation, sexe, created_at, updated_at, image FROM `user` WHERE ";
 
     @Override
     public void add(User u) throws SQLException {
         String sql = "INSERT INTO `user` (nom, prenom, email, telephone, password, is_active, created_at, updated_at, role, type, "
-                + "specialite, nom_cabinet, relation_avec_patient, date_naissance, adresse, sexe, image) "
-                + "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+                + "specialite, nom_cabinet, relation_avec_patient, date_naissance, adresse, sexe, tarif_consultation, image) "
+                + "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
         try (PreparedStatement ps = MyDatabase.getConnection().prepareStatement(sql)) {
             fillMysqlInsert(ps, u);
             ps.executeUpdate();
@@ -36,7 +37,8 @@ public class UserService implements IService<User> {
     @Override
     public void update(User u) throws SQLException {
         String sql = "UPDATE `user` SET nom=?, prenom=?, email=?, telephone=?, password=?, is_active=?, role=?, type=?, "
-                + "specialite=?, nom_cabinet=?, relation_avec_patient=?, date_naissance=?, adresse=?, sexe=?, image=?, updated_at=? WHERE id=?";
+                + "specialite=?, nom_cabinet=?, relation_avec_patient=?, date_naissance=?, adresse=?, sexe=?, image=?, "
+                + "tarif_consultation=?, updated_at=? WHERE id=?";
         try (PreparedStatement ps = MyDatabase.getConnection().prepareStatement(sql)) {
             fillMysqlUpdate(ps, u);
             ps.executeUpdate();
@@ -68,7 +70,7 @@ public class UserService implements IService<User> {
         List<User> users = new ArrayList<>();
         String sql = "SELECT id, nom, prenom, email, CAST(telephone AS CHAR) AS telephone, password AS mot_de_passe_hash, "
                 + "is_active AS actif, role, specialite, nom_cabinet AS cabinet, relation_avec_patient AS relation_parent, "
-                + "date_naissance, adresse, sexe, created_at, updated_at, image FROM `user` ORDER BY created_at DESC";
+                + "date_naissance, adresse, tarif_consultation, sexe, created_at, updated_at, image FROM `user` ORDER BY created_at DESC";
         try (Statement st = MyDatabase.getConnection().createStatement();
              ResultSet rs = st.executeQuery(sql)) {
             while (rs.next()) {
@@ -83,7 +85,7 @@ public class UserService implements IService<User> {
         String pattern = "%" + keyword + "%";
         String sql = "SELECT id, nom, prenom, email, CAST(telephone AS CHAR) AS telephone, password AS mot_de_passe_hash, "
                 + "is_active AS actif, role, specialite, nom_cabinet AS cabinet, relation_avec_patient AS relation_parent, "
-                + "date_naissance, adresse, sexe, created_at, updated_at, image FROM `user` "
+                + "date_naissance, adresse, tarif_consultation, sexe, created_at, updated_at, image FROM `user` "
                 + "WHERE email LIKE ? OR nom LIKE ? OR prenom LIKE ? ORDER BY created_at DESC";
         try (PreparedStatement ps = MyDatabase.getConnection().prepareStatement(sql)) {
             ps.setString(1, pattern);
@@ -101,7 +103,7 @@ public class UserService implements IService<User> {
         List<User> users = new ArrayList<>();
         String sql = "SELECT id, nom, prenom, email, CAST(telephone AS CHAR) AS telephone, password AS mot_de_passe_hash, "
                 + "is_active AS actif, role, specialite, nom_cabinet AS cabinet, relation_avec_patient AS relation_parent, "
-                + "date_naissance, adresse, sexe, created_at, updated_at, image FROM `user` WHERE role=? ORDER BY created_at DESC";
+                + "date_naissance, adresse, tarif_consultation, sexe, created_at, updated_at, image FROM `user` WHERE role=? ORDER BY created_at DESC";
         try (PreparedStatement ps = MyDatabase.getConnection().prepareStatement(sql)) {
             ps.setString(1, "ROLE_" + role.name());
             ResultSet rs = ps.executeQuery();
@@ -249,7 +251,8 @@ public class UserService implements IService<User> {
         }
         ps.setString(15, u.getAdresse());
         ps.setString(16, u.getSexe());
-        ps.setString(17, u.getImage());
+        ps.setString(17, u.getTarifConsultation());
+        ps.setString(18, u.getImage());
     }
 
     private void fillMysqlUpdate(PreparedStatement ps, User u) throws SQLException {
@@ -281,8 +284,9 @@ public class UserService implements IService<User> {
         ps.setString(13, u.getAdresse());
         ps.setString(14, u.getSexe());
         ps.setString(15, u.getImage());
-        ps.setTimestamp(16, new Timestamp(System.currentTimeMillis()));
-        ps.setInt(17, u.getId());
+        ps.setString(16, u.getTarifConsultation());
+        ps.setTimestamp(17, new Timestamp(System.currentTimeMillis()));
+        ps.setInt(18, u.getId());
     }
 
     private static String roleToType(Role r) {
@@ -313,6 +317,7 @@ public class UserService implements IService<User> {
             u.setDateNaissance(dn.toLocalDate());
         }
         u.setAdresse(rs.getString("adresse"));
+        u.setTarifConsultation(readTarifConsultation(rs));
         u.setSexe(rs.getString("sexe"));
         Timestamp created = rs.getTimestamp("created_at");
         Timestamp updated = rs.getTimestamp("updated_at");
@@ -324,6 +329,19 @@ public class UserService implements IService<User> {
         }
         u.setImage(rs.getString("image"));
         return u;
+    }
+
+    /** Lecture robuste (VARCHAR ou DECIMAL selon le schéma MySQL / SQLite). */
+    private static String readTarifConsultation(ResultSet rs) throws SQLException {
+        String s = rs.getString("tarif_consultation");
+        if (s != null && !s.trim().isEmpty()) {
+            return s.trim();
+        }
+        BigDecimal bd = rs.getBigDecimal("tarif_consultation");
+        if (bd != null) {
+            return bd.stripTrailingZeros().toPlainString();
+        }
+        return null;
     }
 
     private static Role fromDbRole(String r) {

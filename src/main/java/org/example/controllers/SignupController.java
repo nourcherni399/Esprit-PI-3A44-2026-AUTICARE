@@ -212,20 +212,12 @@ public class SignupController implements PublicShellAware {
             }
             u.setActif(true);
             userService.add(u);
-            User created = userService.findByEmail(email).orElseThrow();
-            AppState.setCurrentUser(created);
-            try {
-                if (AppState.getPendingPublicEventDetailId() > 0) {
-                    MainApp.showPublicPage("event-detail");
-                } else {
-                    alert(Alert.AlertType.INFORMATION, "Compte créé",
-                            "Vous êtes connecté·e. Bienvenue sur AutiCare.");
-                    MainApp.showHome();
-                }
-            } catch (IOException navEx) {
-                alert(Alert.AlertType.ERROR, "Navigation", navEx.getMessage());
-            }
+            alert(Alert.AlertType.INFORMATION, "Compte créé",
+                    "Vous pouvez maintenant vous connecter avec votre email.");
+            goToLoginPage();
         } catch (SQLException e) {
+            alert(Alert.AlertType.ERROR, "Erreur", e.getMessage());
+        } catch (IOException e) {
             alert(Alert.AlertType.ERROR, "Erreur", e.getMessage());
         }
     }

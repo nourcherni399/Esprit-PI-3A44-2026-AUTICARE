@@ -61,12 +61,23 @@ public final class PublicRdvDoctorSidebarHelper {
             }
             if (bio != null) {
                 String spec = med.getSpecialite() != null && !med.getSpecialite().isBlank()
-                        ? med.getSpecialite()
+                        ? med.getSpecialite().trim()
                         : "accompagnement des patients";
                 String cab = med.getCabinet() != null && !med.getCabinet().isBlank()
-                        ? med.getCabinet()
-                        : "non renseigné";
-                bio.setText("Praticien — " + spec + ". Cabinet : " + cab + ".");
+                        ? med.getCabinet().trim()
+                        : "";
+                String adresse = med.getAdresse() != null && !med.getAdresse().isBlank()
+                        ? med.getAdresse().trim()
+                        : "";
+                StringBuilder sb = new StringBuilder();
+                sb.append("Spécialité : ").append(spec).append(".");
+                if (!cab.isEmpty()) {
+                    sb.append(" Cabinet : ").append(cab).append(".");
+                }
+                if (!adresse.isEmpty()) {
+                    sb.append(" Adresse : ").append(adresse).append(".");
+                }
+                bio.setText(sb.toString());
             }
         } catch (SQLException e) {
             applyDefaultCopy(name, sidebarName, avatarInitials, bio, phone, email);
@@ -87,7 +98,7 @@ public final class PublicRdvDoctorSidebarHelper {
             email.setText("✉ —");
         }
         if (bio != null) {
-            bio.setText("Praticien accompagnant les personnes avec TSA. Cabinet : non renseigné.");
+            bio.setText("Praticien accompagnant les personnes avec TSA.");
         }
         if (avatarInitials != null && (fallbackName == null || fallbackName.isBlank())) {
             avatarInitials.setText("DR");
@@ -96,7 +107,8 @@ public final class PublicRdvDoctorSidebarHelper {
         }
     }
 
-    private static String formatDrName(User med) {
+    /** Nom affiché « Dr. … » pour listes RDV et encadré latéral. */
+    public static String formatDrName(User med) {
         String p = med.getPrenom() != null ? med.getPrenom().trim() : "";
         String n = med.getNom() != null ? med.getNom().trim() : "";
         if (!p.isEmpty() && !n.isEmpty()) {

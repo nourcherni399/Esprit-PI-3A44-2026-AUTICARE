@@ -52,6 +52,7 @@ import javafx.fxml.FXML;
 import javafx.util.Duration;
 
 import java.io.File;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.SQLException;
 import java.text.Normalizer;
@@ -74,6 +75,12 @@ public class AdminThematiquesPanelController {
 
     private static final Pattern CODE_PATTERN = Pattern.compile("[A-Za-z0-9_]{2,32}");
     private static final Pattern HEX_COLOR = Pattern.compile("#[0-9A-Fa-f]{6}");
+    /**
+     * Nom et sous-titre thématique : lettres (toutes langues / accents), espaces, apostrophe droite ou typographique, tiret.
+     * Pas de chiffres ni d'autres symboles (le code reste le champ prévu pour un identifiant technique).
+     */
+    private static final Pattern THEMATIQUE_NOM_SOUS_TITRE_LETTRES =
+            Pattern.compile("^[\\p{L}\\p{M}\\s'’\\-]+$");
 
     /** Aligné sur la colonne {@code VARCHAR(180)}. */
     private static final int NOM_MIN = 2;
@@ -179,6 +186,12 @@ public class AdminThematiquesPanelController {
     private ComboBox<String> formPublicCible;
     @FXML
     private ComboBox<String> formNiveau;
+    @FXML
+    private VBox formImagePreviewArea;
+    @FXML
+    private ImageView formImagePreview;
+    @FXML
+    private Label formImageFileName;
 
     @FXML
     private StackPane detailHeroStack;
@@ -669,7 +682,7 @@ public class AdminThematiquesPanelController {
         try {
             String themeName = t.getNom().trim();
             List<Event> published = eventService.findPublishedPublic().stream()
-                    .filter(ev -> thematiqueMatchesForPreview(themeName, ev.getThematique()))
+                    .filter(ev -> thematiqueMatchesForPreview(themeName, ev.getThematiqueNom()))
                     .filter(ev -> ev.getStatut() == EventStatus.PUBLIE)
                     .toList();
             if (published.isEmpty()) {
@@ -1096,6 +1109,7 @@ public class AdminThematiquesPanelController {
                 formNiveau.getSelectionModel().select(niv);
             }
         }
+        refreshThematiqueFormImagePreview();
         showLayer(VisibleLayer.FORM);
     }
 
@@ -1152,6 +1166,37 @@ public class AdminThematiquesPanelController {
         if (formNiveau != null) {
             formNiveau.getSelectionModel().clearSelection();
         }
+        refreshThematiqueFormImagePreview();
+    }
+
+    /** Aperçu après choix de fichier ou image existante en édition. */
+    private void refreshThematiqueFormImagePreview() {
+        if (formImagePreview == null || formImagePreviewArea == null) {
+            return;
+        }
+        boolean show = false;
+        String nameText = "";
+        Image img = null;
+
+        if (pendingImageFile != null && pendingImageFile.isFile()) {
+            img = new Image(pendingImageFile.toURI().toString(), 280, 160, true, true, false);
+            nameText = pendingImageFile.getName();
+            show = true;
+        } else if (existingImageRelative != null && !existingImageRelative.isBlank()) {
+            Path p = UserPublicAssets.resolvePublicRelative(existingImageRelative);
+            if (p != null && Files.isRegularFile(p)) {
+                img = new Image(p.toUri().toString(), 280, 160, true, true, false);
+                nameText = p.getFileName().toString();
+                show = true;
+            }
+        }
+
+        formImagePreview.setImage(show ? img : null);
+        if (formImageFileName != null) {
+            formImageFileName.setText(nameText);
+        }
+        formImagePreviewArea.setVisible(show);
+        formImagePreviewArea.setManaged(show);
     }
 
     private void showLayer(VisibleLayer layer) {
@@ -1190,6 +1235,7 @@ public class AdminThematiquesPanelController {
         File f = w != null ? ch.showOpenDialog(w) : ch.showOpenDialog(null);
         if (f != null) {
             pendingImageFile = f;
+            refreshThematiqueFormImagePreview();
         }
     }
 
@@ -1259,6 +1305,9 @@ public class AdminThematiquesPanelController {
             validationAlert("Le nom ne doit pas dépasser " + NOM_MAX + " caractères.");
             return false;
         }
+        if (!isNomOuSoustitreLettresUniquement(nom, "Le nom de la thématique")) {
+            return false;
+        }
 
         String code = trim(formCode);
         if (!CODE_PATTERN.matcher(code).matches()) {
@@ -1299,6 +1348,9 @@ public class AdminThematiquesPanelController {
             validationAlert("Le sous-titre ne doit pas dépasser " + SOUS_TITRE_MAX + " caractères.");
             return false;
         }
+        if (!isNomOuSoustitreLettresUniquement(sousTitre, "Le sous-titre")) {
+            return false;
+        }
 
         if (!validateOrdreAffichage()) {
             return false;
@@ -1331,6 +1383,24 @@ public class AdminThematiquesPanelController {
 
     private void validationAlert(String message) {
         alert(Alert.AlertType.WARNING, "Contrôle de saisie", message);
+    }
+
+    /** Lettres uniquement (+ espaces, apostrophe, tiret) ; pas de chiffres ; au moins une lettre. */
+    private boolean isNomOuSoustitreLettresUniquement(String value, String labelChamp) {
+        if (value.chars().anyMatch(Character::isDigit)) {
+            validationAlert(labelChamp + " ne doit pas contenir de chiffres (0-9).");
+            return false;
+        }
+        if (!THEMATIQUE_NOM_SOUS_TITRE_LETTRES.matcher(value).matches()) {
+            validationAlert(labelChamp + " : utilisez uniquement des lettres, espaces, apostrophes (') ou tirets (-). "
+                    + "Les autres caractères spéciaux ne sont pas autorisés.");
+            return false;
+        }
+        if (value.codePoints().noneMatch(Character::isLetter)) {
+            validationAlert(labelChamp + " doit contenir au moins une lettre.");
+            return false;
+        }
+        return true;
     }
 
     /** Champ ordre : vide = 0 ; sinon entier dans {@link #ORDRE_MIN}..{@link #ORDRE_MAX}. */

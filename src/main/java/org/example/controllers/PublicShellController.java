@@ -1,12 +1,9 @@
 package org.example.controllers;
 
 import javafx.animation.Animation;
-import javafx.animation.FadeTransition;
 import javafx.animation.Interpolator;
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
-import javafx.animation.ParallelTransition;
-import javafx.animation.PauseTransition;
 import javafx.animation.Timeline;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
@@ -23,6 +20,14 @@ import javafx.scene.control.Hyperlink;
 import javafx.scene.control.Label;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
+import javafx.scene.Node;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.Hyperlink;
+import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -39,10 +44,22 @@ import javafx.stage.StageStyle;
 import javafx.geometry.Side;
 import javafx.util.Duration;
 import org.example.MainApp;
+import org.example.models.Appointment;
 import org.example.models.UserNotificationItem;
 import org.example.services.UserNotificationService;
+import javafx.stage.Window;
+import javafx.util.Duration;
+import org.example.MainApp;
+import org.example.models.Role;
+import org.example.models.User;
+import org.example.services.AppointmentService;
+import org.example.services.EventService;
+import org.example.services.UserService;
 import org.example.utils.AppState;
+import org.example.utils.CombinedPublicNotifications;
 import org.example.utils.UserAvatarGraphic;
+import org.example.utils.HomeHeroTicker;
+import org.example.utils.NewsTickerHeadlines;
 
 import java.io.IOException;
 import java.net.URL;
@@ -52,6 +69,10 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
 
 /**
  * Coque publique partagée (même apparence que l’accueil) : nav, fond, hero, ticker, zone de page.
@@ -71,21 +92,16 @@ public class PublicShellController {
     private static final String GLOBAL_BG_FALLBACK_URL = HOME_PHOTO_FALLBACK_URLS[0];
     private static final double GLOBAL_BG_MAX_OPACITY = 0.5;
 
-    private static final Duration HERO_SLIDE_INTERVAL = Duration.seconds(7);
-    private static final Duration HERO_CROSSFADE_DURATION = Duration.millis(1600);
-
-    private static final List<String> NEWS_TICKER_HEADLINES = List.of(
-            "Move Your Body 1.0 : Quand sport et créativité s'unissent",
-            "Hackathon H12 Innovation : innover pour l'inclusion",
-            "Ateliers sensoriels : découverte des outils d'apaisement");
+    private static final double HERO_TICKER_PIXELS_PER_SEC = 40;
 
     private static final double NEWS_TICKER_PIXELS_PER_SEC = 44;
-
-    private static final String SHELL_LISTING_MODE_CLASS = "public-shell--listing-mode";
-    private static final String SHELL_AUTH_MODE_CLASS = "public-shell--auth-mode";
+    private static final double NEWS_TICKER_BAR_HEIGHT = 56;
 
     @FXML
     private ScrollPane shellScrollPane;
+    private static final String SHELL_LISTING_MODE_CLASS = "public-shell--listing-mode";
+    private static final String SHELL_AUTH_MODE_CLASS = "public-shell--auth-mode";
+
     @FXML
     private VBox shellScrollContentVBox;
     @FXML
@@ -123,11 +139,17 @@ public class PublicShellController {
     @FXML
     private Label loggedUserCodeLabel;
     @FXML
+    private Hyperlink dashboardQuickLink;
+    @FXML
+    private HBox publicNewsTickerBar;
+    @FXML
     private StackPane newsTickerViewport;
     @FXML
     private HBox shellNavAccueil;
     @FXML
     private HBox shellNavProduits;
+    @FXML
+    private HBox shellNavMesCommandes;
     @FXML
     private HBox shellNavRdv;
     @FXML
@@ -138,6 +160,14 @@ public class PublicShellController {
     private Hyperlink shellConnexionLink;
     @FXML
     private Button shellSignupBtn;
+    @FXML
+    private StackPane patientNotifBellHost;
+    @FXML
+    private Label patientNotifBadge;
+
+    private final AppointmentService shellAppointmentService = new AppointmentService();
+    private final EventService shellEventService = new EventService();
+    private final UserService shellUserService = new UserService();
 
     /** Dernière page chargée (pour surbrillance nav). */
     private String currentShellPageKey = "produits";
@@ -147,9 +177,6 @@ public class PublicShellController {
     private Timeline newsTickerTimeline;
     private double newsTickerLastSegmentWidth = -1;
 
-    private final List<Image> heroSlides = new ArrayList<>();
-    private int heroSlideIndex;
-    private boolean heroShowingA = true;
     private final UserNotificationService userNotificationService = new UserNotificationService();
     private final ContextMenu userNotifContextMenu = new ContextMenu();
     private static final DateTimeFormatter USER_NOTIF_TIME_FMT = DateTimeFormatter.ofPattern("dd/MM HH:mm", Locale.FRENCH);
@@ -185,7 +212,30 @@ public class PublicShellController {
             if (shellScrollPane != null) {
                 shellScrollPane.setVvalue(0);
             }
+            ensureTopNavPinned(0);
         });
+    }
+
+    private void ensureTopNavPinned(int attempt) {
+        if (shellScrollPane == null) {
+            return;
+        }
+        Scene sc = shellScrollPane.getScene();
+        if (sc == null && attempt < 16) {
+            Platform.runLater(() -> ensureTopNavPinned(attempt + 1));
+            return;
+        }
+        if (sc == null) {
+            return;
+        }
+        Node nav = sc.getRoot().lookup(".top-nav");
+        if (nav instanceof Region r) {
+            r.setMinHeight(88);
+            r.setPrefHeight(88);
+            r.setMaxHeight(120);
+            r.setVisible(true);
+            r.setManaged(true);
+        }
     }
 
     private void optimizeShellScrolling() {
@@ -231,73 +281,33 @@ public class PublicShellController {
         if (heroBgImageA == null || heroBgImageB == null) {
             return;
         }
-        heroSlides.clear();
-        heroSlides.addAll(slidesForHomeDiaporamas());
-        if (heroSlides.isEmpty()) {
-            return;
-        }
-
         StackPane wrap = (StackPane) heroBgImageA.getParent();
-        for (ImageView iv : new ImageView[]{heroBgImageA, heroBgImageB}) {
-            iv.setPreserveRatio(false);
-            iv.setSmooth(true);
-            iv.setTranslateX(0);
-            iv.fitWidthProperty().bind(wrap.widthProperty());
-            iv.fitHeightProperty().bind(wrap.heightProperty());
-        }
-
-        if (heroSlides.size() < 2) {
-            heroBgImageA.setImage(heroSlides.get(0));
-            heroBgImageA.setOpacity(1);
-            heroBgImageB.setImage(null);
-            heroBgImageB.setOpacity(0);
-            heroBgImageB.setVisible(false);
+        List<Image> slides = resolveHeroBackgroundImages();
+        if (slides.isEmpty()) {
             return;
         }
-
-        heroSlideIndex = 0;
-        heroShowingA = true;
-        heroBgImageA.setImage(heroSlides.get(0));
-        heroBgImageA.setOpacity(1);
-        heroBgImageA.setVisible(true);
-        heroBgImageB.setImage(heroSlides.get(1));
-        heroBgImageB.setOpacity(0);
-        heroBgImageB.setVisible(true);
-
-        PauseTransition pause = new PauseTransition(HERO_SLIDE_INTERVAL);
-        pause.setOnFinished(e -> crossfadeHeroNext(pause));
-        pause.play();
+        HomeHeroTicker.install(wrap, heroBgImageA, heroBgImageB, slides, HERO_TICKER_PIXELS_PER_SEC);
+        HomeHeroTicker.bindPhotoWrapFullViewportBelowNav(wrap);
+        clipShellHeroLayerToBounds();
     }
 
-    private void crossfadeHeroNext(PauseTransition pause) {
-        if (heroSlides.size() < 2 || pause == null) {
+    /** Évite que vignette / images du hero débordent et recouvrent le bandeau « Actualités » (BorderPane bottom). */
+    private void clipShellHeroLayerToBounds() {
+        if (shellHeroLayer == null) {
             return;
         }
+        Rectangle clip = new Rectangle();
+        clip.widthProperty().bind(shellHeroLayer.widthProperty());
+        clip.heightProperty().bind(shellHeroLayer.heightProperty());
+        shellHeroLayer.setClip(clip);
+    }
 
-        ImageView visible = heroShowingA ? heroBgImageA : heroBgImageB;
-        ImageView hidden = heroShowingA ? heroBgImageB : heroBgImageA;
-
-        int nextIdx = (heroSlideIndex + 1) % heroSlides.size();
-        hidden.setImage(heroSlides.get(nextIdx));
-        hidden.setOpacity(0);
-        hidden.setVisible(true);
-
-        FadeTransition fadeOut = new FadeTransition(HERO_CROSSFADE_DURATION, visible);
-        fadeOut.setFromValue(1);
-        fadeOut.setToValue(0);
-        FadeTransition fadeIn = new FadeTransition(HERO_CROSSFADE_DURATION, hidden);
-        fadeIn.setFromValue(0);
-        fadeIn.setToValue(1);
-
-        ParallelTransition crossfade = new ParallelTransition(fadeOut, fadeIn);
-        crossfade.setOnFinished(e -> {
-            visible.setOpacity(0);
-            visible.setVisible(false);
-            heroSlideIndex = nextIdx;
-            heroShowingA = !heroShowingA;
-            pause.playFromStart();
-        });
-        crossfade.play();
+    private List<Image> resolveHeroBackgroundImages() {
+        List<Image> ticker = HomeHeroTicker.loadFromResources(getClass());
+        if (ticker.size() >= 2) {
+            return ticker;
+        }
+        return slidesForHomeDiaporamas();
     }
 
     private List<Image> loadHomeSharedImages() {
@@ -334,25 +344,43 @@ public class PublicShellController {
         newsTickerTrack = new HBox(0);
         newsTickerTrack.setAlignment(Pos.CENTER_LEFT);
         newsTickerTrack.getStyleClass().add("home-news-ticker-track");
-        newsTickerSeg1 = buildNewsTickerSegment(NEWS_TICKER_HEADLINES);
-        HBox seg2 = buildNewsTickerSegment(NEWS_TICKER_HEADLINES);
+        List<String> headlines = NewsTickerHeadlines.loadFromDatabase(shellEventService);
+        newsTickerSeg1 = buildNewsTickerSegment(headlines);
+        HBox seg2 = buildNewsTickerSegment(headlines);
         newsTickerTrack.getChildren().setAll(newsTickerSeg1, seg2);
         newsTickerViewport.getChildren().setAll(newsTickerTrack);
+        newsTickerViewport.setMinHeight(NEWS_TICKER_BAR_HEIGHT);
+        newsTickerViewport.setPrefHeight(NEWS_TICKER_BAR_HEIGHT);
 
         Rectangle clip = new Rectangle();
+        clip.setHeight(NEWS_TICKER_BAR_HEIGHT);
         clip.widthProperty().bind(newsTickerViewport.widthProperty());
-        clip.heightProperty().bind(newsTickerViewport.heightProperty());
         newsTickerViewport.setClip(clip);
 
         newsTickerSeg1.layoutBoundsProperty().addListener((obs, prev, cur) -> Platform.runLater(this::restartNewsTickerIfReady));
+        newsTickerViewport.widthProperty().addListener((o, prev, cur) -> {
+            if (cur != null && cur.doubleValue() > 8) {
+                Platform.runLater(this::restartNewsTickerIfReady);
+            }
+        });
+        if (publicNewsTickerBar != null) {
+            publicNewsTickerBar.setVisible(true);
+            publicNewsTickerBar.setManaged(true);
+            publicNewsTickerBar.setMinHeight(NEWS_TICKER_BAR_HEIGHT);
+            publicNewsTickerBar.setPrefHeight(NEWS_TICKER_BAR_HEIGHT);
+        }
         Platform.runLater(this::restartNewsTickerIfReady);
+        Platform.runLater(() -> Platform.runLater(this::restartNewsTickerIfReady));
     }
 
     private static HBox buildNewsTickerSegment(List<String> headlines) {
+        List<String> lines = headlines == null || headlines.isEmpty()
+                ? List.of("Bienvenue sur AutiCare")
+                : headlines;
         HBox seg = new HBox(8);
         seg.setAlignment(Pos.CENTER_LEFT);
         seg.getStyleClass().add("home-news-ticker-seg");
-        for (int i = 0; i < headlines.size(); i++) {
+        for (int i = 0; i < lines.size(); i++) {
             if (i > 0) {
                 Label dot = new Label("•");
                 dot.getStyleClass().add("home-news-ticker-sep");
@@ -360,7 +388,7 @@ public class PublicShellController {
             }
             Label chev = new Label(">");
             chev.getStyleClass().add("home-news-ticker-chev");
-            Label line = new Label(headlines.get(i));
+            Label line = new Label(lines.get(i));
             line.getStyleClass().add("home-news-ticker-item");
             seg.getChildren().addAll(chev, line);
         }
@@ -411,6 +439,15 @@ public class PublicShellController {
             loggedNavActions.setVisible(logged);
             loggedNavActions.setManaged(logged);
         }
+        if (loggedUserCodeLabel != null) {
+            loggedUserCodeLabel.setVisible(false);
+            loggedUserCodeLabel.setManaged(false);
+        }
+        /* Une seule cloche : RDV + événements fusionnés dans userNotifMenuButton (pas de doublon patient). */
+        if (patientNotifBellHost != null) {
+            patientNotifBellHost.setVisible(false);
+            patientNotifBellHost.setManaged(false);
+        }
         if (loggedShortcutIcons != null) {
             loggedShortcutIcons.setVisible(logged);
             loggedShortcutIcons.setManaged(logged);
@@ -436,6 +473,9 @@ public class PublicShellController {
     }
 
     private void configureNotificationsMenu() {
+        if (userNotifContextMenu != null) {
+            userNotifContextMenu.getStyleClass().add("public-notif-context-menu");
+        }
         if (userNotifMenuButton != null) {
             userNotifMenuButton.setOnAction(e -> toggleUserNotificationsMenu());
         }
@@ -464,8 +504,9 @@ public class PublicShellController {
             return;
         }
         try {
-            int unread = userNotificationService.countUnreadForUser(user.getId());
-            userNotifBadgeLabel.setText(String.valueOf(unread));
+            int unread = CombinedPublicNotifications.totalUnread(user, userNotificationService, shellAppointmentService);
+            String badge = unread > 99 ? "99+" : String.valueOf(Math.max(0, unread));
+            userNotifBadgeLabel.setText(badge);
             userNotifBadgeLabel.setVisible(unread > 0);
             userNotifBadgeLabel.setManaged(unread > 0);
         } catch (Exception ignored) {
@@ -484,33 +525,67 @@ public class PublicShellController {
             return;
         }
         try {
-            MenuItem header = new MenuItem("Notifications");
+            Label headLbl = new Label("Notifications");
+            headLbl.getStyleClass().add("public-notif-popup-header");
+            CustomMenuItem header = new CustomMenuItem(headLbl, false);
+            header.setHideOnClick(false);
             header.setDisable(true);
+            header.getStyleClass().add("public-notif-menu-header");
             userNotifContextMenu.getItems().add(header);
-            List<UserNotificationItem> notifications = userNotificationService.listLatestForUser(user.getId(), 5);
-            if (notifications.isEmpty()) {
+            List<CombinedPublicNotifications.MergedPreview> merged =
+                    CombinedPublicNotifications.buildMenuPreview(user, userNotificationService, shellAppointmentService);
+            if (merged.isEmpty()) {
                 MenuItem emptyItem = new MenuItem("Aucune notification.");
                 emptyItem.setDisable(true);
                 userNotifContextMenu.getItems().add(emptyItem);
             } else {
-                for (UserNotificationItem item : notifications) {
-                    HBox card = new HBox(10);
-                    card.setPrefWidth(320);
-                    card.getStyleClass().add("public-notif-item");
-                    card.getStyleClass().add(notificationTypeStyleClass(item));
-                    Label icon = new Label(notificationIcon(item));
-                    icon.getStyleClass().add("public-notif-item-icon");
-                    Label title = new Label(item.getResume() != null ? item.getResume() : "Notification");
-                    title.setWrapText(true);
-                    title.getStyleClass().add("public-notif-item-title");
-                    String ts = item.getDateCreation() != null ? USER_NOTIF_TIME_FMT.format(item.getDateCreation()) : "";
-                    Label meta = new Label(ts);
-                    meta.getStyleClass().add("public-notif-item-meta");
-                    VBox textCol = new VBox(2, title, meta);
-                    card.getChildren().addAll(icon, textCol);
-                    CustomMenuItem menuItem = new CustomMenuItem(card, true);
-                    menuItem.setOnAction(e -> onUserNotificationClick(item));
-                    userNotifContextMenu.getItems().add(menuItem);
+                for (CombinedPublicNotifications.MergedPreview row : merged) {
+                    if (row.kind() == CombinedPublicNotifications.MergedKind.EVENT) {
+                        UserNotificationItem item = row.eventItem();
+                        if (item == null) {
+                            continue;
+                        }
+                        HBox card = new HBox(10);
+                        card.setPrefWidth(320);
+                        card.getStyleClass().add("public-notif-item");
+                        card.getStyleClass().add(notificationTypeStyleClass(item));
+                        Label icon = new Label(notificationIcon(item));
+                        icon.getStyleClass().add("public-notif-item-icon");
+                        Label title = new Label(item.getResume() != null ? item.getResume() : "Notification");
+                        title.setWrapText(true);
+                        title.getStyleClass().add("public-notif-item-title");
+                        String ts = item.getDateCreation() != null ? USER_NOTIF_TIME_FMT.format(item.getDateCreation()) : "";
+                        Label meta = new Label(ts);
+                        meta.getStyleClass().add("public-notif-item-meta");
+                        VBox textCol = new VBox(2, title, meta);
+                        card.getChildren().addAll(icon, textCol);
+                        CustomMenuItem menuItem = new CustomMenuItem(card, true);
+                        menuItem.setOnAction(e -> onUserNotificationClick(item));
+                        userNotifContextMenu.getItems().add(menuItem);
+                    } else {
+                        Appointment ap = row.rdv();
+                        if (ap == null) {
+                            continue;
+                        }
+                        HBox card = new HBox(10);
+                        card.setPrefWidth(320);
+                        card.getStyleClass().add("public-notif-item");
+                        card.getStyleClass().add("public-notif-item-rdv");
+                        Label icon = new Label("📅");
+                        icon.getStyleClass().add("public-notif-item-icon");
+                        String summary = PatientRdvNotificationsDialog.summaryForMenu(ap, shellUserService);
+                        Label title = new Label(summary);
+                        title.setWrapText(true);
+                        title.getStyleClass().add("public-notif-item-title");
+                        String ts = ap.getDateHeure() != null ? USER_NOTIF_TIME_FMT.format(ap.getDateHeure()) : "";
+                        Label meta = new Label("Rendez-vous · " + ts);
+                        meta.getStyleClass().add("public-notif-item-meta");
+                        VBox textCol = new VBox(2, title, meta);
+                        card.getChildren().addAll(icon, textCol);
+                        CustomMenuItem menuItem = new CustomMenuItem(card, true);
+                        menuItem.setOnAction(e -> onMergedRdvNotificationClick(ap));
+                        userNotifContextMenu.getItems().add(menuItem);
+                    }
                 }
             }
             Label allLabel = new Label("Voir\u00A0toutes\u00A0les\u00A0notifications");
@@ -536,7 +611,11 @@ public class PublicShellController {
         String code = item != null && item.getTypeCode() != null ? item.getTypeCode() : "";
         return switch (code) {
             case UserNotificationService.TYPE_EVENT_MESSAGE_REPLY -> "public-notif-item-msg";
-            case UserNotificationService.TYPE_EVENT_REGISTRATION_REFUSED -> "public-notif-item-refused";
+            case UserNotificationService.TYPE_EVENT_REGISTRATION_REFUSED,
+                 UserNotificationService.TYPE_RDV_REFUSED,
+                 UserNotificationService.TYPE_RDV_CANCELLED -> "public-notif-item-refused";
+            case UserNotificationService.TYPE_EVENT_REGISTRATION_PENDING -> "public-notif-item-pending";
+            case UserNotificationService.TYPE_RDV_ACCEPTED -> "public-notif-item-accepted";
             default -> "public-notif-item-accepted";
         };
     }
@@ -545,7 +624,11 @@ public class PublicShellController {
         String code = item != null && item.getTypeCode() != null ? item.getTypeCode() : "";
         return switch (code) {
             case UserNotificationService.TYPE_EVENT_MESSAGE_REPLY -> "\u2709";
-            case UserNotificationService.TYPE_EVENT_REGISTRATION_REFUSED -> "\u2716";
+            case UserNotificationService.TYPE_EVENT_REGISTRATION_REFUSED,
+                 UserNotificationService.TYPE_RDV_REFUSED,
+                 UserNotificationService.TYPE_RDV_CANCELLED -> "\u2716";
+            case UserNotificationService.TYPE_EVENT_REGISTRATION_PENDING -> "\u23F3";
+            case UserNotificationService.TYPE_RDV_ACCEPTED -> "\u2713";
             default -> "\u2713";
         };
     }
@@ -556,7 +639,12 @@ public class PublicShellController {
         }
         try {
             userNotificationService.markAsRead(item.getId());
-            if (item.getEvenementId() != null && item.getEvenementId() > 0) {
+            String c = item.getTypeCode() != null ? item.getTypeCode() : "";
+            if (UserNotificationService.TYPE_RDV_ACCEPTED.equals(c)
+                    || UserNotificationService.TYPE_RDV_REFUSED.equals(c)
+                    || UserNotificationService.TYPE_RDV_CANCELLED.equals(c)) {
+                openInShell("rdv");
+            } else if (item.getEvenementId() != null && item.getEvenementId() > 0) {
                 AppState.setPendingPublicEventDetailId(item.getEvenementId());
                 openInShell("event-detail");
             } else {
@@ -569,6 +657,69 @@ public class PublicShellController {
         }
     }
 
+    private void onMergedRdvNotificationClick(Appointment ap) {
+        User u = AppState.getCurrentUser();
+        if (ap == null || u == null) {
+            return;
+        }
+        try {
+            shellAppointmentService.markPatientDecisionRead(ap.getId(), u.getId());
+            openInShell("rdv");
+            userNotifContextMenu.hide();
+            refreshUserNotificationBadge();
+        } catch (SQLException ex) {
+            alert(Alert.AlertType.ERROR, "Notifications",
+                    ex.getMessage() != null ? ex.getMessage() : "Impossible de mettre à jour la notification.");
+        }
+    }
+
+    private void refreshPatientNotifBadge() {
+        if (patientNotifBadge == null) {
+            return;
+        }
+        User u = AppState.getCurrentUser();
+        if (u == null || (u.getRole() != Role.PATIENT && u.getRole() != Role.PARENT)) {
+            patientNotifBadge.setVisible(false);
+            patientNotifBadge.setManaged(false);
+            return;
+        }
+        try {
+            int c = shellAppointmentService.countUnreadPatientDecisions(u.getId());
+            patientNotifBadge.setText(c > 9 ? "9+" : String.valueOf(Math.max(0, c)));
+            boolean show = c > 0;
+            patientNotifBadge.setVisible(show);
+            patientNotifBadge.setManaged(show);
+        } catch (SQLException e) {
+            patientNotifBadge.setVisible(false);
+            patientNotifBadge.setManaged(false);
+        }
+    }
+
+    @FXML
+    private void onPatientNotifBell(MouseEvent event) {
+        if (event != null) {
+            event.consume();
+        }
+        User u = AppState.getCurrentUser();
+        if (u == null || (u.getRole() != Role.PATIENT && u.getRole() != Role.PARENT)) {
+            return;
+        }
+        try {
+            Window owner = null;
+            if (patientNotifBellHost != null && patientNotifBellHost.getScene() != null) {
+                owner = patientNotifBellHost.getScene().getWindow();
+            }
+            if (owner == null && event != null && event.getSource() instanceof Node n && n.getScene() != null) {
+                owner = n.getScene().getWindow();
+            }
+            PatientRdvNotificationsDialog.show(owner, u.getId(), shellAppointmentService, shellUserService);
+            refreshPatientNotifBadge();
+        } catch (SQLException ex) {
+            alert(Alert.AlertType.ERROR, "Notifications",
+                    ex.getMessage() != null ? ex.getMessage() : "Impossible de charger les notifications.");
+        }
+    }
+
     /** Charge une page dans la zone centrale (clés : produits, rdv, events, blog, login, signup). */
     public void loadPage(String pageId) throws IOException {
         if (pageContentHost == null) {
@@ -576,29 +727,25 @@ public class PublicShellController {
         }
         currentShellPageKey = pageId != null && !pageId.isBlank() ? pageId.trim() : "produits";
         String path = resolvePagePath(currentShellPageKey);
-        CachedShellPage cached = pageCache.get(path);
-        Parent page;
-        Object ctrl;
-        if (cached != null) {
-            page = cached.pageRoot();
-            ctrl = cached.controller();
-        } else {
-            URL url = getClass().getResource(path);
-            if (url == null) {
-                throw new IOException("Page introuvable : " + path);
-            }
-            FXMLLoader loader = new FXMLLoader(url);
-            page = loader.load();
-            ctrl = loader.getController();
-            pageCache.put(path, new CachedShellPage(page, ctrl));
+        URL url = getClass().getResource(path);
+        if (url == null) {
+            throw new IOException("Page introuvable : " + path);
         }
+        FXMLLoader loader = new FXMLLoader(url);
+        Parent page = loader.load();
+        Object ctrl = loader.getController();
         pageContentHost.getChildren().setAll(page);
         StackPane.setAlignment(page, Pos.TOP_CENTER);
-        /* Après attache au graphe : évite états bizarres (contrôles, styles) avant init données. */
+        /* Référence coque + chargement données (liste événements, fiche détail, etc.) une fois la page dans la scène. */
         if (ctrl instanceof PublicShellAware aware) {
             aware.setPublicShell(this);
             aware.onShellReady();
         }
+        if (ctrl instanceof PublicShellAware aware) {
+            aware.setPublicShell(this);
+        }
+        pageContentHost.getChildren().setAll(page);
+        StackPane.setAlignment(page, Pos.TOP_CENTER);
         applyShellHeroForPage(currentShellPageKey);
         refreshTopNavState();
         updatePublicNavHighlight();
@@ -608,7 +755,7 @@ public class PublicShellController {
     }
 
     private void clearPublicNavHighlight() {
-        HBox[] navBoxes = {shellNavAccueil, shellNavProduits, shellNavRdv, shellNavEvents, shellNavBlog};
+        HBox[] navBoxes = {shellNavAccueil, shellNavProduits, shellNavMesCommandes, shellNavRdv, shellNavEvents, shellNavBlog};
         for (HBox box : navBoxes) {
             if (box != null) {
                 box.getStyleClass().remove("nav-item-active");
@@ -627,6 +774,7 @@ public class PublicShellController {
         String id = normalizeNavPageKey(currentShellPageKey);
         switch (id) {
             case "produits" -> addNavItemActive(shellNavProduits);
+            case "mes-commandes" -> addNavItemActive(shellNavMesCommandes);
             case "rdv" -> addNavItemActive(shellNavRdv);
             case "events" -> addNavItemActive(shellNavEvents);
             case "blog" -> addNavItemActive(shellNavBlog);
@@ -664,18 +812,41 @@ public class PublicShellController {
             case "connexion", "login" -> "login";
             case "signup", "inscription", "register" -> "signup";
             case "products" -> "produits";
+            case "orders", "commandes", "panier", "cart", "checkout", "mes-commandes" -> "mes-commandes";
             default -> x;
         };
     }
 
     /**
-     * Listes et formulaires (RDV, événements, etc.) : pas de grand visuel hero ni d’espace réservé au-dessus du contenu.
+     * Ajuste le bandeau hero, le spacer et le fond global selon la page.
+     * Connexion / inscription : même bandeau photo que l’accueil ; RDV : fond global dédié.
      */
     private void applyShellHeroForPage(String pageId) {
         boolean compact = isCompactPublicPage(pageId);
         boolean authPage = isAuthPublicPage(pageId);
+        boolean rdvPage = isRdvPageId(pageId);
+
         applyCompactShellBackdrop();
-        boolean showHero = !compact;
+
+        if (globalBgA != null) {
+            globalBgA.setVisible(rdvPage);
+            globalBgA.setManaged(rdvPage);
+            if (!rdvPage) {
+                globalBgA.setOpacity(0);
+            } else if (globalBgA.getOpacity() <= 0) {
+                globalBgA.setOpacity(GLOBAL_BG_MAX_OPACITY);
+            }
+        }
+        if (globalBgB != null) {
+            globalBgB.setVisible(rdvPage);
+            globalBgB.setManaged(rdvPage);
+            if (!rdvPage) {
+                globalBgB.setOpacity(0);
+            }
+        }
+
+        /* Connexion / inscription : même bandeau photo que l’accueil (hero visible derrière la carte) */
+        boolean showHero = !compact || authPage;
         if (shellHeroLayer != null) {
             shellHeroLayer.setVisible(showHero);
             shellHeroLayer.setManaged(showHero);
@@ -731,10 +902,10 @@ public class PublicShellController {
         }
         return switch (pageId.trim().toLowerCase(Locale.ROOT)) {
             case "rdv", "rendez-vous", "rendezvous", "rdv-booking", "rdv-creneau", "rdv-type", "rdv-info",
-                    "events", "evenements", "événements",
-                    "event-detail", "evenement", "événement",
-                    "login", "connexion", "signup", "inscription", "register",
-                    "notifications", "notifs" -> true;
+                 "events", "evenements", "événements",
+                 "event-detail", "evenement", "événement",
+                 "login", "connexion", "signup", "inscription", "register",
+                 "notifications", "notifs" -> true;
             default -> false;
         };
     }
@@ -749,12 +920,25 @@ public class PublicShellController {
         };
     }
 
+    private static boolean isRdvPageId(String pageId) {
+        if (pageId == null || pageId.isBlank()) {
+            return false;
+        }
+        return switch (pageId.trim().toLowerCase(Locale.ROOT)) {
+            case "rdv", "rendez-vous", "rendezvous", "rdv-booking", "rdv-creneau", "rdv-type", "rdv-info" -> true;
+            default -> false;
+        };
+    }
+
     private static String resolvePagePath(String pageId) {
         if (pageId == null) {
             return "/fxml/pages/page-produits.fxml";
         }
         return switch (pageId.toLowerCase(Locale.ROOT)) {
             case "produits", "products" -> "/fxml/pages/page-produits.fxml";
+            case "panier", "cart" -> "/fxml/pages/page-panier.fxml";
+            case "mes-commandes", "orders", "commandes" -> "/fxml/pages/page-mes-commandes.fxml";
+            case "checkout", "paiement" -> "/fxml/pages/page-checkout.fxml";
             case "rdv", "rendez-vous", "rendezvous" -> "/fxml/pages/page-rdv.fxml";
             case "rdv-booking", "rdv-creneau" -> "/fxml/pages/page-rdv-booking.fxml";
             case "rdv-type" -> "/fxml/pages/page-rdv-type.fxml";
@@ -801,6 +985,11 @@ public class PublicShellController {
     }
 
     @FXML
+    private void onNavMesCommandes(MouseEvent e) {
+        openInShell("mes-commandes");
+    }
+
+    @FXML
     private void onNavEvents(MouseEvent e) {
         openInShell("events");
     }
@@ -808,6 +997,15 @@ public class PublicShellController {
     @FXML
     private void onNavBlog(MouseEvent e) {
         openInShell("blog");
+    }
+
+    @FXML
+    private void onNavDashboard() {
+        try {
+            MainApp.openManagementSpace();
+        } catch (IOException e) {
+            alert(Alert.AlertType.ERROR, "Gestion", e.getMessage());
+        }
     }
 
     @FXML
@@ -854,6 +1052,14 @@ public class PublicShellController {
     }
 
     @FXML
+    private void onClientOrderNotifications(MouseEvent event) {
+        if (event != null) {
+            event.consume();
+        }
+        openInShell("mes-commandes");
+    }
+
+    @FXML
     private void onOpenMyProfile(MouseEvent event) {
         if (AppState.getCurrentUser() == null) {
             return;
@@ -870,6 +1076,7 @@ public class PublicShellController {
             Scene scene = new Scene(root);
             scene.setFill(Color.TRANSPARENT);
             dialog.setScene(scene);
+            MainApp.applyThemeToScene(scene);
             Stage owner = MainApp.getPrimaryStage();
             if (owner != null) {
                 dialog.setWidth(owner.getWidth());

@@ -3,14 +3,15 @@ package org.example;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.layout.StackPane;
-import javafx.scene.paint.Color;
 import javafx.geometry.Rectangle2D;
-import javafx.stage.Screen;
+import javafx.scene.paint.Color;
 import javafx.stage.Modality;
+import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import org.example.controllers.AdminMyProfileController;
@@ -26,6 +27,9 @@ public class MainApp extends Application {
 
     private static Stage primaryStage;
     private static final String DARK_THEME_STYLESHEET = MainApp.class.getResource("/styles/dark.css").toExternalForm();
+    /** Curseur « main » sur boutons, onglets, listes, etc. (voir {@code /styles/cursor-pointer.css}). */
+    private static final String CURSOR_POINTER_STYLESHEET =
+            MainApp.class.getResource("/styles/cursor-pointer.css").toExternalForm();
     private static boolean darkModeEnabled = false;
     /** Onglet à afficher au chargement de {@code dashboard.fxml} (voir ordre des &lt;Tab&gt;). */
     private static int pendingDashboardTabIndex = 0;
@@ -34,15 +38,26 @@ public class MainApp extends Application {
 
     /** Page initiale pour {@link org.example.controllers.PublicShellController} (produits, rdv, events, blog). */
     private static String pendingPublicPage = "produits";
-    /** Forcer une fenêtre maximisée sur tous les écrans de l'application. */
+    /**
+     * Fenêtre agrandie comme le bouton « plein cadre » Windows : {@code setMaximized(true)} (échelle / rendu natifs).
+     * Le bandeau bas est gardé lisible via le layout (hero + {@code .home-root} dans le CSS), pas via un redimensionnement manuel.
+     */
     private static final boolean FORCE_MAXIMIZED_WINDOW = true;
+    private static boolean maximizedGuardInstalled = false;
+    /**
+     * Gabarit de secours si la fenêtre n’est pas maximisée (ex. désactivation du flag ci-dessus).
+     */
+    private static final double DEFAULT_WINDOW_WIDTH = 1360;
+    private static final double DEFAULT_WINDOW_HEIGHT = 760;
 
     @Override
     public void start(Stage stage) throws IOException {
         primaryStage = stage;
+        installMaximizedGuard();
         showHome();
         primaryStage.setTitle("AutiCare Desktop");
         primaryStage.show();
+        scheduleMaximizedEnforcement();
     }
 
     /** Page d'accueil (défilement, sections, fond animé). */
@@ -195,6 +210,114 @@ public class MainApp extends Application {
         applyScenePreservingWindowState(root, 1280, 760, 1024, 640);
     }
 
+    /** Espace administrateur — gestion des modules (CRUD). */
+    public static void showAdminModules() throws IOException {
+        var u = AppState.getCurrentUser();
+        if (u == null || u.getRole() != Role.ADMIN) {
+            showLogin();
+            return;
+        }
+        Parent root = FXMLLoader.load(MainApp.class.getResource("/front/admin/user/admin-modules.fxml"));
+        applyScenePreservingWindowState(root, 1280, 760, 1024, 640);
+    }
+
+    /** Espace administrateur — gestion des produits. */
+    public static void showAdminProducts() throws IOException {
+        var u = AppState.getCurrentUser();
+        if (u == null || u.getRole() != Role.ADMIN) {
+            showLogin();
+            return;
+        }
+        Parent root = FXMLLoader.load(MainApp.class.getResource("/front/admin/user/admin-products.fxml"));
+        applyScenePreservingWindowState(root, 1280, 760, 1024, 640);
+    }
+
+    /** Espace administrateur — gestion du stock. */
+    public static void showAdminStocks() throws IOException {
+        var u = AppState.getCurrentUser();
+        if (u == null || u.getRole() != Role.ADMIN) {
+            showLogin();
+            return;
+        }
+        Parent root = FXMLLoader.load(MainApp.class.getResource("/front/admin/user/admin-stocks.fxml"));
+        applyScenePreservingWindowState(root, 1280, 760, 1024, 640);
+    }
+
+    /** Espace administrateur — gestion des commandes. */
+    public static void showAdminOrders() throws IOException {
+        var u = AppState.getCurrentUser();
+        if (u == null || u.getRole() != Role.ADMIN) {
+            showLogin();
+            return;
+        }
+        Parent root = FXMLLoader.load(MainApp.class.getResource("/front/admin/user/admin-orders.fxml"));
+        applyScenePreservingWindowState(root, 1280, 760, 1024, 640);
+    }
+
+    /** Espace administrateur — validation des demandes produit. */
+    public static void showAdminDemandesProduit() throws IOException {
+        var u = AppState.getCurrentUser();
+        if (u == null || u.getRole() != Role.ADMIN) {
+            showLogin();
+            return;
+        }
+        Parent root = FXMLLoader.load(MainApp.class.getResource("/front/admin/user/admin-demandes-produit.fxml"));
+        applyScenePreservingWindowState(root, 1280, 760, 1024, 640);
+    }
+
+    /** Formulaire création d’un module (admin). */
+    public static void showAdminModuleAdd() throws IOException {
+        var u = AppState.getCurrentUser();
+        if (u == null || u.getRole() != Role.ADMIN) {
+            showLogin();
+            return;
+        }
+        AppState.clearAdminModuleEditContext();
+        Parent root = FXMLLoader.load(MainApp.class.getResource("/front/admin/user/admin-module-add.fxml"));
+        applyScenePreservingWindowState(root, 1280, 760, 1024, 640);
+    }
+
+    /** Formulaire creation d'une ressource (admin). */
+    public static void showAdminRessourceAdd() throws IOException {
+        var u = AppState.getCurrentUser();
+        if (u == null || u.getRole() != Role.ADMIN) {
+            showLogin();
+            return;
+        }
+        Parent root = FXMLLoader.load(MainApp.class.getResource("/front/admin/user/admin-ressource-add.fxml"));
+        applyScenePreservingWindowState(root, 1280, 760, 1024, 640);
+    }
+
+    /** Formulaire modification d'une ressource (admin). */
+    public static void showAdminRessourceEdit() throws IOException {
+        var u = AppState.getCurrentUser();
+        if (u == null || u.getRole() != Role.ADMIN) {
+            showLogin();
+            return;
+        }
+        if (AppState.getAdminEditRessource() == null) {
+            showAdminModules();
+            return;
+        }
+        Parent root = FXMLLoader.load(MainApp.class.getResource("/front/admin/user/admin-ressource-edit.fxml"));
+        applyScenePreservingWindowState(root, 1280, 760, 1024, 640);
+    }
+
+    /** Formulaire modification d’un module (admin). {@link AppState#getAdminEditModule()} doit être renseigné. */
+    public static void showAdminModuleEdit() throws IOException {
+        var u = AppState.getCurrentUser();
+        if (u == null || u.getRole() != Role.ADMIN) {
+            showLogin();
+            return;
+        }
+        if (AppState.getAdminEditModule() == null) {
+            showAdminModules();
+            return;
+        }
+        Parent root = FXMLLoader.load(MainApp.class.getResource("/front/admin/user/admin-module-edit.fxml"));
+        applyScenePreservingWindowState(root, 1280, 760, 1024, 640);
+    }
+
     /** Formulaire création d’utilisateur (admin). */
     public static void showAdminUserAdd() throws IOException {
         var u = AppState.getCurrentUser();
@@ -286,6 +409,7 @@ public class MainApp extends Application {
         Scene scene = new Scene(root);
         scene.setFill(Color.TRANSPARENT);
         dialog.setScene(scene);
+        applyThemeToScene(scene);
         if (primaryStage != null) {
             dialog.setWidth(primaryStage.getWidth());
             dialog.setHeight(primaryStage.getHeight());
@@ -313,21 +437,17 @@ public class MainApp extends Application {
             return;
         }
         if (FORCE_MAXIMIZED_WINDOW) {
-            primaryStage.setScene(new Scene(root, sceneWidth, sceneHeight));
+            installMaximizedGuard();
+            double currentWidth = primaryStage.getWidth();
+            double currentHeight = primaryStage.getHeight();
+            double appliedWidth = hasReliableWindowBounds(currentWidth, currentHeight) ? currentWidth : sceneWidth;
+            double appliedHeight = hasReliableWindowBounds(currentWidth, currentHeight) ? currentHeight : sceneHeight;
+            // Conserve le rendu actuel de l'accueil tout en gardant l'état "agrandi".
+            primaryStage.setScene(new Scene(root, appliedWidth, appliedHeight));
             applyThemeToScene(primaryStage.getScene());
             primaryStage.setMinWidth(minWidth);
             primaryStage.setMinHeight(minHeight);
-            Runnable forceMaximized = () -> {
-                primaryStage.setFullScreen(false);
-                Rectangle2D vb = Screen.getPrimary().getVisualBounds();
-                primaryStage.setX(vb.getMinX());
-                primaryStage.setY(vb.getMinY());
-                primaryStage.setWidth(vb.getWidth());
-                primaryStage.setHeight(vb.getHeight());
-                primaryStage.setMaximized(true);
-            };
-            forceMaximized.run();
-            Platform.runLater(forceMaximized);
+            scheduleMaximizedEnforcement();
             return;
         }
         boolean wasFullScreen = primaryStage.isFullScreen();
@@ -336,28 +456,15 @@ public class MainApp extends Application {
         double currentY = primaryStage.getY();
         double currentWidth = primaryStage.getWidth();
         double currentHeight = primaryStage.getHeight();
+        boolean boundsReliable = hasReliableWindowBounds(currentWidth, currentHeight);
 
         primaryStage.setScene(new Scene(root, sceneWidth, sceneHeight));
         applyThemeToScene(primaryStage.getScene());
         primaryStage.setMinWidth(minWidth);
         primaryStage.setMinHeight(minHeight);
 
-        if (!wasFullScreen && !wasMaximized && currentWidth > 0 && currentHeight > 0) {
-            if (!Double.isNaN(currentX)) {
-                primaryStage.setX(currentX);
-            }
-            if (!Double.isNaN(currentY)) {
-                primaryStage.setY(currentY);
-            }
-            primaryStage.setWidth(currentWidth);
-            primaryStage.setHeight(currentHeight);
-        }
-
-        // Re-apply on next pulse too: some platforms reset state right after setScene.
-        Runnable restore = () -> {
-            primaryStage.setMaximized(wasMaximized);
-            primaryStage.setFullScreen(wasFullScreen);
-            if (!wasFullScreen && !wasMaximized && currentWidth > 0 && currentHeight > 0) {
+        if (!wasFullScreen && !wasMaximized) {
+            if (boundsReliable) {
                 if (!Double.isNaN(currentX)) {
                     primaryStage.setX(currentX);
                 }
@@ -366,19 +473,108 @@ public class MainApp extends Application {
                 }
                 primaryStage.setWidth(currentWidth);
                 primaryStage.setHeight(currentHeight);
+            } else {
+                applyDefaultWindowBounds();
+            }
+        }
+
+        // Re-apply on next pulse too: some platforms reset state right after setScene.
+        Runnable restore = () -> {
+            primaryStage.setMaximized(wasMaximized);
+            primaryStage.setFullScreen(wasFullScreen);
+            if (!wasFullScreen && !wasMaximized) {
+                if (boundsReliable) {
+                    if (!Double.isNaN(currentX)) {
+                        primaryStage.setX(currentX);
+                    }
+                    if (!Double.isNaN(currentY)) {
+                        primaryStage.setY(currentY);
+                    }
+                    primaryStage.setWidth(currentWidth);
+                    primaryStage.setHeight(currentHeight);
+                } else {
+                    applyDefaultWindowBounds();
+                }
             }
         };
         restore.run();
         Platform.runLater(restore);
     }
 
-    private static void applyThemeToScene(Scene scene) {
+    private static boolean hasReliableWindowBounds(double width, double height) {
+        if (Double.isNaN(width) || Double.isNaN(height)) {
+            return false;
+        }
+        return width > 1 && height > 1;
+    }
+
+    /** Centre la fenêtre avec un gabarit fixe, sans dépasser les bords visibles de l’écran. */
+    private static void applyDefaultWindowBounds() {
+        if (primaryStage == null) {
+            return;
+        }
+        Rectangle2D vb = Screen.getPrimary().getVisualBounds();
+        double w = Math.min(DEFAULT_WINDOW_WIDTH, vb.getWidth());
+        double h = Math.min(DEFAULT_WINDOW_HEIGHT, vb.getHeight());
+        primaryStage.setWidth(w);
+        primaryStage.setHeight(h);
+        primaryStage.setX(vb.getMinX() + (vb.getWidth() - w) / 2.0);
+        primaryStage.setY(vb.getMinY() + (vb.getHeight() - h) / 2.0);
+    }
+
+    private static void installMaximizedGuard() {
+        if (!FORCE_MAXIMIZED_WINDOW || primaryStage == null || maximizedGuardInstalled) {
+            return;
+        }
+        maximizedGuardInstalled = true;
+        primaryStage.maximizedProperty().addListener((obs, was, isNow) -> {
+            if (!Boolean.TRUE.equals(isNow)) {
+                scheduleMaximizedEnforcement();
+            }
+        });
+        primaryStage.iconifiedProperty().addListener((obs, was, isNow) -> {
+            if (!Boolean.TRUE.equals(isNow)) {
+                scheduleMaximizedEnforcement();
+            }
+        });
+    }
+
+    private static void forceMaximizedStage() {
+        if (primaryStage == null || !FORCE_MAXIMIZED_WINDOW) {
+            return;
+        }
+        primaryStage.setFullScreen(false);
+        primaryStage.setMaximized(true);
+    }
+
+    private static void scheduleMaximizedEnforcement() {
+        if (primaryStage == null || !FORCE_MAXIMIZED_WINDOW) {
+            return;
+        }
+        forceMaximizedStage();
+        Platform.runLater(MainApp::forceMaximizedStage);
+    }
+
+    /**
+     * Applique le thème sombre sur la racine de la scène (dernière feuille du {@link Parent} racine),
+     * pas seulement sur la {@link Scene} : en JavaFX, les feuilles des parents plus profonds
+     * (ex. VBox login embarquée) s’appliquent après celles de la scène et écrasaient {@code dark.css}.
+     */
+    /** Réapplique le thème (ex. modales créées hors {@link #applyScenePreservingWindowState}). */
+    public static void applyThemeToScene(Scene scene) {
         if (scene == null) {
             return;
         }
+        if (!scene.getStylesheets().contains(CURSOR_POINTER_STYLESHEET)) {
+            scene.getStylesheets().add(0, CURSOR_POINTER_STYLESHEET);
+        }
         scene.getStylesheets().remove(DARK_THEME_STYLESHEET);
-        if (darkModeEnabled) {
-            scene.getStylesheets().add(DARK_THEME_STYLESHEET);
+        Node root = scene.getRoot();
+        if (root instanceof Parent parent) {
+            parent.getStylesheets().remove(DARK_THEME_STYLESHEET);
+            if (darkModeEnabled) {
+                parent.getStylesheets().add(DARK_THEME_STYLESHEET);
+            }
         }
     }
 

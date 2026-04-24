@@ -300,7 +300,7 @@ public class AdminAddUserController {
     @FXML
     public void onNavProducts() {
         try {
-            MainApp.showDashboard(1);
+            MainApp.showAdminProducts();
         } catch (IOException e) {
             alert(Alert.AlertType.ERROR, "Erreur", e.getMessage());
         }
@@ -309,7 +309,7 @@ public class AdminAddUserController {
     @FXML
     public void onNavStocks() {
         try {
-            MainApp.showDashboard(1);
+            MainApp.showAdminStocks();
         } catch (IOException e) {
             alert(Alert.AlertType.ERROR, "Erreur", e.getMessage());
         }
@@ -318,7 +318,7 @@ public class AdminAddUserController {
     @FXML
     public void onNavOrders() {
         try {
-            MainApp.showDashboard(1);
+            MainApp.showAdminOrders();
         } catch (IOException e) {
             alert(Alert.AlertType.ERROR, "Erreur", e.getMessage());
         }
@@ -345,6 +345,7 @@ public class AdminAddUserController {
     @FXML
     public void onNavModules() {
         try {
+            MainApp.showAdminModules();
             MainApp.showDashboard(6);
         } catch (IOException e) {
             alert(Alert.AlertType.ERROR, "Erreur", e.getMessage());

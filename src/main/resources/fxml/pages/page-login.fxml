@@ -12,7 +12,7 @@
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 
-<VBox fx:id="loginPageRoot" maxWidth="1180" spacing="0" styleClass="public-auth-page" stylesheets="@../../styles/login.css,@../../styles/public-page.css"
+<VBox fx:id="loginPageRoot" maxWidth="1180" spacing="0" styleClass="public-auth-page" stylesheets="@../styles/login.css,@../styles/public-page.css"
       xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.example.controllers.LoginController">
     <VBox alignment="CENTER" maxWidth="Infinity" styleClass="login-center" VBox.vgrow="ALWAYS">
         <HBox alignment="CENTER" maxWidth="920" prefHeight="520" styleClass="login-card">
@@ -41,8 +41,9 @@
                         <TextField fx:id="emailField" promptText="Email ou identifiant" styleClass="text-input-field"/>
                     </VBox>
                     <VBox spacing="6">
-                        <HBox alignment="CENTER_LEFT">
-                            <Label styleClass="field-label" text="MOT DE PASSE" HBox.hgrow="ALWAYS"/>
+                        <HBox alignment="CENTER_LEFT" maxWidth="Infinity" spacing="8">
+                            <Label styleClass="field-label" text="MOT DE PASSE"/>
+                            <Region minWidth="8" HBox.hgrow="ALWAYS"/>
                             <Hyperlink onAction="#onForgotPassword" styleClass="link-muted" text="Mot de passe oublié ?"/>
                         </HBox>
                         <HBox alignment="CENTER_LEFT" maxWidth="Infinity" styleClass="password-row">

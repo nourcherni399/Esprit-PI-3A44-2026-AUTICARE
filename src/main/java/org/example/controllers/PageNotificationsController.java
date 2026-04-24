@@ -1,7 +1,9 @@
 package org.example.controllers;
 
 import javafx.fxml.FXML;
+import javafx.geometry.Pos;
 import javafx.scene.control.Label;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import org.example.models.UserNotificationItem;
@@ -66,67 +68,78 @@ public class PageNotificationsController implements PublicShellAware {
         }
     }
 
-    private VBox buildNotificationCard(UserNotificationItem item) {
-        Label icon = new Label(notificationIcon(item));
-        icon.getStyleClass().add("public-notif-item-icon");
+    private HBox buildNotificationCard(UserNotificationItem item) {
+        String type = item.getTypeCode() != null ? item.getTypeCode() : "";
+        String glyph = notificationGlyphForType(type);
+        String variant = notificationVariantStyleClass(type);
 
-        Label title = new Label(notificationTitle(item));
-        title.getStyleClass().add("public-notifications-page-title");
-        title.setWrapText(true);
+        Label icon = new Label(glyph);
+        icon.getStyleClass().add("public-notifications-card-icon");
 
-        VBox header = new VBox(6, icon, title);
-        header.getStyleClass().add("public-notifications-page-header");
-
-        String bodyText = item.getResume() != null ? item.getResume() : "Notification";
-        Label body = new Label(bodyText);
-        body.getStyleClass().add("public-notifications-page-body");
+        Label body = new Label(item.getResume() != null ? item.getResume() : "Notification");
+        body.getStyleClass().add("public-notifications-card-text");
         body.setWrapText(true);
 
         String metaValue = item.getDateCreation() != null ? TS_FMT.format(item.getDateCreation()) : "";
         Label meta = new Label(metaValue);
-        meta.getStyleClass().add("public-notifications-page-meta");
+        meta.getStyleClass().add("public-notifications-card-meta");
 
-        VBox row = new VBox(10, header, body, meta);
-        row.getStyleClass().addAll("public-notif-item", "public-notifications-page-item", notificationTypeStyleClass(item));
-        VBox.setVgrow(row, Priority.NEVER);
+        VBox textBox = new VBox(4, body, meta);
+        HBox.setHgrow(textBox, Priority.ALWAYS);
+
+        HBox row = new HBox(10, icon, textBox);
+        row.setAlignment(Pos.CENTER_LEFT);
+        row.getStyleClass().add("public-notifications-card");
+        row.getStyleClass().add(variant);
         if (!item.isLu()) {
-            row.getStyleClass().add("public-notifications-page-item-unread");
+            row.getStyleClass().add("public-notifications-card-unread");
         }
         row.setOnMouseClicked(e -> onNotificationClick(item));
         return row;
     }
 
-    private static String notificationTypeStyleClass(UserNotificationItem item) {
-        String code = item != null && item.getTypeCode() != null ? item.getTypeCode() : "";
-        return switch (code) {
-            case UserNotificationService.TYPE_EVENT_MESSAGE_REPLY -> "public-notif-item-msg";
-            case UserNotificationService.TYPE_EVENT_REGISTRATION_REFUSED -> "public-notif-item-refused";
-            default -> "public-notif-item-accepted";
-        };
-    }
-
-    private static String notificationIcon(UserNotificationItem item) {
-        String code = item != null && item.getTypeCode() != null ? item.getTypeCode() : "";
-        return switch (code) {
+    private static String notificationGlyphForType(String typeCode) {
+        if (typeCode == null || typeCode.isBlank()) {
+            return "\u2713";
+        }
+        return switch (typeCode) {
+            case UserNotificationService.TYPE_EVENT_REGISTRATION_REFUSED,
+                 UserNotificationService.TYPE_RDV_REFUSED,
+                 UserNotificationService.TYPE_RDV_CANCELLED -> "\u2716";
             case UserNotificationService.TYPE_EVENT_MESSAGE_REPLY -> "\u2709";
-            case UserNotificationService.TYPE_EVENT_REGISTRATION_REFUSED -> "\u2716";
+            case UserNotificationService.TYPE_EVENT_REGISTRATION_PENDING -> "\u23F3";
+            case UserNotificationService.TYPE_RDV_ACCEPTED -> "\u2713";
             default -> "\u2713";
         };
     }
 
-    private static String notificationTitle(UserNotificationItem item) {
-        String code = item != null && item.getTypeCode() != null ? item.getTypeCode() : "";
-        return switch (code) {
-            case UserNotificationService.TYPE_EVENT_MESSAGE_REPLY -> "Messages événements";
+    /** Classe CSS supplémentaire sur la carte (couleur selon le type). */
+    private static String notificationVariantStyleClass(String typeCode) {
+        if (typeCode == null || typeCode.isBlank()) {
+            return "public-notifications-card--ok";
+        }
+        return switch (typeCode) {
             case UserNotificationService.TYPE_EVENT_REGISTRATION_REFUSED,
-                    UserNotificationService.TYPE_EVENT_REGISTRATION_ACCEPTED -> "Inscriptions événements";
-            default -> "Notifications";
+                 UserNotificationService.TYPE_RDV_REFUSED,
+                 UserNotificationService.TYPE_RDV_CANCELLED -> "public-notifications-card--refused";
+            case UserNotificationService.TYPE_EVENT_MESSAGE_REPLY -> "public-notifications-card--msg";
+            case UserNotificationService.TYPE_EVENT_REGISTRATION_PENDING -> "public-notifications-card--pending";
+            case UserNotificationService.TYPE_EVENT_REGISTRATION_ACCEPTED,
+                 UserNotificationService.TYPE_RDV_ACCEPTED -> "public-notifications-card--ok";
+            default -> "public-notifications-card--ok";
         };
     }
 
     private void onNotificationClick(UserNotificationItem item) {
         try {
             notificationService.markAsRead(item.getId());
+            String code = item.getTypeCode() != null ? item.getTypeCode() : "";
+            if (shell != null && (UserNotificationService.TYPE_RDV_ACCEPTED.equals(code)
+                    || UserNotificationService.TYPE_RDV_REFUSED.equals(code)
+                    || UserNotificationService.TYPE_RDV_CANCELLED.equals(code))) {
+                shell.loadPage("rdv");
+                return;
+            }
             if (shell != null && item.getEvenementId() != null && item.getEvenementId() > 0) {
                 AppState.setPendingPublicEventDetailId(item.getEvenementId());
                 shell.loadPage("event-detail");

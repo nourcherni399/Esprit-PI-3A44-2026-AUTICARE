@@ -11,18 +11,38 @@ import java.util.Optional;
 public class BlogService implements IService<BlogArticle> {
     @Override
     public void add(BlogArticle a) throws SQLException {
-        String sql = "INSERT INTO `blog`(titre,contenu,auteur_id,date_publication,categorie,slug,module_id) VALUES(?,?,?,NOW(),?,?,?)";
+        String sql = "INSERT INTO `blog`(titre, type, is_published, image, is_urgent, is_visible, "
+                   + "date_creation, date_modif, contenu, module_id, user_id) "
+                   + "VALUES(?,?,?,?,?,?,NOW(),NOW(),?,?,?)";
         try (PreparedStatement ps = MyDatabase.getConnection().prepareStatement(sql)) {
-            fill(ps, a, false);
+            ps.setString(1, a.getTitre());
+            ps.setString(2, a.getType());
+            ps.setBoolean(3, a.isPublished());
+            ps.setString(4, a.getImage());
+            ps.setBoolean(5, a.isUrgent());
+            ps.setBoolean(6, a.isVisible());
+            ps.setString(7, a.getContenu());
+            if (a.getModuleId() == null) ps.setNull(8, Types.INTEGER); else ps.setInt(8, a.getModuleId());
+            if (a.getUserId() == null) ps.setNull(9, Types.INTEGER); else ps.setInt(9, a.getUserId());
             ps.executeUpdate();
         }
     }
 
     @Override
     public void update(BlogArticle a) throws SQLException {
-        String sql = "UPDATE `blog` SET titre=?,contenu=?,auteur_id=?,categorie=?,slug=?,module_id=? WHERE id=?";
+        String sql = "UPDATE `blog` SET titre=?, type=?, is_published=?, image=?, is_urgent=?, "
+                   + "is_visible=?, date_modif=NOW(), contenu=?, module_id=?, user_id=? WHERE id=?";
         try (PreparedStatement ps = MyDatabase.getConnection().prepareStatement(sql)) {
-            fill(ps, a, true);
+            ps.setString(1, a.getTitre());
+            ps.setString(2, a.getType());
+            ps.setBoolean(3, a.isPublished());
+            ps.setString(4, a.getImage());
+            ps.setBoolean(5, a.isUrgent());
+            ps.setBoolean(6, a.isVisible());
+            ps.setString(7, a.getContenu());
+            if (a.getModuleId() == null) ps.setNull(8, Types.INTEGER); else ps.setInt(8, a.getModuleId());
+            if (a.getUserId() == null) ps.setNull(9, Types.INTEGER); else ps.setInt(9, a.getUserId());
+            ps.setInt(10, a.getId());
             ps.executeUpdate();
         }
     }
@@ -49,30 +69,61 @@ public class BlogService implements IService<BlogArticle> {
     public List<BlogArticle> findAll() throws SQLException {
         List<BlogArticle> list = new ArrayList<>();
         try (Statement st = MyDatabase.getConnection().createStatement();
-             ResultSet rs = st.executeQuery("SELECT * FROM `blog` ORDER BY date_publication DESC")) {
+             ResultSet rs = st.executeQuery("SELECT * FROM `blog` ORDER BY date_creation DESC")) {
             while (rs.next()) list.add(map(rs));
         }
         return list;
     }
 
     public List<BlogArticle> findByModule(int moduleId) throws SQLException {
-        return query("SELECT * FROM `blog` WHERE module_id=? ORDER BY date_publication DESC", moduleId);
+        return query("SELECT * FROM `blog` WHERE module_id=? ORDER BY date_creation DESC", moduleId);
     }
 
-    public List<BlogArticle> findArticlesByCategory(String category) throws SQLException {
-        return query("SELECT * FROM `blog` WHERE categorie=? ORDER BY date_publication DESC", category);
+    public List<BlogArticle> findByType(String type) throws SQLException {
+        return query("SELECT * FROM `blog` WHERE type=? ORDER BY date_creation DESC", type);
     }
 
-    /** Nombre d’articles {@code blog} dont {@code user_id} pointe vers l’utilisateur (bandeau profil admin). */
+    public int countByModuleId(int moduleId) throws SQLException {
+        String sql = "SELECT COUNT(*) FROM `blog` WHERE module_id=?";
+        try (PreparedStatement ps = MyDatabase.getConnection().prepareStatement(sql)) {
+            ps.setInt(1, moduleId);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) return rs.getInt(1);
+            return 0;
+        }
+    }
+
     public int countByUserId(int userId) throws SQLException {
         String sql = "SELECT COUNT(*) FROM `blog` WHERE user_id=?";
         try (PreparedStatement ps = MyDatabase.getConnection().prepareStatement(sql)) {
             ps.setInt(1, userId);
             ResultSet rs = ps.executeQuery();
-            if (rs.next()) {
-                return rs.getInt(1);
-            }
+            if (rs.next()) return rs.getInt(1);
             return 0;
+        }
+    }
+
+    /**
+     * Vérifie si un titre existe déjà dans la base de données.
+     * @param titre Le titre à vérifier
+     * @param excludeId ID de l'article à exclure de la recherche (pour l'édition), null pour l'ajout
+     * @return true si le titre existe déjà, false sinon
+     */
+    public boolean existsByTitre(String titre, Integer excludeId) throws SQLException {
+        String sql = excludeId == null 
+            ? "SELECT COUNT(*) FROM `blog` WHERE LOWER(titre) = LOWER(?)"
+            : "SELECT COUNT(*) FROM `blog` WHERE LOWER(titre) = LOWER(?) AND id != ?";
+        
+        try (PreparedStatement ps = MyDatabase.getConnection().prepareStatement(sql)) {
+            ps.setString(1, titre);
+            if (excludeId != null) {
+                ps.setInt(2, excludeId);
+            }
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1) > 0;
+            }
+            return false;
         }
     }
 
@@ -87,27 +138,24 @@ public class BlogService implements IService<BlogArticle> {
         return list;
     }
 
-    private void fill(PreparedStatement ps, BlogArticle a, boolean withId) throws SQLException {
-        ps.setString(1, a.getTitre());
-        ps.setString(2, a.getContenu());
-        ps.setInt(3, a.getAuteurId());
-        ps.setString(4, a.getCategorie());
-        ps.setString(5, a.getSlug());
-        if (a.getModuleId() == null) ps.setNull(6, Types.INTEGER); else ps.setInt(6, a.getModuleId());
-        if (withId) ps.setInt(7, a.getId());
-    }
-
     private BlogArticle map(ResultSet rs) throws SQLException {
         BlogArticle a = new BlogArticle();
         a.setId(rs.getInt("id"));
         a.setTitre(rs.getString("titre"));
+        a.setType(rs.getString("type"));
+        a.setPublished(rs.getBoolean("is_published"));
+        a.setImage(rs.getString("image"));
+        a.setUrgent(rs.getBoolean("is_urgent"));
+        a.setVisible(rs.getBoolean("is_visible"));
+        Timestamp dc = rs.getTimestamp("date_creation");
+        if (dc != null) a.setDateCreation(dc.toLocalDateTime());
+        Timestamp dm = rs.getTimestamp("date_modif");
+        if (dm != null) a.setDateModif(dm.toLocalDateTime());
         a.setContenu(rs.getString("contenu"));
-        a.setAuteurId(rs.getInt("auteur_id"));
-        a.setDatePublication(rs.getTimestamp("date_publication").toLocalDateTime());
-        a.setCategorie(rs.getString("categorie"));
-        a.setSlug(rs.getString("slug"));
         int module = rs.getInt("module_id");
         if (!rs.wasNull()) a.setModuleId(module);
+        int user = rs.getInt("user_id");
+        if (!rs.wasNull()) a.setUserId(user);
         return a;
     }
 }
