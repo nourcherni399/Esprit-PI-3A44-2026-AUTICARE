@@ -32,6 +32,7 @@ import org.example.MainApp;
 import org.example.services.EventRegistrationService;
 import org.example.services.EventMessageService;
 import org.example.services.EventService;
+import org.example.services.EventReminderEmailService;
 import org.example.services.ExternalParticipantsPdfService;
 import org.example.services.GoogleCustomSearchService;
 import org.example.services.HuggingFaceTextService;
@@ -58,6 +59,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -200,6 +202,7 @@ public class AdminEventsPanelController {
     private final ExternalParticipantsPdfService externalParticipantsPdfService = new ExternalParticipantsPdfService();
     private final HuggingFaceTextService huggingFaceTextService = new HuggingFaceTextService();
     private final GoogleCustomSearchService googleCustomSearchService = new GoogleCustomSearchService();
+    private final EventReminderEmailService eventReminderEmailService = new EventReminderEmailService();
 
     /** Derniers résultats CSE, pour l’appel à l’IA. */
     private final List<GoogleCustomSearchService.CseResult> lastWorldSearchResults = new ArrayList<>();
@@ -503,7 +506,107 @@ public class AdminEventsPanelController {
 
     @FXML
     public void onDetailSendReminders() {
-        showInfo("Rappels", "Envoi des rappels par e-mail : branchez votre service SMTP / liste d’inscrits.");
+        if (detailShownEvent == null) {
+            showInfo("Rappels", "Aucun événement sélectionné.");
+            return;
+        }
+        final Event event = detailShownEvent;
+        CompletableFuture.supplyAsync(() -> {
+            int sent = 0;
+            int failed = 0;
+            List<String> failedEmails = new ArrayList<>();
+            List<String> failedReasons = new ArrayList<>();
+            try {
+                List<EventRegistration> regs = registrationService.listParticipants(event.getId());
+                if (regs == null || regs.isEmpty()) {
+                    return new ReminderSendResult(0, 0, List.of(), List.of(), true);
+                }
+                // Évite les doublons de rappel si un même utilisateur apparaît plusieurs fois.
+                var notifiedUserIds = new LinkedHashSet<Integer>();
+                for (EventRegistration reg : regs) {
+                    if (reg == null || !notifiedUserIds.add(reg.getUtilisateurId())) {
+                        continue;
+                    }
+                    try {
+                        Optional<User> uOpt = userService.findById(reg.getUtilisateurId());
+                        if (uOpt.isEmpty()) {
+                            failed++;
+                            failedEmails.add("user#" + reg.getUtilisateurId());
+                            continue;
+                        }
+                        User u = uOpt.get();
+                        String to = nullIfBlank(u.getEmail());
+                        if (to == null) {
+                            failed++;
+                            failedEmails.add(displayNameForUser(u, reg.getUtilisateurId()));
+                            continue;
+                        }
+                        String displayName = displayNameForUser(u, reg.getUtilisateurId());
+                        eventReminderEmailService.sendEventReminderEmail(to, displayName, event);
+                        sent++;
+                    } catch (Exception mailEx) {
+                        failed++;
+                        String ident = "user#" + reg.getUtilisateurId();
+                        try {
+                            Optional<User> uOpt = userService.findById(reg.getUtilisateurId());
+                            if (uOpt.isPresent()) {
+                                String e = nullIfBlank(uOpt.get().getEmail());
+                                if (e != null) {
+                                    ident = e;
+                                }
+                            }
+                        } catch (Exception ignored) {
+                            // conserve ident par défaut
+                        }
+                        failedEmails.add(ident);
+                        String reason = mailEx.getMessage() == null ? mailEx.toString() : mailEx.getMessage();
+                        reason = reason.replace("\r", " ").replace("\n", " ").trim();
+                        if (reason.length() > 220) {
+                            reason = reason.substring(0, 220) + "...";
+                        }
+                        failedReasons.add(ident + " -> " + reason);
+                    }
+                }
+            } catch (Exception ex) {
+                throw new java.util.concurrent.CompletionException(ex);
+            }
+            return new ReminderSendResult(sent, failed, failedEmails, failedReasons, false);
+        }).whenComplete((result, th) -> Platform.runLater(() -> {
+            if (th != null) {
+                Throwable t = th instanceof java.util.concurrent.CompletionException && th.getCause() != null
+                        ? th.getCause() : th;
+                if (t instanceof Exception) {
+                    showError((Exception) t);
+                } else {
+                    showInfo("Rappels", t.getMessage() != null ? t.getMessage() : t.toString());
+                }
+                return;
+            }
+            if (result.emptyParticipants()) {
+                showInfo("Rappels", "Aucun participant inscrit pour cet événement.");
+                return;
+            }
+            StringBuilder msg = new StringBuilder();
+            msg.append("Rappels envoyés: ").append(result.sentCount())
+                    .append(" | Échecs: ").append(result.failedCount());
+            if (!result.failedTargets().isEmpty()) {
+                msg.append("\nÉchecs sur: ")
+                        .append(String.join(", ", result.failedTargets().stream().limit(5).toList()));
+                if (result.failedTargets().size() > 5) {
+                    msg.append(" ...");
+                }
+            }
+            if (!result.failedReasons().isEmpty()) {
+                msg.append("\nCause: ")
+                        .append(result.failedReasons().get(0));
+            }
+            showInfo("Rappels", msg.toString());
+        }));
+    }
+
+    private record ReminderSendResult(int sentCount, int failedCount, List<String> failedTargets,
+                                      List<String> failedReasons,
+                                      boolean emptyParticipants) {
     }
 
     @FXML
