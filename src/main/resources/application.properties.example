@@ -11,3 +11,12 @@ auticare.smtp.port=587
 oauth.google.clientId=your-google-client-id
 oauth.google.clientSecret=your-google-client-secret
 oauth.google.redirectUri=http://127.0.0.1:8888/oauth/callback/
+
+# Recherche admin « événements dans le monde » (Custom Search JSON API)
+google.search.apiKey=your-cse-api-key
+google.search.engineId=your-search-engine-cx
+
+# Fallbacks gratuits automatiques (sans clé API) gérés dans l'application:
+# - Google News RSS
+# - Wikipedia API
+# - DuckDuckGo HTML

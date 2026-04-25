@@ -11,12 +11,14 @@ module org.example.pi {
     requires jakarta.mail;
     requires jdk.httpserver;
     requires java.net.http;
+    requires java.xml;
     requires java.desktop;
     requires java.prefs;
     requires org.apache.pdfbox;
     requires org.apache.poi.poi;
     requires org.apache.poi.ooxml;
     requires openhtmltopdf.pdfbox;
+    requires com.google.gson;
 
     opens org.example to javafx.graphics;
     opens org.example.controllers to javafx.fxml;
