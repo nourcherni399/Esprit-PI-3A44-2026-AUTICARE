@@ -19,6 +19,7 @@ import org.example.models.Role;
 import org.example.models.User;
 import org.example.utils.AdminTopbarHelper;
 import org.example.utils.AppState;
+import org.example.utils.WindowsFirewallPortOpener;
 
 import java.io.IOException;
 import java.net.URL;
@@ -52,6 +53,7 @@ public class MainApp extends Application {
 
     @Override
     public void start(Stage stage) throws IOException {
+        WindowsFirewallPortOpener.ensureCheckinPortOpen();
         primaryStage = stage;
         installMaximizedGuard();
         showHome();

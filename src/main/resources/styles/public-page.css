@@ -3169,6 +3169,28 @@
     -fx-background-color: linear-gradient(to bottom, #38bdf8 0%, #0284c7 100%);
 }
 
+/* Jaune = demande envoyée (en attente d'acceptation admin) */
+.event-detail-sidebar .event-detail-sidebar-btn-yellow {
+    -fx-background-insets: 0;
+    -fx-background-color: linear-gradient(to bottom, #fde68a 0%, #facc15 100%);
+    -fx-text-fill: #713f12;
+    -fx-background-radius: 14;
+    -fx-border-radius: 14;
+    -fx-border-color: rgba(202, 138, 4, 0.5);
+    -fx-border-width: 1;
+}
+
+/* Vert = inscription acceptée */
+.event-detail-sidebar .event-detail-sidebar-btn-green {
+    -fx-background-insets: 0;
+    -fx-background-color: linear-gradient(to bottom, #86efac 0%, #22c55e 100%);
+    -fx-text-fill: #14532d;
+    -fx-background-radius: 14;
+    -fx-border-radius: 14;
+    -fx-border-color: rgba(21, 128, 61, 0.45);
+    -fx-border-width: 1;
+}
+
 /* Cascade renforcée : le style « map » ou le thème ne doit pas réappliquer un fond gris */
 .event-detail-sidebar .event-detail-sidebar-btn-row > .button.event-detail-sidebar-btn.event-detail-sidebar-btn-blue {
     -fx-background-insets: 0;

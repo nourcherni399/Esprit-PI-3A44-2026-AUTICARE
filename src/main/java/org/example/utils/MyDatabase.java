@@ -181,11 +181,19 @@ public class MyDatabase {
                         utilisateur_id INT NOT NULL,
                         statut VARCHAR(32) NOT NULL DEFAULT 'EN_ATTENTE',
                         date_inscription DATETIME NULL DEFAULT CURRENT_TIMESTAMP,
+                        checked_in_at DATETIME NULL,
                         UNIQUE KEY uq_inscription_evt_user (evenement_id, utilisateur_id),
                         CONSTRAINT fk_insc_evenement FOREIGN KEY (evenement_id) REFERENCES evenements(id) ON DELETE CASCADE,
                         CONSTRAINT fk_insc_utilisateur FOREIGN KEY (utilisateur_id) REFERENCES `user`(id) ON DELETE CASCADE
                     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
                     """);
+            try {
+                st.execute("ALTER TABLE inscriptions_evenement ADD COLUMN checked_in_at DATETIME NULL");
+            } catch (SQLException ex) {
+                if (ex.getErrorCode() != 1060) {
+                    throw ex;
+                }
+            }
             st.execute(
                     """
                     CREATE TABLE IF NOT EXISTS evenement_messages (

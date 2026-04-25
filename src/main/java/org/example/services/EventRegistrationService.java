@@ -102,6 +102,17 @@ public class EventRegistrationService implements IService<EventRegistration> {
         }
     }
 
+    /**
+     * Marque le participant comme présent (check-in QR).
+     */
+    public void markPresent(int registrationId) throws SQLException {
+        try (PreparedStatement ps = MyDatabase.getConnection().prepareStatement(
+                "UPDATE inscriptions_evenement SET checked_in_at=NOW() WHERE id=?")) {
+            ps.setInt(1, registrationId);
+            ps.executeUpdate();
+        }
+    }
+
     private EventRegistration map(ResultSet rs) throws SQLException {
         EventRegistration r = new EventRegistration();
         r.setId(rs.getInt("id"));
@@ -109,6 +120,12 @@ public class EventRegistrationService implements IService<EventRegistration> {
         r.setUtilisateurId(rs.getInt("utilisateur_id"));
         r.setStatut(RegistrationStatus.valueOf(rs.getString("statut")));
         r.setDateInscription(rs.getTimestamp("date_inscription").toLocalDateTime());
+        try {
+            Timestamp checkedIn = rs.getTimestamp("checked_in_at");
+            r.setDatePresence(checkedIn != null ? checkedIn.toLocalDateTime() : null);
+        } catch (SQLException ignored) {
+            r.setDatePresence(null);
+        }
         return r;
     }
 }
