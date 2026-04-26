@@ -17,6 +17,7 @@ module org.example.pi {
     requires org.apache.poi.poi;
     requires org.apache.poi.ooxml;
     requires openhtmltopdf.pdfbox;
+    requires webcam.capture;
 
     opens org.example to javafx.graphics;
     opens org.example.controllers to javafx.fxml;

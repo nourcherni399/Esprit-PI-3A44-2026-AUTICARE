@@ -26,6 +26,7 @@ import org.example.services.FaceIdConfig;
 import org.example.services.GoogleOAuthService;
 import org.example.services.UserService;
 import org.example.utils.AppState;
+import org.example.utils.FaceCameraCapture;
 import org.example.utils.PasswordUtil;
 
 import java.io.IOException;
@@ -148,31 +149,20 @@ public class SignupController implements PublicShellAware {
 
     @FXML
     public void onChooseBiometricFile() {
-        FileChooser chooser = new FileChooser();
-        chooser.setTitle("Photo visage");
-        chooser.getExtensionFilters().add(
-                new FileChooser.ExtensionFilter("Images", "*.png", "*.jpg", "*.jpeg", "*.gif"));
-        Window w = chooseFileBtn.getScene().getWindow();
-        java.io.File f = chooser.showOpenDialog(w);
-        if (f != null) {
-            biometricFile = f;
-            Image img = new Image(f.toURI().toString(), 84, 84, true, true);
-            if (img.isError()) {
-                biometricPathLabel.setText("Image invalide");
-                biometricFile = null;
-                if (biometricPreviewImage != null) {
-                    biometricPreviewImage.setImage(null);
-                    biometricPreviewImage.setVisible(false);
-                    biometricPreviewImage.setManaged(false);
-                }
+        Window owner = chooseFileBtn != null && chooseFileBtn.getScene() != null ? chooseFileBtn.getScene().getWindow() : null;
+        try {
+            var captured = FaceCameraCapture.capture(owner);
+            if (captured.isPresent()) {
+                updateBiometricPreview(captured.get(), "Capture caméra sélectionnée");
                 return;
             }
-            if (biometricPreviewImage != null) {
-                biometricPreviewImage.setImage(img);
-                biometricPreviewImage.setVisible(true);
-                biometricPreviewImage.setManaged(true);
-            }
-            biometricPathLabel.setText("Image sélectionnée");
+            alert(Alert.AlertType.INFORMATION, "Face ID", "Capture annulée. Choisissez une image manuellement.");
+        } catch (FaceCameraCapture.FaceCameraException e) {
+            alert(Alert.AlertType.WARNING, "Face ID", e.getMessage() != null ? e.getMessage() : "Caméra indisponible.");
+        }
+        File f = chooseBiometricFile(owner);
+        if (f != null) {
+            updateBiometricPreview(f, "Image sélectionnée");
         }
     }
 
@@ -444,6 +434,38 @@ public class SignupController implements PublicShellAware {
 
     private static String trim(TextField f) {
         return f.getText() == null ? "" : f.getText().trim();
+    }
+
+    private File chooseBiometricFile(Window owner) {
+        FileChooser chooser = new FileChooser();
+        chooser.setTitle("Photo visage");
+        chooser.getExtensionFilters().add(
+                new FileChooser.ExtensionFilter("Images", "*.png", "*.jpg", "*.jpeg", "*.gif", "*.webp"));
+        return chooser.showOpenDialog(owner);
+    }
+
+    private void updateBiometricPreview(File f, String okText) {
+        if (f == null) {
+            return;
+        }
+        Image img = new Image(f.toURI().toString(), 84, 84, true, true);
+        if (img.isError()) {
+            biometricPathLabel.setText("Image invalide");
+            biometricFile = null;
+            if (biometricPreviewImage != null) {
+                biometricPreviewImage.setImage(null);
+                biometricPreviewImage.setVisible(false);
+                biometricPreviewImage.setManaged(false);
+            }
+            return;
+        }
+        biometricFile = f;
+        if (biometricPreviewImage != null) {
+            biometricPreviewImage.setImage(img);
+            biometricPreviewImage.setVisible(true);
+            biometricPreviewImage.setManaged(true);
+        }
+        biometricPathLabel.setText(okText);
     }
 
     private static String faceMessageForCode(FaceBiometricException ex) {

@@ -20,6 +20,7 @@ import org.example.services.FaceIdConfig;
 import org.example.services.GoogleOAuthService;
 import org.example.services.UserService;
 import org.example.utils.AppState;
+import org.example.utils.FaceCameraCapture;
 import org.example.utils.PasswordRecoveryState;
 import org.example.utils.PasswordUtil;
 
@@ -274,13 +275,22 @@ public class LoginController implements PublicShellAware {
             show(Alert.AlertType.WARNING, "Face ID", "Service Face ID indisponible.");
             return;
         }
-        FileChooser chooser = new FileChooser();
-        chooser.setTitle("Image de vérification Face ID");
-        chooser.getExtensionFilters().add(
-                new FileChooser.ExtensionFilter("Images", "*.png", "*.jpg", "*.jpeg", "*.gif", "*.webp"));
-        File probe = chooser.showOpenDialog(emailField != null && emailField.getScene() != null
-                ? emailField.getScene().getWindow()
-                : null);
+        var owner = emailField != null && emailField.getScene() != null ? emailField.getScene().getWindow() : null;
+        File probe = null;
+        try {
+            var captured = FaceCameraCapture.capture(owner);
+            if (captured.isPresent()) {
+                probe = captured.get();
+                show(Alert.AlertType.INFORMATION, "Face ID", "Capture caméra réussie.");
+            } else {
+                show(Alert.AlertType.INFORMATION, "Face ID", "Capture annulée, sélectionnez une image.");
+            }
+        } catch (FaceCameraCapture.FaceCameraException e) {
+            show(Alert.AlertType.WARNING, "Face ID", e.getMessage() != null ? e.getMessage() : "Caméra indisponible.");
+        }
+        if (probe == null) {
+            probe = chooseProbeImage(owner);
+        }
         if (probe == null) {
             return;
         }
@@ -322,13 +332,19 @@ public class LoginController implements PublicShellAware {
             } else {
                 MainApp.showHome();
             }
-        } catch (FaceBiometricException ex) {
-            show(Alert.AlertType.WARNING, "Face ID", faceMessageForCode(ex));
         } catch (SQLException e) {
             show(Alert.AlertType.ERROR, "Erreur", e.getMessage());
         } catch (Exception e) {
             show(Alert.AlertType.ERROR, "Face ID", "Erreur lors de la connexion Face ID.");
         }
+    }
+
+    private static File chooseProbeImage(javafx.stage.Window owner) {
+        FileChooser chooser = new FileChooser();
+        chooser.setTitle("Image de vérification Face ID");
+        chooser.getExtensionFilters().add(
+                new FileChooser.ExtensionFilter("Images", "*.png", "*.jpg", "*.jpeg", "*.gif", "*.webp"));
+        return chooser.showOpenDialog(owner);
     }
 
     @FXML
