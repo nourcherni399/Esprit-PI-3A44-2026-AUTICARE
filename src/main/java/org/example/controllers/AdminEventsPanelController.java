@@ -75,7 +75,9 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Properties;
 
 /**
  * Panneau « Gestion des événements » pour l’admin (sidebar), sans le {@code TabPane} du dashboard.
@@ -108,6 +110,7 @@ public class AdminEventsPanelController {
 
     @FXML private TextField searchField;
     @FXML private ComboBox<String> sortOrderBox;
+    @FXML private Label checkinServerHintLabel;
 
     @FXML private VBox eventsListLayer;
     @FXML private ScrollPane eventsScrollRoot;
@@ -253,13 +256,14 @@ public class AdminEventsPanelController {
         wireScrollContentFullWidth();
         if (worldSearchPeriod != null) {
             worldSearchPeriod.setItems(FXCollections.observableArrayList(
-                    "Ce mois", "Ce trimestre", "2025", "2026"));
+                    "Ce mois", "3 derniers mois", "Cette année"));
             worldSearchPeriod.getSelectionModel().selectFirst();
         }
         if (worldSearchKeywords != null) {
             worldSearchKeywords.setTextFormatter(FxInputConstraints.maxLength(400));
         }
         ensureLocalQrCheckinServer();
+        refreshCheckinServerHintUi();
     }
 
     /** Le contenu du ScrollPane gardait une largeur préférée étroite : on l’aligne sur toute la zone utile. */
@@ -1130,18 +1134,77 @@ public class AdminEventsPanelController {
             }
             int port = readCheckinPort();
             try {
-                HttpServer server = HttpServer.create(new InetSocketAddress(port), 0);
+                // 0.0.0.0 : écoute IPv4 sur toutes les interfaces (LAN), pour que l’iPhone atteigne le PC via 192.168.x.x
+                HttpServer server = HttpServer.create(new InetSocketAddress("0.0.0.0", port), 0);
                 server.createContext("/checkin", this::handleLocalCheckinRequest);
                 server.setExecutor(java.util.concurrent.Executors.newCachedThreadPool());
                 server.start();
                 localQrCheckinServer = server;
                 localQrCheckinServerStarted = true;
-                System.out.println("[AutiCare] Local QR check-in server started on port " + port);
+                System.out.println("[AutiCare] Local QR check-in server started on 0.0.0.0:" + port);
             } catch (Exception ex) {
                 localQrCheckinServerStarted = false;
                 localQrCheckinServer = null;
                 System.err.println("[AutiCare] Unable to start local QR check-in server: " + ex.getMessage());
+                String base = readClasspathCheckinBaseUrl();
+                if (base != null && !base.isBlank()) {
+                    Platform.runLater(() -> {
+                        Alert a = new Alert(Alert.AlertType.WARNING);
+                        a.setTitle("Scan QR téléphone");
+                        a.setHeaderText(null);
+                        a.setContentText(
+                                "Le mini-serveur check-in n’a pas démarré (port " + port + "). "
+                                        + "Safari sur l’iPhone affichera « impossible de se connecter » tant que ce serveur n’écoute pas.\n\n"
+                                        + "Vérifiez : port libre (auticare.checkin.port), pare-feu Windows, lancez l’app en admin une fois pour la règle pare-feu.\n\n"
+                                        + "Détail : " + safeErrorMessage(ex));
+                        a.show();
+                    });
+                }
             }
+        }
+    }
+
+    private static String readClasspathCheckinBaseUrl() {
+        try (InputStream in = AdminEventsPanelController.class.getClassLoader()
+                .getResourceAsStream("application.properties")) {
+            if (in == null) {
+                return "";
+            }
+            Properties p = new Properties();
+            p.load(in);
+            String v = p.getProperty("auticare.checkin.baseUrl");
+            return v != null ? v.trim() : "";
+        } catch (Exception ignored) {
+            return "";
+        }
+    }
+
+    private void refreshCheckinServerHintUi() {
+        if (checkinServerHintLabel == null) {
+            return;
+        }
+        String base = readClasspathCheckinBaseUrl();
+        int port = readCheckinPort();
+        if (base.isBlank()) {
+            checkinServerHintLabel.setManaged(false);
+            checkinServerHintLabel.setVisible(false);
+            checkinServerHintLabel.setText("");
+            return;
+        }
+        checkinServerHintLabel.setManaged(true);
+        checkinServerHintLabel.setVisible(true);
+        if (localQrCheckinServerStarted) {
+            checkinServerHintLabel.setText(
+                    "Scan QR (téléphone) : serveur actif sur le port " + port
+                            + ". URL dans les mails / QR : " + base
+                            + " — iPhone et PC doivent être sur le même Wi‑Fi ; l’IP du PC doit correspondre à cette URL (ipconfig).");
+            checkinServerHintLabel.setStyle("-fx-text-fill: #166534;");
+        } else {
+            checkinServerHintLabel.setText(
+                    "Scan QR (téléphone) : le serveur local n’est pas démarré (port " + port
+                            + "). Safari ne pourra pas joindre " + base
+                            + " tant que l’appli est ouverte et que le port est libre / autorisé au pare-feu.");
+            checkinServerHintLabel.setStyle("-fx-text-fill: #b45309;");
         }
     }
 

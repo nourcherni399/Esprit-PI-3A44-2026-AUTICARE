@@ -19,6 +19,7 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Properties;
 import java.util.regex.Pattern;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -57,8 +58,10 @@ public class GoogleCustomSearchService {
         String dateRestrict;
         if ("Ce mois".equals(p)) {
             dateRestrict = "m1";
-        } else if ("Ce trimestre".equals(p)) {
+        } else if ("3 derniers mois".equals(p)) {
             dateRestrict = "m3";
+        } else if ("Cette année".equals(p)) {
+            dateRestrict = "y1";
         } else {
             dateRestrict = null;
         }
@@ -85,7 +88,10 @@ public class GoogleCustomSearchService {
                 }
                 failures.add("Google CSE: aucun resultat");
             } catch (Exception ex) {
-                failures.add("Google CSE: " + sanitizeOneLine(ex.getMessage()));
+                String msg = sanitizeOneLine(ex.getMessage());
+                failures.add(isGoogleCseAccessIssue(msg)
+                        ? "Google CSE: accès refusé (403)"
+                        : "Google CSE: indisponible");
             }
         } else {
             failures.add("Google CSE: non configure");
@@ -131,7 +137,9 @@ public class GoogleCustomSearchService {
         fallback.add(new CseResult(
                 "Recherche web alternative (ouvrir la page de resultats)",
                 "https://duckduckgo.com/?q=" + URLEncoder.encode(q.toString().trim(), StandardCharsets.UTF_8),
-                "Sources testees: " + String.join(" | ", failures) + ". Ouvrez ce lien pour consulter les resultats web directement."));
+                "Google CSE indisponible pour cette requête. "
+                        + "Ouvrez ce lien pour consulter les résultats web directement."
+                        + (failures.isEmpty() ? "" : " (" + String.join(" | ", failures) + ")")));
         return fallback;
     }
 
@@ -340,9 +348,12 @@ public class GoogleCustomSearchService {
             LocalDate d = LocalDate.now();
             return d.getMonthValue() + "/" + d.getYear() + " derniers événements";
         }
-        if ("Ce trimestre".equals(periodChoice)) {
+        if ("3 derniers mois".equals(periodChoice)) {
             LocalDate d = LocalDate.now();
             return "3 derniers mois " + d.getYear();
+        }
+        if ("Cette année".equals(periodChoice)) {
+            return "en " + LocalDate.now().getYear();
         }
         if (YEAR4.matcher(periodChoice).matches()) {
             return "en " + periodChoice;
@@ -351,6 +362,10 @@ public class GoogleCustomSearchService {
     }
 
     private static String googleSortParam(String periodChoice) {
+        if ("Cette année".equals(periodChoice)) {
+            String y = String.valueOf(LocalDate.now().getYear());
+            return "date:r:" + y + "0101:" + y + "1231";
+        }
         if (!YEAR4.matcher(periodChoice).matches()) {
             return "";
         }
@@ -362,8 +377,11 @@ public class GoogleCustomSearchService {
         if ("Ce mois".equals(periodChoice)) {
             return "m";
         }
-        if ("Ce trimestre".equals(periodChoice)) {
+        if ("3 derniers mois".equals(periodChoice)) {
             return "m";
+        }
+        if ("Cette année".equals(periodChoice)) {
+            return "y";
         }
         if (YEAR4.matcher(periodChoice).matches()) {
             if (periodChoice.equals(String.valueOf(LocalDate.now().getYear()))) {
@@ -378,8 +396,12 @@ public class GoogleCustomSearchService {
         if ("Ce mois".equals(periodChoice)) {
             return "when:30d";
         }
-        if ("Ce trimestre".equals(periodChoice)) {
+        if ("3 derniers mois".equals(periodChoice)) {
             return "when:90d";
+        }
+        if ("Cette année".equals(periodChoice)) {
+            String y = String.valueOf(LocalDate.now().getYear());
+            return "after:" + y + "-01-01 before:" + y + "-12-31";
         }
         if (YEAR4.matcher(periodChoice).matches()) {
             String y = periodChoice;
@@ -436,6 +458,17 @@ public class GoogleCustomSearchService {
             return "";
         }
         return s.replace("\r", " ").replace("\n", " ").trim();
+    }
+
+    private static boolean isGoogleCseAccessIssue(String msg) {
+        if (msg == null || msg.isBlank()) {
+            return false;
+        }
+        String lower = msg.toLowerCase(Locale.ROOT);
+        return lower.contains("custom search json api")
+                || lower.contains("does not have the access")
+                || lower.contains("a repondu 403")
+                || lower.contains("a répondu 403");
     }
 
     public record CseResult(String title, String link, String snippet) {

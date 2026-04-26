@@ -50,6 +50,7 @@ public class EventRegistrationTicketEmailService {
         String duration = formatEventDuration(event);
         String lieu = safe(event.getLieu(), "—");
         String zoom = safe(event.getLienZoomVisio(), "");
+        String maps = safe(event.getLienGoogleMaps(), "");
         String zoomForEmail = normalizeZoomJoinLink(zoom);
 
         String payload = "AUTICARE|EVENT=" + event.getId()
@@ -61,6 +62,7 @@ public class EventRegistrationTicketEmailService {
                 + URLEncoder.encode(qrContent, StandardCharsets.UTF_8);
 
         boolean onlineOrHybrid = isOnlineOrHybridMode(mode);
+        boolean presentielOrHybrid = isPresentielOrHybridMode(mode);
         String locationLine = onlineOrHybrid
                 ? (zoomForEmail.isBlank() ? "Lien visio: à venir" : "Lien visio prêt")
                 : "Lieu: " + lieu;
@@ -71,6 +73,10 @@ public class EventRegistrationTicketEmailService {
                 + "<p style=\"margin:0 0 10px 0;font-size:12px;color:#475569;word-break:break-all;\">"
                 + "Lien de secours : <a href=\"" + escapeHtml(zoomForEmail) + "\" style=\"color:#2563eb;\">"
                 + escapeHtml(zoomForEmail) + "</a></p>"
+                : "";
+        String mapsLine = presentielOrHybrid && !maps.isBlank()
+                ? "<p style=\"margin:0 0 10px 0;\"><a href=\"" + escapeHtml(maps)
+                + "\" style=\"color:#2563eb;\">Voir la localisation (Google Maps)</a></p>"
                 : "";
 
         String safeName = escapeHtml(name);
@@ -103,6 +109,9 @@ public class EventRegistrationTicketEmailService {
                 .append("<p style=\"margin:0 0 8px 0;font-size:12px;color:#475569;\">Code ticket: ").append(safePayload).append("</p>");
         if (!joinLine.isBlank()) {
             html.append(joinLine);
+        }
+        if (!mapsLine.isBlank()) {
+            html.append(mapsLine);
         }
         html.append("<p style=\"margin:14px 0 0 0;color:#6b7280;\">À bientôt,<br/>L'équipe AutiCare</p>")
                 .append("</div>")
@@ -261,5 +270,16 @@ public class EventRegistrationTicketEmailService {
         }
         String normalized = mode.trim().toLowerCase(Locale.ROOT);
         return normalized.contains("en ligne") || normalized.contains("hybride");
+    }
+
+    private static boolean isPresentielOrHybridMode(String mode) {
+        if (mode == null) {
+            return false;
+        }
+        String normalized = mode.trim().toLowerCase(Locale.ROOT);
+        return normalized.contains("hybride")
+                || normalized.contains("présentiel")
+                || normalized.contains("presentiel")
+                || normalized.contains("physique");
     }
 }

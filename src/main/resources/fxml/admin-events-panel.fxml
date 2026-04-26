@@ -14,6 +14,7 @@
             <VBox spacing="4">
                 <Label styleClass="admin-events-main-title" text="Gestion des événements"/>
                 <Label styleClass="admin-events-main-sub" text="Recherchez, triez et gérez vos événements."/>
+                <Label fx:id="checkinServerHintLabel" managed="false" maxWidth="920" styleClass="admin-events-main-sub" text="" visible="false" wrapText="true"/>
             </VBox>
             <HBox alignment="CENTER_LEFT" spacing="10" styleClass="admin-events-toolbar">
                 <TextField fx:id="searchField" prefWidth="420" promptText="Titre, lieu, thématique ou date" styleClass="admin-events-field"/>

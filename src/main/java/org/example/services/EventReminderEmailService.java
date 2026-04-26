@@ -114,6 +114,7 @@ public class EventReminderEmailService {
         String maps = safe(event.getLienGoogleMaps(), "");
         String name = safe(recipientDisplayName, "Participant");
         boolean onlineOrHybrid = isOnlineOrHybridMode(mode);
+        boolean presentielOrHybrid = isPresentielOrHybridMode(mode);
 
         String locationLine = onlineOrHybrid
                 ? (zoom.isBlank() ? "Lien visio: à venir" : "Lien visio: " + zoom)
@@ -124,9 +125,9 @@ public class EventReminderEmailService {
             links += "<p style=\"margin:0 0 8px 0;\"><a href=\"" + escapeHtml(zoom)
                     + "\" style=\"color:#2563eb;\">Rejoindre la réunion</a></p>";
         }
-        if (!maps.isBlank()) {
+        if (presentielOrHybrid && !maps.isBlank()) {
             links += "<p style=\"margin:0 0 8px 0;\"><a href=\"" + escapeHtml(maps)
-                    + "\" style=\"color:#2563eb;\">Voir l'adresse sur la carte</a></p>";
+                    + "\" style=\"color:#2563eb;\">Voir la localisation (Google Maps)</a></p>";
         }
 
         return """
@@ -439,5 +440,16 @@ public class EventReminderEmailService {
         }
         String normalized = mode.trim().toLowerCase(Locale.ROOT);
         return normalized.contains("en ligne") || normalized.contains("hybride");
+    }
+
+    private static boolean isPresentielOrHybridMode(String mode) {
+        if (mode == null) {
+            return false;
+        }
+        String normalized = mode.trim().toLowerCase(Locale.ROOT);
+        return normalized.contains("hybride")
+                || normalized.contains("présentiel")
+                || normalized.contains("presentiel")
+                || normalized.contains("physique");
     }
 }
