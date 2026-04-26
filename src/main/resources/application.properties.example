@@ -1,0 +1,32 @@
+# Copier vers application.properties pour le developpement local.
+# Ne pas committer application.properties avec de vrais secrets.
+
+# MySQL
+db.url=jdbc:mysql://localhost:3306/pidb
+db.user=root
+db.password=
+
+# --- E-MAILS (mot de passe oublie + RDV patient) ---
+# 1) Google : Securite -> Validation en 2 etapes -> Mots de passe des applications
+# 2) Creer un mot de passe d'application (16 caracteres), coller dans auticare.smtp.appPassword
+# 3) auticare.smtp.user = la meme adresse Gmail
+# 4) mvn compile (ou Build IDE) puis relancer l'application
+# Erreur 535 : regenerer le mot de passe d'application ; ou port 465 + useSsl=true
+auticare.smtp.user=your-email@gmail.com
+auticare.smtp.appPassword=your-16-char-app-password
+auticare.smtp.host=smtp.gmail.com
+auticare.smtp.port=587
+auticare.smtp.useSsl=false
+
+# Page web optionnelle : URL pour le bouton "Gerer mon rendez-vous" (?token=...)
+auticare.rdv.public.manage.baseUrl=
+# E-mail reception demandes annulation/report (mailto) ; vide = e-mail du praticien du creneau
+auticare.rdv.contact.cabinetEmail=
+
+# Google Agenda (médecin) : fuseau des créneaux dans l’URL (ex. Africa/Tunis, Europe/Paris)
+auticare.calendar.timezone=Africa/Tunis
+
+# Google OAuth
+oauth.google.clientId=your-google-client-id
+oauth.google.clientSecret=your-google-client-secret
+oauth.google.redirectUri=http://127.0.0.1:8888/oauth/callback/

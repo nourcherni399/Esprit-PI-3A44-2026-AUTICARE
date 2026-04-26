@@ -1,0 +1,4061 @@
+/* Pages internes (coque public-shell) */
+
+.public-auth-page,
+.public-page {
+    -fx-font-family: "Segoe UI", "Segoe UI Variable", "Segoe UI Variable Text", "Roboto", "Open Sans", system-ui, sans-serif;
+}
+
+.public-auth-page {
+    -fx-max-width: 1180;
+    -fx-padding: 12 8 40 8;
+}
+
+.auth-brand-imageview {
+    -fx-smooth: true;
+}
+
+.public-page {
+    -fx-max-width: 920;
+    -fx-padding: 8 28 56 28;
+    -fx-spacing: 14;
+    -fx-alignment: top_center;
+}
+
+.public-page-kicker {
+    -fx-font-size: 12px;
+    -fx-font-weight: 600;
+    -fx-text-fill: #a8bba3;
+    -fx-letter-spacing: 0.08em;
+}
+
+.public-page-title {
+    -fx-font-size: 34px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #2f3138;
+    -fx-wrap-text: true;
+    -fx-text-alignment: center;
+    -fx-effect: dropshadow(gaussian, rgba(255, 255, 255, 0.85), 4, 0, 0, 0);
+}
+
+.public-page-lead {
+    -fx-font-size: 15px;
+    -fx-text-fill: #4f535d;
+    -fx-wrap-text: true;
+    -fx-text-alignment: center;
+    -fx-line-spacing: 2px;
+    -fx-max-width: 720;
+}
+
+.public-page-body {
+    -fx-font-size: 14px;
+    -fx-text-fill: #5c5c5c;
+    -fx-wrap-text: true;
+    -fx-line-spacing: 3px;
+    -fx-max-width: 720;
+    -fx-text-alignment: center;
+}
+
+.public-page-card {
+    -fx-padding: 22 24 22 24;
+    -fx-spacing: 10;
+    -fx-background-color: rgba(255, 255, 255, 0.92);
+    -fx-background-radius: 18;
+    -fx-border-radius: 18;
+    -fx-border-color: rgba(205, 180, 219, 0.45);
+    -fx-border-width: 2;
+    -fx-effect: dropshadow(gaussian, rgba(60, 55, 80, 0.12), 14, 0.2, 0, 4);
+}
+
+/*
+ * Même charte que l’ajout / édition produit admin :
+ * {@link org.example.ui.product.ProductEditorPane} + enveloppe {@code AdminProductsController.showProductEditor}.
+ */
+.public-admin-product-form-page {
+    -fx-max-width: 1180;
+    -fx-padding: 12 8 40 8;
+    -fx-spacing: 10;
+    -fx-alignment: top_center;
+}
+
+.public-product-form-card {
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 12;
+    -fx-border-color: #eee7df;
+    -fx-border-radius: 12;
+    -fx-border-width: 1;
+    -fx-padding: 18;
+    -fx-spacing: 14;
+    -fx-max-width: 720;
+}
+
+.public-product-form-title {
+    -fx-font-size: 28px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #2a2a2a;
+    -fx-wrap-text: true;
+}
+
+.public-product-form-lead {
+    -fx-font-size: 15px;
+    -fx-text-fill: #4b5563;
+    -fx-wrap-text: true;
+}
+
+.public-product-form-hint {
+    -fx-font-size: 12px;
+    -fx-text-fill: #9ca3af;
+    -fx-wrap-text: true;
+}
+
+.public-product-form-scroll {
+    -fx-background-color: #ffffff;
+    -fx-background: #ffffff;
+    -fx-padding: 0;
+}
+
+.public-product-form-scroll > .viewport {
+    -fx-background-color: #ffffff;
+}
+
+.public-product-form-primary-btn {
+    -fx-background-color: #8fb2d9;
+    -fx-text-fill: white;
+    -fx-background-radius: 8;
+    -fx-font-size: 15px;
+    -fx-padding: 10 18 10 18;
+    -fx-cursor: hand;
+}
+
+.public-product-form-secondary-btn {
+    -fx-background-color: #efefef;
+    -fx-text-fill: #374151;
+    -fx-background-radius: 8;
+    -fx-font-size: 15px;
+    -fx-padding: 10 18 10 18;
+    -fx-cursor: hand;
+}
+
+.public-product-order-card {
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 12;
+    -fx-border-color: #e5e7eb;
+    -fx-border-radius: 12;
+    -fx-border-width: 1;
+    -fx-padding: 16;
+    -fx-spacing: 12;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.06), 12, 0, 0, 2);
+}
+
+.public-product-order-line {
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 6;
+    -fx-border-color: #e5e7eb;
+    -fx-border-radius: 6;
+    -fx-border-width: 1;
+    -fx-padding: 10 12 10 12;
+}
+
+.public-product-order-thumb {
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 6;
+    -fx-border-color: #e5e7eb;
+    -fx-border-radius: 6;
+    -fx-border-width: 1;
+}
+
+.public-product-order-num {
+    -fx-font-weight: bold;
+    -fx-font-size: 16px;
+    -fx-text-fill: #1f2937;
+}
+
+.public-product-order-meta {
+    -fx-text-fill: #6b7280;
+    -fx-font-size: 13px;
+}
+
+.public-product-order-total {
+    -fx-font-weight: 700;
+    -fx-font-size: 15px;
+    -fx-text-fill: #1f2937;
+}
+
+.public-product-order-badge {
+    -fx-text-fill: #374151;
+    -fx-font-size: 13px;
+    -fx-background-color: #f3f4f6;
+    -fx-background-radius: 8;
+    -fx-padding: 4 10 4 10;
+}
+
+.public-product-line-name {
+    -fx-font-weight: 600;
+    -fx-font-size: 15px;
+    -fx-text-fill: #1f2937;
+}
+
+.public-product-line-price {
+    -fx-font-size: 14px;
+    -fx-font-weight: 600;
+    -fx-text-fill: #1f2937;
+}
+
+.public-product-line-qty {
+    -fx-font-size: 13px;
+    -fx-text-fill: #6b7280;
+}
+
+.public-product-line-sub {
+    -fx-font-size: 13px;
+    -fx-text-fill: #4b5563;
+    -fx-font-weight: 500;
+}
+
+/* ---------- Page catalogue produits (même squelette que RDV : héro + carte filtres | résultats) ---------- */
+
+.catalog-page {
+    -fx-max-width: 1140;
+    -fx-padding: 20 8 40 8;
+    -fx-spacing: 22;
+    -fx-alignment: top_center;
+}
+
+.catalog-hero {
+    -fx-spacing: 10;
+    -fx-alignment: top_center;
+    -fx-max-width: 760;
+}
+
+.catalog-results-toolbar {
+    -fx-alignment: center_left;
+    -fx-spacing: 12;
+    -fx-padding: 2 0 10 0;
+}
+
+.catalog-scroll {
+    -fx-background-color: transparent;
+    -fx-background: transparent;
+    -fx-padding: 2 0 0 0;
+}
+
+.catalog-scroll > .viewport {
+    -fx-background-color: rgba(248, 250, 252, 0.65);
+    -fx-background-radius: 12;
+}
+
+.catalog-flow {
+    -fx-padding: 8 4 16 4;
+}
+
+/*
+ * Champs alignés sur {@link org.example.ui.product.ProductFormUi#styleInputAddProduct}
+ * et carte {@code AdminProductsController.showProductEditor}.
+ */
+.product-form-input {
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 6;
+    -fx-border-color: #e5e7eb;
+    -fx-border-radius: 6;
+    -fx-padding: 8 12 8 12;
+    -fx-font-size: 15px;
+}
+
+.combo-box-base.product-form-input {
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 6;
+    -fx-border-color: #e5e7eb;
+    -fx-border-radius: 6;
+    -fx-font-size: 15px;
+}
+
+/* ---------- Checkout (finaliser commande) : héro + carte formulaire | récap ---------- */
+
+.checkout-page-root {
+    -fx-max-width: 1140;
+    -fx-padding: 20 8 40 8;
+    -fx-spacing: 22;
+    -fx-alignment: top_center;
+}
+
+.checkout-shell {
+    -fx-padding: 26 24 28 24;
+}
+
+.checkout-split {
+    -fx-alignment: top_left;
+}
+
+.checkout-form-scroll {
+    -fx-min-viewport-height: 420;
+}
+
+.checkout-form-scroll > .viewport {
+    -fx-background-color: transparent;
+}
+
+.checkout-form-column {
+    -fx-spacing: 0;
+    -fx-padding: 0 20 8 0;
+    -fx-border-color: transparent rgba(0, 0, 0, 0.08) transparent transparent;
+    -fx-border-width: 0 1 0 0;
+}
+
+.checkout-form-inner {
+    -fx-spacing: 22;
+    -fx-max-width: 640;
+}
+
+.checkout-section-title {
+    -fx-font-size: 16px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #1f2937;
+}
+
+.checkout-form-label {
+    -fx-font-size: 15px;
+    -fx-font-weight: 500;
+    -fx-text-fill: #1f2937;
+}
+
+.checkout-field-hint {
+    -fx-font-size: 13px;
+    -fx-text-fill: #64748b;
+    -fx-wrap-text: true;
+}
+
+.checkout-section-sep {
+    -fx-padding: 4 0 4 0;
+}
+
+.checkout-card-fields {
+    -fx-spacing: 10;
+    -fx-padding: 12 14 14 14;
+    -fx-background-color: #f9fafb;
+    -fx-background-radius: 8;
+    -fx-border-color: #e5e7eb;
+    -fx-border-radius: 8;
+    -fx-border-width: 1;
+}
+
+.checkout-order-aside {
+    -fx-spacing: 0;
+    -fx-min-width: 280;
+    -fx-pref-width: 300;
+    -fx-max-width: 340;
+}
+
+.checkout-recap-box {
+    -fx-spacing: 12;
+}
+
+.checkout-summary-line {
+    -fx-font-size: 14px;
+    -fx-text-fill: #374151;
+    -fx-wrap-text: true;
+}
+
+.checkout-summary-key {
+    -fx-font-size: 14px;
+    -fx-text-fill: #6b7280;
+}
+
+.checkout-summary-value {
+    -fx-font-size: 14px;
+    -fx-font-weight: 600;
+    -fx-text-fill: #111827;
+}
+
+.checkout-summary-total-key {
+    -fx-font-size: 15px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #111827;
+}
+
+.checkout-summary-total-value {
+    -fx-font-size: 18px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #1d4ed8;
+}
+
+.checkout-delivery-box {
+    -fx-spacing: 6;
+    -fx-padding: 14 12 14 12;
+    -fx-background-color: #f0fdf4;
+    -fx-background-radius: 10;
+    -fx-border-color: #bbf7d0;
+    -fx-border-radius: 10;
+    -fx-border-width: 1;
+}
+
+.checkout-delivery-title {
+    -fx-font-size: 14px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #166534;
+}
+
+.checkout-delivery-text {
+    -fx-font-size: 13px;
+    -fx-text-fill: #15803d;
+    -fx-wrap-text: true;
+}
+
+.checkout-message-error {
+    -fx-text-fill: #b91c1c;
+    -fx-font-size: 13px;
+    -fx-wrap-text: true;
+}
+
+.checkout-message-success {
+    -fx-text-fill: #15803d;
+    -fx-font-size: 13px;
+    -fx-wrap-text: true;
+}
+
+.checkout-invalid {
+    -fx-border-color: #ef4444;
+    -fx-border-width: 1.5;
+    -fx-border-radius: 6;
+}
+
+.checkout-left-stack {
+    -fx-spacing: 0;
+}
+
+.checkout-actions-bar {
+    -fx-padding: 12 4 4 4;
+    -fx-spacing: 10;
+    -fx-background-color: rgba(255, 255, 255, 0.98);
+}
+
+.cart-outline-btn {
+    -fx-background-color: #ffffff;
+    -fx-text-fill: #374151;
+    -fx-border-color: #d1d5db;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-font-size: 15px;
+    -fx-padding: 10 16 10 16;
+    -fx-cursor: hand;
+}
+
+/* ---------- Page panier (héro + carte : lignes | récapitulatif, charte type formulaire produit) ---------- */
+
+.cart-page {
+    -fx-max-width: 1140;
+    -fx-padding: 20 8 40 8;
+    -fx-spacing: 22;
+    -fx-alignment: top_center;
+}
+
+.cart-lines-column {
+    -fx-spacing: 0;
+    -fx-padding: 0 24 0 0;
+    -fx-border-color: transparent rgba(0, 0, 0, 0.08) transparent transparent;
+    -fx-border-width: 0 1 0 0;
+}
+
+.cart-summary-panel {
+    -fx-spacing: 0;
+    -fx-min-width: 280;
+    -fx-pref-width: 300;
+    -fx-max-width: 340;
+}
+
+.cart-summary-inner {
+    -fx-spacing: 12;
+    -fx-padding: 18 20 20 20;
+    -fx-background-color: #f8fafc;
+    -fx-background-radius: 12;
+    -fx-border-color: #e5e7eb;
+    -fx-border-radius: 12;
+    -fx-border-width: 1;
+}
+
+.cart-scroll {
+    -fx-background-color: transparent;
+    -fx-background: transparent;
+    -fx-padding: 0;
+}
+
+.cart-scroll > .viewport {
+    -fx-background-color: transparent;
+}
+
+.cart-line-row {
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 10;
+    -fx-border-color: #e5e7eb;
+    -fx-border-radius: 10;
+    -fx-border-width: 1;
+}
+
+.cart-line-thumb {
+    -fx-background-color: #f1f5f9;
+    -fx-background-radius: 8;
+    -fx-border-color: #e2e8f0;
+    -fx-border-radius: 8;
+    -fx-border-width: 1;
+}
+
+.cart-line-name {
+    -fx-font-size: 15px;
+    -fx-font-weight: 600;
+    -fx-text-fill: #1f2937;
+}
+
+.cart-line-pu {
+    -fx-font-size: 13px;
+    -fx-text-fill: #64748b;
+}
+
+.cart-line-total {
+    -fx-font-size: 15px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #1f2937;
+    -fx-min-width: 72;
+}
+
+.cart-summary-label {
+    -fx-font-size: 14px;
+    -fx-text-fill: #4b5563;
+}
+
+.cart-summary-value {
+    -fx-font-size: 14px;
+    -fx-font-weight: 600;
+    -fx-text-fill: #111827;
+}
+
+.cart-summary-total-row .cart-summary-label {
+    -fx-font-size: 16px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #111827;
+}
+
+.cart-summary-total-row .cart-summary-value {
+    -fx-font-size: 18px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #1d4ed8;
+}
+
+.cart-primary-btn {
+    -fx-background-color: #8fb2d9;
+    -fx-text-fill: white;
+    -fx-background-radius: 8;
+    -fx-font-size: 15px;
+    -fx-padding: 10 18 10 18;
+    -fx-cursor: hand;
+}
+
+.cart-secondary-btn {
+    -fx-background-color: #efefef;
+    -fx-text-fill: #374151;
+    -fx-background-radius: 8;
+    -fx-font-size: 15px;
+    -fx-padding: 10 18 10 18;
+    -fx-cursor: hand;
+}
+
+.cart-danger-btn {
+    -fx-background-color: #ffffff;
+    -fx-text-fill: #b91c1c;
+    -fx-border-color: #fecaca;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-font-size: 14px;
+    -fx-padding: 10 16 10 16;
+    -fx-cursor: hand;
+}
+
+.cart-qty-ok-btn {
+    -fx-background-color: #e0f2fe;
+    -fx-text-fill: #0369a1;
+    -fx-background-radius: 6;
+    -fx-font-size: 12px;
+    -fx-padding: 6 12 6 12;
+    -fx-cursor: hand;
+}
+
+.cart-remove-btn {
+    -fx-background-color: transparent;
+    -fx-text-fill: #64748b;
+    -fx-underline: false;
+    -fx-border-color: #e5e7eb;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-font-size: 13px;
+    -fx-padding: 8 12 8 12;
+    -fx-cursor: hand;
+}
+
+.cart-empty-box {
+    -fx-padding: 48 32 56 32;
+    -fx-spacing: 16;
+    -fx-alignment: center;
+    -fx-max-width: 520;
+}
+
+.cart-empty-title {
+    -fx-font-size: 22px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #1f2937;
+}
+
+.cart-empty-text {
+    -fx-font-size: 15px;
+    -fx-text-fill: #6b7280;
+    -fx-text-alignment: center;
+}
+
+/* ---------- Page Rendez-vous (liste + filtres) ---------- */
+
+.rdv-page {
+    -fx-max-width: 1140;
+    -fx-padding: 20 12 36 12;
+    -fx-spacing: 10;
+    -fx-alignment: top_center;
+}
+
+.rdv-header {
+    -fx-max-width: Infinity;
+    -fx-alignment: top_left;
+    -fx-spacing: 8;
+}
+
+.rdv-page-title {
+    -fx-font-size: 30px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #2f3138;
+    -fx-wrap-text: true;
+}
+
+.rdv-page-subtitle {
+    -fx-font-size: 15px;
+    -fx-text-fill: #6b7280;
+    -fx-wrap-text: true;
+    -fx-max-width: 800;
+}
+
+/* Grande carte sous le titre (contient filtres + résultats) */
+.rdv-content-card {
+    -fx-background-color: rgba(255, 255, 255, 0.98);
+    -fx-background-radius: 16;
+    -fx-border-radius: 16;
+    -fx-border-color: rgba(0, 0, 0, 0.07);
+    -fx-border-width: 1;
+    -fx-padding: 26 24 30 24;
+    -fx-spacing: 0;
+    -fx-max-width: Infinity;
+    -fx-effect: dropshadow(gaussian, rgba(60, 55, 80, 0.12), 20, 0.2, 0, 4);
+}
+
+.rdv-two-col {
+    -fx-max-width: Infinity;
+    -fx-alignment: top_left;
+}
+
+/* Panneau filtres à l’intérieur de la carte (séparateur léger, pas une 2e carte) */
+.rdv-filters-panel {
+    -fx-padding: 0 22 0 0;
+    -fx-spacing: 16;
+    -fx-border-color: transparent rgba(0, 0, 0, 0.08) transparent transparent;
+    -fx-border-width: 0 1 0 0;
+}
+
+.rdv-filters-title {
+    -fx-font-size: 16px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #2f3138;
+}
+
+.rdv-filter-label {
+    -fx-font-size: 12px;
+    -fx-font-weight: 600;
+    -fx-text-fill: #5c5c5c;
+}
+
+.rdv-combo {
+    -fx-background-radius: 10;
+}
+
+.rdv-field {
+    -fx-background-radius: 10;
+    -fx-padding: 10 12 10 12;
+}
+
+.rdv-help-box {
+    -fx-background-color: rgba(205, 180, 219, 0.32);
+    -fx-background-radius: 12;
+    -fx-padding: 14 14 16 14;
+    -fx-spacing: 8;
+}
+
+.rdv-help-title {
+    -fx-font-size: 14px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #5b4d6a;
+}
+
+.rdv-help-text {
+    -fx-font-size: 13px;
+    -fx-text-fill: #5c5c5c;
+    -fx-wrap-text: true;
+}
+
+.rdv-main-col {
+    -fx-min-width: 0;
+}
+
+.rdv-results-count {
+    -fx-font-size: 13px;
+    -fx-text-fill: #6b7280;
+}
+
+.rdv-scroll {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+}
+
+.rdv-scroll > .viewport {
+    -fx-background-color: transparent;
+}
+
+.rdv-list {
+    -fx-padding: 2 2 32 2;
+}
+
+.rdv-pro-card {
+    -fx-background-color: rgba(255, 255, 255, 0.97);
+    -fx-background-radius: 14;
+    -fx-border-radius: 14;
+    -fx-border-color: rgba(0, 0, 0, 0.08);
+    -fx-border-width: 1;
+    -fx-padding: 18 20 18 20;
+    -fx-effect: dropshadow(gaussian, rgba(60, 55, 80, 0.1), 12, 0.15, 0, 2);
+}
+
+.rdv-pro-avatar {
+    -fx-background-color: #d4e5d0;
+    -fx-background-radius: 999;
+    -fx-min-width: 64;
+    -fx-min-height: 64;
+    -fx-max-width: 64;
+    -fx-max-height: 64;
+    -fx-alignment: center;
+}
+
+.rdv-pro-avatar-text {
+    -fx-font-size: 18px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #4a6b45;
+}
+
+.rdv-pro-info {
+    -fx-min-width: 0;
+}
+
+.rdv-pro-name {
+    -fx-font-size: 17px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #2f3138;
+}
+
+.rdv-pro-tag {
+    -fx-font-size: 11px;
+    -fx-font-weight: 600;
+    -fx-text-fill: #6b5c7a;
+    -fx-background-color: rgba(205, 180, 219, 0.5);
+    -fx-background-radius: 999;
+    -fx-padding: 3 10 3 10;
+}
+
+.rdv-pro-stars {
+    -fx-font-size: 13px;
+    -fx-text-fill: #c9a227;
+    -fx-opacity: 0.5;
+}
+
+.rdv-pro-detail {
+    -fx-font-size: 13px;
+    -fx-text-fill: #5c5c5c;
+}
+
+.rdv-pro-chip {
+    -fx-font-size: 11px;
+    -fx-text-fill: #5c5c5c;
+    -fx-background-color: rgba(0, 0, 0, 0.05);
+    -fx-background-radius: 8;
+    -fx-padding: 4 10 4 10;
+}
+
+.rdv-pro-location {
+    -fx-font-size: 12px;
+    -fx-text-fill: #6b7280;
+}
+
+.rdv-pro-phone {
+    -fx-font-size: 13px;
+    -fx-text-fill: #4f535d;
+}
+
+.rdv-pro-price {
+    -fx-font-size: 18px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #2f3138;
+}
+
+.rdv-pro-actions {
+    -fx-min-width: 130;
+}
+
+.rdv-pro-cta {
+    -fx-background-color: #a8bba3;
+    -fx-text-fill: #ffffff;
+    -fx-font-weight: 700;
+    -fx-font-size: 13px;
+    -fx-padding: 10 16 10 16;
+    -fx-background-radius: 12;
+    -fx-border-radius: 12;
+    -fx-cursor: hand;
+}
+
+.rdv-pro-cta:hover {
+    -fx-background-color: #6a8064;
+}
+
+/* ---------- Page RDV (liste épurée, rdv-page-clean) ---------- */
+
+.rdv-page-clean {
+    -fx-spacing: 22;
+    -fx-padding: 8 4 44 4;
+}
+
+.rdv-header-clean {
+    -fx-max-width: Infinity;
+    -fx-alignment: top_left;
+    -fx-padding: 0 0 12 0;
+    -fx-border-color: transparent transparent rgba(194, 65, 12, 0.35) transparent;
+    -fx-border-width: 0 0 3 0;
+}
+
+.rdv-page-kicker {
+    -fx-font-size: 11px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #c2410c;
+    -fx-letter-spacing: 0.16em;
+}
+
+.rdv-page-title-clean {
+    -fx-font-size: 30px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #042f2e;
+    -fx-wrap-text: true;
+    -fx-letter-spacing: -0.02em;
+}
+
+.rdv-page-sub-clean {
+    -fx-font-size: 14px;
+    -fx-text-fill: #134e4a;
+    -fx-wrap-text: true;
+    -fx-line-spacing: 3px;
+}
+
+.rdv-shell {
+    -fx-spacing: 0;
+    -fx-background-color: linear-gradient(to bottom, #ffffff 0%, #ecfeff 38%, #ccfbf1 100%);
+    -fx-background-radius: 20;
+    -fx-border-radius: 20;
+    -fx-border-color: rgba(13, 148, 136, 0.38);
+    -fx-border-width: 1.5;
+    -fx-padding: 24 24 22 24;
+    -fx-effect: dropshadow(gaussian, rgba(15, 118, 110, 0.22), 28, 0.22, 0, 6);
+}
+
+.rdv-filters-row {
+    -fx-padding: 0 0 20 0;
+    -fx-border-color: transparent transparent rgba(13, 148, 136, 0.12) transparent;
+    -fx-border-width: 0 0 1 0;
+    -fx-alignment: center_left;
+}
+
+.rdv-filter-block {
+    -fx-spacing: 4;
+}
+
+.rdv-filter-cap {
+    -fx-font-size: 11px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #0f766e;
+    -fx-letter-spacing: 0.06em;
+}
+
+.rdv-filter-input {
+    -fx-background-radius: 12;
+    -fx-padding: 10 14 10 14;
+    -fx-font-size: 13px;
+    -fx-background-color: #ffffff;
+    -fx-border-color: rgba(13, 148, 136, 0.35);
+    -fx-border-radius: 12;
+    -fx-border-width: 1.5;
+}
+
+.rdv-count-block {
+    -fx-alignment: center_left;
+    -fx-spacing: 12;
+    -fx-padding: 8 16 8 18;
+    -fx-background-color: rgba(255, 255, 255, 0.95);
+    -fx-background-radius: 14;
+    -fx-border-color: rgba(13, 148, 136, 0.22);
+    -fx-border-radius: 14;
+    -fx-border-width: 1;
+    -fx-effect: dropshadow(gaussian, rgba(13, 148, 136, 0.08), 10, 0.15, 0, 2);
+}
+
+.rdv-count-sep {
+    -fx-background-color: rgba(13, 148, 136, 0.2);
+    -fx-background-radius: 1;
+    -fx-min-height: 28;
+    -fx-pref-height: 28;
+    -fx-max-height: 28;
+}
+
+.rdv-count-num {
+    -fx-font-size: 24px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #0f766e;
+    -fx-min-width: 32;
+    -fx-text-alignment: right;
+}
+
+.rdv-count-cap {
+    -fx-font-size: 10px;
+    -fx-text-fill: #64748b;
+    -fx-font-weight: 700;
+    -fx-letter-spacing: 0.06em;
+    -fx-wrap-text: true;
+}
+
+.rdv-tip {
+    -fx-padding: 16 18 16 18;
+    -fx-spacing: 8;
+    -fx-background-color: linear-gradient(to right, #ccfbf1 0%, #e9d5ff 55%, #fae8ff 100%);
+    -fx-background-radius: 14;
+    -fx-border-radius: 14;
+    -fx-border-color: transparent transparent transparent #7c3aed;
+    -fx-border-width: 0 0 0 5;
+}
+
+.rdv-tip-title {
+    -fx-font-size: 13px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #5b21b6;
+}
+
+.rdv-tip-text {
+    -fx-font-size: 13px;
+    -fx-text-fill: #134e4a;
+}
+
+.rdv-scroll-clean {
+    -fx-background-color: transparent;
+    -fx-padding: 4 0 0 0;
+}
+
+.rdv-scroll-clean > .viewport {
+    -fx-background-color: transparent;
+}
+
+.rdv-stack {
+    -fx-padding: 4 2 12 2;
+}
+
+/* Carte compacte « connexion requise » (remplace la liste des pros dans le ScrollPane) */
+.rdv-inline-login-holder {
+    -fx-background-color: transparent;
+}
+
+.rdv-inline-login-card {
+    -fx-spacing: 14;
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 18;
+    -fx-border-color: rgba(13, 148, 136, 0.2);
+    -fx-border-radius: 18;
+    -fx-border-width: 1;
+    -fx-effect: dropshadow(gaussian, rgba(30, 64, 120, 0.12), 20, 0.2, 0, 4);
+}
+
+.rdv-inline-login-logo {
+    -fx-alignment: center;
+    -fx-background-color: linear-gradient(145deg, #60a5fa 0%, #6366f1 45%, #2dd4bf 100%);
+    -fx-background-radius: 12;
+    -fx-effect: dropshadow(gaussian, rgba(79, 70, 229, 0.25), 6, 0.2, 0, 2);
+}
+
+.rdv-inline-login-logo-letter {
+    -fx-font-size: 18px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #ffffff;
+}
+
+.rdv-inline-login-title {
+    -fx-font-size: 17px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #0f172a;
+    -fx-wrap-text: true;
+}
+
+.rdv-inline-login-sparkle {
+    -fx-font-size: 14px;
+    -fx-text-fill: #0d9488;
+}
+
+.rdv-inline-login-sub {
+    -fx-font-size: 13px;
+    -fx-text-fill: #64748b;
+    -fx-wrap-text: true;
+    -fx-line-spacing: 2px;
+}
+
+.rdv-inline-login-actions {
+    -fx-padding: 2 0 0 0;
+    -fx-alignment: center;
+}
+
+.button.rdv-inline-login-btn-primary {
+    -fx-background-color: linear-gradient(to bottom, #93c5fd 0%, #3b82f6 50%, #2563eb 100%);
+    -fx-text-fill: #ffffff;
+    -fx-font-weight: 700;
+    -fx-font-size: 12px;
+    -fx-padding: 9 18 9 18;
+    -fx-background-radius: 999;
+    -fx-border-radius: 999;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(37, 99, 235, 0.35), 6, 0.2, 0, 2);
+}
+
+.button.rdv-inline-login-btn-primary:hover {
+    -fx-background-color: linear-gradient(to bottom, #60a5fa 0%, #2563eb 50%, #1d4ed8 100%);
+}
+
+.button.rdv-inline-login-btn-secondary {
+    -fx-background-color: transparent;
+    -fx-text-fill: #2563eb;
+    -fx-font-weight: 700;
+    -fx-font-size: 12px;
+    -fx-padding: 9 16 9 16;
+    -fx-background-radius: 999;
+    -fx-border-color: #93c5fd;
+    -fx-border-radius: 999;
+    -fx-border-width: 1.5;
+    -fx-cursor: hand;
+}
+
+.button.rdv-inline-login-btn-secondary:hover {
+    -fx-background-color: rgba(147, 197, 253, 0.15);
+}
+
+.hyperlink.rdv-inline-login-back {
+    -fx-font-size: 12px;
+    -fx-text-fill: #0d9488;
+    -fx-border-width: 0;
+    -fx-padding: 4 0 0 0;
+    -fx-underline: false;
+}
+
+.hyperlink.rdv-inline-login-back:hover {
+    -fx-text-fill: #0f766e;
+    -fx-underline: true;
+}
+
+.rdv-card {
+    -fx-spacing: 0;
+    -fx-padding: 20 20 20 20;
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 16;
+    -fx-border-radius: 16;
+    -fx-border-color: rgba(13, 148, 136, 0.28);
+    -fx-border-width: 1.5;
+}
+
+.rdv-av {
+    -fx-min-width: 56;
+    -fx-min-height: 56;
+    -fx-max-width: 56;
+    -fx-max-height: 56;
+    -fx-background-radius: 16;
+    -fx-background-color: linear-gradient(145deg, #2dd4bf 0%, #0d9488 55%, #0f766e 100%);
+    -fx-alignment: center;
+    -fx-effect: dropshadow(gaussian, rgba(13, 148, 136, 0.55), 10, 0.25, 0, 3);
+}
+
+.rdv-av-alt {
+    -fx-background-color: linear-gradient(145deg, #c084fc 0%, #9333ea 50%, #7e22ce 100%);
+    -fx-effect: dropshadow(gaussian, rgba(126, 34, 206, 0.45), 10, 0.25, 0, 3);
+}
+
+.rdv-av-txt {
+    -fx-font-size: 18px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #ffffff;
+}
+
+.rdv-name {
+    -fx-font-size: 16px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #042f2e;
+}
+
+.rdv-badge {
+    -fx-font-size: 11px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #115e59;
+    -fx-padding: 4 12 4 12;
+    -fx-background-color: #ccfbf1;
+    -fx-background-radius: 999;
+    -fx-border-color: rgba(13, 148, 136, 0.45);
+    -fx-border-radius: 999;
+    -fx-border-width: 1.5;
+}
+
+.rdv-badge-purple {
+    -fx-text-fill: #5b21b6;
+    -fx-background-color: #ede9fe;
+    -fx-border-color: rgba(124, 58, 237, 0.55);
+}
+
+.rdv-desc {
+    -fx-font-size: 13px;
+    -fx-text-fill: #0f766e;
+}
+
+.rdv-meta {
+    -fx-font-size: 12px;
+    -fx-text-fill: #0d9488;
+    -fx-font-weight: 700;
+}
+
+.rdv-meta-muted {
+    -fx-font-size: 12px;
+    -fx-text-fill: #9ca3af;
+}
+
+.rdv-side {
+    -fx-min-width: 100;
+    -fx-alignment: top_right;
+}
+
+.rdv-phone {
+    -fx-font-size: 13px;
+    -fx-font-weight: 600;
+    -fx-text-fill: #374151;
+}
+
+.rdv-tarif {
+    -fx-font-size: 15px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #0f766e;
+}
+
+.rdv-btn {
+    -fx-background-color: linear-gradient(to bottom, #14b8a6 0%, #0d9488 45%, #0f766e 100%);
+    -fx-text-fill: #ffffff;
+    -fx-font-weight: 700;
+    -fx-font-size: 12px;
+    -fx-padding: 11 18 11 18;
+    -fx-background-radius: 999;
+    -fx-border-radius: 999;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(13, 148, 136, 0.5), 8, 0.3, 0, 3);
+}
+
+.rdv-btn:hover {
+    -fx-background-color: linear-gradient(to bottom, #0d9488 0%, #0f766e 50%, #115e59 100%);
+}
+
+/* Carte médecin « Prendre RDV » (liste) — mise en page type fiche */
+.rdv-card-v2 {
+    -fx-background-color: #ffffff;
+    -fx-effect: dropshadow(gaussian, rgba(13, 148, 136, 0.28), 20, 0.28, 0, 4);
+}
+
+.rdv-card-bio {
+    -fx-font-size: 13px;
+    -fx-text-fill: #6b7280;
+}
+
+.rdv-card-contacts {
+    -fx-padding: 4 0 0 0;
+}
+
+/* Coordonnées — fiche moderne (une carte, séparateurs légers, tél | mail équilibrés) */
+.rdv-card-info-modern {
+    -fx-spacing: 0;
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 14;
+    -fx-border-color: rgba(148, 163, 184, 0.4);
+    -fx-border-radius: 14;
+    -fx-border-width: 1;
+    -fx-effect: dropshadow(gaussian, rgba(15, 23, 42, 0.07), 18, 0.18, 0, 3);
+}
+
+.rdv-mod-section-title {
+    -fx-font-size: 10px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #64748b;
+    -fx-letter-spacing: 0.16em;
+    -fx-padding: 14 18 12 18;
+    -fx-border-color: transparent transparent #f1f5f9 transparent;
+    -fx-border-width: 0 0 1 0;
+}
+
+.rdv-mod-cell {
+    -fx-spacing: 6;
+}
+
+.rdv-mod-cell-address {
+    -fx-padding: 14 18 16 18;
+    -fx-border-color: transparent transparent #f1f5f9 transparent;
+    -fx-border-width: 0 0 1 0;
+}
+
+.rdv-mod-split-row {
+    -fx-alignment: top_left;
+    -fx-border-color: transparent transparent #f1f5f9 transparent;
+    -fx-border-width: 0 0 1 0;
+}
+
+.rdv-mod-cell-half-left {
+    -fx-padding: 14 10 16 18;
+}
+
+.rdv-mod-cell-half-right {
+    -fx-padding: 14 18 16 10;
+}
+
+.rdv-mod-vsep {
+    -fx-pref-width: 1;
+    -fx-min-width: 1;
+    -fx-max-width: 1;
+    -fx-background-color: #e2e8f0;
+    -fx-background-radius: 1;
+}
+
+.rdv-mod-emoji {
+    -fx-font-size: 15px;
+    -fx-padding: 0;
+}
+
+.rdv-mod-key {
+    -fx-font-size: 10px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #94a3b8;
+    -fx-letter-spacing: 0.1em;
+}
+
+.rdv-mod-value {
+    -fx-font-size: 14px;
+    -fx-font-weight: 600;
+    -fx-text-fill: #1e293b;
+    -fx-wrap-text: true;
+}
+
+.rdv-mod-cabinet-cell {
+    -fx-padding: 14 18 16 18;
+    -fx-background-color: rgba(245, 243, 255, 0.7);
+    -fx-background-radius: 0 0 13 13;
+}
+
+.rdv-mod-cabinet-cell .rdv-mod-key {
+    -fx-text-fill: #7c3aed;
+}
+
+.rdv-mod-cabinet-cell .rdv-mod-value {
+    -fx-text-fill: #5b21b6;
+}
+
+.rdv-card-footer {
+    -fx-padding: 12 0 0 0;
+    -fx-border-color: rgba(124, 58, 237, 0.2);
+    -fx-border-width: 1 0 0 0;
+}
+
+.rdv-card-cabinet-pill {
+    -fx-font-size: 12px;
+    -fx-font-weight: 600;
+    -fx-text-fill: #115e59;
+    -fx-padding: 7 14 7 14;
+    -fx-background-color: #ecfeff;
+    -fx-border-color: rgba(13, 148, 136, 0.4);
+    -fx-border-radius: 10;
+    -fx-background-radius: 10;
+    -fx-alignment: center;
+}
+
+.rdv-card-tarif-block {
+    -fx-padding: 4 0 0 0;
+}
+
+/* Fiche tarif (liste Prendre RDV) : comme capture — bordure teal, libellé léger, montant dessous */
+.rdv-card-tarif-sheet {
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 12;
+    -fx-border-color: rgba(45, 166, 154, 0.5);
+    -fx-border-radius: 12;
+    -fx-border-width: 1;
+    -fx-padding: 14 18 16 18;
+    -fx-spacing: 6;
+    -fx-alignment: top_left;
+}
+
+.rdv-card-tarif-sheet-caption {
+    -fx-font-size: 13px;
+    -fx-font-weight: 400;
+    -fx-text-fill: #475569;
+}
+
+.rdv-card-tarif-sheet-amount {
+    -fx-font-size: 26px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #0f766e;
+    -fx-letter-spacing: -0.02em;
+}
+
+.rdv-card-price-box {
+    -fx-padding: 0;
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 16;
+    -fx-border-color: rgba(13, 148, 136, 0.2);
+    -fx-border-radius: 16;
+    -fx-border-width: 1;
+    -fx-effect: dropshadow(gaussian, rgba(13, 148, 136, 0.1), 16, 0.18, 0, 3);
+}
+
+.rdv-card-price-top-accent {
+    -fx-background-color: linear-gradient(to right, #14b8a6 0%, #0d9488 35%, #6366f1 70%, #a855f7 100%);
+    -fx-background-radius: 16 16 0 0;
+    -fx-min-height: 4;
+    -fx-pref-height: 4;
+    -fx-max-height: 4;
+}
+
+.rdv-card-price-body {
+    -fx-padding: 16 20 18 20;
+}
+
+.rdv-card-price-row {
+    -fx-alignment: center_left;
+}
+
+.rdv-card-tarif-amount {
+    -fx-font-size: 26px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #0f766e;
+    -fx-letter-spacing: -0.03em;
+}
+
+.rdv-card-tarif-caption {
+    -fx-font-size: 11px;
+    -fx-text-fill: #64748b;
+    -fx-font-weight: 700;
+    -fx-letter-spacing: 0.05em;
+    -fx-text-alignment: right;
+    -fx-wrap-text: true;
+    -fx-max-width: 200;
+}
+
+.rdv-card-price-inner {
+    -fx-padding: 16 18 16 16;
+    -fx-alignment: center_left;
+}
+
+.rdv-card-price-accent {
+    -fx-background-color: linear-gradient(to bottom, #14b8a6 0%, #7c3aed 100%);
+    -fx-background-radius: 3;
+    -fx-min-height: 48;
+}
+
+.rdv-card-tarif-texts {
+    -fx-spacing: 4;
+}
+
+.rdv-card-spec-sub {
+    -fx-font-size: 12px;
+    -fx-text-fill: #6b7280;
+}
+
+.rdv-card-tarif-highlight {
+    -fx-font-size: 16px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #0f766e;
+}
+
+.rdv-card-rating-avg-tiny {
+    -fx-font-size: 12px;
+    -fx-font-weight: 600;
+    -fx-text-fill: #9ca3af;
+}
+
+.rdv-stars-row {
+    -fx-spacing: 4;
+    -fx-alignment: center_left;
+    -fx-padding: 0 0 0 4;
+}
+
+.rdv-star-readonly-on {
+    -fx-font-size: 18px;
+    -fx-text-fill: #ea580c;
+}
+
+.rdv-star-readonly-off {
+    -fx-font-size: 18px;
+    -fx-text-fill: #fdba74;
+}
+
+.label.rdv-star-btn {
+    -fx-font-size: 20px;
+    -fx-padding: 0 2 0 2;
+}
+
+.rdv-star-on {
+    -fx-text-fill: #ea580c;
+}
+
+.rdv-star-off {
+    -fx-text-fill: #fdba74;
+}
+
+.rdv-card-rating-section {
+    -fx-padding: 4 0 0 0;
+    -fx-spacing: 8;
+}
+
+.rdv-card-rating-avg {
+    -fx-font-size: 14px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #c2410c;
+}
+
+.rdv-card-rating-hint {
+    -fx-font-size: 12px;
+    -fx-text-fill: #6b7280;
+    -fx-font-style: italic;
+}
+
+.rdv-card-rating-cap {
+    -fx-font-size: 12px;
+    -fx-font-weight: 600;
+    -fx-text-fill: #4b5563;
+}
+
+.rdv-card-rating-combo {
+    -fx-pref-width: 88;
+    -fx-background-radius: 8;
+}
+
+.button.rdv-card-rating-save {
+    -fx-padding: 8 14 8 14;
+    -fx-font-size: 12px;
+}
+
+.rdv-review-card {
+    -fx-padding: 16 18 18 18;
+    -fx-spacing: 0;
+    -fx-background-color: linear-gradient(to bottom, #f0fdfa 0%, #faf5ff 100%);
+    -fx-background-radius: 14;
+    -fx-border-color: rgba(124, 58, 237, 0.28);
+    -fx-border-radius: 14;
+    -fx-border-width: 1.5;
+}
+
+.rdv-review-card-title {
+    -fx-font-size: 15px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #111827;
+}
+
+.rdv-review-card-sub {
+    -fx-font-size: 12px;
+    -fx-text-fill: #6b7280;
+}
+
+.text-area.rdv-review-textarea {
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 10;
+    -fx-border-color: #e5e7eb;
+    -fx-border-radius: 10;
+    -fx-padding: 10 12;
+    -fx-font-size: 13px;
+}
+
+.text-area.rdv-review-textarea .content {
+    -fx-background-color: transparent;
+}
+
+.rdv-review-counter {
+    -fx-font-size: 11px;
+    -fx-text-fill: #9ca3af;
+    -fx-alignment: center_right;
+}
+
+/* Zone boutons avis : compacte, centrée */
+.rdv-review-actions {
+    -fx-spacing: 8;
+    -fx-alignment: center;
+    -fx-padding: 6 0 0 0;
+}
+
+/* Boutons avis — même esprit que « Prendre RDV » (.rdv-btn) : pilule, dégradé turquoise, ombre */
+.button.rdv-review-submit {
+    -fx-font-family: "Inter", "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
+    -fx-font-size: 13px;
+    -fx-font-weight: 700;
+    -fx-padding: 10 22;
+    -fx-min-height: 40;
+    -fx-pref-height: 40;
+    -fx-background-radius: 999;
+    -fx-border-radius: 999;
+    -fx-cursor: hand;
+    -fx-background-insets: 0;
+    -fx-border-insets: 0;
+    -fx-effect: dropshadow(gaussian, rgba(13, 148, 136, 0.45), 10, 0.28, 0, 3);
+}
+
+.button.rdv-review-btn-primary,
+.button.rdv-review-btn-secondary {
+    -fx-text-fill: #ffffff;
+    -fx-background-color: linear-gradient(to bottom, #14b8a6 0%, #0d9488 45%, #0f766e 100%);
+    -fx-border-color: transparent;
+    -fx-border-width: 0;
+}
+
+.button.rdv-review-btn-primary:hover,
+.button.rdv-review-btn-secondary:hover {
+    -fx-background-color: linear-gradient(to bottom, #0d9488 0%, #0f766e 50%, #115e59 100%);
+    -fx-effect: dropshadow(gaussian, rgba(13, 148, 136, 0.55), 12, 0.3, 0, 4);
+}
+
+.button.rdv-review-btn-primary:pressed,
+.button.rdv-review-btn-secondary:pressed {
+    -fx-background-color: linear-gradient(to bottom, #0f766e 0%, #115e59 55%, #134e4a 100%);
+    -fx-effect: dropshadow(gaussian, rgba(13, 148, 136, 0.35), 6, 0.25, 0, 2);
+}
+
+.button.rdv-review-btn-primary:focused,
+.button.rdv-review-btn-secondary:focused {
+    -fx-background-color: linear-gradient(to bottom, #14b8a6 0%, #0d9488 45%, #0f766e 100%);
+    -fx-border-color: rgba(255, 255, 255, 0.85);
+    -fx-border-width: 2;
+}
+
+/* ---------- Prise de RDV : parcours type web ---------- */
+
+.rdv-booking-root {
+    -fx-spacing: 0;
+}
+
+.rdv-booking-topbar {
+    -fx-padding: 0;
+}
+
+.rdv-booking-back {
+    -fx-text-fill: #3498db;
+    -fx-font-size: 14px;
+    -fx-border-width: 0;
+    -fx-padding: 0;
+}
+
+.rdv-booking-back:hover {
+    -fx-text-fill: #2874a6;
+}
+
+.rdv-booking-stepper {
+    -fx-alignment: center_right;
+}
+
+.rdv-step-sep {
+    -fx-text-fill: #d1d5db;
+    -fx-font-size: 14px;
+    -fx-padding: 0 4 0 4;
+}
+
+.rdv-step-cell {
+    -fx-alignment: center_left;
+}
+
+.rdv-step-num {
+    -fx-min-width: 26;
+    -fx-min-height: 26;
+    -fx-alignment: center;
+    -fx-text-fill: #9ca3af;
+    -fx-font-size: 12px;
+    -fx-font-weight: 700;
+    -fx-background-color: #f3f4f6;
+    -fx-background-radius: 999;
+}
+
+.rdv-step-num-active {
+    -fx-min-width: 26;
+    -fx-min-height: 26;
+    -fx-alignment: center;
+    -fx-text-fill: #ffffff;
+    -fx-font-size: 12px;
+    -fx-font-weight: 700;
+    -fx-background-color: #3498db;
+    -fx-background-color: linear-gradient(to bottom, #14b8a6 0%, #0d9488 100%);
+    -fx-background-radius: 999;
+}
+
+.rdv-step-text {
+    -fx-font-size: 13px;
+    -fx-text-fill: #9ca3af;
+}
+
+.rdv-step-text-active {
+    -fx-font-size: 13px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #3498db;
+}
+
+.rdv-booking-main {
+    -fx-alignment: top_left;
+}
+
+.rdv-booking-sidebar {
+    -fx-padding: 0 8 0 0;
+}
+
+.rdv-booking-profile-card {
+    -fx-background-color: rgba(255, 255, 255, 0.96);
+    -fx-background-radius: 16;
+    -fx-border-color: rgba(0, 0, 0, 0.08);
+    -fx-border-radius: 16;
+    -fx-border-width: 1;
+    -fx-padding: 20 18 20 18;
+    -fx-spacing: 14;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.06), 12, 0, 0, 2);
+}
+
+.rdv-booking-avatar-wrap {
+    -fx-min-width: 72;
+    -fx-min-height: 72;
+    -fx-max-width: 72;
+    -fx-max-height: 72;
+    -fx-background-color: linear-gradient(to bottom right, #e8eef5, #d4e4f0);
+    -fx-background-radius: 999;
+    -fx-alignment: center;
+}
+
+.rdv-booking-avatar-text {
+    -fx-font-size: 22px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #2f3138;
+}
+
+.rdv-booking-sidebar-name {
+    -fx-font-size: 18px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #2f3138;
+}
+
+.rdv-booking-sidebar-tag {
+    -fx-font-size: 12px;
+    -fx-font-weight: 600;
+    -fx-text-fill: #6b7280;
+}
+
+.rdv-booking-sidebar-bio {
+    -fx-font-size: 13px;
+    -fx-text-fill: #4b5563;
+}
+
+.rdv-booking-contact-block {
+    -fx-spacing: 6;
+}
+
+.rdv-booking-contact-line {
+    -fx-font-size: 13px;
+    -fx-text-fill: #374151;
+}
+
+.rdv-booking-price {
+    -fx-font-size: 15px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #2f3138;
+}
+
+.rdv-booking-content {
+    -fx-padding: 4 0 0 0;
+}
+
+.rdv-booking-main-card {
+    -fx-background-color: rgba(255, 255, 255, 0.98);
+    -fx-background-radius: 16;
+    -fx-border-radius: 16;
+    -fx-border-color: rgba(0, 0, 0, 0.07);
+    -fx-border-width: 1;
+    -fx-effect: dropshadow(gaussian, rgba(60, 55, 80, 0.1), 18, 0.15, 0, 3);
+}
+
+.rdv-booking-main-title {
+    -fx-font-size: 23px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #2f3138;
+}
+
+.rdv-booking-main-sub {
+    -fx-font-size: 14px;
+    -fx-text-fill: #6b7280;
+    -fx-max-width: 640;
+}
+
+.rdv-booking-filter-all {
+    -fx-background-color: linear-gradient(to bottom, #14b8a6 0%, #0d9488 50%, #0f766e 100%);
+    -fx-text-fill: #ffffff;
+    -fx-font-weight: 700;
+    -fx-padding: 8 20 8 20;
+    -fx-background-radius: 10;
+    -fx-cursor: hand;
+}
+
+.rdv-booking-slots-scroll {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+}
+
+.rdv-booking-slots-scroll > .viewport {
+    -fx-background-color: transparent;
+}
+
+.rdv-booking-slots-flow {
+    -fx-padding: 4 4 12 4;
+}
+
+.rdv-slot-card {
+    -fx-cursor: hand;
+    -fx-padding: 14 16 16 16;
+    -fx-background-color: rgba(255, 255, 255, 0.98);
+    -fx-background-radius: 14;
+    -fx-border-color: rgba(0, 0, 0, 0.1);
+    -fx-border-radius: 14;
+    -fx-border-width: 1;
+    -fx-spacing: 8;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.05), 6, 0, 0, 1);
+}
+
+.rdv-slot-card:hover {
+    -fx-border-color: rgba(52, 152, 219, 0.45);
+}
+
+.rdv-slot-card-selected {
+    -fx-border-color: #3498db;
+    -fx-border-width: 2;
+    -fx-background-color: rgba(52, 152, 219, 0.06);
+}
+
+.rdv-slot-badge {
+    -fx-background-color: rgba(46, 204, 113, 0.22);
+    -fx-text-fill: #1e7a45;
+    -fx-font-size: 11px;
+    -fx-font-weight: 800;
+    -fx-padding: 4 10 4 10;
+    -fx-background-radius: 8;
+    -fx-max-width: 120;
+}
+
+.rdv-slot-time-big {
+    -fx-font-size: 17px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #2f3138;
+}
+
+.rdv-slot-detail {
+    -fx-font-size: 12px;
+    -fx-text-fill: #6b7280;
+}
+
+/* Créneau affiché mais non sélectionnable (déjà demandé / réservé) */
+.rdv-slot-card-blocked {
+    -fx-cursor: default;
+    -fx-background-color: #fef2f2;
+    -fx-border-color: rgba(185, 28, 28, 0.5);
+    -fx-effect: dropshadow(gaussian, rgba(185, 28, 28, 0.12), 6, 0.2, 0, 1);
+}
+
+.rdv-slot-card-blocked:hover {
+    -fx-background-color: #fee2e2;
+    -fx-border-color: rgba(185, 28, 28, 0.65);
+}
+
+.rdv-slot-badge-blocked {
+    -fx-background-color: #fecaca;
+    -fx-text-fill: #991b1b;
+    -fx-font-size: 11px;
+    -fx-font-weight: 800;
+    -fx-padding: 4 10 4 10;
+    -fx-background-radius: 8;
+    -fx-max-width: 120;
+}
+
+.rdv-slot-time-big-blocked {
+    -fx-font-size: 17px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #7f1d1d;
+}
+
+.rdv-slot-detail-blocked {
+    -fx-font-size: 12px;
+    -fx-text-fill: #b91c1c;
+}
+
+.rdv-slot-blocked-stamp {
+    -fx-font-size: 11px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #ffffff;
+    -fx-background-color: linear-gradient(to bottom, #dc2626 0%, #b91c1c 100%);
+    -fx-padding: 6 10 6 10;
+    -fx-background-radius: 8;
+}
+
+.rdv-booking-hint-blocked {
+    -fx-text-fill: #b91c1c;
+}
+
+.rdv-booking-foot-row {
+    -fx-padding: 4 0 0 0;
+}
+
+.rdv-booking-info-icon {
+    -fx-font-size: 14px;
+    -fx-text-fill: #9ca3af;
+}
+
+.rdv-booking-foot {
+    -fx-font-size: 12px;
+    -fx-text-fill: #6b7280;
+}
+
+.rdv-booking-continuer {
+    -fx-background-color: linear-gradient(to bottom, #14b8a6 0%, #0d9488 45%, #0f766e 100%);
+    -fx-text-fill: #ffffff;
+    -fx-font-weight: 700;
+    -fx-font-size: 14px;
+    -fx-padding: 12 28 12 28;
+    -fx-background-radius: 12;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(13, 148, 136, 0.45), 10, 0.25, 0, 3);
+}
+
+.rdv-booking-continuer:disabled {
+    -fx-opacity: 0.45;
+    -fx-cursor: default;
+}
+
+.rdv-booking-continuer:hover {
+    -fx-background-color: #2980b9;
+}
+
+/* Évite le survol « actif » quand le bouton est désactivé (JavaFX ne gère pas :hover:!disabled). */
+.rdv-booking-continuer:disabled:hover {
+    -fx-background-color: #3498db;
+}
+
+.rdv-booking-hint {
+    -fx-font-size: 14px;
+    -fx-text-fill: #6b7280;
+    -fx-padding: 12 8 12 8;
+    -fx-max-width: 520;
+}
+
+/* Étape « Type de consultation » (espacement resserré) */
+.rdv-type-root {
+    -fx-max-width: Infinity;
+    -fx-alignment: top_center;
+}
+
+/* Fond : image + léger zoom pour rogner les fines bandes claires du fichier source */
+.rdv-type-bg {
+    -fx-background-color: linear-gradient(to bottom right, #eef3f8 0%, #e4ecf4 45%, #f2f5f9 100%);
+    -fx-background-image: url("../images/rdv-type-bg.png");
+    -fx-background-repeat: no-repeat;
+    -fx-background-size: 112% 112%;
+    -fx-background-position: center 42%;
+    -fx-opacity: 0.38;
+}
+
+.rdv-type-foreground {
+    -fx-background-color: transparent;
+}
+
+.rdv-type-root .rdv-booking-sidebar {
+    -fx-padding: 0 6 0 0;
+}
+
+.rdv-type-root .rdv-booking-profile-card {
+    -fx-padding: 14 12 14 12;
+    -fx-spacing: 10;
+}
+
+.rdv-type-main-card {
+    -fx-background-color: rgba(255, 255, 255, 0.97);
+    -fx-background-radius: 14;
+    -fx-border-radius: 14;
+    -fx-border-color: rgba(0, 0, 0, 0.07);
+    -fx-border-width: 1;
+    -fx-effect: dropshadow(gaussian, rgba(60, 55, 80, 0.06), 10, 0.1, 0, 1);
+}
+
+.rdv-type-root .rdv-booking-main-title {
+    -fx-padding: 0 0 0 0;
+}
+
+.rdv-type-block-title {
+    -fx-font-size: 13px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #374151;
+    -fx-padding: 0 0 0 0;
+}
+
+.rdv-type-mode-value {
+    -fx-font-size: 14px;
+    -fx-text-fill: #4b5563;
+    -fx-padding: 0 0 0 0;
+}
+
+.rdv-type-option {
+    -fx-padding: 7 11 7 11;
+    -fx-background-color: rgba(255, 255, 255, 0.98);
+    -fx-background-radius: 12;
+    -fx-border-color: rgba(0, 0, 0, 0.1);
+    -fx-border-radius: 12;
+    -fx-border-width: 1;
+    -fx-cursor: hand;
+    -fx-spacing: 14;
+}
+
+.rdv-type-option:hover {
+    -fx-border-color: rgba(52, 152, 219, 0.35);
+}
+
+.rdv-type-option-selected {
+    -fx-border-color: #3498db;
+    -fx-border-width: 2;
+    -fx-background-color: rgba(52, 152, 219, 0.06);
+}
+
+.rdv-type-option-radio {
+    -fx-padding: 0 4 0 0;
+}
+
+.rdv-type-option-title {
+    -fx-font-size: 15px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #2f3138;
+}
+
+.rdv-type-option-dur {
+    -fx-font-size: 12px;
+    -fx-text-fill: #6b7280;
+}
+
+.rdv-type-motif-combo {
+    -fx-background-radius: 10;
+}
+
+.rdv-type-retour {
+    -fx-background-color: #ffffff;
+    -fx-text-fill: #3498db;
+    -fx-font-weight: 600;
+    -fx-font-size: 14px;
+    -fx-padding: 10 20 10 20;
+    -fx-background-radius: 12;
+    -fx-border-color: #3498db;
+    -fx-border-radius: 12;
+    -fx-border-width: 1.5;
+    -fx-cursor: hand;
+}
+
+.rdv-type-retour:hover {
+    -fx-background-color: rgba(52, 152, 219, 0.08);
+}
+
+/* Stepper : étapes déjà complétées */
+.rdv-step-num-done {
+    -fx-min-width: 26;
+    -fx-min-height: 26;
+    -fx-alignment: center;
+    -fx-text-fill: #ffffff;
+    -fx-font-size: 13px;
+    -fx-font-weight: 800;
+    -fx-background-color: #3498db;
+    -fx-background-color: linear-gradient(to bottom, #2dd4bf 0%, #0d9488 100%);
+    -fx-background-radius: 999;
+}
+
+.rdv-step-text-done {
+    -fx-font-size: 13px;
+    -fx-font-weight: 600;
+    -fx-text-fill: #3498db;
+}
+
+/* Étape « Vos informations » (même gabarit / espacements que « Type de consultation ») */
+.rdv-info-root {
+    -fx-max-width: Infinity;
+    -fx-alignment: top_center;
+}
+
+.rdv-info-bg {
+    -fx-background-color: linear-gradient(to bottom right, #eef3f8 0%, #e4ecf4 45%, #f2f5f9 100%);
+    -fx-background-image: url("../images/rdv-type-bg.png");
+    -fx-background-repeat: no-repeat;
+    -fx-background-size: 112% 112%;
+    -fx-background-position: center 42%;
+    -fx-opacity: 0.38;
+}
+
+.rdv-info-root .rdv-booking-sidebar {
+    -fx-padding: 0 6 0 0;
+}
+
+.rdv-info-root .rdv-booking-profile-card {
+    -fx-padding: 14 12 14 12;
+    -fx-spacing: 10;
+}
+
+.rdv-info-root .rdv-booking-main-title {
+    -fx-padding: 0 0 0 0;
+}
+
+.rdv-info-main-card {
+    -fx-spacing: 0;
+}
+
+.rdv-info-scroll {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+}
+
+.rdv-info-scroll > .viewport {
+    -fx-background-color: transparent;
+}
+
+.rdv-info-form-wrap {
+    -fx-spacing: 5;
+}
+
+.rdv-info-field {
+    -fx-spacing: 1;
+}
+
+.rdv-info-label {
+    -fx-font-size: 12px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #374151;
+}
+
+.rdv-info-input {
+    -fx-padding: 6 10 6 10;
+    -fx-background-radius: 8;
+    -fx-font-size: 13px;
+}
+
+.rdv-info-field-hint {
+    -fx-font-size: 11px;
+    -fx-text-fill: #6b7280;
+    -fx-padding: 1 0 0 0;
+    -fx-wrap-text: true;
+}
+
+.rdv-info-datepicker {
+    -fx-background-radius: 8;
+}
+
+.rdv-info-datepicker > .text-field {
+    -fx-padding: 6 10 6 10;
+}
+
+.rdv-info-textarea {
+    -fx-background-radius: 8;
+    -fx-padding: 6 10 6 10;
+    -fx-font-size: 13px;
+}
+
+.rdv-info-recap {
+    -fx-background-color: rgba(245, 235, 224, 0.85);
+    -fx-background-radius: 12;
+    -fx-border-color: rgba(180, 150, 120, 0.25);
+    -fx-border-radius: 12;
+    -fx-border-width: 1;
+    -fx-spacing: 4;
+}
+
+.rdv-info-recap-title {
+    -fx-font-size: 14px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #4a3728;
+}
+
+.rdv-info-recap-line {
+    -fx-font-size: 13px;
+    -fx-text-fill: #5c4a3d;
+}
+
+.rdv-info-actions {
+    -fx-padding: 0;
+}
+
+/* ---------- Page Événements (grille / liste) ---------- */
+
+.events-page {
+    -fx-max-width: 1140;
+    /* Marges internes : les gouttières latérales sont gérées par la coque (mode listing) */
+    -fx-padding: 18 12 32 12;
+    -fx-spacing: 16;
+    -fx-alignment: top_center;
+}
+
+.events-header {
+    -fx-alignment: top_left;
+    -fx-spacing: 6;
+}
+
+.events-page-title {
+    -fx-font-size: 30px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #2f3138;
+}
+
+.events-page-subtitle {
+    -fx-font-size: 15px;
+    -fx-text-fill: #6b7280;
+}
+
+/* Carte blanche (filtres, zone grille, fiche événement, etc.) */
+.events-filter-card,
+.public-white-sheet {
+    -fx-background-color: rgba(255, 255, 255, 0.97);
+    -fx-background-radius: 16;
+    -fx-border-radius: 16;
+    -fx-border-color: rgba(0, 0, 0, 0.06);
+    -fx-border-width: 1;
+    -fx-padding: 18 20 18 20;
+    -fx-spacing: 14;
+    -fx-max-width: Infinity;
+    -fx-effect: dropshadow(gaussian, rgba(60, 55, 80, 0.1), 16, 0.2, 0, 3);
+}
+
+/* Variante : même peinture, espacement un peu plus aéré (liste + cartes) */
+.public-white-sheet.events-page-content-sheet {
+    -fx-padding: 16 20 22 20;
+    -fx-spacing: 16;
+}
+
+.events-filter-row {
+    -fx-alignment: center_left;
+    -fx-spacing: 14;
+}
+
+.events-filter-field {
+    -fx-min-width: 130;
+    -fx-pref-width: 150;
+}
+
+.events-filter-field-grow {
+    -fx-min-width: 220;
+    -fx-pref-width: 320;
+}
+
+.events-filter-label {
+    -fx-font-size: 11px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #6b7280;
+}
+
+.events-field, .events-date-picker, .events-combo {
+    -fx-background-radius: 10;
+    -fx-padding: 9 11 9 11;
+    -fx-pref-height: 38;
+}
+
+.events-filter-actions {
+    -fx-alignment: bottom-left;
+    -fx-spacing: 8;
+}
+
+.events-btn-primary {
+    -fx-background-color: #8a9e7e;
+    -fx-text-fill: white;
+    -fx-font-weight: 700;
+    -fx-background-radius: 12;
+    -fx-padding: 10 18 10 18;
+}
+
+.events-btn-primary:hover {
+    -fx-background-color: #7a8f6e;
+}
+
+.events-btn-ghost {
+    -fx-background-color: white;
+    -fx-text-fill: #4b5563;
+    -fx-border-color: rgba(0, 0, 0, 0.12);
+    -fx-border-radius: 12;
+    -fx-background-radius: 12;
+    -fx-padding: 8 14 8 14;
+}
+
+.events-btn-ghost:hover {
+    -fx-background-color: rgba(0, 0, 0, 0.04);
+}
+
+.events-info-banner {
+    -fx-padding: 12 16 12 16;
+    -fx-background-color: rgba(230, 220, 245, 0.55);
+    -fx-background-radius: 12;
+    -fx-border-color: rgba(180, 160, 210, 0.35);
+    -fx-border-radius: 12;
+    -fx-border-width: 1;
+    -fx-font-size: 13px;
+    -fx-text-fill: #4b3f5c;
+    -fx-wrap-text: true;
+}
+
+.events-view-toggle-row {
+    -fx-alignment: center_left;
+}
+
+.events-display-label {
+    -fx-font-size: 14px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #374151;
+}
+
+.events-segment {
+    -fx-background-color: white;
+    -fx-background-radius: 12;
+    -fx-border-color: rgba(0, 0, 0, 0.1);
+    -fx-border-radius: 12;
+    -fx-border-width: 1;
+}
+
+.events-segment-btn {
+    -fx-background-radius: 12;
+    -fx-padding: 8 16 8 16;
+    -fx-font-weight: 700;
+}
+
+.events-segment-btn:selected {
+    -fx-background-color: #8a9e7e;
+    -fx-text-fill: white;
+}
+
+.events-scroll {
+    -fx-background-color: transparent;
+}
+
+.events-scroll > .viewport {
+    -fx-background-color: transparent;
+}
+
+.events-body {
+    -fx-spacing: 28;
+    -fx-max-width: Infinity;
+}
+
+.events-themes-host {
+    -fx-spacing: 20;
+}
+
+.events-theme-flow {
+    -fx-padding: 4 0 8 0;
+}
+
+.events-theme-card {
+    -fx-spacing: 6;
+    -fx-padding: 0 0 10 0;
+    -fx-min-width: 320;
+    -fx-pref-width: 320;
+    -fx-max-width: 320;
+    -fx-background-color: rgba(255, 255, 255, 0.98);
+    -fx-background-radius: 18;
+    -fx-border-radius: 18;
+    -fx-border-color: rgba(157, 140, 200, 0.35);
+    -fx-border-width: 0 0 0 4;
+    -fx-effect: dropshadow(gaussian, rgba(60, 55, 80, 0.1), 14, 0.2, 0, 3);
+}
+
+.events-theme-meta-block {
+    -fx-padding: 4 14 0 14;
+}
+
+.events-theme-image-wrap {
+    -fx-background-color: #e8e4df;
+    -fx-background-radius: 14 14 0 0;
+}
+
+.events-theme-card-title {
+    -fx-font-size: 17px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #1f2937;
+    -fx-padding: 0 14 0 14;
+}
+
+.events-theme-card-sub {
+    -fx-font-size: 13px;
+    -fx-text-fill: #6b7280;
+    -fx-padding: 0 14 0 14;
+}
+
+.events-theme-count {
+    -fx-font-size: 12px;
+    -fx-text-fill: #9ca3af;
+    -fx-padding: 0 14 0 14;
+}
+
+.events-theme-count.events-theme-count-has-events {
+    -fx-text-fill: #6d8c5a;
+    -fx-font-weight: 700;
+}
+
+.events-theme-inner {
+    -fx-padding: 8 10 10 10;
+    -fx-spacing: 8;
+    -fx-background-color: rgba(248, 245, 238, 0.88);
+    -fx-background-radius: 12;
+    -fx-border-color: rgba(120, 100, 80, 0.07);
+    -fx-border-radius: 12;
+    -fx-border-width: 1;
+}
+
+.events-theme-events-stack {
+    -fx-spacing: 10;
+}
+
+.events-theme-inner-wide {
+    -fx-padding: 10 0 0 0;
+    -fx-spacing: 8;
+    -fx-background-color: rgba(245, 240, 230, 0.55);
+    -fx-background-radius: 12;
+}
+
+.events-theme-empty {
+    -fx-font-size: 13px;
+    -fx-text-fill: #7c6a58;
+    -fx-wrap-text: true;
+    -fx-text-alignment: left;
+}
+
+.events-theme-row-list {
+    -fx-background-color: rgba(255, 255, 255, 0.98);
+    -fx-background-radius: 18;
+    -fx-border-color: rgba(0, 0, 0, 0.06);
+    -fx-border-radius: 18;
+    -fx-border-width: 1;
+    -fx-effect: dropshadow(gaussian, rgba(60, 55, 80, 0.08), 12, 0.15, 0, 2);
+}
+
+.events-theme-thumb {
+    -fx-background-radius: 14;
+    -fx-clip: true;
+}
+
+.events-mini-row {
+    -fx-padding: 12 12 12 12;
+    -fx-min-height: 56;
+    -fx-background-color: rgba(255, 255, 255, 0.98);
+    -fx-background-radius: 12;
+    -fx-border-color: rgba(138, 158, 126, 0.22);
+    -fx-border-radius: 12;
+    -fx-border-width: 1;
+    -fx-effect: dropshadow(gaussian, rgba(60, 55, 80, 0.06), 8, 0.12, 0, 1);
+}
+
+.events-mini-cal {
+    -fx-background-color: rgba(138, 158, 126, 0.22);
+    -fx-background-radius: 10;
+    -fx-alignment: center;
+}
+
+.events-mini-title {
+    -fx-font-weight: 700;
+    -fx-font-size: 14px;
+}
+
+.events-mini-meta {
+    -fx-font-size: 12px;
+    -fx-text-fill: #6b7280;
+}
+
+.events-btn-voir {
+    -fx-background-color: #8a9e7e;
+    -fx-text-fill: white;
+    -fx-font-weight: 700;
+    -fx-background-radius: 999;
+    -fx-padding: 8 16 8 16;
+    -fx-cursor: hand;
+}
+
+.events-theme-mini-scroll {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+}
+
+.events-theme-mini-scroll > .viewport {
+    -fx-background-color: transparent;
+}
+
+.events-other-section {
+    -fx-spacing: 10;
+    -fx-padding: 8 0 0 0;
+}
+
+.events-other-title {
+    -fx-font-size: 18px;
+    -fx-font-weight: 800;
+}
+
+.events-other-count {
+    -fx-font-size: 13px;
+    -fx-text-fill: #6b7280;
+}
+
+.events-other-list {
+    -fx-spacing: 10;
+}
+
+.events-other-empty {
+    -fx-font-size: 13px;
+    -fx-text-fill: #6b7280;
+    -fx-padding: 12 14 12 14;
+    -fx-background-color: rgba(245, 240, 230, 0.6);
+    -fx-background-radius: 12;
+}
+
+/* ---------- Fiche événement ---------- */
+
+.event-detail-root {
+    -fx-spacing: 16;
+    -fx-padding: 18 12 36 12;
+}
+
+.event-detail-columns {
+    -fx-alignment: top_left;
+}
+
+.event-detail-main {
+    -fx-padding: 0;
+}
+
+/* Image de thématique : largeur fixée en code (~72 % de la colonne), alignée à gauche */
+.event-detail-hero-shell {
+    -fx-min-width: 0;
+    -fx-min-height: 200;
+    -fx-pref-height: 220;
+    -fx-background-color: #e5e7eb;
+    -fx-background-radius: 18;
+}
+
+.event-detail-hero-imageview {
+    -fx-opacity: 1;
+    -fx-max-width: infinity;
+}
+
+.event-detail-hero-cta-primary {
+    -fx-background-insets: 0;
+    -fx-background-color: linear-gradient(to bottom, #7dd3fc 0%, #38bdf8 100%);
+    -fx-text-fill: white;
+    -fx-font-weight: 600;
+    -fx-font-size: 13px;
+    -fx-padding: 10 18 10 18;
+    -fx-background-radius: 12;
+    -fx-border-radius: 12;
+    -fx-border-width: 1;
+    -fx-border-color: rgba(14, 165, 233, 0.4);
+    -fx-cursor: hand;
+}
+
+.event-detail-hero-cta-primary:hover {
+    -fx-background-color: linear-gradient(to bottom, #bae6fd 0%, #0ea5e9 100%);
+}
+
+.event-detail-hero-cta-outline {
+    -fx-background-insets: 0;
+    -fx-background-color: #ffffff;
+    -fx-text-fill: #374151;
+    -fx-font-weight: 600;
+    -fx-font-size: 13px;
+    -fx-padding: 10 18 10 18;
+    -fx-background-radius: 12;
+    -fx-border-radius: 12;
+    -fx-border-width: 1.5;
+    -fx-border-color: #7dd3fc;
+    -fx-cursor: hand;
+}
+
+.event-detail-hero-cta-outline:hover {
+    -fx-background-color: #f8fafc;
+    -fx-border-color: #38bdf8;
+}
+
+.event-detail-back {
+    -fx-background-color: rgba(243, 244, 246, 0.95);
+    -fx-text-fill: #374151;
+    -fx-background-radius: 12;
+    -fx-padding: 8 14 8 14;
+}
+
+/* Bannière d’accueil (alignée sur maquette : fond lavande, ombre, icône encadrée, cœur décoratif) */
+.event-detail-welcome-banner {
+    -fx-alignment: center;
+    -fx-padding: 16 20 16 18;
+    -fx-background-color: rgba(237, 231, 250, 0.95);
+    -fx-background-radius: 18;
+    -fx-border-color: rgba(139, 120, 180, 0.18);
+    -fx-border-radius: 18;
+    -fx-border-width: 1;
+    -fx-effect: dropshadow(gaussian, rgba(120, 95, 170, 0.28), 20, 0.2, 0, 5);
+}
+
+.event-detail-welcome-icon-wrap {
+    -fx-background-color: #7e6db8;
+    -fx-background-radius: 14;
+    -fx-alignment: center;
+    -fx-min-width: 52;
+    -fx-min-height: 52;
+}
+
+.event-detail-welcome-icon-glyph {
+    -fx-text-fill: white;
+    -fx-font-size: 26px;
+    -fx-font-weight: 700;
+    -fx-padding: 0 0 2 0;
+}
+
+.event-detail-welcome-title {
+    -fx-font-size: 16px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #1e1b2e;
+}
+
+.event-detail-welcome-sub-row {
+    -fx-alignment: center_left;
+}
+
+.event-detail-welcome-heart-inline {
+    -fx-font-size: 12px;
+    -fx-text-fill: #7e6db8;
+    -fx-padding: 2 0 0 0;
+}
+
+.event-detail-welcome-sub {
+    -fx-font-size: 14px;
+    -fx-font-weight: 600;
+    -fx-text-fill: #6b5b98;
+}
+
+.event-detail-welcome-heart-watermark {
+    -fx-font-size: 44px;
+    -fx-text-fill: rgba(126, 109, 184, 0.35);
+    -fx-opacity: 0.9;
+    -fx-padding: 0 4 0 8;
+}
+
+.event-detail-title {
+    -fx-font-size: 28px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #1f2937;
+}
+
+.event-detail-meta {
+    -fx-font-size: 13px;
+    -fx-text-fill: #4b5563;
+}
+
+.event-detail-meta-place {
+    -fx-font-weight: bold;
+    -fx-text-fill: #111827;
+}
+
+.event-detail-thematique-pill {
+    -fx-font-size: 12px;
+    -fx-font-weight: 600;
+    -fx-text-fill: #db2777;
+    -fx-background-color: rgba(253, 242, 248, 0.98);
+    -fx-border-color: rgba(236, 72, 153, 0.45);
+    -fx-border-width: 1;
+    -fx-border-radius: 999;
+    -fx-background-radius: 999;
+    -fx-padding: 5 12 5 12;
+    -fx-alignment: center_left;
+}
+
+.event-detail-actions-top {
+    -fx-spacing: 10;
+}
+
+/* Hors sidebar « bleu » : style carte / localisation (colonne principale) */
+.event-detail-btn-map:not(.event-detail-sidebar-btn-blue) {
+    -fx-background-color: rgba(96, 165, 250, 0.35);
+    -fx-text-fill: #1e3a5f;
+    -fx-font-weight: 700;
+    -fx-background-radius: 12;
+    -fx-padding: 8 14 8 14;
+}
+
+.event-detail-link {
+    -fx-text-fill: #2563eb;
+}
+
+.event-detail-link.event-detail-sidebar-link {
+    -fx-text-fill: #38bdf8;
+    -fx-font-weight: 800;
+}
+
+/* Bloc météo : maquette statique (API à brancher plus tard) */
+.event-weather-mock {
+    -fx-background-radius: 18;
+    -fx-border-radius: 18;
+    -fx-border-color: rgba(0, 0, 0, 0.06);
+    -fx-border-width: 1;
+    -fx-effect: dropshadow(gaussian, rgba(30, 64, 120, 0.12), 18, 0.2, 0, 4);
+    -fx-max-width: infinity;
+}
+
+.event-weather-mock-hero {
+    -fx-padding: 18 18 14 18;
+    -fx-background-color: linear-gradient(to bottom, #38bdf8 0%, #0ea5e9 55%, #0284c7 100%);
+    -fx-background-radius: 18 18 0 0;
+    -fx-spacing: 10;
+}
+
+.event-weather-mock-date-hero {
+    -fx-font-size: 13px;
+    -fx-text-fill: rgba(255, 255, 255, 0.95);
+    -fx-font-weight: 600;
+}
+
+.event-weather-mock-temp-hero {
+    -fx-font-size: 42px;
+    -fx-font-weight: 800;
+    -fx-text-fill: white;
+}
+
+.event-weather-mock-condition {
+    -fx-font-size: 14px;
+    -fx-font-weight: 700;
+    -fx-text-fill: white;
+}
+
+.event-weather-mock-icon {
+    -fx-font-size: 28px;
+    -fx-text-fill: rgba(255, 255, 255, 0.95);
+}
+
+.event-weather-mock-subtitle {
+    -fx-font-size: 11px;
+    -fx-text-fill: rgba(255, 255, 255, 0.88);
+    -fx-font-weight: 600;
+}
+
+.event-weather-mock-scroll {
+    -fx-background-color: transparent;
+    -fx-background: transparent;
+    -fx-padding: 0;
+}
+
+.event-weather-mock-scroll > .viewport {
+    -fx-background-color: transparent;
+}
+
+.event-weather-mock-hour-row {
+    -fx-padding: 4 0 0 0;
+}
+
+.event-weather-mock-hour-cell {
+    -fx-min-width: 52;
+    -fx-pref-width: 56;
+    -fx-padding: 8 6 10 6;
+    -fx-background-color: rgba(255, 255, 255, 0.18);
+    -fx-background-radius: 12;
+    -fx-border-color: rgba(255, 255, 255, 0.25);
+    -fx-border-radius: 12;
+    -fx-border-width: 1;
+}
+
+.event-weather-mock-hour-h {
+    -fx-font-size: 11px;
+    -fx-text-fill: rgba(255, 255, 255, 0.92);
+    -fx-font-weight: 600;
+}
+
+.event-weather-mock-hour-ico {
+    -fx-font-size: 14px;
+}
+
+.event-weather-mock-hour-t {
+    -fx-font-size: 12px;
+    -fx-font-weight: 700;
+    -fx-text-fill: white;
+}
+
+.event-weather-mock-bottom {
+    -fx-padding: 14 16 12 16;
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 0 0 18 18;
+    -fx-spacing: 8;
+}
+
+.event-weather-mock-date-bottom {
+    -fx-font-size: 14px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #111827;
+}
+
+.event-weather-mock-day-caption {
+    -fx-font-size: 12px;
+    -fx-text-fill: #64748b;
+}
+
+.event-weather-mock-minmax {
+    -fx-spacing: 8;
+}
+
+.event-weather-mock-bottom-row {
+    -fx-alignment: center-left;
+}
+
+.event-weather-mock-center-col {
+    -fx-alignment: center;
+    -fx-padding: 0 4 0 4;
+}
+
+.event-weather-mock-center-stack {
+    -fx-alignment: center;
+    -fx-max-width: infinity;
+}
+
+.event-weather-mock-center-main {
+    -fx-font-size: 15px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #0f172a;
+    -fx-text-alignment: center;
+}
+
+.event-weather-mock-center-sub {
+    -fx-font-size: 11px;
+    -fx-font-weight: 500;
+    -fx-text-fill: #64748b;
+    -fx-text-alignment: center;
+    -fx-wrap-text: true;
+    -fx-max-width: 280;
+}
+
+.event-weather-mock-ico-small {
+    -fx-font-size: 22px;
+}
+
+.event-weather-mock-max {
+    -fx-font-size: 16px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #0ea5e9;
+}
+
+.event-weather-mock-min {
+    -fx-font-size: 12px;
+    -fx-text-fill: #64748b;
+}
+
+.event-weather-mock-more {
+    -fx-padding: 4 0 0 0;
+    -fx-alignment: center;
+}
+
+.event-weather-mock-more-text {
+    -fx-font-size: 12px;
+    -fx-font-weight: 600;
+    -fx-text-fill: #0ea5e9;
+}
+
+.event-weather-mock-chevron {
+    -fx-font-size: 14px;
+    -fx-text-fill: #0ea5e9;
+}
+
+.event-detail-section-title {
+    -fx-font-size: 16px;
+    -fx-font-weight: 800;
+}
+
+.event-detail-body {
+    -fx-font-size: 14px;
+    -fx-text-fill: #4b5563;
+    -fx-line-spacing: 2px;
+}
+
+.event-detail-map-wrap {
+    -fx-background-radius: 14;
+    -fx-border-color: rgba(0, 0, 0, 0.08);
+    -fx-border-radius: 14;
+    -fx-border-width: 1;
+    -fx-padding: 0;
+    -fx-alignment: center;
+}
+
+.event-detail-map-wrap .web-view {
+    -fx-background-radius: 12;
+}
+
+.event-detail-map-wrap .label.event-detail-map-hint {
+    -fx-padding: 16 18 16 18;
+}
+
+.event-detail-loc-card {
+    -fx-alignment: top_left;
+    -fx-padding: 14 16 14 16;
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 12;
+    -fx-border-color: rgba(0, 0, 0, 0.1);
+    -fx-border-radius: 12;
+    -fx-border-width: 1;
+    -fx-max-width: infinity;
+}
+
+.event-detail-loc-pin-wrap {
+    -fx-background-color: rgba(191, 219, 254, 0.75);
+    -fx-background-radius: 10;
+    -fx-alignment: center;
+}
+
+.event-detail-loc-pin-glyph {
+    -fx-font-size: 20px;
+    -fx-padding: 0;
+}
+
+.event-detail-loc-cta-maps {
+    -fx-background-color: rgba(219, 234, 254, 0.95);
+    -fx-text-fill: #2563eb;
+    -fx-font-weight: 600;
+    -fx-font-size: 13px;
+    -fx-padding: 12 16 12 16;
+    -fx-background-radius: 12;
+    -fx-border-color: rgba(37, 99, 235, 0.35);
+    -fx-border-radius: 12;
+    -fx-border-width: 1;
+    -fx-cursor: hand;
+    -fx-text-alignment: center;
+    -fx-wrap-text: true;
+}
+
+.event-detail-loc-cta-maps:hover {
+    -fx-background-color: rgba(191, 219, 254, 0.98);
+}
+
+.event-detail-loc-block {
+    -fx-spacing: 4;
+    -fx-max-width: infinity;
+}
+
+.event-detail-loc-kicker {
+    -fx-font-size: 12px;
+    -fx-font-weight: 600;
+    -fx-text-fill: #94a3b8;
+}
+
+.event-detail-loc-value {
+    -fx-font-size: 15px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #111827;
+    -fx-wrap-text: true;
+}
+
+.event-detail-map-hint {
+    -fx-font-size: 13px;
+    -fx-text-fill: #4b5563;
+    -fx-text-alignment: center;
+    -fx-wrap-text: true;
+    -fx-max-width: 520;
+}
+
+.event-detail-sidebar {
+    -fx-padding: 4 10 4 20;
+    -fx-spacing: 12;
+    -fx-background-color: transparent;
+    -fx-border-color: transparent transparent transparent rgba(0, 0, 0, 0.08);
+    -fx-border-width: 0 0 0 1;
+    -fx-alignment: top_left;
+}
+
+/* Ancienne carte latérale seule (si réutilisée ailleurs) */
+.event-detail-sidebar-elevated {
+    -fx-padding: 16 18 18 18;
+    -fx-background-color: rgba(255, 255, 255, 0.95);
+    -fx-background-radius: 16;
+    -fx-border-color: rgba(0, 0, 0, 0.06);
+    -fx-border-radius: 16;
+    -fx-border-width: 1;
+    -fx-effect: dropshadow(gaussian, rgba(60, 55, 80, 0.1), 14, 0.2, 0, 3);
+}
+
+/* Textes à gauche : seul « Lieu » en noir gras ; le reste en gris */
+.event-detail-sidebar-kicker {
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #111827;
+    -fx-text-alignment: left;
+    -fx-alignment: center_left;
+    -fx-max-width: infinity;
+}
+
+.event-detail-sidebar-place {
+    -fx-font-size: 17px;
+    -fx-font-weight: normal;
+    -fx-text-fill: #64748b;
+    -fx-letter-spacing: 0;
+    -fx-text-alignment: left;
+    -fx-alignment: center_left;
+    -fx-max-width: infinity;
+}
+
+.event-detail-auth-block {
+    -fx-alignment: top_left;
+    -fx-spacing: 12;
+    -fx-max-width: infinity;
+}
+
+.event-detail-auth-lead {
+    -fx-font-size: 15px;
+    -fx-font-weight: 400;
+    -fx-text-fill: #0f172a;
+    -fx-line-spacing: 4px;
+    -fx-text-alignment: left;
+    -fx-wrap-text: true;
+    -fx-max-width: infinity;
+}
+
+/* Même contraste que la phrase principale (aligné cap 3) */
+.event-detail-auth-muted {
+    -fx-font-size: 13px;
+    -fx-font-weight: 400;
+    -fx-text-fill: #0f172a;
+    -fx-text-alignment: left;
+    -fx-max-width: infinity;
+}
+
+/* Message secondaire après inscription (reste plus discret) */
+.event-detail-auth-hint {
+    -fx-font-size: 13px;
+    -fx-font-weight: 400;
+    -fx-text-fill: #64748b;
+    -fx-text-alignment: left;
+    -fx-wrap-text: true;
+    -fx-max-width: infinity;
+}
+
+.event-detail-logged-participant {
+    -fx-spacing: 12;
+    -fx-max-width: infinity;
+}
+
+.event-detail-organizer-card {
+    -fx-spacing: 10;
+    -fx-padding: 14 14 16 14;
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 14;
+    -fx-border-color: rgba(0, 0, 0, 0.08);
+    -fx-border-radius: 14;
+    -fx-border-width: 1;
+}
+
+.event-detail-organizer-header {
+    -fx-alignment: top_left;
+}
+
+.event-detail-organizer-icon-wrap {
+    -fx-background-color: linear-gradient(to bottom, #7dd3fc 0%, #38bdf8 100%);
+    -fx-background-radius: 10;
+    -fx-alignment: center;
+}
+
+.event-detail-organizer-icon {
+    -fx-font-size: 18px;
+    -fx-text-fill: white;
+}
+
+.event-detail-organizer-title {
+    -fx-font-size: 15px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #1e293b;
+}
+
+.event-detail-organizer-sub {
+    -fx-font-size: 12px;
+    -fx-text-fill: #64748b;
+    -fx-wrap-text: true;
+}
+
+.event-detail-discussion-scroll {
+    -fx-background-color: #f8fafc;
+    -fx-background-radius: 10;
+    -fx-border-color: #e2e8f0;
+    -fx-border-radius: 10;
+    -fx-padding: 8 8 8 8;
+}
+
+.event-detail-discussion-scroll .viewport {
+    -fx-background-color: transparent;
+}
+
+.event-detail-discussion-thread {
+    -fx-padding: 4 4 4 4;
+}
+
+.event-detail-discussion-bubble {
+    -fx-font-size: 12px;
+    -fx-text-fill: #334155;
+    -fx-wrap-text: true;
+    -fx-padding: 8 10 8 10;
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 8;
+    -fx-border-color: #e2e8f0;
+    -fx-border-radius: 8;
+}
+
+.event-detail-discussion-bubble-meta {
+    -fx-font-size: 10px;
+    -fx-text-fill: #94a3b8;
+    -fx-padding: 0 0 4 0;
+}
+
+.event-detail-discussion-body {
+    -fx-font-size: 12px;
+    -fx-text-fill: #334155;
+}
+
+.event-detail-discussion-delete-btn {
+    -fx-background-color: #ffffff;
+    -fx-text-fill: #b91c1c;
+    -fx-font-size: 11px;
+    -fx-font-weight: 700;
+    -fx-border-color: #fecaca;
+    -fx-border-width: 1;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-padding: 4 10 4 10;
+    -fx-cursor: hand;
+}
+
+.event-detail-discussion-delete-btn:hover {
+    -fx-background-color: #fef2f2;
+    -fx-border-color: #fca5a5;
+}
+
+.event-detail-msg-field-label {
+    -fx-font-size: 11px;
+    -fx-text-fill: #64748b;
+    -fx-padding: 0 0 2 0;
+}
+
+.event-detail-organizer-textarea {
+    -fx-background-radius: 10;
+    -fx-border-radius: 10;
+    -fx-border-color: #e2e8f0;
+    -fx-background-color: #fafbfc;
+    -fx-padding: 10 12 10 12;
+    -fx-font-size: 13px;
+}
+
+.event-detail-organizer-textarea:focused {
+    -fx-border-color: #38bdf8;
+    -fx-background-color: #ffffff;
+}
+
+/* Rangée : centre uniquement le bouton */
+.event-detail-sidebar-btn-row {
+    -fx-alignment: center;
+}
+
+/* Boutons — largeur max dans la colonne, centrés par la rangée */
+.event-detail-sidebar-btn {
+    -fx-max-width: 288;
+    -fx-pref-width: 288;
+    -fx-min-width: 200;
+    -fx-font-size: 14px;
+    -fx-font-weight: 600;
+    -fx-padding: 10 16 10 16;
+}
+
+/* Bleu + texte blanc : Voir la localisation, S'inscrire à l'événement */
+.event-detail-sidebar .event-detail-sidebar-btn-blue {
+    -fx-background-insets: 0;
+    -fx-background-color: linear-gradient(to bottom, #7dd3fc 0%, #38bdf8 100%);
+    -fx-text-fill: white;
+    -fx-background-radius: 14;
+    -fx-border-radius: 14;
+    -fx-border-color: rgba(14, 165, 233, 0.45);
+    -fx-border-width: 1;
+    -fx-effect: dropshadow(gaussian, rgba(14, 165, 233, 0.35), 10, 0.2, 0, 2);
+}
+
+.event-detail-sidebar .event-detail-sidebar-btn-blue:hover {
+    -fx-background-color: linear-gradient(to bottom, #bae6fd 0%, #0ea5e9 100%);
+}
+
+.event-detail-sidebar .event-detail-sidebar-btn-blue:pressed {
+    -fx-background-color: linear-gradient(to bottom, #38bdf8 0%, #0284c7 100%);
+}
+
+/* Cascade renforcée : le style « map » ou le thème ne doit pas réappliquer un fond gris */
+.event-detail-sidebar .event-detail-sidebar-btn-row > .button.event-detail-sidebar-btn.event-detail-sidebar-btn-blue {
+    -fx-background-insets: 0;
+    -fx-background-color: linear-gradient(to bottom, #7dd3fc 0%, #38bdf8 100%);
+    -fx-text-fill: white;
+}
+
+.event-detail-sidebar .event-detail-btn-outline.event-detail-sidebar-btn {
+    -fx-background-color: #ffffff;
+    -fx-text-fill: #374151;
+    -fx-background-radius: 14;
+    -fx-border-radius: 14;
+    -fx-border-color: rgba(120, 113, 108, 0.4);
+    -fx-border-width: 1;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.06), 8, 0.2, 0, 1);
+}
+
+.event-detail-sidebar-link {
+    -fx-text-alignment: left;
+    -fx-alignment: center_left;
+    -fx-max-width: infinity;
+    -fx-font-size: 14.5px;
+    -fx-font-weight: 800;
+    -fx-border-width: 0;
+    -fx-text-fill: #38bdf8;
+    -fx-underline: false;
+}
+
+.event-detail-sidebar-link:hover {
+    -fx-text-fill: #0ea5e9;
+}
+
+/* Lien « Google Maps » : très gras (surcharge Modena sur Hyperlink) */
+.event-detail-sidebar .hyperlink.event-detail-link.event-detail-sidebar-link {
+    -fx-font-weight: 800;
+    -fx-font-size: 14.5px;
+}
+
+.event-detail-sidebar .label.event-detail-sidebar-place {
+    -fx-font-weight: normal;
+}
+
+/* Phrases d’auth dans la colonne : gris (sous « Lieu ») */
+.event-detail-sidebar .event-detail-auth-lead,
+.event-detail-sidebar .event-detail-auth-muted {
+    -fx-text-fill: #64748b;
+}
+
+.event-detail-sidebar .event-detail-auth-hint {
+    -fx-text-fill: #94a3b8;
+}
+
+/* ---------- Notifications (cloche + page) ---------- */
+.public-notif-menu {
+    -fx-padding: 0;
+}
+
+.public-notif-menu > .arrow-button {
+    -fx-padding: 0;
+    -fx-min-width: 0;
+    -fx-pref-width: 0;
+    -fx-max-width: 0;
+    -fx-opacity: 0;
+    -fx-background-color: transparent;
+}
+
+.public-notif-menu > .arrow-button > .arrow,
+.public-notif-menu .arrow-button .arrow,
+.public-notif-menu .arrow {
+    -fx-padding: 0;
+    -fx-background-color: transparent;
+    -fx-shape: "";
+    -fx-opacity: 0;
+    -fx-scale-x: 0;
+    -fx-scale-y: 0;
+}
+
+.public-notif-menu > .label {
+    -fx-padding: 0;
+}
+
+.public-notif-menu {
+    -fx-content-display: graphic-only;
+}
+
+.context-menu.public-notif-context-menu {
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 12;
+    -fx-padding: 4 0 6 0;
+    -fx-effect: dropshadow(gaussian, rgba(60, 55, 80, 0.22), 22, 0.12, 0, 4);
+}
+
+.context-menu.public-notif-context-menu .menu-item:focused {
+    -fx-background-color: rgba(209, 196, 233, 0.22);
+}
+
+.context-menu.public-notif-context-menu .menu-item:hover {
+    -fx-background-color: rgba(209, 196, 233, 0.16);
+}
+
+.public-notif-popup-header {
+    -fx-font-size: 15px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #374151;
+    -fx-padding: 6 14 4 14;
+}
+
+.menu-item.public-notif-menu-header,
+.menu-item.public-notif-menu-header:focused,
+.menu-item.public-notif-menu-header:disabled {
+    -fx-opacity: 1;
+    -fx-background-color: transparent;
+}
+
+.public-notif-icon-wrap {
+    -fx-min-width: 26;
+    -fx-min-height: 26;
+    -fx-alignment: center;
+}
+
+.nav-home .nav-logged-shortcuts > .button.public-notif-bell-btn {
+    -fx-min-width: 40;
+    -fx-pref-width: 40;
+    -fx-max-width: 40;
+    -fx-min-height: 40;
+    -fx-pref-height: 40;
+    -fx-max-height: 40;
+    -fx-padding: 0;
+    -fx-cursor: hand;
+}
+
+.public-notif-bell-glyph {
+    -fx-font-size: 17px;
+    -fx-padding: 0;
+    -fx-text-fill: #141414;
+}
+
+.public-notif-badge {
+    -fx-background-color: #f44336;
+    -fx-text-fill: #ffffff;
+    -fx-font-size: 10px;
+    -fx-font-weight: 700;
+    -fx-padding: 1 5 1 5;
+    -fx-min-width: 18;
+    -fx-alignment: center;
+    -fx-background-radius: 999;
+    -fx-translate-x: 10;
+    -fx-translate-y: -9;
+}
+
+.public-notif-item {
+    -fx-alignment: center-left;
+    -fx-padding: 10 12 10 12;
+    -fx-background-radius: 12;
+    -fx-border-radius: 12;
+    -fx-border-width: 1;
+}
+
+.public-notif-item-icon {
+    -fx-min-width: 26;
+    -fx-min-height: 26;
+    -fx-alignment: center;
+    -fx-font-size: 12px;
+    -fx-font-weight: 800;
+    -fx-background-radius: 999;
+}
+
+.public-notif-item-title {
+    -fx-font-size: 13px;
+    -fx-font-weight: 700;
+}
+
+.public-notif-item-meta {
+    -fx-font-size: 11px;
+    -fx-text-fill: #64748b;
+}
+
+.public-notif-item-accepted {
+    -fx-background-color: rgba(229, 249, 240, 0.92);
+    -fx-border-color: rgba(122, 206, 170, 0.9);
+}
+
+.public-notif-item-accepted .public-notif-item-icon {
+    -fx-background-color: rgba(127, 226, 182, 0.35);
+    -fx-text-fill: #047857;
+}
+
+.public-notif-item-accepted .public-notif-item-title {
+    -fx-text-fill: #065f46;
+}
+
+.public-notif-item-msg {
+    -fx-background-color: rgba(226, 240, 255, 0.95);
+    -fx-border-color: rgba(147, 191, 255, 0.95);
+}
+
+.public-notif-item-msg .public-notif-item-icon {
+    -fx-background-color: rgba(147, 197, 253, 0.38);
+    -fx-text-fill: #1d4ed8;
+}
+
+.public-notif-item-msg .public-notif-item-title {
+    -fx-text-fill: #1e40af;
+}
+
+.public-notif-item-pending {
+    -fx-background-color: #e3f2fd;
+    -fx-border-color: rgba(33, 150, 243, 0.5);
+}
+
+.public-notif-item-pending .public-notif-item-icon {
+    -fx-background-color: rgba(100, 181, 246, 0.4);
+    -fx-text-fill: #1565c0;
+}
+
+.public-notif-item-pending .public-notif-item-title {
+    -fx-text-fill: #01579b;
+}
+
+.public-notif-item-rdv {
+    -fx-background-color: rgba(245, 240, 255, 0.96);
+    -fx-border-color: rgba(167, 139, 250, 0.55);
+}
+
+.public-notif-item-rdv .public-notif-item-icon {
+    -fx-background-color: rgba(196, 181, 253, 0.35);
+    -fx-text-fill: #5b21b6;
+}
+
+.public-notif-item-rdv .public-notif-item-title {
+    -fx-text-fill: #4c1d95;
+}
+
+.public-notif-item-refused {
+    -fx-background-color: rgba(254, 237, 237, 0.96);
+    -fx-border-color: rgba(248, 152, 152, 0.92);
+}
+
+.public-notif-item-refused .public-notif-item-icon {
+    -fx-background-color: rgba(252, 165, 165, 0.35);
+    -fx-text-fill: #b91c1c;
+}
+
+.public-notif-item-refused .public-notif-item-title {
+    -fx-text-fill: #991b1b;
+}
+
+.public-notif-see-all-wrap {
+    -fx-padding: 6 4 8 4;
+    -fx-alignment: center;
+    -fx-min-width: 320;
+    -fx-pref-width: 320;
+}
+
+.public-notif-see-all {
+    -fx-font-size: 13px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #9c7ec4;
+    -fx-letter-spacing: 0;
+    -fx-text-alignment: center;
+}
+
+.public-notifications-card {
+    -fx-background-color: rgba(229, 249, 240, 0.9);
+    -fx-border-color: rgba(137, 214, 184, 0.85);
+    -fx-border-width: 1;
+    -fx-border-radius: 12;
+    -fx-background-radius: 12;
+    -fx-padding: 12 14 12 14;
+    -fx-cursor: hand;
+}
+
+.public-notifications-card:hover {
+    -fx-background-color: rgba(216, 246, 232, 0.95);
+}
+
+.public-notifications-card-unread {
+    -fx-border-width: 2;
+}
+
+.public-notifications-card-icon {
+    -fx-min-width: 24;
+    -fx-min-height: 24;
+    -fx-alignment: center;
+    -fx-background-color: rgba(120, 228, 184, 0.35);
+    -fx-background-radius: 999;
+    -fx-text-fill: #0f766e;
+    -fx-font-weight: 700;
+}
+
+.public-notifications-card-text {
+    -fx-font-size: 16px;
+    -fx-text-fill: #065f46;
+    -fx-font-weight: 600;
+}
+
+.public-notifications-card-meta {
+    -fx-font-size: 12px;
+    -fx-text-fill: #64748b;
+}
+
+/* Refus d’inscription : carte en rouge (page Mes notifications) */
+.public-notifications-card.public-notifications-card--refused {
+    -fx-background-color: rgba(254, 242, 242, 0.95);
+    -fx-border-color: rgba(239, 68, 68, 0.75);
+}
+
+.public-notifications-card.public-notifications-card--refused:hover {
+    -fx-background-color: rgba(254, 226, 226, 0.98);
+}
+
+.public-notifications-card.public-notifications-card--refused .public-notifications-card-icon {
+    -fx-background-color: rgba(248, 113, 113, 0.35);
+    -fx-text-fill: #b91c1c;
+}
+
+.public-notifications-card.public-notifications-card--refused .public-notifications-card-text {
+    -fx-text-fill: #991b1b;
+}
+
+.public-notifications-card.public-notifications-card--msg {
+    -fx-background-color: rgba(239, 246, 255, 0.95);
+    -fx-border-color: rgba(147, 197, 253, 0.9);
+}
+
+.public-notifications-card.public-notifications-card--msg:hover {
+    -fx-background-color: rgba(219, 234, 254, 0.98);
+}
+
+.public-notifications-card.public-notifications-card--msg .public-notifications-card-icon {
+    -fx-background-color: rgba(147, 197, 253, 0.4);
+    -fx-text-fill: #1d4ed8;
+}
+
+.public-notifications-card.public-notifications-card--msg .public-notifications-card-text {
+    -fx-text-fill: #1e3a8a;
+}
+
+.public-notifications-card.public-notifications-card--pending {
+    -fx-background-color: rgba(227, 242, 252, 0.95);
+    -fx-border-color: rgba(100, 181, 246, 0.65);
+}
+
+.public-notifications-card.public-notifications-card--pending:hover {
+    -fx-background-color: rgba(187, 222, 251, 0.95);
+}
+
+.public-notifications-card.public-notifications-card--pending .public-notifications-card-icon {
+    -fx-background-color: rgba(100, 181, 246, 0.35);
+    -fx-text-fill: #1565c0;
+}
+
+.public-notifications-card.public-notifications-card--pending .public-notifications-card-text {
+    -fx-text-fill: #01579b;
+}
+
+.event-detail-sidebar-sep {
+    -fx-padding: 8 0 8 0;
+    -fx-max-width: infinity;
+}
+
+.event-detail-btn-primary {
+    -fx-background-color: #60a5fa;
+    -fx-text-fill: white;
+    -fx-font-weight: 700;
+    -fx-background-radius: 12;
+    -fx-padding: 10 16 10 16;
+}
+
+.event-detail-btn-outline {
+    -fx-background-color: white;
+    -fx-text-fill: #374151;
+    -fx-font-weight: 700;
+    -fx-border-color: rgba(0, 0, 0, 0.15);
+    -fx-border-radius: 12;
+    -fx-background-radius: 12;
+    -fx-padding: 10 16 10 16;
+}
+
+/*
+ * Forçage par id (spécificité maximale) : certains environnements laissent le thème Modena
+ * écraser les classes sur les boutons de la colonne droite.
+ */
+#eventDetailSidebarMapBtn,
+#eventDetailSidebarLoginBtn,
+#eventDetailSendMsgBtn,
+#eventDetailSidebarRegisterBtn {
+    -fx-background-insets: 0;
+    -fx-padding: 10 16 10 16;
+    -fx-font-size: 14px;
+    -fx-font-weight: 600;
+    -fx-background-radius: 14;
+    -fx-border-radius: 14;
+    -fx-border-width: 1;
+    -fx-border-color: rgba(14, 165, 233, 0.45);
+    -fx-background-color: linear-gradient(to bottom, #7dd3fc 0%, #38bdf8 100%);
+    -fx-text-fill: white;
+    -fx-effect: dropshadow(gaussian, rgba(14, 165, 233, 0.35), 10, 0.2, 0, 2);
+}
+
+#eventDetailSidebarMapBtn:hover,
+#eventDetailSidebarLoginBtn:hover,
+#eventDetailSendMsgBtn:hover,
+#eventDetailSidebarRegisterBtn:hover {
+    -fx-background-color: linear-gradient(to bottom, #bae6fd 0%, #0ea5e9 100%);
+}
+
+#eventDetailSidebarMapBtn:pressed,
+#eventDetailSidebarLoginBtn:pressed,
+#eventDetailSendMsgBtn:pressed,
+#eventDetailSidebarRegisterBtn:pressed {
+    -fx-background-color: linear-gradient(to bottom, #38bdf8 0%, #0284c7 100%);
+}
+
+#eventDetailSidebarMapBtn:focused,
+#eventDetailSidebarLoginBtn:focused,
+#eventDetailSendMsgBtn:focused,
+#eventDetailSidebarRegisterBtn:focused {
+    -fx-background-color: linear-gradient(to bottom, #7dd3fc 0%, #38bdf8 100%);
+    -fx-border-color: rgba(14, 165, 233, 0.65);
+}
+
+#eventDetailSidebarSignupBtn {
+    -fx-background-insets: 0;
+    -fx-padding: 10 16 10 16;
+    -fx-font-size: 14px;
+    -fx-font-weight: 600;
+    -fx-background-radius: 14;
+    -fx-border-radius: 14;
+    -fx-border-width: 1;
+    -fx-border-color: rgba(120, 113, 108, 0.4);
+    -fx-background-color: #ffffff;
+    -fx-text-fill: #374151;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.06), 8, 0.2, 0, 1);
+}
+
+#eventDetailSidebarSignupBtn:hover {
+    -fx-background-color: #f9fafb;
+}
+
+#eventDetailSidebarSignupBtn:focused {
+    -fx-background-color: #ffffff;
+    -fx-border-color: rgba(120, 113, 108, 0.55);
+}
+
+#eventDetailJoinOnlineBtn {
+    -fx-background-insets: 0;
+    -fx-padding: 10 16 10 16;
+    -fx-font-size: 14px;
+    -fx-font-weight: 700;
+    -fx-background-radius: 14;
+    -fx-border-radius: 14;
+    -fx-border-width: 1;
+    -fx-border-color: rgba(147, 51, 234, 0.5);
+    -fx-background-color: linear-gradient(to bottom, #c084fc 0%, #a855f7 100%);
+    -fx-text-fill: #ffffff;
+    -fx-effect: dropshadow(gaussian, rgba(147, 51, 234, 0.35), 10, 0.2, 0, 2);
+}
+
+#eventDetailJoinOnlineBtn:hover {
+    -fx-background-color: linear-gradient(to bottom, #d8b4fe 0%, #9333ea 100%);
+}
+
+#eventDetailJoinOnlineBtn:pressed {
+    -fx-background-color: linear-gradient(to bottom, #a855f7 0%, #7e22ce 100%);
+}
+
+#eventDetailJoinOnlineBtn:focused {
+    -fx-border-color: rgba(147, 51, 234, 0.75);
+}
+
+/* Chatbot d'aide (page RDV publique) */
+.button.rdv-chatbot-toggle-btn {
+    -fx-background-color: linear-gradient(to bottom right, #173a70, #214f8e);
+    -fx-text-fill: #f8fbff;
+    -fx-font-weight: 800;
+    -fx-font-size: 14px;
+    -fx-background-radius: 999;
+    -fx-padding: 12 22 12 22;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(16, 43, 89, 0.36), 18, 0.3, 0, 5);
+    -fx-translate-x: -18;
+    -fx-translate-y: -14;
+}
+
+.button.rdv-chatbot-toggle-btn:hover {
+    -fx-background-color: linear-gradient(to bottom right, #1e4b8f, #2962aa);
+}
+
+.rdv-chatbot-panel {
+    -fx-background-color: #f6f4f3;
+    -fx-border-color: #e6e2e0;
+    -fx-border-width: 1;
+    -fx-border-radius: 20;
+    -fx-background-radius: 20;
+    -fx-padding: 10;
+    -fx-effect: dropshadow(gaussian, rgba(16, 24, 40, 0.2), 26, 0.25, 0, 8);
+    -fx-translate-x: -18;
+    -fx-translate-y: -66;
+}
+
+.rdv-chatbot-header {
+    -fx-background-color: #e9e5e3;
+    -fx-background-radius: 14;
+    -fx-padding: 10 12 10 12;
+}
+
+.rdv-chatbot-title {
+    -fx-font-size: 16px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #22344f;
+}
+
+.rdv-chatbot-subtitle {
+    -fx-text-fill: #61656f;
+    -fx-font-size: 13px;
+    -fx-padding: 0 8 0 8;
+    -fx-text-alignment: center;
+}
+
+.rdv-chatbot-intro-card {
+    -fx-background-color: #f9f8f7;
+    -fx-border-color: #ece8e6;
+    -fx-border-radius: 14;
+    -fx-background-radius: 14;
+    -fx-padding: 10;
+}
+
+.rdv-chatbot-intro-title {
+    -fx-font-size: 15px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #334155;
+    -fx-text-alignment: center;
+}
+
+.rdv-chatbot-intro-caption {
+    -fx-font-size: 13px;
+    -fx-text-fill: #4b5563;
+    -fx-text-alignment: center;
+}
+
+.rdv-chatbot-chip-wrap {
+    -fx-padding: 1 0 1 0;
+}
+
+.button.rdv-chatbot-chip {
+    -fx-background-color: #ece7f3;
+    -fx-text-fill: #545162;
+    -fx-font-size: 13px;
+    -fx-font-weight: 700;
+    -fx-background-radius: 999;
+    -fx-padding: 7 12 7 12;
+    -fx-cursor: hand;
+}
+
+.button.rdv-chatbot-chip:hover {
+    -fx-background-color: #e5dff0;
+}
+
+.button.rdv-chip-green {
+    -fx-background-color: #dcead6;
+    -fx-text-fill: #2f5b2f;
+}
+
+.button.rdv-chip-blue {
+    -fx-background-color: #d9eaf3;
+    -fx-text-fill: #2b4f6f;
+}
+
+.rdv-chatbot-image {
+    -fx-background-color: #ffffff;
+    -fx-border-color: #d8d8d8;
+    -fx-border-radius: 12;
+    -fx-background-radius: 12;
+}
+
+.rdv-chatbot-image-caption {
+    -fx-font-size: 12px;
+    -fx-text-fill: #475467;
+    -fx-padding: 0 4 0 4;
+}
+
+.rdv-chatbot-history {
+    -fx-background-color: #ffffff;
+    -fx-border-color: #e4dfdc;
+    -fx-border-radius: 14;
+    -fx-background-radius: 14;
+    -fx-padding: 0;
+}
+
+.rdv-chatbot-history .content {
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 14;
+}
+
+.rdv-chatbot-history-box {
+    -fx-padding: 10;
+    -fx-background-color: #ffffff;
+}
+
+.rdv-chatbot-bubble {
+    -fx-padding: 8 10 8 10;
+    -fx-background-radius: 12;
+    -fx-border-radius: 12;
+    -fx-border-width: 1;
+    -fx-spacing: 3;
+}
+
+.rdv-chatbot-bubble-assistant {
+    -fx-background-color: #f8fbff;
+    -fx-border-color: #dce8ff;
+}
+
+.rdv-chatbot-bubble-user {
+    -fx-background-color: #f6f7f9;
+    -fx-border-color: #e4e7ec;
+}
+
+.rdv-chatbot-bubble-author {
+    -fx-font-size: 12px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #1f3b73;
+}
+
+.rdv-chatbot-bubble-content {
+    -fx-font-size: 15px;
+    -fx-line-spacing: 3px;
+}
+
+.rdv-chatbot-text {
+    -fx-fill: #334155;
+    -fx-font-family: "Segoe UI Variable Text", "Segoe UI", "Inter", "Roboto", sans-serif;
+    -fx-font-size: 14px;
+}
+
+.button.rdv-chatbot-icon-btn {
+    -fx-background-color: transparent;
+    -fx-text-fill: #4b5563;
+    -fx-font-size: 17px;
+    -fx-font-weight: 800;
+    -fx-padding: 0 7 0 7;
+    -fx-cursor: hand;
+}
+
+.button.rdv-chatbot-icon-btn:hover {
+    -fx-background-color: #ddd8d5;
+    -fx-background-radius: 8;
+}
+
+.rdv-chatbot-input {
+    -fx-background-color: #eceae5;
+    -fx-background-radius: 999;
+    -fx-border-radius: 999;
+    -fx-border-color: #ddd8d2;
+    -fx-border-width: 1;
+    -fx-padding: 10 14 10 14;
+    -fx-font-size: 14px;
+    -fx-text-fill: #3b4351;
+}
+
+.rdv-chatbot-input:focused {
+    -fx-border-color: #7fa8d6;
+    -fx-effect: dropshadow(gaussian, rgba(106, 144, 187, 0.28), 8, 0.2, 0, 1);
+}
+
+.rdv-chatbot-input-row {
+    -fx-padding: 2 2 2 2;
+}
+
+.rdv-chatbot-quick-row {
+    -fx-padding: 2 0 0 0;
+}
+
+.rdv-chatbot-quick-label {
+    -fx-font-size: 13px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #6b7280;
+}
+
+.button.rdv-chatbot-mini-chip {
+    -fx-font-size: 12px;
+    -fx-font-weight: 700;
+    -fx-background-radius: 999;
+    -fx-padding: 6 10 6 10;
+}
+
+.button.rdv-chatbot-media-btn {
+    -fx-background-color: #ece8e1;
+    -fx-text-fill: #455267;
+    -fx-background-radius: 12;
+    -fx-min-width: 38;
+    -fx-min-height: 38;
+    -fx-pref-width: 38;
+    -fx-pref-height: 38;
+    -fx-font-size: 15px;
+    -fx-cursor: hand;
+}
+
+.button.rdv-chatbot-media-btn:hover {
+    -fx-background-color: #e1dbd3;
+}
+
+.button.rdv-chatbot-send-btn {
+    -fx-background-color: linear-gradient(to bottom, #8ca1be, #7d93b2);
+    -fx-text-fill: #ffffff;
+    -fx-font-weight: 800;
+    -fx-font-size: 14px;
+    -fx-background-radius: 14;
+    -fx-padding: 10 16 10 16;
+    -fx-cursor: hand;
+}
+
+.button.rdv-chatbot-send-btn:hover {
+    -fx-background-color: linear-gradient(to bottom, #7f95b5, #6e86a8);
+}
+
+/* Smart Planner IA (recommandation créneau) */
+.rdv-ai-planner {
+    -fx-background-color: linear-gradient(to bottom right, #f9fbff, #f3f7ff);
+    -fx-border-color: #d4e1ff;
+    -fx-border-width: 1;
+    -fx-border-radius: 20;
+    -fx-background-radius: 20;
+    -fx-padding: 14;
+    -fx-effect: dropshadow(gaussian, rgba(37, 99, 235, 0.12), 24, 0.2, 0, 4);
+}
+
+.rdv-ai-planner-title {
+    -fx-font-size: 16px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #1e3a8a;
+}
+
+.rdv-ai-planner-badge {
+    -fx-background-color: linear-gradient(to bottom right, #e9f0ff, #dbe7ff);
+    -fx-text-fill: #234a91;
+    -fx-font-size: 11px;
+    -fx-font-weight: 700;
+    -fx-background-radius: 999;
+    -fx-padding: 5 11 5 11;
+}
+
+.rdv-ai-planner-sub {
+    -fx-font-size: 12px;
+    -fx-text-fill: #475569;
+}
+
+.rdv-ai-controls-row {
+    -fx-padding: 3 0 0 0;
+}
+
+.rdv-ai-input {
+    -fx-background-color: #ffffff;
+    -fx-border-color: #d5def0;
+    -fx-border-width: 1;
+    -fx-background-radius: 12;
+    -fx-border-radius: 12;
+    -fx-font-size: 13px;
+    -fx-padding: 7 10 7 10;
+}
+
+.button.rdv-ai-generate-btn {
+    -fx-background-color: linear-gradient(to bottom right, #2563eb, #1e40af);
+    -fx-text-fill: #ffffff;
+    -fx-font-weight: 800;
+    -fx-font-size: 13px;
+    -fx-background-radius: 14;
+    -fx-padding: 10 16 10 16;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(37, 99, 235, 0.28), 14, 0.22, 0, 2);
+}
+
+.button.rdv-ai-generate-btn:hover {
+    -fx-background-color: linear-gradient(to bottom right, #1d4ed8, #1e3a8a);
+}
+
+.rdv-ai-status {
+    -fx-font-size: 12px;
+    -fx-text-fill: #334155;
+    -fx-background-color: linear-gradient(to bottom right, #eef3ff, #e9f1ff);
+    -fx-border-color: #d9e5ff;
+    -fx-border-radius: 12;
+    -fx-background-radius: 12;
+    -fx-padding: 9 11 9 11;
+}
+
+.rdv-ai-suggestions-wrap {
+    -fx-padding: 2 0 0 0;
+}
+
+.rdv-ai-skeleton-card {
+    -fx-background-color: #ffffff;
+    -fx-border-color: #e5edff;
+    -fx-border-radius: 14;
+    -fx-background-radius: 14;
+    -fx-padding: 12;
+}
+
+.rdv-ai-skeleton-line {
+    -fx-background-color: #e9eefc;
+    -fx-background-radius: 8;
+}
+
+.rdv-ai-skeleton-line-wide {
+    -fx-max-width: Infinity;
+}
+
+.rdv-ai-suggestion-card {
+    -fx-background-color: linear-gradient(to bottom right, #ffffff, #fcfdff);
+    -fx-border-color: #d8e3fb;
+    -fx-border-width: 1;
+    -fx-border-radius: 16;
+    -fx-background-radius: 16;
+    -fx-padding: 12;
+    -fx-effect: dropshadow(gaussian, rgba(30, 58, 138, 0.09), 14, 0.16, 0, 3);
+}
+
+.rdv-ai-suggestion-card:hover {
+    -fx-border-color: #c2d4ff;
+    -fx-background-color: linear-gradient(to bottom right, #ffffff, #f8fbff);
+    -fx-effect: dropshadow(gaussian, rgba(37, 99, 235, 0.2), 22, 0.24, 0, 5);
+}
+
+.rdv-ai-suggestion-best-card {
+    -fx-border-color: #7ee6a5;
+    -fx-background-color: linear-gradient(to bottom right, #f2fff7, #ffffff);
+    -fx-effect: dropshadow(gaussian, rgba(22, 163, 74, 0.24), 24, 0.24, 0, 6);
+}
+
+.rdv-ai-suggestion-best-card:hover {
+    -fx-border-color: #34d399;
+    -fx-background-color: linear-gradient(to bottom right, #ecfff4, #ffffff);
+    -fx-effect: dropshadow(gaussian, rgba(22, 163, 74, 0.3), 28, 0.28, 0, 7);
+}
+
+.rdv-ai-suggestion-title {
+    -fx-font-size: 14px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #1f2a44;
+}
+
+.rdv-ai-suggestion-badge {
+    -fx-background-color: #e0edff;
+    -fx-text-fill: #1d4ed8;
+    -fx-font-size: 11px;
+    -fx-font-weight: 700;
+    -fx-background-radius: 999;
+    -fx-padding: 4 8 4 8;
+}
+
+.rdv-ai-rank-badge {
+    -fx-font-size: 10px;
+    -fx-font-weight: 800;
+    -fx-background-radius: 999;
+    -fx-padding: 4 8 4 8;
+}
+
+.rdv-ai-rank-best {
+    -fx-background-color: #dcfce7;
+    -fx-text-fill: #166534;
+}
+
+.rdv-ai-rank-alt {
+    -fx-background-color: #eef2ff;
+    -fx-text-fill: #3730a3;
+}
+
+.rdv-ai-suggestion-meta {
+    -fx-font-size: 12px;
+    -fx-text-fill: #334155;
+    -fx-font-weight: 600;
+}
+
+.rdv-ai-fit-badge {
+    -fx-font-size: 11px;
+    -fx-font-weight: 800;
+    -fx-background-radius: 999;
+    -fx-padding: 4 10 4 10;
+}
+
+.rdv-ai-fit-good {
+    -fx-background-color: #dcfce7;
+    -fx-text-fill: #166534;
+}
+
+.rdv-ai-fit-medium {
+    -fx-background-color: #fef3c7;
+    -fx-text-fill: #92400e;
+}
+
+.rdv-ai-fit-low {
+    -fx-background-color: #fee2e2;
+    -fx-text-fill: #991b1b;
+}
+
+.rdv-ai-chip-row {
+    -fx-alignment: center-left;
+}
+
+.rdv-ai-insight-chip {
+    -fx-font-size: 11px;
+    -fx-text-fill: #1e3a8a;
+    -fx-background-color: #edf3ff;
+    -fx-border-color: #d8e5ff;
+    -fx-border-width: 1;
+    -fx-border-radius: 999;
+    -fx-background-radius: 999;
+    -fx-padding: 4 10 4 10;
+}
+
+.rdv-ai-chip-decision {
+    -fx-background-color: linear-gradient(to bottom right, #dbeafe, #e0f2fe);
+    -fx-text-fill: #0c4a6e;
+    -fx-border-color: #bfdbfe;
+}
+
+.rdv-ai-timeline-col {
+    -fx-alignment: top_center;
+    -fx-min-width: 12;
+    -fx-pref-width: 12;
+}
+
+.rdv-ai-timeline-dot {
+    -fx-background-color: #2563eb;
+    -fx-background-radius: 999;
+    -fx-min-width: 9;
+    -fx-pref-width: 9;
+    -fx-min-height: 9;
+    -fx-pref-height: 9;
+}
+
+.rdv-ai-timeline-line {
+    -fx-background-color: #dbe6ff;
+    -fx-min-width: 2;
+    -fx-pref-width: 2;
+}
+
+.rdv-ai-suggestion-reason {
+    -fx-font-size: 12px;
+    -fx-text-fill: #52607a;
+    -fx-font-style: italic;
+}
+
+.button.rdv-ai-pick-btn {
+    -fx-background-color: linear-gradient(to bottom right, #16a34a, #0891b2);
+    -fx-text-fill: white;
+    -fx-font-weight: 800;
+    -fx-font-size: 13px;
+    -fx-background-radius: 12;
+    -fx-padding: 9 14 9 14;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(8, 145, 178, 0.24), 14, 0.2, 0, 2);
+}
+
+.button.rdv-ai-pick-btn:hover {
+    -fx-background-color: linear-gradient(to bottom right, #15803d, #0e7490);
+}

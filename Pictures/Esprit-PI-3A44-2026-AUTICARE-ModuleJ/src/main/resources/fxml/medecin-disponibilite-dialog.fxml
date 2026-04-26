@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="org.example.controllers.MedecinDisponibiliteDialogController"
+      styleClass="med-dispo-form-root"
+      spacing="0"
+      stylesheets="@../styles/medecin-disponibilite-dialog.css">
+    <padding>
+        <Insets bottom="28" left="28" right="28" top="24"/>
+    </padding>
+    <VBox spacing="6" styleClass="med-dispo-form-header">
+        <Label fx:id="titleLabel" styleClass="med-dispo-form-title" text="Nouvelle disponibilité"/>
+        <Label styleClass="med-dispo-form-subtitle"
+               text="Date, heure de début et fin, durée (minutes), disponible."
+               wrapText="true"/>
+    </VBox>
+    <Region prefHeight="20"/>
+    <GridPane hgap="20" vgap="18" styleClass="med-dispo-form-grid">
+        <columnConstraints>
+            <ColumnConstraints hgrow="ALWAYS" minWidth="200" percentWidth="50"/>
+            <ColumnConstraints hgrow="ALWAYS" minWidth="200" percentWidth="50"/>
+        </columnConstraints>
+        <!-- Ligne 1 -->
+        <VBox spacing="6" GridPane.columnIndex="0" GridPane.rowIndex="0">
+            <Label text="Date *" styleClass="med-dispo-field-label"/>
+            <HBox styleClass="med-dispo-input-wrap" alignment="CENTER_LEFT" spacing="0">
+                <DatePicker fx:id="datePicker" styleClass="med-dispo-date-picker" HBox.hgrow="ALWAYS" maxWidth="Infinity"/>
+                <Label text="📅" styleClass="med-dispo-input-icon" mouseTransparent="true"/>
+            </HBox>
+        </VBox>
+        <VBox spacing="6" GridPane.columnIndex="1" GridPane.rowIndex="0">
+            <Label text="Heure de début *" styleClass="med-dispo-field-label"/>
+            <HBox styleClass="med-dispo-input-wrap" alignment="CENTER_LEFT">
+                <ComboBox fx:id="startTimeCombo" editable="false" styleClass="med-dispo-time-combo" promptText="--:--"
+                          HBox.hgrow="ALWAYS" maxWidth="Infinity"/>
+                <Label text="🕐" styleClass="med-dispo-input-icon" mouseTransparent="true"/>
+            </HBox>
+        </VBox>
+        <!-- Ligne 2 -->
+        <VBox spacing="6" GridPane.columnIndex="0" GridPane.rowIndex="1">
+            <Label text="Heure de fin *" styleClass="med-dispo-field-label"/>
+            <HBox styleClass="med-dispo-input-wrap" alignment="CENTER_LEFT">
+                <ComboBox fx:id="endTimeCombo" editable="false" styleClass="med-dispo-time-combo" promptText="--:--"
+                          HBox.hgrow="ALWAYS" maxWidth="Infinity"/>
+                <Label text="🕐" styleClass="med-dispo-input-icon" mouseTransparent="true"/>
+            </HBox>
+        </VBox>
+        <VBox spacing="6" GridPane.columnIndex="1" GridPane.rowIndex="1">
+            <Label text="Durée (minutes)" styleClass="med-dispo-field-label"/>
+            <Spinner fx:id="durationSpinner" styleClass="med-dispo-spinner" editable="true"/>
+        </VBox>
+    </GridPane>
+    <Region prefHeight="8"/>
+    <CheckBox fx:id="disponibleCheckBox" mnemonicParsing="false" selected="true" styleClass="med-dispo-check"
+              text="Disponible"/>
+    <Region prefHeight="24" VBox.vgrow="NEVER"/>
+    <HBox spacing="12" alignment="CENTER_LEFT" styleClass="med-dispo-form-actions">
+        <Button fx:id="saveButton" defaultButton="true" mnemonicParsing="false" onAction="#onSave"
+                styleClass="med-dispo-btn-save" text="Enregistrer la disponibilité"/>
+        <Button fx:id="cancelButton" cancelButton="true" mnemonicParsing="false" onAction="#onCancel"
+                styleClass="med-dispo-btn-cancel" text="Annuler"/>
+    </HBox>
+</VBox>

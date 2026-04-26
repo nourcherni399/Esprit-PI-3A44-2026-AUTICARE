@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Hyperlink?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.layout.FlowPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox maxWidth="1180" spacing="0" styleClass="rdv-booking-root" xmlns="http://javafx.com/javafx/21"
+      xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.example.controllers.PageRdvBookingController">
+    <padding>
+        <Insets bottom="28" left="16" right="16" top="12"/>
+    </padding>
+
+    <HBox alignment="CENTER_LEFT" spacing="16" styleClass="rdv-booking-topbar">
+        <Hyperlink onAction="#onBackToList" styleClass="rdv-booking-back" text="← Retour à la liste"/>
+        <Region HBox.hgrow="ALWAYS" minWidth="12"/>
+        <HBox fx:id="bookingStepperBox" alignment="CENTER_RIGHT" spacing="4" styleClass="rdv-booking-stepper"/>
+    </HBox>
+
+    <Region prefHeight="12"/>
+
+    <HBox alignment="TOP_LEFT" spacing="28" styleClass="rdv-booking-main" VBox.vgrow="ALWAYS" maxHeight="Infinity">
+        <!-- Colonne médecin -->
+        <VBox minWidth="268" prefWidth="300" spacing="16" styleClass="rdv-booking-sidebar">
+            <VBox spacing="14" styleClass="rdv-booking-profile-card">
+                <StackPane styleClass="rdv-booking-avatar-wrap">
+                    <Label fx:id="bookingAvatarInitials" styleClass="rdv-booking-avatar-text" text="DR"/>
+                </StackPane>
+                <VBox spacing="6">
+                    <Label fx:id="bookingSidebarName" styleClass="rdv-booking-sidebar-name" text="Dr. —"
+                           wrapText="true"/>
+                    <Label styleClass="rdv-booking-sidebar-tag" text="Spécialiste"/>
+                </VBox>
+                <Label fx:id="bookingSidebarBio" styleClass="rdv-booking-sidebar-bio" wrapText="true"
+                       text="Praticien accompagnant les personnes avec TSA."/>
+                <VBox spacing="8" styleClass="rdv-booking-contact-block">
+                    <Label fx:id="bookingSidebarPhone" styleClass="rdv-booking-contact-line" text="📞 —"/>
+                    <Label fx:id="bookingSidebarEmail" styleClass="rdv-booking-contact-line" text="✉ —"/>
+                </VBox>
+                <Label styleClass="rdv-booking-price" text="0 DT — Tarif de la consultation"/>
+            </VBox>
+
+            <VBox spacing="12" styleClass="rdv-booking-voice-box">
+                <Label styleClass="rdv-booking-voice-title" text="Assistant vocal (gratuit)"/>
+                <ComboBox fx:id="bookingVoiceLang" maxWidth="Infinity" styleClass="rdv-booking-voice-combo"/>
+                <Button mnemonicParsing="false" onAction="#onVoiceAssist" styleClass="rdv-booking-voice-btn"
+                        text="🎤 Parler pour prendre RDV"/>
+            </VBox>
+        </VBox>
+
+        <!-- Zone créneaux : titres hors carte, contenu dans une carte -->
+        <VBox HBox.hgrow="ALWAYS" minWidth="0" spacing="10" styleClass="rdv-booking-content">
+            <Label styleClass="rdv-booking-main-title" text="Choisissez votre créneau"/>
+            <Label styleClass="rdv-booking-main-sub" text="Sélectionnez le jour et l'heure qui vous conviennent le mieux."
+                   wrapText="true"/>
+
+            <VBox spacing="12" styleClass="rdv-booking-main-card" VBox.vgrow="ALWAYS" maxHeight="Infinity">
+                <padding>
+                    <Insets bottom="16" left="20" right="20" top="16"/>
+                </padding>
+                <Button mnemonicParsing="false" styleClass="rdv-booking-filter-all" text="Tous"/>
+
+                <ScrollPane fitToWidth="true" hbarPolicy="AS_NEEDED" maxHeight="Infinity" minViewportHeight="260"
+                            styleClass="rdv-booking-slots-scroll" vbarPolicy="AS_NEEDED" VBox.vgrow="ALWAYS">
+                    <FlowPane fx:id="bookingSlotsFlow" hgap="14" prefWrapLength="680" styleClass="rdv-booking-slots-flow"
+                              vgap="14"/>
+                </ScrollPane>
+
+                <HBox alignment="CENTER_LEFT" spacing="8" styleClass="rdv-booking-foot-row">
+                    <Label styleClass="rdv-booking-info-icon" text="ⓘ"/>
+                    <Label styleClass="rdv-booking-foot" text="Les créneaux rouges sont déjà réservés." wrapText="true"/>
+                </HBox>
+
+                <HBox alignment="CENTER_RIGHT">
+                    <Button fx:id="bookingContinuerBtn" disable="true" mnemonicParsing="false" onAction="#onContinuer"
+                            styleClass="rdv-booking-continuer" text="Continuer  →"/>
+                </HBox>
+            </VBox>
+        </VBox>
+    </HBox>
+</VBox>
