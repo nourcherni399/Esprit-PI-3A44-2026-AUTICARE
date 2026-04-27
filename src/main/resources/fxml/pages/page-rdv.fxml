@@ -8,7 +8,6 @@
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.TextField?>
-<?import javafx.scene.image.ImageView?>
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Region?>
@@ -88,9 +87,9 @@
             <Button text="×" styleClass="rdv-chatbot-icon-btn" onAction="#onToggleRdvChatbot"/>
         </HBox>
         <VBox spacing="4" styleClass="rdv-chatbot-intro-card">
-            <Label styleClass="rdv-chatbot-intro-title" text="Bonjour, je suis l'assistant AutiCare." wrapText="true"/>
+            <Label styleClass="rdv-chatbot-intro-title" text="" wrapText="true" managed="false" visible="false"/>
             <Label styleClass="rdv-chatbot-subtitle" text="" wrapText="true" managed="false" visible="false"/>
-            <Label styleClass="rdv-chatbot-intro-caption" text="Choisissez un thème ou écrivez librement :" wrapText="true"/>
+            <Label styleClass="rdv-chatbot-intro-caption" text="" wrapText="true" managed="false" visible="false"/>
             <HBox spacing="6" styleClass="rdv-chatbot-chip-wrap">
                 <Button fx:id="rdvQuizQuestionnaireBtn" text="Quiz texte" styleClass="rdv-chatbot-chip rdv-chip-green"
                         onAction="#onStartAutismQuestionnaireQuiz"/>
@@ -101,12 +100,9 @@
             </HBox>
             <HBox spacing="6" styleClass="rdv-chatbot-chip-wrap">
                 <Button text="Routine" styleClass="rdv-chatbot-chip" onAction="#onQuickThemeRoutine"/>
-                <Button text="Calme" styleClass="rdv-chatbot-chip" onAction="#onQuickThemeCalme"/>
+                <Button text="Anxiété" styleClass="rdv-chatbot-chip" onAction="#onQuickThemeCalme"/>
             </HBox>
         </VBox>
-        <ImageView fx:id="rdvChatbotImageView" fitHeight="120" fitWidth="220" preserveRatio="true"
-                   managed="false" visible="false" styleClass="rdv-chatbot-image"/>
-        <Label fx:id="rdvChatbotImageCaption" styleClass="rdv-chatbot-image-caption" wrapText="true"/>
         <ScrollPane fx:id="rdvChatbotHistoryScroll" fitToWidth="true" hbarPolicy="NEVER" vbarPolicy="AS_NEEDED"
                     styleClass="rdv-chatbot-history" VBox.vgrow="ALWAYS">
             <VBox fx:id="rdvChatbotHistory" spacing="8" styleClass="rdv-chatbot-history-box"/>
@@ -117,11 +113,9 @@
             <Button text="Quiz Rorschach" styleClass="rdv-chatbot-mini-chip rdv-chip-blue" onAction="#onStartRorschachImageQuiz"/>
         </HBox>
         <HBox spacing="8" alignment="CENTER_LEFT" styleClass="rdv-chatbot-input-row">
-            <Button text="🖼" styleClass="rdv-chatbot-media-btn" onAction="#onMediaActionInfo"/>
-            <TextField fx:id="rdvChatbotInput" promptText="Parlez ou écrivez..."
+            <TextField fx:id="rdvChatbotInput" promptText="Écrivez votre message…"
                        HBox.hgrow="ALWAYS" styleClass="rdv-chatbot-input"
                        onAction="#onSendRdvChatbotMessage"/>
-            <Button text="🎤" styleClass="rdv-chatbot-media-btn" onAction="#onMediaActionInfo"/>
             <Button text="Envoyer" styleClass="rdv-chatbot-send-btn" onAction="#onSendRdvChatbotMessage"/>
         </HBox>
     </VBox>

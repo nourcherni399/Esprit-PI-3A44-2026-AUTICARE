@@ -19,6 +19,15 @@ import java.util.regex.Pattern;
  * <p>Configuration via {@code application.properties} (ou variables d'environnement).</p>
  */
 public final class MultiAiProviderService {
+    /**
+     * Bases URL inférence image HF : le routeur remplace progressivement api-inference ;
+     * certains modèles ne répondent que sur l'un des deux.
+     */
+    private static final String[] HF_IMAGE_INFERENCE_BASES = {
+            "https://router.huggingface.co/hf-inference/models/",
+            "https://api-inference.huggingface.co/models/"
+    };
+
     public record ImageGenResult(String dataUrl, String providerUsed, String error) {}
     public record RdvPlannerCandidate(int availabilityId,
                                       int doctorId,
@@ -106,21 +115,13 @@ public final class MultiAiProviderService {
     }
 
     /**
-     * Génère une image via provider configuré, puis fallback IA vers l'autre provider IA.
-     * N'utilise jamais de fallback local.
+     * Génère une image via provider configuré.
+     * En mode actuel: HuggingFace uniquement (sans fallback Pexels).
      */
     public String generateInkblotImageDataUrlWithIaFallback(String prompt, int seedIndex) {
-        String preferred = cfg("ai.imageProvider", "AI_IMAGE_PROVIDER", "huggingface").trim().toLowerCase(Locale.ROOT);
         String first = generateInkblotImageDataUrl(prompt, seedIndex);
         if (first != null && !first.isBlank()) {
             return first;
-        }
-        try {
-            if ("huggingface".equals(preferred) || "hf".equals(preferred)) {
-                return pexelsImageDataUrl("inkblot abstract symmetry black white");
-            }
-        } catch (Exception ignored) {
-            return "";
         }
         return "";
     }
@@ -135,39 +136,25 @@ public final class MultiAiProviderService {
             if (hf.dataUrl() != null && !hf.dataUrl().isBlank()) {
                 return hf;
             }
-            String pexels = pexelsImageDataUrl("inkblot abstract symmetry black white");
-            if (pexels != null && !pexels.isBlank()) {
-                return new ImageGenResult(pexels, "pexels", "");
-            }
-            return new ImageGenResult("", "", "HF: " + hf.error() + " | Pexels: aucune image retournée");
+            return new ImageGenResult("", "", "HF: " + hf.error());
         } else {
             ImageGenResult hf = tryHfImageWithDebug(prompt, seedIndex);
             if (hf.dataUrl() != null && !hf.dataUrl().isBlank()) {
                 return hf;
             }
-            String pexels = pexelsImageDataUrl("inkblot abstract symmetry black white");
-            if (pexels != null && !pexels.isBlank()) {
-                return new ImageGenResult(pexels, "pexels", "");
-            }
-            return new ImageGenResult("", "", "HF: " + hf.error() + " | Pexels: aucune image retournée");
+            return new ImageGenResult("", "", "HF: " + hf.error());
         }
     }
 
     /**
-     * Génération image demandée en mode HF + Pexels :
-     * 1) Pexels (image rapide)
-     * 2) Hugging Face (secours text-to-image)
+     * Génération image demandée en mode HuggingFace uniquement.
      */
     public ImageGenResult generateInkblotImageWithHfPexelsDebug(String prompt, int seedIndex) {
-        String pexels = pexelsImageDataUrl("inkblot abstract symmetry black white");
-        if (pexels != null && !pexels.isBlank()) {
-            return new ImageGenResult(pexels, "pexels", "");
-        }
         ImageGenResult hf = tryHfImageWithDebug(prompt, seedIndex);
         if (hf.dataUrl() != null && !hf.dataUrl().isBlank()) {
             return hf;
         }
-        return new ImageGenResult("", "", "Pexels: aucune image retournée | HF: " + hf.error());
+        return new ImageGenResult("", "", "HF: " + hf.error());
     }
 
     /** Recherche la 1ère image Pexels pour une requête (URL publique). */
@@ -439,6 +426,29 @@ public final class MultiAiProviderService {
         return m.group(1);
     }
 
+    /**
+     * Certains pipelines HF renvoient du JSON (ex. image en base64) au lieu d'octets bruts image/*.
+     */
+    private static String tryExtractImageDataUrlFromHfJson(String body) {
+        if (body == null || body.isBlank()) {
+            return null;
+        }
+        String t = body.trim();
+        if (!t.startsWith("{") && !t.startsWith("[")) {
+            return null;
+        }
+        Pattern dataUrl = Pattern.compile("data:image/[a-zA-Z0-9+.-]+;base64,[A-Za-z0-9+/=]+");
+        var dm = dataUrl.matcher(t);
+        if (dm.find()) {
+            return dm.group();
+        }
+        String b64 = jsonValue(t, "image");
+        if (b64 != null && !b64.isBlank() && b64.length() > 80) {
+            return "data:image/png;base64," + b64.trim();
+        }
+        return null;
+    }
+
     private static String truncate(String s, int max) {
         if (s == null) {
             return "";
@@ -585,17 +595,18 @@ public final class MultiAiProviderService {
         }
     }
 
-    private String huggingFaceGenerateImageDataUrl(String prompt, int seedIndex) throws Exception {
+    private String huggingFaceGenerateImageDataUrl(String prompt, int seedIndex) {
         String key = cfg("huggingface.apiKey", "HUGGINGFACE_API_KEY", "").trim();
         if (key.isEmpty()) {
             return "";
         }
-        String primaryModel = cfg("huggingface.imageModel", "HUGGINGFACE_IMAGE_MODEL",
-                "stabilityai/stable-diffusion-2-1").trim();
+        String primaryModel = sanitizeHfModelId(cfg("huggingface.imageModel", "HUGGINGFACE_IMAGE_MODEL",
+                "black-forest-labs/FLUX.1-schnell"));
         String[] candidates = new String[] {
                 primaryModel,
+                "black-forest-labs/FLUX.1-schnell",
                 "runwayml/stable-diffusion-v1-5",
-                "stabilityai/sd-turbo"
+                "stabilityai/stable-diffusion-2-1"
         };
         for (String model : candidates) {
             String out = huggingFaceGenerateImageDataUrlForModel(key, model, prompt, seedIndex);
@@ -612,9 +623,15 @@ public final class MultiAiProviderService {
             if (key.isEmpty()) {
                 return new ImageGenResult("", "huggingface", "clé absente");
             }
-            String model = cfg("huggingface.imageModel", "HUGGINGFACE_IMAGE_MODEL",
-                    "runwayml/stable-diffusion-v1-5").trim();
-            String[] candidates = new String[] { model, "runwayml/stable-diffusion-v1-5", "stabilityai/sd-turbo" };
+            String model = sanitizeHfModelId(cfg("huggingface.imageModel", "HUGGINGFACE_IMAGE_MODEL",
+                    "black-forest-labs/FLUX.1-schnell"));
+            String[] candidates = new String[] {
+                    model,
+                    "black-forest-labs/FLUX.1-schnell",
+                    "stabilityai/stable-diffusion-2-1",
+                    "runwayml/stable-diffusion-v1-5",
+                    "CompVis/stable-diffusion-v1-4"
+            };
             String lastErr = "";
             for (String m : candidates) {
                 var r = hfAttemptModel(key, m, prompt, seedIndex);
@@ -629,22 +646,33 @@ public final class MultiAiProviderService {
         }
     }
 
+    /** Enlève commentaire inline (#...) souvent collé par erreur dans application.properties. */
+    private static String sanitizeHfModelId(String raw) {
+        if (raw == null) {
+            return "";
+        }
+        String s = raw.trim();
+        int hash = s.indexOf('#');
+        if (hash >= 0) {
+            s = s.substring(0, hash).trim();
+        }
+        return s.replaceAll("\\s+", "");
+    }
+
     private ImageGenResult hfAttemptModel(String key, String model, String prompt, int seedIndex) {
         try {
-            if (model == null || model.isBlank()) {
+            model = sanitizeHfModelId(model);
+            if (model.isBlank()) {
                 return new ImageGenResult("", "huggingface", "modèle vide");
             }
             String modelPath = encPath(model.trim());
-            String[] urls = new String[] {
-                    "https://api-inference.huggingface.co/models/" + modelPath,
-                    "https://router.huggingface.co/hf-inference/models/" + modelPath
-            };
             String payload = "{"
                     + "\"inputs\":\"" + j(prompt) + "\","
                     + "\"parameters\":{\"num_inference_steps\":22,\"guidance_scale\":7.0,\"seed\":" + Math.max(1, seedIndex + 1) + "}"
                     + "}";
             String lastError = "";
-            for (String url : urls) {
+            for (String base : HF_IMAGE_INFERENCE_BASES) {
+                String url = base + modelPath;
                 for (int attempt = 1; attempt <= 3; attempt++) {
                     HttpRequest req = HttpRequest.newBuilder()
                             .uri(URI.create(url))
@@ -652,6 +680,7 @@ public final class MultiAiProviderService {
                             .header("Authorization", "Bearer " + key)
                             .header("Content-Type", "application/json")
                             .header("Accept", "image/*,application/json")
+                            .header("X-Wait-For-Model", "true")
                             .header("User-Agent", "AutiCareDesktop/1.0")
                             .POST(HttpRequest.BodyPublishers.ofString(payload, StandardCharsets.UTF_8))
                             .build();
@@ -663,6 +692,12 @@ public final class MultiAiProviderService {
                         return new ImageGenResult("data:" + contentType + ";base64," + b64, "huggingface/" + model, "");
                     }
                     String bodyText = new String(resp.body(), StandardCharsets.UTF_8);
+                    if (status / 100 == 2) {
+                        String fromJson = tryExtractImageDataUrlFromHfJson(bodyText);
+                        if (fromJson != null && !fromJson.isBlank()) {
+                            return new ImageGenResult(fromJson, "huggingface/" + model, "");
+                        }
+                    }
                     if (status == 503 || bodyText.toLowerCase(Locale.ROOT).contains("loading")) {
                         String eta = jsonNumberValue(bodyText, "estimated_time");
                         long sleepMs = 6000L;
@@ -676,61 +711,179 @@ public final class MultiAiProviderService {
                     break;
                 }
             }
+            ImageGenResult fal = tryFalRouterTextToImage(key, model, prompt, seedIndex);
+            if (fal.dataUrl() != null && !fal.dataUrl().isBlank()) {
+                return fal;
+            }
+            String tail = fal.error() != null && !fal.error().isBlank() ? " | fal: " + fal.error() : "";
             return new ImageGenResult("", "huggingface/" + model,
-                    lastError.isBlank() ? "timeout/loading persistant" : lastError);
+                    (lastError.isBlank() ? "timeout/loading persistant" : lastError) + tail);
         } catch (Exception e) {
             return new ImageGenResult("", "huggingface/" + model, e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName());
         }
     }
 
-    private String huggingFaceGenerateImageDataUrlForModel(String key, String model, String prompt, int seedIndex)
-            throws Exception {
-        if (model == null || model.isBlank()) {
-            return "";
-        }
-        String url = "https://api-inference.huggingface.co/models/" + encPath(model.trim());
-        String payload = "{"
-                + "\"inputs\":\"" + j(prompt) + "\","
-                + "\"parameters\":{\"num_inference_steps\":22,\"guidance_scale\":7.0,\"seed\":" + Math.max(1, seedIndex + 1) + "}"
-                + "}";
-
-        for (int attempt = 1; attempt <= 3; attempt++) {
-            HttpRequest req = HttpRequest.newBuilder()
-                    .uri(URI.create(url))
-                    .timeout(Duration.ofSeconds(90))
+    /**
+     * Si l'API classique hf-inference ne répond pas, appelle le modèle via le routeur Inference Providers
+     * (ex. fal-ai), comme le client Python {@code InferenceClient(provider="auto")}.
+     */
+    private ImageGenResult tryFalRouterTextToImage(String key, String hfModelId, String prompt, int seedIndex) {
+        try {
+            hfModelId = sanitizeHfModelId(hfModelId);
+            if (hfModelId.isBlank()) {
+                return new ImageGenResult("", "huggingface/fal", "modèle vide");
+            }
+            String hubUrl = "https://huggingface.co/api/models/" + encPath(hfModelId) + "?expand[]=inferenceProviderMapping";
+            HttpRequest hubReq = HttpRequest.newBuilder()
+                    .uri(URI.create(hubUrl))
+                    .timeout(Duration.ofSeconds(25))
+                    .header("Accept", "application/json")
+                    .header("User-Agent", "AutiCareDesktop/1.0")
+                    .GET()
+                    .build();
+            HttpResponse<String> hubResp = HTTP.send(hubReq, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
+            if (hubResp.statusCode() / 100 != 2) {
+                return new ImageGenResult("", "huggingface/fal",
+                        "Hub mapping HTTP " + hubResp.statusCode() + " " + truncate(hubResp.body(), 120));
+            }
+            String hubBody = hubResp.body();
+            String falBlock = extractJsonObjectAfterField(hubBody, "\"fal-ai\"");
+            if (falBlock == null) {
+                return new ImageGenResult("", "huggingface/fal", "pas de provider fal-ai dans inferenceProviderMapping");
+            }
+            String st = jsonValue(falBlock, "status");
+            if (st != null && !"live".equalsIgnoreCase(st.trim())) {
+                return new ImageGenResult("", "huggingface/fal", "fal-ai status=" + st);
+            }
+            String providerId = jsonValue(falBlock, "providerId");
+            if (providerId == null || providerId.isBlank()) {
+                return new ImageGenResult("", "huggingface/fal", "providerId fal vide");
+            }
+            String falUrl = "https://router.huggingface.co/fal-ai/" + encPath(providerId.trim());
+            String payload = "{"
+                    + "\"prompt\":\"" + j(prompt) + "\","
+                    + "\"seed\":" + Math.max(1, seedIndex + 1)
+                    + "}";
+            HttpRequest post = HttpRequest.newBuilder()
+                    .uri(URI.create(falUrl))
+                    .timeout(Duration.ofSeconds(120))
                     .header("Authorization", "Bearer " + key)
                     .header("Content-Type", "application/json")
+                    .header("Accept", "application/json, image/*")
+                    .header("User-Agent", "AutiCareDesktop/1.0")
                     .POST(HttpRequest.BodyPublishers.ofString(payload, StandardCharsets.UTF_8))
                     .build();
-            HttpResponse<byte[]> resp = HTTP.send(req, HttpResponse.BodyHandlers.ofByteArray());
+            HttpResponse<byte[]> resp = HTTP.send(post, HttpResponse.BodyHandlers.ofByteArray());
             int status = resp.statusCode();
             String contentType = resp.headers().firstValue("content-type").orElse("");
-
             if (status / 100 == 2 && contentType.startsWith("image/")) {
                 String b64 = Base64.getEncoder().encodeToString(resp.body());
-                return "data:" + contentType + ";base64," + b64;
+                return new ImageGenResult("data:" + contentType + ";base64," + b64, "huggingface/fal/" + hfModelId, "");
             }
-
-            // Cas fréquent HF : modèle en cours de chargement (503 + JSON avec estimated_time).
-            String bodyText = "";
-            if (contentType.contains("application/json") || !contentType.startsWith("image/")) {
-                bodyText = new String(resp.body(), StandardCharsets.UTF_8);
-            }
-            if (status == 503 || bodyText.toLowerCase(Locale.ROOT).contains("loading")) {
-                String eta = jsonNumberValue(bodyText, "estimated_time");
-                long sleepMs = 6000L;
-                if (eta != null) {
-                    try {
-                        sleepMs = Math.max(4000L, (long) (Double.parseDouble(eta) * 1000L));
-                    } catch (Exception ignored) {
-                        // valeur par défaut
+            String bodyText = new String(resp.body(), StandardCharsets.UTF_8);
+            if (status / 100 == 2) {
+                String imgUrl = jsonFirstUrlInImagesArray(bodyText);
+                if (imgUrl != null && !imgUrl.isBlank()) {
+                    String dataUrl = fetchUrlAsImageDataUrl(imgUrl);
+                    if (dataUrl != null && !dataUrl.isBlank()) {
+                        return new ImageGenResult(dataUrl, "huggingface/fal/" + hfModelId, "");
                     }
                 }
-                Thread.sleep(Math.min(sleepMs, 15000L));
-                continue;
+                String fromJson = tryExtractImageDataUrlFromHfJson(bodyText);
+                if (fromJson != null && !fromJson.isBlank()) {
+                    return new ImageGenResult(fromJson, "huggingface/fal/" + hfModelId, "");
+                }
             }
-            break;
+            return new ImageGenResult("", "huggingface/fal/" + hfModelId,
+                    "HTTP " + status + " " + truncate(bodyText, 200));
+        } catch (Exception e) {
+            return new ImageGenResult("", "huggingface/fal",
+                    e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName());
         }
-        return "";
+    }
+
+    /** Extrait le premier objet JSON après {@code "fieldName":} (ex. {@code "fal-ai": { ... }}). */
+    private static String extractJsonObjectAfterField(String json, String fieldNameToken) {
+        if (json == null) {
+            return null;
+        }
+        int k = json.indexOf(fieldNameToken);
+        if (k < 0) {
+            return null;
+        }
+        int i = json.indexOf('{', k + fieldNameToken.length());
+        if (i < 0) {
+            return null;
+        }
+        int depth = 0;
+        for (int j = i; j < json.length(); j++) {
+            char c = json.charAt(j);
+            if (c == '{') {
+                depth++;
+            } else if (c == '}') {
+                depth--;
+                if (depth == 0) {
+                    return json.substring(i, j + 1);
+                }
+            }
+        }
+        return null;
+    }
+
+    private static String jsonFirstUrlInImagesArray(String json) {
+        if (json == null) {
+            return null;
+        }
+        Pattern p = Pattern.compile(
+                "\"images\"\\s*:\\s*\\[\\s*\\{\\s*\"url\"\\s*:\\s*\"((?:\\\\.|[^\"\\\\])*)\"",
+                Pattern.CASE_INSENSITIVE);
+        var m = p.matcher(json);
+        if (!m.find()) {
+            return null;
+        }
+        return m.group(1)
+                .replace("\\n", "\n")
+                .replace("\\r", "\r")
+                .replace("\\t", "\t")
+                .replace("\\\"", "\"")
+                .replace("\\/", "/")
+                .replace("\\\\", "\\");
+    }
+
+    private static String fetchUrlAsImageDataUrl(String imageUrl) {
+        try {
+            if (imageUrl == null || imageUrl.isBlank()) {
+                return null;
+            }
+            if (imageUrl.startsWith("data:image/")) {
+                return imageUrl;
+            }
+            HttpRequest get = HttpRequest.newBuilder()
+                    .uri(URI.create(imageUrl))
+                    .timeout(Duration.ofSeconds(60))
+                    .header("User-Agent", "AutiCareDesktop/1.0")
+                    .GET()
+                    .build();
+            HttpResponse<byte[]> r = HTTP.send(get, HttpResponse.BodyHandlers.ofByteArray());
+            if (r.statusCode() / 100 != 2) {
+                return null;
+            }
+            String ct = r.headers().firstValue("content-type").orElse("image/png");
+            if (!ct.startsWith("image/")) {
+                ct = "image/png";
+            }
+            int semi = ct.indexOf(';');
+            if (semi > 0) {
+                ct = ct.substring(0, semi).trim();
+            }
+            String b64 = Base64.getEncoder().encodeToString(r.body());
+            return "data:" + ct + ";base64," + b64;
+        } catch (Exception ignored) {
+            return null;
+        }
+    }
+
+    private String huggingFaceGenerateImageDataUrlForModel(String key, String model, String prompt, int seedIndex) {
+        return hfAttemptModel(key, model, prompt, seedIndex).dataUrl();
     }
 }

@@ -2,7 +2,9 @@ package org.example.controllers;
 
 import javafx.application.Platform;
 import javafx.animation.FadeTransition;
+import javafx.animation.KeyFrame;
 import javafx.animation.ParallelTransition;
+import javafx.animation.Timeline;
 import javafx.animation.TranslateTransition;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
@@ -58,6 +60,8 @@ import java.util.TreeSet;
 import java.net.URLEncoder;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -105,16 +109,15 @@ public class PageRdvController implements PublicShellAware {
     @FXML
     private TextField rdvChatbotInput;
     @FXML
-    private ImageView rdvChatbotImageView;
-    @FXML
-    private Label rdvChatbotImageCaption;
-    @FXML
     private Button rdvQuizQuestionnaireBtn;
     @FXML
     private Button rdvQuizImagesBtn;
     @FXML
     private Button rdvChatbotExpandBtn;
     private VBox rdvAssistantTypingBubble;
+    /** Bulle « IA en cours » pendant la génération d'une planche Rorschach (points animés). */
+    private VBox rdvImageGenPendingBubble;
+    private Timeline rdvImageGenDotsTimeline;
     private boolean rdvChatbotExpanded;
 
     private final UserService userService = new UserService();
@@ -129,22 +132,12 @@ public class PageRdvController implements PublicShellAware {
     private int chatQuizIndex = -1;
     private int chatQuizScore = 0;
     private final List<String> questionnaireResponses = new ArrayList<>();
+    private final List<String> autismQuizQuestionsDynamic = new ArrayList<>();
     private final List<String> rorschachResponses = new ArrayList<>();
     private static final HashSet<String> CHAT_ESSENTIAL_WORDS = new HashSet<>(List.of(
             "autisme", "tsa", "communication", "interactions", "sensorielle", "routine",
             "stereotypies", "diagnostic", "accompagnement", "surcharge", "consultation"
     ));
-
-    private static final String[] AUTISM_QUIZ_QUESTIONS = {
-            "Je me sens souvent submergé(e) par les bruits, lumières ou textures. (oui/non)",
-            "Les changements imprévus dans ma routine me mettent en difficulté. (oui/non)",
-            "Je trouve les interactions sociales spontanées fatigantes ou difficiles à décoder. (oui/non)",
-            "Je préfère des consignes claires et précises plutôt que implicites. (oui/non)",
-            "J’ai des centres d’intérêt très intenses ou spécifiques. (oui/non)",
-            "Le contact visuel peut être inconfortable pour moi. (oui/non)",
-            "Je peux avoir besoin de temps pour comprendre les émotions des autres. (oui/non)",
-            "Je me sens mieux avec des routines stables au quotidien. (oui/non)"
-    };
 
     private static final String[] RORSCHACH_SVG = {
             "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 360 220'><rect width='360' height='220' fill='#fff'/>"
@@ -802,17 +795,12 @@ public class PageRdvController implements PublicShellAware {
         if (rdvChatbotHistory != null) {
             rdvChatbotHistory.getChildren().clear();
         }
-        if (rdvChatbotImageView != null) {
-            rdvChatbotImageView.setVisible(false);
-            rdvChatbotImageView.setManaged(false);
-        }
-        if (rdvChatbotImageCaption != null) {
-            rdvChatbotImageCaption.setText("");
-        }
     }
 
     @FXML
     private void onClearRdvChatbotHistory() {
+        removeAssistantTypingIndicator();
+        removeRorschachImageGeneratingIndicator();
         if (rdvChatbotHistory != null) {
             rdvChatbotHistory.getChildren().clear();
         }
@@ -920,9 +908,24 @@ public class PageRdvController implements PublicShellAware {
         chatQuizIndex = 0;
         chatQuizScore = 0;
         questionnaireResponses.clear();
+        autismQuizQuestionsDynamic.clear();
         hideRorschachImage();
-        appendChatbotLine("Assistant", "Quiz questionnaire lancé (8 questions, répondez par oui/non).");
-        appendChatbotLine("Assistant", AUTISM_QUIZ_QUESTIONS[chatQuizIndex]);
+        appendChatbotLine("Assistant", "Je prépare 4 questions personnalisées (IA)...");
+        showAssistantTypingIndicator();
+        new Thread(() -> {
+            List<String> generated = generateAutismQuizQuestionsWithAi();
+            Platform.runLater(() -> {
+                removeAssistantTypingIndicator();
+                if (generated.isEmpty()) {
+                    chatQuizMode = ChatQuizMode.NONE;
+                    appendChatbotLine("Assistant", "Impossible de générer les questions IA pour le moment. Réessayez.");
+                    return;
+                }
+                autismQuizQuestionsDynamic.addAll(generated);
+                appendChatbotLine("Assistant", "Quiz questionnaire lancé (4 questions, réponses libres).");
+                appendChatbotLine("Assistant", autismQuizQuestionsDynamic.get(0));
+            });
+        }, "rdv-ai-quiz-questions").start();
     }
 
     @FXML
@@ -937,27 +940,33 @@ public class PageRdvController implements PublicShellAware {
 
     @FXML
     private void onQuickThemeEmotions() {
-        pushQuickPrompt("J’ai besoin d’aide pour gérer mes émotions avant un rendez-vous.");
+        startQuickTheme("J’ai besoin d’aide pour gérer mes émotions au quotidien.");
     }
 
     @FXML
     private void onQuickThemeSensoriel() {
-        pushQuickPrompt("Comment réduire la surcharge sensorielle pendant la consultation ?");
+        startQuickTheme("Comment réduire la surcharge sensorielle dans mes activités quotidiennes ?");
     }
 
     @FXML
     private void onQuickThemeRoutine() {
-        pushQuickPrompt("Aide-moi à préparer une routine simple avant mon rendez-vous.");
+        startQuickTheme("Aide-moi à construire une routine simple et rassurante.");
     }
 
     @FXML
     private void onQuickThemeCalme() {
-        pushQuickPrompt("Propose-moi des techniques courtes pour me calmer avant le rendez-vous.");
+        startQuickTheme("Propose-moi des techniques courtes pour me calmer en cas de stress.");
     }
 
-    @FXML
-    private void onMediaActionInfo() {
-        appendChatbotLine("Assistant", "La capture image/voix arrive bientôt. Pour l’instant, écrivez votre message.");
+    private void startQuickTheme(String text) {
+        // Un clic sur un thème rapide passe toujours en mode discussion libre.
+        if (chatQuizMode != ChatQuizMode.NONE) {
+            chatQuizMode = ChatQuizMode.NONE;
+            chatQuizIndex = -1;
+            hideRorschachImage();
+            appendChatbotLine("Assistant", "Mode quiz arrêté. On passe en conversation libre.");
+        }
+        pushQuickPrompt(text);
     }
 
     private void pushQuickPrompt(String text) {
@@ -1009,7 +1018,7 @@ public class PageRdvController implements PublicShellAware {
         bubble.getStyleClass().addAll("rdv-chatbot-bubble", "rdv-chatbot-bubble-assistant", "rdv-chatbot-bubble-typing");
         Label header = new Label("Assistant :");
         header.getStyleClass().add("rdv-chatbot-bubble-author");
-        Label content = new Label("en train d'écrire...");
+        Label content = new Label("Assistant écrit...");
         content.getStyleClass().add("rdv-chatbot-bubble-message");
         content.setWrapText(true);
         bubble.getChildren().addAll(header, content);
@@ -1027,6 +1036,51 @@ public class PageRdvController implements PublicShellAware {
         }
         rdvChatbotHistory.getChildren().remove(rdvAssistantTypingBubble);
         rdvAssistantTypingBubble = null;
+    }
+
+    private void removeRorschachImageGeneratingIndicator() {
+        if (rdvImageGenDotsTimeline != null) {
+            rdvImageGenDotsTimeline.stop();
+            rdvImageGenDotsTimeline = null;
+        }
+        if (rdvImageGenPendingBubble != null && rdvChatbotHistory != null) {
+            rdvChatbotHistory.getChildren().remove(rdvImageGenPendingBubble);
+            rdvImageGenPendingBubble = null;
+        }
+    }
+
+    /**
+     * Affiche une bulle assistant avec points animés pour indiquer que la génération d'image IA est en cours.
+     */
+    private void showRorschachImageGeneratingIndicator(int plateNumber, int totalPlates) {
+        if (rdvChatbotHistory == null) {
+            return;
+        }
+        removeRorschachImageGeneratingIndicator();
+        VBox bubble = new VBox(4);
+        bubble.getStyleClass().addAll("rdv-chatbot-bubble", "rdv-chatbot-bubble-assistant", "rdv-chatbot-bubble-typing");
+        Label header = new Label("Assistant :");
+        header.getStyleClass().add("rdv-chatbot-bubble-author");
+        Label content = new Label();
+        content.getStyleClass().add("rdv-chatbot-bubble-message");
+        content.setWrapText(true);
+        String base = "L'IA génère l'image (planche " + plateNumber + "/" + totalPlates + "). Cela peut prendre un peu de temps";
+        final int[] dotCount = {1};
+        content.setText(base + ".");
+        Timeline tl = new Timeline(new KeyFrame(javafx.util.Duration.millis(450), e -> {
+            dotCount[0] = (dotCount[0] % 3) + 1;
+            content.setText(base + ".".repeat(dotCount[0]));
+        }));
+        tl.setCycleCount(Timeline.INDEFINITE);
+        tl.play();
+        rdvImageGenDotsTimeline = tl;
+        bubble.getChildren().addAll(header, content);
+        bubble.setOpacity(0.9);
+        rdvImageGenPendingBubble = bubble;
+        rdvChatbotHistory.getChildren().add(bubble);
+        if (rdvChatbotHistoryScroll != null) {
+            Platform.runLater(() -> rdvChatbotHistoryScroll.setVvalue(1.0));
+        }
     }
 
     private static void playChatBubbleEnterAnimation(VBox bubble) {
@@ -1091,57 +1145,197 @@ public class PageRdvController implements PublicShellAware {
             return "Cliquez sur « Quiz Rorschach » pour lancer les planches.";
         }
         if (q.contains("autisme") || q.contains("tsa")) {
-            return "Je peux vous proposer un plan simple pour préparer votre rendez-vous en contexte TSA.";
+            return "Je peux vous aider avec des conseils pratiques sur l’autisme/TSA au quotidien.";
         }
-        if (q.contains("rdv") && (q.contains("prendre") || q.contains("reserver") || q.contains("réserver"))) {
-            return "Choisissez un médecin, puis cliquez sur « Prendre RDV ».";
+        if (q.contains("rdv") && (q.contains("prendre") || q.contains("reserver") || q.contains("réserver"))
+                || q.contains("consultation")) {
+            return "Je suis centré sur l’autisme en général. Je peux expliquer la communication, le sensoriel, les routines et la régulation.";
         }
         if (q.contains("annul") || q.contains("report")) {
-            return "Pour annuler ou reporter, utilisez le lien reçu par e-mail.";
+            return "Je peux plutôt vous aider avec des stratégies d’adaptation au quotidien.";
         }
         if (q.contains("connect") || q.contains("compte") || q.contains("login")) {
-            return "Connectez-vous pour confirmer la réservation.";
+            return "Je peux vous accompagner sur les questions autisme/TSA de manière générale.";
         }
         if (q.contains("tarif") || q.contains("prix") || q.contains("coût") || q.contains("cout")) {
-            return "Le tarif est affiché sur la fiche médecin.";
+            return "Je peux vous aider sur des conseils pratiques et ressources autour de l’autisme.";
         }
         if (q.contains("horaire") || q.contains("heure") || q.contains("dispon")) {
-            return "Les horaires apparaissent après sélection du médecin.";
+            return "Parlez-moi de votre besoin (sensoriel, social, routine, émotions), je vous réponds directement.";
         }
         if (q.contains("email") || q.contains("mail") || q.contains("sms") || q.contains("confirm")) {
-            return "Après validation, vous recevez une confirmation.";
+            return "Je peux fournir des conseils clairs, étape par étape, sur les situations liées à l’autisme.";
         }
         String pexels = aiService.firstPexelsImageUrl(userText);
         if (pexels != null && !pexels.isBlank()) {
-            return "Je peux vous aider pour la prise de RDV. Image utile : " + pexels;
+            return "Je peux vous aider sur l’autisme en général. Ressource visuelle utile : " + pexels;
         }
-        return "Je peux vous aider pour la prise de RDV et les questions fréquentes.";
+        return "Je peux vous aider sur l’autisme/TSA en général : communication, sensoriel, routines, stress et stratégies concrètes.";
     }
 
     private void handleQuestionnaireAnswer(String msg) {
-        boolean yes = isAffirmative(msg);
-        boolean no = isNegative(msg);
-        if (!yes && !no) {
-            appendChatbotLine("Assistant", "Répondez simplement par « oui » ou « non ».");
+        String answer = msg != null ? msg.trim() : "";
+        if (answer.isBlank()) {
+            appendChatbotLine("Assistant", "Réponse vide. Donnez une phrase courte.");
             return;
         }
-        if (yes) {
-            chatQuizScore++;
+        if (!isComprehensibleQuizAnswer(answer)) {
+            appendChatbotLine("Assistant", "Je n'ai pas bien compris. Merci d'écrire une réponse claire avec au moins 2-3 mots compréhensibles.");
+            return;
         }
-        questionnaireResponses.add("Q" + (chatQuizIndex + 1) + ": " + (yes ? "oui" : "non"));
+        questionnaireResponses.add("Q" + (chatQuizIndex + 1) + ": " + answer);
         chatQuizIndex++;
-        if (chatQuizIndex >= AUTISM_QUIZ_QUESTIONS.length) {
-            int total = AUTISM_QUIZ_QUESTIONS.length;
-            appendChatbotLine("Assistant", "Résultat questionnaire: " + chatQuizScore + "/" + total + " réponses « oui ».");
-            appendChatbotLine("Assistant", buildAutismQuizFeedback(chatQuizScore, total));
+        if (chatQuizIndex >= autismQuizQuestionsDynamic.size()) {
+            appendChatbotLine("Assistant", "Merci. Voici le résumé de vos réponses :");
             appendChatbotLine("Assistant", buildQuestionnaireSummary());
-            appendChatbotLine("Assistant", "Ce résultat n’est pas un diagnostic. Pour une évaluation clinique, consultez un professionnel spécialisé TSA.");
-            chatQuizMode = ChatQuizMode.NONE;
-            chatQuizIndex = -1;
-            chatQuizScore = 0;
+            appendChatbotLine("Assistant", "Je prépare maintenant une analyse personnalisée par IA...");
+            showAssistantTypingIndicator();
+            new Thread(() -> {
+                String analysis = generateQuestionnaireAiAnalysis();
+                Platform.runLater(() -> {
+                    removeAssistantTypingIndicator();
+                    appendChatbotLine("Assistant", analysis);
+                    appendChatbotLine("Assistant", "Ce questionnaire est informatif et ne remplace pas un avis médical.");
+                    chatQuizMode = ChatQuizMode.NONE;
+                    chatQuizIndex = -1;
+                    chatQuizScore = 0;
+                });
+            }, "rdv-ai-quiz-analysis").start();
             return;
         }
-        appendChatbotLine("Assistant", AUTISM_QUIZ_QUESTIONS[chatQuizIndex]);
+        appendChatbotLine("Assistant", autismQuizQuestionsDynamic.get(chatQuizIndex));
+    }
+
+    private boolean isComprehensibleQuizAnswer(String answer) {
+        if (answer == null) {
+            return false;
+        }
+        String s = answer.trim();
+        if (s.length() < 2) {
+            return false;
+        }
+        String normalized = s.toLowerCase(Locale.ROOT).replaceAll("[^\\p{L}]", "");
+        if (normalized.length() < 2) {
+            return false;
+        }
+        if (normalized.chars().distinct().count() <= 1) {
+            return false;
+        }
+        if (normalized.matches("oui|non|peur|bruit|stress|fatigue|triste|colere|colère|anxiete|anxiété|routine|sensoriel")) {
+            return true;
+        }
+        // Détecte les chaînes très aléatoires (ex: "jygtkfujm").
+        if (normalized.matches(".*[bcdfghjklmnpqrstvwxz]{7,}.*")) {
+            return false;
+        }
+        return normalized.matches(".*[aeiouyàâäéèêëîïôöùûü].*");
+    }
+
+    private String generateQuestionnaireAiAnalysis() {
+        String ai = aiService.chatRdv(buildQuestionnaireAiAnalysisPrompt());
+        if (ai != null && !ai.isBlank()
+                && !ai.startsWith("Clé ")
+                && !ai.startsWith("Provider IA non reconnu")
+                && !ai.toLowerCase(Locale.ROOT).startsWith("erreur api ia:")) {
+            return ai.trim();
+        }
+        return "Analyse rapide (liée au vécu TSA, sans diagnostic): vos réponses évoquent des thèmes fréquents chez de nombreuses personnes autistes "
+                + "(sensoriel, routine, régulation). Pistes: repérer 2 déclencheurs, préparer 2 stratégies d'apaisement, demander un accompagnement clair "
+                + "si la surcharge persiste. Beaucoup de personnes autistes ou TSA partagent des expériences proches.";
+    }
+
+    private String buildQuestionnaireAiAnalysisPrompt() {
+        String questions = autismQuizQuestionsDynamic.isEmpty()
+                ? "Questions non disponibles."
+                : String.join("\n- ", autismQuizQuestionsDynamic);
+        String responses = questionnaireResponses.isEmpty()
+                ? "Aucune réponse."
+                : String.join("\n- ", questionnaireResponses);
+        return """
+                Tu es un assistant spécialisé autisme/TSA, orienté neuroaffirmatif.
+                À partir des réponses ci-dessous, fais une analyse courte et utile en la RELIANT au vécu des personnes autistes ou avec un profil TSA
+                (sensoriel, routines, surcharge, communication, besoin de clarté, forces et stratégies au quotidien).
+                Ne pose AUCUN diagnostic à la personne : tu commentes des réponses à un questionnaire, tu ne dis pas qu'elle est ou n'est pas autiste.
+                Réponds en français, ton bienveillant, simple, concret, respectueux.
+                Structure attendue:
+                1) Points clés liés aux réponses (3 puces max), avec au moins une piste concrète « au quotidien » pour des personnes TSA
+                2) Niveau de difficulté perçu (faible/modéré/élevé + 1 phrase) dans ce cadre informatif uniquement
+                3) Plan d'action concret (3 actions pratiques adaptées au contexte TSA / neuroatypique)
+                4) Phrase de soutien finale (1 phrase) qui valide la personne sans stigmatiser
+
+                Questions:
+                - %s
+
+                Réponses utilisateur:
+                - %s
+                """.formatted(questions, responses);
+    }
+
+    private List<String> generateAutismQuizQuestionsWithAi() {
+        String prompt = """
+                Génère exactement 4 questions courtes en français pour un questionnaire autisme/TSA.
+                Contraintes:
+                - Questions ouvertes (pas oui/non)
+                - Ton bienveillant, simple, non médical
+                - Thèmes: sensoriel, routine/changement, régulation émotionnelle, besoins de communication/accompagnement au quotidien
+                Format de sortie strict:
+                1) ...
+                2) ...
+                3) ...
+                4) ...
+                N'ajoute aucun titre, aucune introduction, aucune explication.
+                """;
+        String raw = aiService.chatRdv(prompt);
+        if (raw == null || raw.isBlank()) {
+            return List.of();
+        }
+        String low = raw.toLowerCase(Locale.ROOT);
+        if (low.startsWith("clé ") || low.startsWith("provider ia non reconnu")
+                || low.startsWith("erreur api ia:") || low.startsWith("http ")) {
+            return List.of();
+        }
+        List<String> out = new ArrayList<>();
+
+        // Cas fréquent: l'IA renvoie "1) ... 2) ... 3) ... 4) ..." sur une seule ligne.
+        String normalized = raw.replace('\n', ' ').replace('\r', ' ').trim();
+        Pattern numberedPattern = Pattern.compile("(?:^|\\s)(\\d+)\\s*[\\)\\.:-]\\s*(.+?)(?=(?:\\s+\\d+\\s*[\\)\\.:-]\\s)|$)");
+        Matcher matcher = numberedPattern.matcher(normalized);
+        while (matcher.find()) {
+            String q = sanitizeGeneratedQuestion(matcher.group(2));
+            if (!q.isBlank()) {
+                out.add(q);
+            }
+            if (out.size() == 4) {
+                return out;
+            }
+        }
+
+        // Fallback: extraction ligne par ligne en ignorant les lignes d'introduction.
+        for (String line : raw.split("\\R")) {
+            String q = sanitizeGeneratedQuestion(line);
+            if (q.isBlank()) {
+                continue;
+            }
+            if (q.contains("?")) {
+                out.add(q);
+            }
+            if (out.size() == 4) {
+                return out;
+            }
+        }
+        return List.of();
+    }
+
+    private static String sanitizeGeneratedQuestion(String text) {
+        String q = text == null ? "" : text.trim();
+        if (q.isEmpty()) {
+            return "";
+        }
+        q = q.replaceFirst("^[-*]\\s*", "");
+        q = q.replaceFirst("^\\d+[\\).:-]\\s*", "");
+        q = q.replaceFirst("^(voici|questions|questionnaire)\\b.*?:\\s*", "");
+        q = q.trim();
+        return q;
     }
 
     private void handleRorschachAnswer(String msg) {
@@ -1156,14 +1350,27 @@ public class PageRdvController implements PublicShellAware {
         chatQuizIndex++;
         if (chatQuizIndex >= RORSCHACH_SVG.length) {
             hideRorschachImage();
+            final List<String> snapshot = new ArrayList<>(rorschachResponses);
+            final int scoreFinal = chatQuizScore;
+            final int nPlates = RORSCHACH_SVG.length;
             appendChatbotLine("Assistant", "Quiz images terminé. Merci pour vos descriptions.");
-            appendChatbotLine("Assistant", "Lecture pédagogique: " + chatQuizScore + "/" + RORSCHACH_SVG.length
-                    + " réponses détaillées. Cela ne permet pas de diagnostiquer un TSA.");
-            appendChatbotLine("Assistant", buildRorschachSummary());
-            appendChatbotLine("Assistant", "Si vous voulez, je peux vous proposer des stratégies pratiques pour préparer un rendez-vous en contexte TSA.");
-            chatQuizMode = ChatQuizMode.NONE;
-            chatQuizIndex = -1;
-            chatQuizScore = 0;
+            appendChatbotLine("Assistant", "Lecture pédagogique: " + scoreFinal + "/" + nPlates
+                    + " réponses détaillées (à partir de 12 caractères). "
+                    + "Ces taches d'encre ne permettent pas de diagnostiquer un TSA ni un trouble psychique : "
+                    + "ce sont uniquement des supports de réflexion sur la perception.");
+            appendChatbotLine("Assistant", "Je rédige une analyse de vos descriptions (langage, imagination, pistes bienveillantes)…");
+            showAssistantTypingIndicator();
+            new Thread(() -> {
+                String analysis = generateRorschachAiAnalysis(snapshot, scoreFinal, nPlates);
+                Platform.runLater(() -> {
+                    removeAssistantTypingIndicator();
+                    appendChatbotLine("Assistant", analysis);
+                    appendChatbotLine("Assistant", "Si vous voulez, je peux vous proposer des stratégies pratiques pour la vie quotidienne en contexte TSA.");
+                    chatQuizMode = ChatQuizMode.NONE;
+                    chatQuizIndex = -1;
+                    chatQuizScore = 0;
+                });
+            }, "rdv-rorschach-ai-analysis").start();
             return;
         }
         appendChatbotLine("Assistant", rorschachQuestionForIndex(chatQuizIndex));
@@ -1183,26 +1390,39 @@ public class PageRdvController implements PublicShellAware {
         }
         hideRorschachImage();
         final int plate = idx;
+        final int total = RORSCHACH_SVG.length;
+        Runnable showPending = () -> showRorschachImageGeneratingIndicator(plate + 1, total);
+        if (Platform.isFxApplicationThread()) {
+            showPending.run();
+        } else {
+            Platform.runLater(showPending);
+        }
         new Thread(() -> {
             String prompt = "Abstract symmetrical inkblot test card, centered on white paper, black and dark gray ink, "
                     + "high contrast, no text, no watermark, psychological projective style, unique variation #" + (plate + 1);
             final MultiAiProviderService.ImageGenResult result = aiService.generateInkblotImageWithDebug(prompt, plate);
             Platform.runLater(() -> {
+                removeRorschachImageGeneratingIndicator();
                 if (result != null && result.dataUrl() != null && !result.dataUrl().isBlank()) {
                     Image rendered = new Image(result.dataUrl(), false);
+                    if (rendered.isError()) {
+                        String providerHint = humanProviderName(result.providerUsed());
+                        String caption = "Planche " + (plate + 1) + "/" + RORSCHACH_SVG.length
+                                + " indisponible (" + providerHint + " • image invalide).";
+                        appendChatbotRetryBubble(caption, plate);
+                        return;
+                    }
                     String caption = "Planche " + (plate + 1) + "/" + RORSCHACH_SVG.length
-                            + " — Que voyez-vous ? (" + humanProviderName(result.providerUsed()) + " • succès)";
+                            + " — Que voyez-vous ?";
                     appendChatbotImageBubble(rendered, caption, false, plate);
                 } else {
-                    // Secours visuel pour garantir l'affichage de la planche, même si l'IA distante échoue.
-                    Image rendered = new Image(svgToDataUrl(RORSCHACH_SVG[plate]), false);
                     String providerHint = humanProviderName(result != null ? result.providerUsed() : "");
                     String caption = "Planche " + (plate + 1) + "/" + RORSCHACH_SVG.length
-                            + " — image de secours affichée (" + providerHint + " • échec IA).";
+                            + " indisponible (" + providerHint + " • échec IA).";
                     if (result != null && result.error() != null && !result.error().isBlank()) {
                         System.err.println("[AutiCare] Rorschach IA indisponible: " + truncateUi(result.error(), 260));
                     }
-                    appendChatbotImageBubble(rendered, caption, true, plate);
+                    appendChatbotRetryBubble(caption, plate);
                 }
             });
         }, "rdv-rorschach-image-" + idx).start();
@@ -1210,6 +1430,10 @@ public class PageRdvController implements PublicShellAware {
 
     private void appendChatbotImageBubble(Image img, String caption, boolean allowRetry, int plateIndex) {
         if (rdvChatbotHistory == null || img == null) {
+            return;
+        }
+        if (img.isError()) {
+            appendChatbotRetryBubble(caption != null ? caption : "Image indisponible.", plateIndex);
             return;
         }
         VBox bubble = new VBox(6);
@@ -1376,19 +1600,10 @@ public class PageRdvController implements PublicShellAware {
         if (s.equals("stop") || s.equals("quitter") || s.equals("libre") || s.equals("annuler")) {
             return true;
         }
-        // Si message plus long qu'une réponse quiz oui/non, on bascule en mode libre.
-        return !(isAffirmative(s) || isNegative(s)) && s.split("\\s+").length >= 4;
+        return false;
     }
 
     private void hideRorschachImage() {
-        if (rdvChatbotImageView != null) {
-            rdvChatbotImageView.setImage(null);
-            rdvChatbotImageView.setVisible(false);
-            rdvChatbotImageView.setManaged(false);
-        }
-        if (rdvChatbotImageCaption != null) {
-            rdvChatbotImageCaption.setText("");
-        }
     }
 
     private static boolean isAffirmative(String msg) {
@@ -1419,11 +1634,76 @@ public class PageRdvController implements PublicShellAware {
         return "Résumé de vos réponses:\n- " + String.join("\n- ", questionnaireResponses);
     }
 
-    private String buildRorschachSummary() {
-        if (rorschachResponses.isEmpty()) {
-            return "Résumé: aucune description enregistrée.";
+    private String generateRorschachAiAnalysis(List<String> descriptions, int detailedCount, int totalPlates) {
+        String prompt = buildRorschachAiAnalysisPrompt(descriptions, detailedCount, totalPlates);
+        String ai = aiService.chatRdv(prompt);
+        if (ai != null && !ai.isBlank()
+                && !ai.startsWith("Clé ")
+                && !ai.startsWith("Provider IA non reconnu")
+                && !ai.toLowerCase(Locale.ROOT).startsWith("erreur api ia:")
+                && !ai.toLowerCase(Locale.ROOT).startsWith("http ")) {
+            return ai.trim();
         }
-        return "Résumé de vos descriptions:\n- " + String.join("\n- ", rorschachResponses);
+        return buildRorschachPedagogicFallbackAnalysis(descriptions, detailedCount, totalPlates);
+    }
+
+    private static String buildRorschachAiAnalysisPrompt(List<String> descriptions, int detailedCount, int totalPlates) {
+        String lines = descriptions == null || descriptions.isEmpty()
+                ? "Aucune description."
+                : String.join("\n", descriptions);
+        return "Tu es un assistant bienveillant, orienté accompagnement des personnes autistes ou avec un profil TSA (approche neuroaffirmative).\n"
+                + "Contexte: l'utilisateur vient de décrire quatre taches d'encre symétriques (inspiration projective / Rorschach) "
+                + "dans un cadre strictement non clinique et ludique.\n\n"
+                + "Descriptions fournies par planche (à utiliser comme matière, sans recopier bêtement la liste à l'identique) :\n"
+                + lines + "\n\n"
+                + "Indicateur technique côté application (longueur des textes, sans aucune valeur psychologique ou diagnostique) : "
+                + detailedCount + "/" + totalPlates + " réponses comptées comme « détaillées ».\n\n"
+                + "Consignes:\n"
+                + "- Réponds en français, ton calme et respectueux.\n"
+                + "- Ne dis JAMAIS à la personne qu'elle est ou n'est pas autiste/TSA et n'établis aucun diagnostic médical ou psychiatrique.\n"
+                + "- RELIE explicitement ton analyse au vécu des personnes TSA: par exemple perception du détail ou du global, "
+                + "sensibilité aux contrastes ou à la symétrie, verbalisation de l'imaginaire, fatigue cognitive quand il faut décrire vite, "
+                + "besoin de temps pour formuler, richesse d'association d'idées — toujours comme pistes générales ou « cela peut rappeler pour certaines personnes… », "
+                + "sans attribuer un profil à l'utilisateur.\n"
+                + "- Fais une analyse qualitative: vocabulaire, cohérence, thèmes (formes, mouvement, nature, émotions suggérées), contrastes entre planches.\n"
+                + "- Si les textes sont très courts ou peu lisibles, le dire avec tact et proposer des pistes compatibles avec le vécu TSA "
+                + "(prendre son temps, décrire le ressenti corporel ou les micro-détails) sans juger.\n"
+                + "- Structure en quatre paragraphes numérotés 1) à 4): synthèse des descriptions; langage et imagination; "
+                + "pont explicite avec le quotidien des personnes autistes (forces, stratégies, sensorialité) sans diagnostic; "
+                + "phrase de clôture invitant à poursuivre (outils, entourage, professionnel si besoin).\n"
+                + "- Pas de markdown (# ou **), texte brut adapté à une bulle de chat.\n";
+    }
+
+    private static String buildRorschachPedagogicFallbackAnalysis(List<String> descriptions,
+                                                                  int detailedCount,
+                                                                  int totalPlates) {
+        if (descriptions == null || descriptions.isEmpty()) {
+            return "1) Aucune description n'a été enregistrée, il est donc difficile de commenter le contenu.\n"
+                    + "2) Pour la prochaine fois, vous pouvez noter formes, contrastes, ce qui vous fait penser à un objet ou une scène.\n"
+                    + "3) Beaucoup de personnes autistes ou TSA trouvent utile de prendre le temps de décrire un visuel (détails, ressenti) sans se presser.\n"
+                    + "4) Si vous le souhaitez, reformulez vos impressions : nous pourrons en reparler dans une perspective d'accompagnement bienveillant.";
+        }
+        int shortish = 0;
+        for (String line : descriptions) {
+            String t = line == null ? "" : line.replaceFirst("^Planche\\s+\\d+:\\s*", "").trim();
+            if (t.length() < 12) {
+                shortish++;
+            }
+        }
+        StringBuilder b = new StringBuilder();
+        b.append("1) Synthèse: vous avez proposé quatre descriptions courtes. ")
+                .append(shortish >= 3
+                        ? "Plusieurs sont très brèves : l'exercice gagne en intérêt lorsqu'on ajoute quelques détails (formes, tailles, mouvement, ambiance).\n"
+                        : "Les formulations montrent déjà une tentative de mise en mots de ce que vous percevez.\n");
+        b.append("2) Langage et imagination: chaque planche invite à une projection différente. Noter symétrie, vide ou densité peut aider à comprendre ")
+                .append("ce qui capte votre attention — ce que beaucoup de personnes TSA rapportent aussi au quotidien (détails visuels, motifs).\n");
+        b.append("3) Dans la communauté autiste/TSA, décrire calmement un visuel (tache, nuage, affiche) aide souvent à mettre des mots sur des impressions ")
+                .append("ou à ralentir quand il y a surcharge. Indicateur technique (non clinique): ")
+                .append(detailedCount).append("/").append(totalPlates)
+                .append(" réponses au seuil « détaillé » de l'application.\n");
+        b.append("4) L'analyse IA détaillée n'est pas disponible pour l'instant : réessayez plus tard, ou écrivez ce qui vous parle le plus — ")
+                .append("nous pourrons lier cela à des pistes concrètes pour le vécu TSA, sans aucun diagnostic.");
+        return b.toString();
     }
 
     private void loadMedecins() {
