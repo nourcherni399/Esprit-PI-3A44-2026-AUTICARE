@@ -1,12 +1,17 @@
 package org.example.controllers;
 
 import javafx.application.Platform;
+import javafx.animation.FadeTransition;
+import javafx.animation.ParallelTransition;
+import javafx.animation.TranslateTransition;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Cursor;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.image.PixelWriter;
+import javafx.scene.image.WritableImage;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
@@ -22,6 +27,7 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
 import org.example.models.Role;
@@ -38,6 +44,7 @@ import org.example.utils.RdvTarifFormat;
 import org.example.utils.UserAvatarGraphic;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -48,6 +55,8 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.TreeSet;
+import java.net.URLEncoder;
+import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.time.LocalDate;
@@ -92,6 +101,8 @@ public class PageRdvController implements PublicShellAware {
     @FXML
     private VBox rdvChatbotHistory;
     @FXML
+    private ScrollPane rdvChatbotHistoryScroll;
+    @FXML
     private TextField rdvChatbotInput;
     @FXML
     private ImageView rdvChatbotImageView;
@@ -101,6 +112,10 @@ public class PageRdvController implements PublicShellAware {
     private Button rdvQuizQuestionnaireBtn;
     @FXML
     private Button rdvQuizImagesBtn;
+    @FXML
+    private Button rdvChatbotExpandBtn;
+    private VBox rdvAssistantTypingBubble;
+    private boolean rdvChatbotExpanded;
 
     private final UserService userService = new UserService();
     private final AvailabilityService availabilityService = new AvailabilityService();
@@ -782,12 +797,10 @@ public class PageRdvController implements PublicShellAware {
         if (rdvChatbotPanel != null) {
             rdvChatbotPanel.setManaged(false);
             rdvChatbotPanel.setVisible(false);
+            setChatbotPanelCompact();
         }
         if (rdvChatbotHistory != null) {
             rdvChatbotHistory.getChildren().clear();
-            appendChatbotLine("Assistant", "Bonjour, je peux vous aider pour la prise de rendez-vous et les besoins liés à l’autisme.");
-            appendChatbotLine("Assistant", "Je peux aussi lancer 2 quiz : questionnaire et images (planches type Rorschach).");
-            appendChatbotLine("Assistant", "Note: ces quiz sont éducatifs et ne remplacent pas un diagnostic clinique.");
         }
         if (rdvChatbotImageView != null) {
             rdvChatbotImageView.setVisible(false);
@@ -803,6 +816,7 @@ public class PageRdvController implements PublicShellAware {
         if (rdvChatbotHistory != null) {
             rdvChatbotHistory.getChildren().clear();
         }
+        rdvAssistantTypingBubble = null;
         hideRorschachImage();
         chatQuizMode = ChatQuizMode.NONE;
         chatQuizIndex = -1;
@@ -824,6 +838,44 @@ public class PageRdvController implements PublicShellAware {
     }
 
     @FXML
+    private void onToggleRdvChatbotSize() {
+        if (rdvChatbotPanel == null) {
+            return;
+        }
+        if (rdvChatbotExpanded) {
+            setChatbotPanelCompact();
+        } else {
+            setChatbotPanelExpanded();
+        }
+    }
+
+    private void setChatbotPanelCompact() {
+        rdvChatbotExpanded = false;
+        if (rdvChatbotPanel != null) {
+            rdvChatbotPanel.setPrefWidth(430);
+            rdvChatbotPanel.setMaxWidth(430);
+            rdvChatbotPanel.setPrefHeight(560);
+            rdvChatbotPanel.setMaxHeight(560);
+        }
+        if (rdvChatbotExpandBtn != null) {
+            rdvChatbotExpandBtn.setText("⤢");
+        }
+    }
+
+    private void setChatbotPanelExpanded() {
+        rdvChatbotExpanded = true;
+        if (rdvChatbotPanel != null) {
+            rdvChatbotPanel.setPrefWidth(520);
+            rdvChatbotPanel.setMaxWidth(520);
+            rdvChatbotPanel.setPrefHeight(700);
+            rdvChatbotPanel.setMaxHeight(700);
+        }
+        if (rdvChatbotExpandBtn != null) {
+            rdvChatbotExpandBtn.setText("⤡");
+        }
+    }
+
+    @FXML
     private void onSendRdvChatbotMessage() {
         if (rdvChatbotInput == null) {
             return;
@@ -835,16 +887,30 @@ public class PageRdvController implements PublicShellAware {
         appendChatbotLine("Vous", msg);
         rdvChatbotInput.clear();
         if (chatQuizMode == ChatQuizMode.AUTISM_QUESTIONNAIRE) {
-            handleQuestionnaireAnswer(msg);
-            return;
+            if (shouldExitQuizForFreeChat(msg)) {
+                chatQuizMode = ChatQuizMode.NONE;
+                appendChatbotLine("Assistant", "Mode libre activé. Posez votre question.");
+            } else {
+                handleQuestionnaireAnswer(msg);
+                return;
+            }
         }
         if (chatQuizMode == ChatQuizMode.RORSCHACH_IMAGES) {
-            handleRorschachAnswer(msg);
-            return;
+            if (shouldExitQuizForFreeChat(msg)) {
+                chatQuizMode = ChatQuizMode.NONE;
+                appendChatbotLine("Assistant", "Mode libre activé. Posez votre question.");
+            } else {
+                handleRorschachAnswer(msg);
+                return;
+            }
         }
+        showAssistantTypingIndicator();
         new Thread(() -> {
             String answer = generateRdvHelpAnswer(msg);
-            Platform.runLater(() -> appendChatbotLine("Assistant", answer));
+            Platform.runLater(() -> {
+                removeAssistantTypingIndicator();
+                appendChatbotLine("Assistant", answer);
+            });
         }, "rdv-ai-chat").start();
     }
 
@@ -865,7 +931,6 @@ public class PageRdvController implements PublicShellAware {
         chatQuizIndex = 0;
         chatQuizScore = 0;
         rorschachResponses.clear();
-        appendChatbotLine("Assistant", "Quiz Rorschach lancé (version pédagogique, non diagnostique).");
         appendChatbotLine("Assistant", rorschachQuestionForIndex(chatQuizIndex));
         showRorschachPlate(chatQuizIndex);
     }
@@ -900,9 +965,13 @@ public class PageRdvController implements PublicShellAware {
             return;
         }
         appendChatbotLine("Vous", text);
+        showAssistantTypingIndicator();
         new Thread(() -> {
             String answer = generateRdvHelpAnswer(text);
-            Platform.runLater(() -> appendChatbotLine("Assistant", answer));
+            Platform.runLater(() -> {
+                removeAssistantTypingIndicator();
+                appendChatbotLine("Assistant", answer);
+            });
         }, "rdv-ai-chat-quick").start();
     }
 
@@ -917,10 +986,61 @@ public class PageRdvController implements PublicShellAware {
         bubble.getStyleClass().add("Vous".equalsIgnoreCase(safeAuthor) ? "rdv-chatbot-bubble-user" : "rdv-chatbot-bubble-assistant");
         Label header = new Label(safeAuthor + " :");
         header.getStyleClass().add("rdv-chatbot-bubble-author");
-        TextFlow content = createStyledChatText(safeText, "Assistant".equalsIgnoreCase(safeAuthor));
-        content.getStyleClass().add("rdv-chatbot-bubble-content");
+        Label content = new Label(safeText);
+        content.setWrapText(true);
+        content.setMaxWidth(Double.MAX_VALUE);
+        content.getStyleClass().add("rdv-chatbot-bubble-message");
         bubble.getChildren().addAll(header, content);
+        bubble.setOpacity(0);
+        bubble.setTranslateY(8);
         rdvChatbotHistory.getChildren().add(bubble);
+        playChatBubbleEnterAnimation(bubble);
+        if (rdvChatbotHistoryScroll != null) {
+            Platform.runLater(() -> rdvChatbotHistoryScroll.setVvalue(1.0));
+        }
+    }
+
+    private void showAssistantTypingIndicator() {
+        if (rdvChatbotHistory == null) {
+            return;
+        }
+        removeAssistantTypingIndicator();
+        VBox bubble = new VBox(4);
+        bubble.getStyleClass().addAll("rdv-chatbot-bubble", "rdv-chatbot-bubble-assistant", "rdv-chatbot-bubble-typing");
+        Label header = new Label("Assistant :");
+        header.getStyleClass().add("rdv-chatbot-bubble-author");
+        Label content = new Label("en train d'écrire...");
+        content.getStyleClass().add("rdv-chatbot-bubble-message");
+        content.setWrapText(true);
+        bubble.getChildren().addAll(header, content);
+        bubble.setOpacity(0.85);
+        rdvAssistantTypingBubble = bubble;
+        rdvChatbotHistory.getChildren().add(bubble);
+        if (rdvChatbotHistoryScroll != null) {
+            Platform.runLater(() -> rdvChatbotHistoryScroll.setVvalue(1.0));
+        }
+    }
+
+    private void removeAssistantTypingIndicator() {
+        if (rdvAssistantTypingBubble == null || rdvChatbotHistory == null) {
+            return;
+        }
+        rdvChatbotHistory.getChildren().remove(rdvAssistantTypingBubble);
+        rdvAssistantTypingBubble = null;
+    }
+
+    private static void playChatBubbleEnterAnimation(VBox bubble) {
+        if (bubble == null) {
+            return;
+        }
+        FadeTransition fade = new FadeTransition(javafx.util.Duration.millis(160), bubble);
+        fade.setFromValue(0.0);
+        fade.setToValue(1.0);
+        TranslateTransition slide = new TranslateTransition(javafx.util.Duration.millis(180), bubble);
+        slide.setFromY(8);
+        slide.setToY(0);
+        ParallelTransition in = new ParallelTransition(fade, slide);
+        in.play();
     }
 
     private TextFlow createStyledChatText(String text, boolean emphasizeEssentials) {
@@ -965,43 +1085,37 @@ public class PageRdvController implements PublicShellAware {
 
         String q = userText.toLowerCase(Locale.ROOT);
         if (q.contains("quiz") && (q.contains("questionnaire") || q.contains("autisme"))) {
-            return "Cliquez sur « Quiz questionnaire » juste en bas du chat pour démarrer.";
+            return "Cliquez sur « Quiz texte » pour commencer.";
         }
         if (q.contains("quiz") && (q.contains("image") || q.contains("rorschach"))) {
-            return "Cliquez sur « Quiz images » pour lancer les planches type Rorschach (usage éducatif).";
+            return "Cliquez sur « Quiz Rorschach » pour lancer les planches.";
         }
         if (q.contains("autisme") || q.contains("tsa")) {
-            return "Bien sûr. En contexte TSA, je conseille en priorité :\n"
-                    + "1) Préparer un mini-plan du rendez-vous (qui, où, combien de temps).\n"
-                    + "2) Réduire la surcharge sensorielle (casque, lunettes, pause respiratoire).\n"
-                    + "3) Utiliser des phrases courtes pour exprimer votre besoin.\n"
-                    + "Si tu veux, je te fais un plan personnalisé en 3 étapes.";
+            return "Je peux vous proposer un plan simple pour préparer votre rendez-vous en contexte TSA.";
         }
         if (q.contains("rdv") && (q.contains("prendre") || q.contains("reserver") || q.contains("réserver"))) {
-            return "Choisissez un médecin dans la liste, cliquez sur « Prendre RDV », puis sélectionnez un créneau disponible.";
+            return "Choisissez un médecin, puis cliquez sur « Prendre RDV ».";
         }
         if (q.contains("annul") || q.contains("report")) {
-            return "Pour annuler ou reporter, utilisez le lien reçu par e-mail (si activé) ou contactez directement le cabinet.";
+            return "Pour annuler ou reporter, utilisez le lien reçu par e-mail.";
         }
         if (q.contains("connect") || q.contains("compte") || q.contains("login")) {
-            return "Vous devez être connecté pour confirmer une réservation. Utilisez « Se connecter » ou « Créer un compte ».";
+            return "Connectez-vous pour confirmer la réservation.";
         }
         if (q.contains("tarif") || q.contains("prix") || q.contains("coût") || q.contains("cout")) {
-            return "Le tarif de consultation est affiché sur chaque fiche médecin dans la liste.";
+            return "Le tarif est affiché sur la fiche médecin.";
         }
         if (q.contains("horaire") || q.contains("heure") || q.contains("dispon")) {
-            return "Les horaires disponibles apparaissent après avoir choisi le médecin et cliqué sur « Prendre RDV ».";
+            return "Les horaires apparaissent après sélection du médecin.";
         }
         if (q.contains("email") || q.contains("mail") || q.contains("sms") || q.contains("confirm")) {
-            return "Après validation, vous recevez une confirmation selon les notifications activées (e-mail/SMS).";
+            return "Après validation, vous recevez une confirmation.";
         }
         String pexels = aiService.firstPexelsImageUrl(userText);
         if (pexels != null && !pexels.isBlank()) {
-            return "Je peux vous aider sur : prise de RDV, disponibilité, annulation/report, connexion et confirmation.\n"
-                    + "Image utile (Pexels) : " + pexels;
+            return "Je peux vous aider pour la prise de RDV. Image utile : " + pexels;
         }
-        return "Je peux t’aider concrètement sur : préparation du RDV, stress/autisme, disponibilité, annulation/report et confirmation."
-                + (ai != null && ai.startsWith("Clé ") ? " Configurez une clé API IA pour des réponses plus avancées." : "");
+        return "Je peux vous aider pour la prise de RDV et les questions fréquentes.";
     }
 
     private void handleQuestionnaireAnswer(String msg) {
@@ -1059,8 +1173,7 @@ public class PageRdvController implements PublicShellAware {
     private String rorschachQuestionForIndex(int idx) {
         int n = idx + 1;
         int total = RORSCHACH_SVG.length;
-        return "Je vais te présenter l'image NUMÉRO " + n + " sur " + total + ".\n"
-                + "Regarde-la attentivement et dis-moi ce que tu vois ou ressens. Qu'est-ce que tu vois ?";
+        return "Image " + n + "/" + total + " : que voyez-vous ?";
     }
 
     private void showRorschachPlate(int idx) {
@@ -1068,41 +1181,154 @@ public class PageRdvController implements PublicShellAware {
             hideRorschachImage();
             return;
         }
-        if (rdvChatbotImageCaption != null) {
-            rdvChatbotImageCaption.setText("Planche " + (idx + 1) + "/" + RORSCHACH_SVG.length
-                    + " — génération de l’image...");
-        }
-        if (rdvChatbotImageView != null) {
-            rdvChatbotImageView.setManaged(true);
-            rdvChatbotImageView.setVisible(true);
-            rdvChatbotImageView.setImage(null);
-        }
+        hideRorschachImage();
         final int plate = idx;
         new Thread(() -> {
             String prompt = "Abstract symmetrical inkblot test card, centered on white paper, black and dark gray ink, "
                     + "high contrast, no text, no watermark, psychological projective style, unique variation #" + (plate + 1);
-            final MultiAiProviderService.ImageGenResult result = aiService.generateInkblotImageWithHfPexelsDebug(prompt, plate);
+            final MultiAiProviderService.ImageGenResult result = aiService.generateInkblotImageWithDebug(prompt, plate);
             Platform.runLater(() -> {
-                if (rdvChatbotImageView == null) {
-                    return;
-                }
                 if (result != null && result.dataUrl() != null && !result.dataUrl().isBlank()) {
-                    rdvChatbotImageView.setImage(new Image(result.dataUrl(), false));
-                    if (rdvChatbotImageCaption != null) {
-                        rdvChatbotImageCaption.setText("Planche " + (plate + 1) + "/" + RORSCHACH_SVG.length
-                                + " — Que voyez-vous ? (" + result.providerUsed() + ")");
-                    }
+                    Image rendered = new Image(result.dataUrl(), false);
+                    String caption = "Planche " + (plate + 1) + "/" + RORSCHACH_SVG.length
+                            + " — Que voyez-vous ? (" + humanProviderName(result.providerUsed()) + " • succès)";
+                    appendChatbotImageBubble(rendered, caption, false, plate);
                 } else {
-                    // Mode strict API IA : pas de fallback local.
-                    rdvChatbotImageView.setImage(null);
-                    if (rdvChatbotImageCaption != null) {
-                        String err = result != null ? result.error() : "erreur inconnue";
-                        rdvChatbotImageCaption.setText("Planche " + (plate + 1) + "/" + RORSCHACH_SVG.length
-                                + " — génération IA indisponible : " + truncateUi(err, 260));
+                    // Secours visuel pour garantir l'affichage de la planche, même si l'IA distante échoue.
+                    Image rendered = new Image(svgToDataUrl(RORSCHACH_SVG[plate]), false);
+                    String providerHint = humanProviderName(result != null ? result.providerUsed() : "");
+                    String caption = "Planche " + (plate + 1) + "/" + RORSCHACH_SVG.length
+                            + " — image de secours affichée (" + providerHint + " • échec IA).";
+                    if (result != null && result.error() != null && !result.error().isBlank()) {
+                        System.err.println("[AutiCare] Rorschach IA indisponible: " + truncateUi(result.error(), 260));
                     }
+                    appendChatbotImageBubble(rendered, caption, true, plate);
                 }
             });
         }, "rdv-rorschach-image-" + idx).start();
+    }
+
+    private void appendChatbotImageBubble(Image img, String caption, boolean allowRetry, int plateIndex) {
+        if (rdvChatbotHistory == null || img == null) {
+            return;
+        }
+        VBox bubble = new VBox(6);
+        bubble.getStyleClass().addAll("rdv-chatbot-bubble", "rdv-chatbot-bubble-assistant");
+        Label header = new Label("Assistant :");
+        header.getStyleClass().add("rdv-chatbot-bubble-author");
+        ImageView iv = new ImageView(img);
+        iv.getStyleClass().add("rdv-chatbot-bubble-image");
+        iv.setFitWidth(300);
+        iv.setPreserveRatio(true);
+        Label cap = new Label(caption != null ? caption : "");
+        cap.getStyleClass().add("rdv-chatbot-bubble-image-caption");
+        cap.setWrapText(true);
+        bubble.getChildren().addAll(header, iv, cap);
+        if (allowRetry) {
+            Button retry = new Button("Réessayer IA");
+            retry.getStyleClass().add("rdv-chatbot-retry-btn");
+            retry.setOnAction(ev -> showRorschachPlate(plateIndex));
+            bubble.getChildren().add(retry);
+        }
+        bubble.setOpacity(0);
+        bubble.setTranslateY(8);
+        rdvChatbotHistory.getChildren().add(bubble);
+        playChatBubbleEnterAnimation(bubble);
+        if (rdvChatbotHistoryScroll != null) {
+            Platform.runLater(() -> rdvChatbotHistoryScroll.setVvalue(1.0));
+        }
+    }
+
+    private void appendChatbotRetryBubble(String message, int plateIndex) {
+        if (rdvChatbotHistory == null) {
+            return;
+        }
+        VBox bubble = new VBox(6);
+        bubble.getStyleClass().addAll("rdv-chatbot-bubble", "rdv-chatbot-bubble-assistant");
+        Label header = new Label("Assistant :");
+        header.getStyleClass().add("rdv-chatbot-bubble-author");
+        Label msg = new Label(message != null ? message : "Image IA indisponible.");
+        msg.getStyleClass().add("rdv-chatbot-bubble-message");
+        msg.setWrapText(true);
+        Button retry = new Button("Réessayer IA");
+        retry.getStyleClass().add("rdv-chatbot-retry-btn");
+        retry.setOnAction(ev -> showRorschachPlate(plateIndex));
+        bubble.getChildren().addAll(header, msg, retry);
+        bubble.setOpacity(0);
+        bubble.setTranslateY(8);
+        rdvChatbotHistory.getChildren().add(bubble);
+        playChatBubbleEnterAnimation(bubble);
+        if (rdvChatbotHistoryScroll != null) {
+            Platform.runLater(() -> rdvChatbotHistoryScroll.setVvalue(1.0));
+        }
+    }
+
+    /**
+     * Fallback local fiable : génère une tache symétrique (style encre) même sans API IA.
+     */
+    private static Image buildLocalInkblotFallbackImage(int plateIndex) {
+        int width = 360;
+        int height = 220;
+        WritableImage img = new WritableImage(width, height);
+        PixelWriter pw = img.getPixelWriter();
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                pw.setColor(x, y, Color.WHITE);
+            }
+        }
+        Random rnd = new Random(1337L + plateIndex * 7919L);
+        // Silhouette centrale légère pour rappeler la pliure Rorschach.
+        for (int y = 18; y < height - 18; y++) {
+            double alpha = 0.04 + (rnd.nextDouble() * 0.05);
+            pw.setColor(width / 2, y, Color.rgb(22, 22, 22, alpha));
+            pw.setColor((width / 2) - 1, y, Color.rgb(22, 22, 22, alpha * 0.6));
+        }
+        // Blobs noirs symétriques (aspect "encre") au lieu du bruit gris.
+        int blobs = 34 + rnd.nextInt(10);
+        for (int i = 0; i < blobs; i++) {
+            int cx = 42 + rnd.nextInt((width / 2) - 66);
+            int cy = 18 + rnd.nextInt(height - 36);
+            int rx = 10 + rnd.nextInt(26);
+            int ry = 8 + rnd.nextInt(24);
+            drawMirroredInkBlob(pw, width, height, cx, cy, rx, ry, rnd);
+        }
+        return img;
+    }
+
+    private static void drawMirroredInkBlob(PixelWriter pw,
+                                            int width,
+                                            int height,
+                                            int cx,
+                                            int cy,
+                                            int rx,
+                                            int ry,
+                                            Random rnd) {
+        int minX = Math.max(0, cx - rx - 2);
+        int maxX = Math.min((width / 2) - 1, cx + rx + 2);
+        int minY = Math.max(0, cy - ry - 2);
+        int maxY = Math.min(height - 1, cy + ry + 2);
+        for (int y = minY; y <= maxY; y++) {
+            for (int x = minX; x <= maxX; x++) {
+                double nx = (x - cx) / (double) Math.max(1, rx);
+                double ny = (y - cy) / (double) Math.max(1, ry);
+                double d = nx * nx + ny * ny;
+                if (d > 1.25) {
+                    continue;
+                }
+                // Bord irrégulier style encre.
+                double edgeNoise = (rnd.nextDouble() - 0.5) * 0.24;
+                double ink = 1.0 - d + edgeNoise;
+                if (ink <= 0.08) {
+                    continue;
+                }
+                double alpha = Math.min(0.92, 0.42 + ink * 0.62);
+                int base = 10 + rnd.nextInt(20); // noir/brun très foncé
+                Color c = Color.rgb(base, base, base, alpha);
+                pw.setColor(x, y, c);
+                int mx = width - 1 - x;
+                pw.setColor(mx, y, c);
+            }
+        }
     }
 
     private static String truncateUi(String s, int max) {
@@ -1110,6 +1336,48 @@ public class PageRdvController implements PublicShellAware {
             return "";
         }
         return s.length() <= max ? s : s.substring(0, max) + "...";
+    }
+
+    private static String humanProviderName(String raw) {
+        if (raw == null || raw.isBlank()) {
+            return "IA";
+        }
+        String low = raw.toLowerCase(Locale.ROOT);
+        if (low.contains("openai")) {
+            return "OpenAI";
+        }
+        if (low.contains("huggingface") || low.contains("hf")) {
+            return "HuggingFace";
+        }
+        if (low.contains("pexels")) {
+            return "Pexels";
+        }
+        return raw;
+    }
+
+    private static String svgToDataUrl(String svg) {
+        try {
+            String encoded = URLEncoder.encode(svg != null ? svg : "", StandardCharsets.UTF_8)
+                    .replace("+", "%20");
+            return "data:image/svg+xml;utf8," + encoded;
+        } catch (Exception e) {
+            return "";
+        }
+    }
+
+    private static boolean shouldExitQuizForFreeChat(String msg) {
+        if (msg == null) {
+            return false;
+        }
+        String s = msg.trim().toLowerCase(Locale.ROOT);
+        if (s.isEmpty()) {
+            return false;
+        }
+        if (s.equals("stop") || s.equals("quitter") || s.equals("libre") || s.equals("annuler")) {
+            return true;
+        }
+        // Si message plus long qu'une réponse quiz oui/non, on bascule en mode libre.
+        return !(isAffirmative(s) || isNegative(s)) && s.split("\\s+").length >= 4;
     }
 
     private void hideRorschachImage() {

@@ -330,6 +330,13 @@
                                 </HBox>
                                 <ComboBox fx:id="rdvSortCombo" styleClass="med-rdv-sort-combo med-rdv-filter-combo"
                                           prefWidth="280" minWidth="220"/>
+                                <HBox alignment="CENTER_LEFT" spacing="8" styleClass="med-rdv-priority-wrap">
+                                    <Button fx:id="rdvPriorityAiRefreshBtn" text="✨ Priorité IA"
+                                            onAction="#onRdvRegeneratePriorityAi"
+                                            styleClass="med-rdv-priority-btn"/>
+                                    <Label fx:id="rdvPriorityAiStatusLabel" text="Prêt"
+                                           styleClass="med-rdv-priority-status"/>
+                                </HBox>
                             </HBox>
                             <StackPane styleClass="med-rdv-list-host" minHeight="400" VBox.vgrow="ALWAYS">
                                 <VBox fx:id="rdvEmptyState" alignment="CENTER" spacing="14" styleClass="med-rdv-empty">

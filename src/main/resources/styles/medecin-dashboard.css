@@ -1081,6 +1081,38 @@
     -fx-background-radius: 12;
 }
 
+.med-rdv-priority-wrap {
+    -fx-padding: 0 0 0 2;
+}
+
+.button.med-rdv-priority-btn {
+    -fx-background-color: linear-gradient(to bottom, #6366f1 0%, #4f46e5 100%);
+    -fx-text-fill: #ffffff;
+    -fx-font-weight: 700;
+    -fx-background-radius: 999;
+    -fx-border-radius: 999;
+    -fx-border-color: rgba(79, 70, 229, 0.35);
+    -fx-padding: 8 14 8 14;
+    -fx-cursor: hand;
+}
+
+.button.med-rdv-priority-btn:hover {
+    -fx-background-color: linear-gradient(to bottom, #5b5ff0 0%, #4338ca 100%);
+}
+
+.button.med-rdv-priority-btn:disabled {
+    -fx-opacity: 0.85;
+}
+
+.label.med-rdv-priority-status {
+    -fx-font-size: 11px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #475569;
+    -fx-background-color: #f1f5f9;
+    -fx-background-radius: 999;
+    -fx-padding: 5 10 5 10;
+}
+
 .med-rdv-list-host {
     -fx-min-height: 320;
 }
@@ -1424,6 +1456,16 @@
 .med-rdv-badge-attente {
     -fx-background-color: #d4a017;
     -fx-text-fill: #ffffff;
+}
+
+.med-rdv-badge-priority-urgent {
+    -fx-background-color: #fee2e2;
+    -fx-text-fill: #991b1b;
+}
+
+.med-rdv-badge-priority-normal {
+    -fx-background-color: #e2e8f0;
+    -fx-text-fill: #334155;
 }
 
 /* Sections statut (liste RDV) */

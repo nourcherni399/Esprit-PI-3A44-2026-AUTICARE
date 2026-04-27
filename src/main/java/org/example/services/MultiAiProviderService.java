@@ -43,14 +43,13 @@ public final class MultiAiProviderService {
         if (userPrompt == null || userPrompt.isBlank()) {
             return "";
         }
-        String provider = cfg("ai.provider", "AI_PROVIDER", "openai").trim().toLowerCase(Locale.ROOT);
+        String provider = cfg("ai.provider", "AI_PROVIDER", "groq").trim().toLowerCase(Locale.ROOT);
         try {
             return switch (provider) {
-                case "openai" -> openAiChat(DEFAULT_SYSTEM_PROMPT, userPrompt);
                 case "groq" -> groqChat(DEFAULT_SYSTEM_PROMPT, userPrompt);
                 case "gemini" -> geminiChat(DEFAULT_SYSTEM_PROMPT, userPrompt);
                 case "huggingface", "hf" -> huggingFaceTextGen(DEFAULT_SYSTEM_PROMPT + "\n\nQuestion: " + userPrompt);
-                default -> "Provider IA non reconnu (" + provider + "). Utilisez openai, groq, gemini ou huggingface.";
+                default -> "Provider IA non reconnu (" + provider + "). Utilisez groq, gemini ou huggingface.";
             };
         } catch (Exception e) {
             return "Erreur API IA: " + (e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName());
@@ -95,10 +94,9 @@ public final class MultiAiProviderService {
      * Retourne une data URL (data:image/png;base64,...) ou vide en cas d'échec.
      */
     public String generateInkblotImageDataUrl(String prompt, int seedIndex) {
-        String provider = cfg("ai.imageProvider", "AI_IMAGE_PROVIDER", "openai").trim().toLowerCase(Locale.ROOT);
+        String provider = cfg("ai.imageProvider", "AI_IMAGE_PROVIDER", "huggingface").trim().toLowerCase(Locale.ROOT);
         try {
             return switch (provider) {
-                case "openai" -> openAiGenerateImageDataUrl(prompt);
                 case "huggingface", "hf" -> huggingFaceGenerateImageDataUrl(prompt, seedIndex);
                 default -> "";
             };
@@ -112,17 +110,14 @@ public final class MultiAiProviderService {
      * N'utilise jamais de fallback local.
      */
     public String generateInkblotImageDataUrlWithIaFallback(String prompt, int seedIndex) {
-        String preferred = cfg("ai.imageProvider", "AI_IMAGE_PROVIDER", "openai").trim().toLowerCase(Locale.ROOT);
+        String preferred = cfg("ai.imageProvider", "AI_IMAGE_PROVIDER", "huggingface").trim().toLowerCase(Locale.ROOT);
         String first = generateInkblotImageDataUrl(prompt, seedIndex);
         if (first != null && !first.isBlank()) {
             return first;
         }
         try {
-            if ("openai".equals(preferred)) {
-                return huggingFaceGenerateImageDataUrl(prompt, seedIndex);
-            }
             if ("huggingface".equals(preferred) || "hf".equals(preferred)) {
-                return openAiGenerateImageDataUrl(prompt);
+                return pexelsImageDataUrl("inkblot abstract symmetry black white");
             }
         } catch (Exception ignored) {
             return "";
@@ -134,27 +129,27 @@ public final class MultiAiProviderService {
      * Même logique que generateInkblotImageDataUrlWithIaFallback, mais retourne aussi la cause d'échec.
      */
     public ImageGenResult generateInkblotImageWithDebug(String prompt, int seedIndex) {
-        String preferred = cfg("ai.imageProvider", "AI_IMAGE_PROVIDER", "openai").trim().toLowerCase(Locale.ROOT);
+        String preferred = cfg("ai.imageProvider", "AI_IMAGE_PROVIDER", "huggingface").trim().toLowerCase(Locale.ROOT);
         if ("huggingface".equals(preferred) || "hf".equals(preferred)) {
             ImageGenResult hf = tryHfImageWithDebug(prompt, seedIndex);
             if (hf.dataUrl() != null && !hf.dataUrl().isBlank()) {
                 return hf;
             }
-            ImageGenResult oa = tryOpenAiImageWithDebug(prompt);
-            if (oa.dataUrl() != null && !oa.dataUrl().isBlank()) {
-                return oa;
+            String pexels = pexelsImageDataUrl("inkblot abstract symmetry black white");
+            if (pexels != null && !pexels.isBlank()) {
+                return new ImageGenResult(pexels, "pexels", "");
             }
-            return new ImageGenResult("", "", "HF: " + hf.error() + " | OpenAI: " + oa.error());
+            return new ImageGenResult("", "", "HF: " + hf.error() + " | Pexels: aucune image retournée");
         } else {
-            ImageGenResult oa = tryOpenAiImageWithDebug(prompt);
-            if (oa.dataUrl() != null && !oa.dataUrl().isBlank()) {
-                return oa;
-            }
             ImageGenResult hf = tryHfImageWithDebug(prompt, seedIndex);
             if (hf.dataUrl() != null && !hf.dataUrl().isBlank()) {
                 return hf;
             }
-            return new ImageGenResult("", "", "OpenAI: " + oa.error() + " | HF: " + hf.error());
+            String pexels = pexelsImageDataUrl("inkblot abstract symmetry black white");
+            if (pexels != null && !pexels.isBlank()) {
+                return new ImageGenResult(pexels, "pexels", "");
+            }
+            return new ImageGenResult("", "", "HF: " + hf.error() + " | Pexels: aucune image retournée");
         }
     }
 
@@ -534,7 +529,8 @@ public final class MultiAiProviderService {
                 + "\"model\":\"" + j(model) + "\","
                 + "\"prompt\":\"" + j(prompt) + "\","
                 + "\"size\":\"512x512\","
-                + "\"quality\":\"low\""
+                + "\"quality\":\"low\","
+                + "\"response_format\":\"b64_json\""
                 + "}";
         HttpRequest req = HttpRequest.newBuilder()
                 .uri(URI.create("https://api.openai.com/v1/images/generations"))
@@ -565,7 +561,8 @@ public final class MultiAiProviderService {
                     + "\"model\":\"" + j(model) + "\","
                     + "\"prompt\":\"" + j(prompt) + "\","
                     + "\"size\":\"512x512\","
-                    + "\"quality\":\"low\""
+                    + "\"quality\":\"low\","
+                    + "\"response_format\":\"b64_json\""
                     + "}";
             HttpRequest req = HttpRequest.newBuilder()
                     .uri(URI.create("https://api.openai.com/v1/images/generations"))

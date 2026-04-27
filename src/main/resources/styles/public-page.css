@@ -3597,7 +3597,7 @@
     -fx-border-width: 1;
     -fx-border-radius: 20;
     -fx-background-radius: 20;
-    -fx-padding: 10;
+    -fx-padding: 12;
     -fx-effect: dropshadow(gaussian, rgba(16, 24, 40, 0.2), 26, 0.25, 0, 8);
     -fx-translate-x: -18;
     -fx-translate-y: -66;
@@ -3617,7 +3617,7 @@
 
 .rdv-chatbot-subtitle {
     -fx-text-fill: #61656f;
-    -fx-font-size: 13px;
+    -fx-font-size: 14px;
     -fx-padding: 0 8 0 8;
     -fx-text-alignment: center;
 }
@@ -3625,13 +3625,13 @@
 .rdv-chatbot-intro-card {
     -fx-background-color: #f9f8f7;
     -fx-border-color: #ece8e6;
-    -fx-border-radius: 14;
-    -fx-background-radius: 14;
-    -fx-padding: 10;
+    -fx-border-radius: 12;
+    -fx-background-radius: 12;
+    -fx-padding: 6 8 6 8;
 }
 
 .rdv-chatbot-intro-title {
-    -fx-font-size: 15px;
+    -fx-font-size: 14px;
     -fx-font-weight: 800;
     -fx-text-fill: #334155;
     -fx-text-alignment: center;
@@ -3644,16 +3644,16 @@
 }
 
 .rdv-chatbot-chip-wrap {
-    -fx-padding: 1 0 1 0;
+    -fx-padding: 0;
 }
 
 .button.rdv-chatbot-chip {
     -fx-background-color: #ece7f3;
     -fx-text-fill: #545162;
-    -fx-font-size: 13px;
+    -fx-font-size: 12px;
     -fx-font-weight: 700;
     -fx-background-radius: 999;
-    -fx-padding: 7 12 7 12;
+    -fx-padding: 5 10 5 10;
     -fx-cursor: hand;
 }
 
@@ -3698,16 +3698,16 @@
 }
 
 .rdv-chatbot-history-box {
-    -fx-padding: 10;
+    -fx-padding: 12;
     -fx-background-color: #ffffff;
 }
 
 .rdv-chatbot-bubble {
-    -fx-padding: 8 10 8 10;
+    -fx-padding: 10 12 10 12;
     -fx-background-radius: 12;
     -fx-border-radius: 12;
     -fx-border-width: 1;
-    -fx-spacing: 3;
+    -fx-spacing: 4;
 }
 
 .rdv-chatbot-bubble-assistant {
@@ -3720,21 +3720,48 @@
     -fx-border-color: #e4e7ec;
 }
 
+.rdv-chatbot-bubble-typing {
+    -fx-border-style: segments(4, 4);
+    -fx-border-color: #c7d7f3;
+}
+
 .rdv-chatbot-bubble-author {
-    -fx-font-size: 12px;
+    -fx-font-size: 13px;
     -fx-font-weight: 800;
     -fx-text-fill: #1f3b73;
 }
 
-.rdv-chatbot-bubble-content {
+.rdv-chatbot-bubble-message {
+    -fx-text-fill: #334155;
+    -fx-font-family: "Segoe UI Variable Text", "Segoe UI", "Inter", "Roboto", sans-serif;
     -fx-font-size: 15px;
-    -fx-line-spacing: 3px;
+    -fx-line-spacing: 4px;
 }
 
-.rdv-chatbot-text {
-    -fx-fill: #334155;
-    -fx-font-family: "Segoe UI Variable Text", "Segoe UI", "Inter", "Roboto", sans-serif;
-    -fx-font-size: 14px;
+.rdv-chatbot-bubble-image {
+    -fx-fit-width: 300;
+    -fx-preserve-ratio: true;
+    -fx-smooth: true;
+}
+
+.rdv-chatbot-bubble-image-caption {
+    -fx-text-fill: #475467;
+    -fx-font-size: 13px;
+    -fx-wrap-text: true;
+}
+
+.button.rdv-chatbot-retry-btn {
+    -fx-background-color: #eef2ff;
+    -fx-text-fill: #3730a3;
+    -fx-font-size: 12px;
+    -fx-font-weight: 700;
+    -fx-background-radius: 999;
+    -fx-padding: 5 10 5 10;
+    -fx-cursor: hand;
+}
+
+.button.rdv-chatbot-retry-btn:hover {
+    -fx-background-color: #e0e7ff;
 }
 
 .button.rdv-chatbot-icon-btn {
