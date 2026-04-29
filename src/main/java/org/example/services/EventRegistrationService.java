@@ -94,6 +94,21 @@ public class EventRegistrationService implements IService<EventRegistration> {
         return list;
     }
 
+    public Optional<Integer> findAnyAcceptedEventIdForUser(int userId) throws SQLException {
+        String sql = "SELECT evenement_id FROM inscriptions_evenement WHERE utilisateur_id=? AND statut=? " +
+                "ORDER BY date_inscription DESC, id DESC LIMIT 1";
+        try (PreparedStatement ps = MyDatabase.getConnection().prepareStatement(sql)) {
+            ps.setInt(1, userId);
+            ps.setString(2, RegistrationStatus.ACCEPTE.name());
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return Optional.of(rs.getInt("evenement_id"));
+                }
+                return Optional.empty();
+            }
+        }
+    }
+
     public void setStatus(int registrationId, RegistrationStatus status) throws SQLException {
         try (PreparedStatement ps = MyDatabase.getConnection().prepareStatement("UPDATE inscriptions_evenement SET statut=? WHERE id=?")) {
             ps.setString(1, status.name());

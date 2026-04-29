@@ -1,7 +1,15 @@
 package org.example.controllers;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpServer;
+import javafx.animation.Interpolator;
+import javafx.animation.KeyFrame;
+import javafx.animation.KeyValue;
+import javafx.animation.Timeline;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.collections.FXCollections;
@@ -13,11 +21,14 @@ import javafx.geometry.Pos;
 import javafx.scene.chart.PieChart;
 import javafx.scene.control.*;
 import javafx.scene.control.SpinnerValueFactory.IntegerSpinnerValueFactory;
+import javafx.scene.input.ScrollEvent;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextAlignment;
 import javafx.scene.text.TextFlow;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
@@ -26,6 +37,7 @@ import org.example.models.Event;
 import org.example.models.EventRegistration;
 import org.example.models.EventMessage;
 import org.example.models.EventStatus;
+import org.example.models.EventIdeaSuggestion;
 import org.example.models.RegistrationStatus;
 import org.example.models.Thematique;
 import org.example.models.User;
@@ -35,10 +47,12 @@ import org.example.services.EventRegistrationService;
 import org.example.services.EventMessageService;
 import org.example.services.EventRegistrationTicketEmailService;
 import org.example.services.EventService;
+import org.example.services.EventIdeaSuggestionService;
 import org.example.services.EventReminderEmailService;
 import org.example.services.ExternalParticipantsPdfService;
 import org.example.services.GoogleCustomSearchService;
 import org.example.services.HuggingFaceTextService;
+import org.example.services.IdeaAnalysisService;
 import org.example.services.OpenStreetMapService;
 import org.example.services.ThematiqueService;
 import org.example.services.UserService;
@@ -59,8 +73,10 @@ import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.DayOfWeek;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
+import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -78,6 +94,7 @@ import java.nio.file.Path;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Properties;
+import javafx.util.Duration;
 
 /**
  * Panneau « Gestion des événements » pour l’admin (sidebar), sans le {@code TabPane} du dashboard.
@@ -101,6 +118,7 @@ public class AdminEventsPanelController {
     private static final int MAX_THEMATIQUE = 120;
     /** Aligné sur {@code lien_google_maps} / {@code lien_zoom_visio}. */
     private static final int MAX_URL = 512;
+    private static final DateTimeFormatter IDEA_COLLECTION_LABEL_FMT = DateTimeFormatter.ofPattern("dd/MM/yyyy", Locale.FRENCH);
 
     /**
      * Titre événement : lettres (accents), espaces, apostrophe, tiret — pas de chiffres (aligné thématique nom / sous-titre).
@@ -168,6 +186,7 @@ public class AdminEventsPanelController {
     @FXML private Label detailSelectedConversationSub;
     @FXML private VBox detailConversationMessagesBox;
     @FXML private TextArea detailReplyArea;
+    @FXML private Button detailSendRemindersButton;
 
     @FXML private TableView<Event> adminEventsTable;
 
@@ -181,6 +200,48 @@ public class AdminEventsPanelController {
     @FXML private Label statBigTotal;
     @FXML private Label statBigVenir;
     @FXML private Label statBigInscTotal;
+    @FXML private Label ideaTotalLabel;
+    @FXML private Label ideaTopThemeLabel;
+    @FXML private Label ideaTopFormatLabel;
+    @FXML private Label ideaClusterCountLabel;
+    @FXML private TextFlow ideaMainClusterFlow;
+    @FXML private TextFlow ideaExplainFlow;
+    @FXML private TextFlow ideaFormulaFlow;
+    @FXML private VBox ideaSubmittedExamplesBox;
+    @FXML private Button ideaToggleExplainButton;
+    @FXML private Label ideaAiRecommendationLabel;
+    @FXML private VBox ideaThemeBarsBox;
+    @FXML private FlowPane ideaFormatChipsBox;
+    @FXML private Button ideaAnalyzeButton;
+    @FXML private ProgressIndicator ideaAnalyzeProgress;
+    @FXML private Button ideaCreateEventBtn;
+    @FXML private PieChart ideaThemePieChart;
+    @FXML private Label ideaConfidenceBadgeLabel;
+    @FXML private Button ideaEditRecommendationBtn;
+    @FXML private Label ideaRecoTitleLabel;
+    @FXML private Label ideaRecoDescriptionLabel;
+    @FXML private Label ideaRecoWhyLabel;
+    @FXML private VBox ideaRecoRecommendationsBox;
+    @FXML private ComboBox<String> ideaCollectionDayBox;
+    @FXML private Label ideaDemoSubtitleLabel;
+    @FXML private Label ideaDemoTotalLabel;
+    @FXML private Label ideaDemoThemeLabel;
+    @FXML private Label ideaDemoThemeScoreLabel;
+    @FXML private Label ideaDemoFormatLabel;
+    @FXML private Label ideaDemoFormatScoreLabel;
+    @FXML private Label ideaDemoConfidenceRingLabel;
+    @FXML private Label ideaDemoRecoTitleLabel;
+    @FXML private Label ideaDemoRecoDescLabel;
+    @FXML private Label ideaDemoRecoWhyLabel;
+    @FXML private Label ideaDemoCoverageLabel;
+    @FXML private ProgressBar ideaDemoCoverageBar;
+    @FXML private Label ideaDemoDominantForceLabel;
+    @FXML private ProgressBar ideaDemoDominantBar;
+    @FXML private Label ideaDemoConfidenceTotalLabel;
+    @FXML private VBox ideaDemoClustersBox;
+    @FXML private VBox ideaDemoRecommendationsBox;
+    @FXML private Label ideaDemoJsonLabel;
+    @FXML private Label ideaDemoExplainBodyLabel;
 
     @FXML private TextField formTitre;
     @FXML private TextArea formDescription;
@@ -215,6 +276,8 @@ public class AdminEventsPanelController {
     private final GoogleCustomSearchService googleCustomSearchService = new GoogleCustomSearchService();
     private final EventReminderEmailService eventReminderEmailService = new EventReminderEmailService();
     private final EventRegistrationTicketEmailService eventRegistrationTicketEmailService = new EventRegistrationTicketEmailService();
+    private final EventIdeaSuggestionService eventIdeaSuggestionService = new EventIdeaSuggestionService();
+    private final IdeaAnalysisService ideaAnalysisService = new IdeaAnalysisService(eventIdeaSuggestionService);
     private HttpServer localQrCheckinServer;
     private volatile boolean localQrCheckinServerStarted;
 
@@ -232,6 +295,10 @@ public class AdminEventsPanelController {
     private Integer selectedConversationUserId;
     private final List<Integer> currentConversationParticipantIds = new ArrayList<>();
     private WebView formMapPreviewWeb;
+    private final Map<String, LocalDate> ideaCollectionDayByLabel = new HashMap<>();
+    private boolean ideaExplanationVisible;
+    private IdeaAnalysisService.IdeaAnalysisResult lastIdeaAnalysisResult;
+    private String lastIdeaRecommendationRaw = "";
 
     @FXML
     public void initialize() {
@@ -250,6 +317,15 @@ public class AdminEventsPanelController {
         setupAdminEventsUi();
         EventStatsPieCharts.configure(piePeriodChart, true);
         EventStatsPieCharts.configure(pieRegsChart, false);
+        if (ideaThemePieChart != null) {
+            ideaThemePieChart.setLegendVisible(false);
+            ideaThemePieChart.setLabelsVisible(false);
+            ideaThemePieChart.setAnimated(false);
+        }
+        if (ideaCollectionDayBox != null) {
+            ideaCollectionDayBox.valueProperty().addListener((obs, oldVal, newVal) -> refreshIdeasDashboardData());
+        }
+        reloadIdeaCollectionDays(false);
         refreshEventsFromDb();
         updateModeSections();
         setupNewEventFormInputConstraints();
@@ -271,6 +347,28 @@ public class AdminEventsPanelController {
         if (eventsScrollRoot != null && eventsStackPane != null) {
             eventsStackPane.minWidthProperty().bind(eventsScrollRoot.widthProperty());
             eventsStackPane.prefWidthProperty().bind(eventsScrollRoot.widthProperty());
+            /*
+             * Certaines sous-vues (charts, chips, labels riches) captent la molette,
+             * ce qui donnait l'impression que la page était "coupée".
+             * On force un scroll vertical global sur toute la zone principale.
+             */
+            eventsStackPane.addEventFilter(ScrollEvent.SCROLL, evt -> {
+                Object target = evt.getTarget();
+                if (isInnerScrollableTarget(target)) {
+                    return;
+                }
+                double deltaY = evt.getDeltaY();
+                if (Math.abs(deltaY) < 0.5) {
+                    return;
+                }
+                double pageHeight = Math.max(1.0, eventsStackPane.getBoundsInLocal().getHeight());
+                double viewportHeight = Math.max(1.0, eventsScrollRoot.getViewportBounds().getHeight());
+                double movable = Math.max(1.0, pageHeight - viewportHeight);
+                double step = (deltaY / movable) * 0.9;
+                double next = Math.max(0.0, Math.min(1.0, eventsScrollRoot.getVvalue() - step));
+                eventsScrollRoot.setVvalue(next);
+                evt.consume();
+            });
         }
         if (newEventFormHost != null && eventsStackPane != null) {
             newEventFormHost.minWidthProperty().bind(eventsStackPane.widthProperty());
@@ -302,6 +400,20 @@ public class AdminEventsPanelController {
             detailConversationMessagesBox.maxWidthProperty().bind(detailConversationMessagesScroll.widthProperty().subtract(18));
             detailConversationMessagesBox.setFillWidth(true);
         }
+    }
+
+    private static boolean isInnerScrollableTarget(Object target) {
+        if (!(target instanceof javafx.scene.Node node)) {
+            return false;
+        }
+        javafx.scene.Node cur = node;
+        while (cur != null) {
+            if (cur instanceof ScrollPane) {
+                return true;
+            }
+            cur = cur.getParent();
+        }
+        return false;
     }
 
     /** Limites de saisie alignées sur {@link #validateAndFillNewEvent(org.example.models.Event)}. */
@@ -524,6 +636,10 @@ public class AdminEventsPanelController {
     public void onDetailSendReminders() {
         if (detailShownEvent == null) {
             showInfo("Rappels", "Aucun événement sélectionné.");
+            return;
+        }
+        if (!canSendReminderForEvent(detailShownEvent)) {
+            showInfo("Rappels", "Impossible d'envoyer un rappel : l'événement est déjà passé.");
             return;
         }
         final Event event = detailShownEvent;
@@ -809,6 +925,14 @@ public class AdminEventsPanelController {
             String d = e.getDescription();
             detailDescriptionLabel.setText(d != null && !d.isBlank() ? d : "—");
         }
+        if (detailSendRemindersButton != null) {
+            boolean reminderAllowed = canSendReminderForEvent(e);
+            detailSendRemindersButton.setDisable(!reminderAllowed);
+            detailSendRemindersButton.setOpacity(reminderAllowed ? 1.0 : 0.65);
+            detailSendRemindersButton.setTooltip(reminderAllowed
+                    ? null
+                    : new Tooltip("Rappel indisponible : l'événement est déjà passé."));
+        }
         int n = 0;
         List<EventRegistration> regs = new ArrayList<>();
         try {
@@ -830,6 +954,16 @@ public class AdminEventsPanelController {
         resetQrValidationFeedback();
         rebuildParticipantsRows(regs);
         bindEventDiscussionView(e);
+    }
+
+    private boolean canSendReminderForEvent(Event event) {
+        if (event == null || event.getDateDebut() == null) {
+            return false;
+        }
+        LocalDate today = LocalDate.now();
+        LocalDate eventDate = event.getDateDebut().toLocalDate();
+        // Autorisé uniquement avant la date de l'événement et le jour même.
+        return !today.isAfter(eventDate);
     }
 
     @FXML
@@ -1147,7 +1281,7 @@ public class AdminEventsPanelController {
                 localQrCheckinServer = null;
                 System.err.println("[AutiCare] Unable to start local QR check-in server: " + ex.getMessage());
                 String base = readClasspathCheckinBaseUrl();
-                if (base != null && !base.isBlank()) {
+                if (shouldShowLocalServerWarning(base)) {
                     Platform.runLater(() -> {
                         Alert a = new Alert(Alert.AlertType.WARNING);
                         a.setTitle("Scan QR téléphone");
@@ -1161,6 +1295,40 @@ public class AdminEventsPanelController {
                     });
                 }
             }
+        }
+    }
+
+    private boolean shouldShowLocalServerWarning(String baseUrl) {
+        if (baseUrl == null || baseUrl.isBlank()) {
+            return false;
+        }
+        // En URL distante (ngrok, domaine public, etc.), le warning local est souvent inutile/bruyant.
+        try {
+            URI uri = URI.create(baseUrl.trim());
+            String host = uri.getHost();
+            if (host == null || host.isBlank()) {
+                return false;
+            }
+            String h = host.trim().toLowerCase(Locale.ROOT);
+            if (h.startsWith("172.")) {
+                String[] parts = h.split("\\.");
+                if (parts.length >= 2) {
+                    try {
+                        int secondOctet = Integer.parseInt(parts[1]);
+                        if (secondOctet >= 16 && secondOctet <= 31) {
+                            return true;
+                        }
+                    } catch (NumberFormatException ignored) {
+                        // Not an IPv4 host, continue with generic checks.
+                    }
+                }
+            }
+            return "localhost".equals(h)
+                    || "127.0.0.1".equals(h)
+                    || h.startsWith("192.168.")
+                    || h.startsWith("10.");
+        } catch (Exception ignored) {
+            return false;
         }
     }
 
@@ -1183,29 +1351,9 @@ public class AdminEventsPanelController {
         if (checkinServerHintLabel == null) {
             return;
         }
-        String base = readClasspathCheckinBaseUrl();
-        int port = readCheckinPort();
-        if (base.isBlank()) {
-            checkinServerHintLabel.setManaged(false);
-            checkinServerHintLabel.setVisible(false);
-            checkinServerHintLabel.setText("");
-            return;
-        }
-        checkinServerHintLabel.setManaged(true);
-        checkinServerHintLabel.setVisible(true);
-        if (localQrCheckinServerStarted) {
-            checkinServerHintLabel.setText(
-                    "Scan QR (téléphone) : serveur actif sur le port " + port
-                            + ". URL dans les mails / QR : " + base
-                            + " — iPhone et PC doivent être sur le même Wi‑Fi ; l’IP du PC doit correspondre à cette URL (ipconfig).");
-            checkinServerHintLabel.setStyle("-fx-text-fill: #166534;");
-        } else {
-            checkinServerHintLabel.setText(
-                    "Scan QR (téléphone) : le serveur local n’est pas démarré (port " + port
-                            + "). Safari ne pourra pas joindre " + base
-                            + " tant que l’appli est ouverte et que le port est libre / autorisé au pare-feu.");
-            checkinServerHintLabel.setStyle("-fx-text-fill: #b45309;");
-        }
+        checkinServerHintLabel.setManaged(false);
+        checkinServerHintLabel.setVisible(false);
+        checkinServerHintLabel.setText("");
     }
 
     private int readCheckinPort() {
@@ -2860,10 +3008,985 @@ public class AdminEventsPanelController {
                 statBadgeInscRefus.setText("—");
             }
         }
+        refreshIdeasDashboardData();
     }
+
+    @FXML
+    public void onRefreshIdeasDashboard() {
+        reloadIdeaCollectionDays(true);
+        refreshIdeasDashboardData();
+    }
+
+    @FXML
+    public void onGenerateIdeasRecommendation() {
+        setIdeasAnalysisLoading(true);
+        if (ideaAiRecommendationLabel != null) {
+            ideaAiRecommendationLabel.setText("Analyse IA en cours...");
+        }
+        CompletableFuture.supplyAsync(() -> {
+            try {
+                LocalDate selectedDay = resolveSelectedIdeaCollectionDay();
+                IdeaAnalysisService.IdeaAnalysisResult analysis = ideaAnalysisService.analyzeForDay(selectedDay);
+                if (analysis.ideas().isEmpty()) {
+                    return new IdeasGenerationOutcome(
+                            "Aucune proposition disponible pour la collecte du " + selectedDay.format(IDEA_COLLECTION_LABEL_FMT) + ".",
+                            analysis.confidencePercent()
+                    );
+                }
+                String prompt = ideaAnalysisService.buildAiPrompt(analysis);
+                String raw = huggingFaceTextService.recommendEventFromIdeaAnalysisJson(prompt);
+                return new IdeasGenerationOutcome(raw, analysis.confidencePercent());
+            } catch (Exception ex) {
+                return new IdeasGenerationOutcome(
+                        "Analyse IA indisponible: " + (ex.getMessage() == null ? ex.toString() : ex.getMessage()),
+                        0
+                );
+            }
+        }).thenAccept(outcome -> Platform.runLater(() -> {
+            setIdeasAnalysisLoading(false);
+            String text = enrichRecommendationJsonConfidence(outcome.text(), outcome.fallbackConfidence());
+            lastIdeaRecommendationRaw = text != null ? text : "";
+            if (ideaAiRecommendationLabel != null) {
+                ideaAiRecommendationLabel.setText(text != null ? text : "Aucune suggestion.");
+            }
+            applyStructuredRecommendation(text);
+            refreshIdeaDemoRecommendation();
+            if (ideaCreateEventBtn != null) {
+                ideaCreateEventBtn.setDisable(!canCreateEventFromRecommendation(text));
+            }
+        }));
+    }
+
+    private static String enrichRecommendationJsonConfidence(String text, int fallbackConfidence) {
+        JsonObject json = parseRecommendationJson(text);
+        if (json == null) {
+            return text;
+        }
+        if (!json.has("confidence") || json.get("confidence").isJsonNull()) {
+            json.addProperty("confidence", Math.max(0, Math.min(100, fallbackConfidence)));
+        }
+        return json.toString();
+    }
+
+    private void refreshIdeasDashboardData() {
+        try {
+            LocalDate selectedDay = resolveSelectedIdeaCollectionDay();
+            IdeaAnalysisService.IdeaAnalysisResult analysis = ideaAnalysisService.analyzeForDay(selectedDay);
+            lastIdeaAnalysisResult = analysis;
+            List<EventIdeaSuggestion> ideas = analysis.ideas();
+            Map<String, Long> byTheme = analysis.byTheme();
+            Map<String, Long> byFormat = analysis.byFormat();
+            List<IdeaAnalysisService.ClusterResult> clusters = analysis.clusters();
+
+            if (ideaTotalLabel != null) {
+                ideaTotalLabel.setText(String.valueOf(ideas.size()));
+            }
+            if (ideaTopThemeLabel != null) {
+                ideaTopThemeLabel.setText(analysis.topTheme().label());
+            }
+            if (ideaTopFormatLabel != null) {
+                ideaTopFormatLabel.setText(analysis.topFormat().label());
+            }
+            if (ideaClusterCountLabel != null) {
+                ideaClusterCountLabel.setText(String.valueOf(clusters.size()));
+            }
+            if (ideaMainClusterFlow != null) {
+                IdeaAnalysisService.ClusterResult mainCluster = analysis.mainCluster();
+                if (mainCluster == null) {
+                    setStyledLines(ideaMainClusterFlow, List.of(new StyledLine("—", false, false)));
+                } else {
+                    renderMainClusterSingleLine(mainCluster);
+                }
+            }
+            if (ideaExplainFlow != null) {
+                renderCompactExplainFlow(analysis);
+                boolean hasContent = !ideaExplainFlow.getChildren().isEmpty();
+                ideaExplainFlow.setManaged(ideaExplanationVisible && hasContent);
+                ideaExplainFlow.setVisible(ideaExplanationVisible && hasContent);
+            }
+            if (ideaToggleExplainButton != null) {
+                ideaToggleExplainButton.setText(ideaExplanationVisible ? "Masquer explication IA" : "Mode explication IA");
+            }
+            populateIdeaSubmissionsPreview(analysis.ideas());
+            if (ideaFormulaFlow != null) {
+                renderStyledFormula(analysis);
+                ideaFormulaFlow.setManaged(ideaExplanationVisible);
+                ideaFormulaFlow.setVisible(ideaExplanationVisible);
+            }
+            renderIdeaDemoFromAnalysis(analysis);
+            renderThemeDistributionBars(ideas.size(), byTheme);
+            renderThemePieChart(byTheme);
+            renderFormatDistributionChips(ideas.size(), byFormat);
+            if (ideaAiRecommendationLabel != null && (ideaAiRecommendationLabel.getText() == null || ideaAiRecommendationLabel.getText().isBlank())) {
+                ideaAiRecommendationLabel.setText("Cliquez sur « Analyser avec l'IA » pour obtenir une recommandation automatique.");
+            }
+            applyStructuredRecommendation(ideaAiRecommendationLabel != null ? ideaAiRecommendationLabel.getText() : "");
+            if (ideaCreateEventBtn != null) {
+                String currentRec = ideaAiRecommendationLabel != null ? ideaAiRecommendationLabel.getText() : "";
+                ideaCreateEventBtn.setDisable(!canCreateEventFromRecommendation(currentRec));
+            }
+        } catch (Exception ex) {
+            if (ideaTotalLabel != null) {
+                ideaTotalLabel.setText("—");
+            }
+            if (ideaTopThemeLabel != null) {
+                ideaTopThemeLabel.setText("—");
+            }
+            if (ideaTopFormatLabel != null) {
+                ideaTopFormatLabel.setText("—");
+            }
+            if (ideaClusterCountLabel != null) {
+                ideaClusterCountLabel.setText("—");
+            }
+            if (ideaMainClusterFlow != null) {
+                setStyledLines(ideaMainClusterFlow, List.of(new StyledLine("—", false, false)));
+            }
+            if (ideaExplainFlow != null) {
+                ideaExplainFlow.getChildren().clear();
+                ideaExplainFlow.setManaged(false);
+                ideaExplainFlow.setVisible(false);
+            }
+            if (ideaSubmittedExamplesBox != null) {
+                ideaSubmittedExamplesBox.getChildren().clear();
+                Label empty = new Label("Aucune proposition à afficher.");
+                empty.getStyleClass().add("admin-ideas-reco-value");
+                ideaSubmittedExamplesBox.getChildren().add(empty);
+            }
+            if (ideaFormulaFlow != null) {
+                setStyledLines(ideaFormulaFlow, List.of(new StyledLine("—", false, false)));
+            }
+            lastIdeaAnalysisResult = null;
+            renderIdeaDemoFromAnalysis(null);
+            renderThemeDistributionBars(0, Map.of());
+            renderThemePieChart(Map.of());
+            renderFormatDistributionChips(0, Map.of());
+            if (ideaCreateEventBtn != null) {
+                ideaCreateEventBtn.setDisable(true);
+            }
+        }
+    }
+
+    @FXML
+    public void onToggleIdeasExplanation() {
+        ideaExplanationVisible = !ideaExplanationVisible;
+        if (ideaToggleExplainButton != null) {
+            ideaToggleExplainButton.setText(ideaExplanationVisible ? "Masquer explication IA" : "Mode explication IA");
+        }
+        if (ideaExplainFlow != null) {
+            boolean hasContent = !ideaExplainFlow.getChildren().isEmpty();
+            ideaExplainFlow.setManaged(ideaExplanationVisible && hasContent);
+            ideaExplainFlow.setVisible(ideaExplanationVisible && hasContent);
+        }
+        if (ideaFormulaFlow != null) {
+            boolean hasFormula = !ideaFormulaFlow.getChildren().isEmpty();
+            ideaFormulaFlow.setManaged(ideaExplanationVisible && hasFormula);
+            ideaFormulaFlow.setVisible(ideaExplanationVisible && hasFormula);
+        }
+    }
+
+    private void populateIdeaSubmissionsPreview(List<EventIdeaSuggestion> ideas) {
+        if (ideaSubmittedExamplesBox == null) {
+            return;
+        }
+        ideaSubmittedExamplesBox.getChildren().clear();
+        if (ideas == null || ideas.isEmpty()) {
+            Label empty = new Label("Aucune proposition à afficher.");
+            empty.getStyleClass().add("admin-ideas-reco-value");
+            ideaSubmittedExamplesBox.getChildren().add(empty);
+            return;
+        }
+        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("dd/MM HH:mm", Locale.FRENCH);
+        ideas.stream()
+                .sorted(Comparator.comparing(EventIdeaSuggestion::getCreatedAt, Comparator.nullsLast(Comparator.naturalOrder())).reversed())
+                .limit(3)
+                .forEach(idea -> {
+                    VBox card = new VBox(4);
+                    card.getStyleClass().add("admin-ideas-submitted-card");
+                    String desc = safeText(idea.getDescription());
+                    Label title = new Label(desc.isBlank() ? "Proposition sans description" : shortenText(desc, 90));
+                    title.setWrapText(true);
+                    title.getStyleClass().add("admin-ideas-submitted-title");
+                    String metaText = safeTextOrDash(idea.getThemePreference())
+                            + " • " + safeTextOrDash(idea.getFormatPreference())
+                            + " • " + (idea.getCreatedAt() != null ? idea.getCreatedAt().format(fmt) : "—");
+                    Label meta = new Label(metaText);
+                    meta.setWrapText(true);
+                    meta.getStyleClass().add("admin-ideas-submitted-meta");
+                    card.getChildren().addAll(title, meta);
+                    ideaSubmittedExamplesBox.getChildren().add(card);
+                });
+    }
+
+    private void renderStyledFormula(IdeaAnalysisService.IdeaAnalysisResult analysis) {
+        if (ideaFormulaFlow == null) return;
+        if (analysis == null) {
+            setStyledLines(ideaFormulaFlow, List.of(new StyledLine("—", false, false)));
+            return;
+        }
+        IdeaAnalysisService.ScoredDominant t = analysis.topTheme();
+        IdeaAnalysisService.ScoredDominant f = analysis.topFormat();
+        IdeaAnalysisService.ClusterResult c = analysis.mainCluster();
+        int clusterSize = c != null ? c.size() : 0;
+        List<StyledLine> lines = new ArrayList<>();
+        lines.add(new StyledLine("Dominant", true, true));
+        lines.add(new StyledLine("occ×0.6 + clusters×0.3 + récence×0.1", false, false));
+        lines.add(new StyledLine("Thème", true, true));
+        lines.add(new StyledLine((t != null ? t.label() : "—") + " : " + String.format(Locale.ROOT, "%.2f", t != null ? t.rawScore() : 0.0), false, false));
+        lines.add(new StyledLine("Format", true, true));
+        lines.add(new StyledLine((f != null ? f.label() : "—") + " : " + String.format(Locale.ROOT, "%.2f", f != null ? f.rawScore() : 0.0), false, false));
+        lines.add(new StyledLine("Cluster", true, true));
+        lines.add(new StyledLine("taille + cohérence = " + clusterSize + " + "
+                + String.format(Locale.ROOT, "%.2f", c != null ? c.themeCoherence() : 0.0)
+                + " = " + String.format(Locale.ROOT, "%.2f", c != null ? c.score() : 0.0), false, false));
+        setStyledLines(ideaFormulaFlow, lines);
+    }
+
+    private static String buildCompactExplanation(IdeaAnalysisService.IdeaAnalysisResult analysis) {
+        if (analysis == null) {
+            return "";
+        }
+        IdeaAnalysisService.ClusterResult main = analysis.mainCluster();
+        String clusterText = main == null
+                ? "Aucun cluster principal détecté."
+                : "Cluster principal: " + main.id() + " (" + main.size() + " idée(s), score "
+                + String.format(Locale.ROOT, "%.2f", main.score()) + ")";
+        return "🏆 Thème dominant: " + analysis.topTheme().label()
+                + "   •   🧩 Format dominant: " + analysis.topFormat().label()
+                + "\n🗂 " + clusterText;
+    }
+
+    private void renderMainClusterSingleLine(IdeaAnalysisService.ClusterResult mainCluster) {
+        if (ideaMainClusterFlow == null || mainCluster == null) return;
+        ideaMainClusterFlow.getChildren().clear();
+        appendStyled(ideaMainClusterFlow, "Cluster principal: ", true, false);
+        appendStyled(ideaMainClusterFlow, mainCluster.id(), false, false);
+        appendStyled(ideaMainClusterFlow, "  |  ", false, false);
+        appendStyled(ideaMainClusterFlow, "Idées: ", true, false);
+        appendStyled(ideaMainClusterFlow, String.valueOf(mainCluster.size()), false, false);
+        appendStyled(ideaMainClusterFlow, "  |  ", false, false);
+        appendStyled(ideaMainClusterFlow, "Thème: ", true, false);
+        appendStyled(ideaMainClusterFlow, mainCluster.dominantThemeLabel(), false, false);
+        appendStyled(ideaMainClusterFlow, "  |  ", false, false);
+        appendStyled(ideaMainClusterFlow, "Score: ", true, false);
+        appendStyled(ideaMainClusterFlow, String.format(Locale.ROOT, "%.2f", mainCluster.score()), false, false);
+    }
+
+    private void renderCompactExplainFlow(IdeaAnalysisService.IdeaAnalysisResult analysis) {
+        if (ideaExplainFlow == null) return;
+        ideaExplainFlow.getChildren().clear();
+        if (analysis == null) return;
+        IdeaAnalysisService.ClusterResult main = analysis.mainCluster();
+        appendStyled(ideaExplainFlow, "🏆 ", false, false);
+        appendStyled(ideaExplainFlow, "Thème dominant: ", true, true);
+        appendStyled(ideaExplainFlow, analysis.topTheme().label(), false, false);
+        appendStyled(ideaExplainFlow, "   •   ", false, false);
+        appendStyled(ideaExplainFlow, "🧩 ", false, false);
+        appendStyled(ideaExplainFlow, "Format dominant: ", true, true);
+        appendStyled(ideaExplainFlow, analysis.topFormat().label(), false, false);
+        appendStyled(ideaExplainFlow, "\n", false, false);
+        appendStyled(ideaExplainFlow, "🗂 ", false, false);
+        appendStyled(ideaExplainFlow, "Cluster principal: ", true, true);
+        if (main == null) {
+            appendStyled(ideaExplainFlow, "Aucun", false, false);
+        } else {
+            appendStyled(ideaExplainFlow, main.id() + " (" + main.size() + " idée(s), score "
+                    + String.format(Locale.ROOT, "%.2f", main.score()) + ")", false, false);
+        }
+    }
+
+    private void appendStyled(TextFlow flow, String text, boolean key, boolean alt) {
+        Text t = new Text(text == null ? "" : text);
+        t.getStyleClass().add(key ? (alt ? "admin-ideas-key-alt" : "admin-ideas-key") : "admin-ideas-val");
+        flow.getChildren().add(t);
+    }
+
+    private void setStyledLines(TextFlow flow, List<StyledLine> lines) {
+        flow.getChildren().clear();
+        if (lines == null || lines.isEmpty()) {
+            return;
+        }
+        for (int i = 0; i < lines.size(); i++) {
+            StyledLine line = lines.get(i);
+            Text t = new Text(line.text());
+            t.getStyleClass().add(line.key()
+                    ? (line.altColor() ? "admin-ideas-key-alt" : "admin-ideas-key")
+                    : "admin-ideas-val");
+            flow.getChildren().add(t);
+            if (i < lines.size() - 1) {
+                flow.getChildren().add(new Text("\n"));
+            }
+        }
+    }
+
+    private record StyledLine(String text, boolean key, boolean altColor) {}
+
+    private static String safeText(String text) {
+        return text == null ? "" : text.trim();
+    }
+
+    private static String safeTextOrDash(String text) {
+        String v = safeText(text);
+        return v.isBlank() ? "—" : v;
+    }
+
+    private static String shortenText(String text, int maxLen) {
+        String v = safeText(text);
+        if (v.length() <= maxLen) {
+            return v;
+        }
+        return v.substring(0, Math.max(0, maxLen - 1)).trim() + "…";
+    }
+
+    private void renderIdeaDemoFromAnalysis(IdeaAnalysisService.IdeaAnalysisResult analysis) {
+        if (ideaDemoSubtitleLabel != null) {
+            if (analysis == null) {
+                ideaDemoSubtitleLabel.setText("Collecte —");
+            } else {
+                ideaDemoSubtitleLabel.setText("Collecte du " + analysis.day().format(IDEA_COLLECTION_LABEL_FMT)
+                        + " · " + analysis.ideas().size() + " propositions analysées");
+            }
+        }
+        if (ideaDemoTotalLabel != null) {
+            ideaDemoTotalLabel.setText(analysis == null ? "0" : String.valueOf(analysis.ideas().size()));
+        }
+        if (ideaDemoThemeLabel != null) {
+            ideaDemoThemeLabel.setText(analysis == null ? "—" : analysis.topTheme().label());
+        }
+        if (ideaDemoThemeScoreLabel != null) {
+            ideaDemoThemeScoreLabel.setText(analysis == null ? "score 0.00"
+                    : "score " + String.format(Locale.ROOT, "%.2f", analysis.topTheme().rawScore()));
+        }
+        if (ideaDemoFormatLabel != null) {
+            ideaDemoFormatLabel.setText(analysis == null ? "—" : analysis.topFormat().label());
+        }
+        if (ideaDemoFormatScoreLabel != null) {
+            ideaDemoFormatScoreLabel.setText(analysis == null ? "score 0.00"
+                    : "score " + String.format(Locale.ROOT, "%.2f", analysis.topFormat().rawScore()));
+        }
+        if (ideaDemoConfidenceRingLabel != null) {
+            ideaDemoConfidenceRingLabel.setText(analysis == null ? "0%" : analysis.confidencePercent() + "%");
+        }
+        double coverage = 0.0;
+        double dominantForce = 0.0;
+        if (analysis != null && !analysis.ideas().isEmpty() && analysis.mainCluster() != null) {
+            coverage = ((double) analysis.mainCluster().size() / (double) analysis.ideas().size()) * 0.7;
+            dominantForce = analysis.topTheme().normalizedScore() * 0.3;
+        }
+        if (ideaDemoCoverageBar != null) {
+            ideaDemoCoverageBar.setProgress(Math.max(0.0, Math.min(1.0, coverage / 0.7)));
+        }
+        if (ideaDemoCoverageLabel != null) {
+            ideaDemoCoverageLabel.setText("Couverture cluster principal: " + (int) Math.round(coverage * 100.0) + "%");
+        }
+        if (ideaDemoDominantBar != null) {
+            ideaDemoDominantBar.setProgress(Math.max(0.0, Math.min(1.0, dominantForce / 0.3)));
+        }
+        if (ideaDemoDominantForceLabel != null) {
+            ideaDemoDominantForceLabel.setText("Force du dominant: " + (int) Math.round(dominantForce * 100.0) + "%");
+        }
+        if (ideaDemoConfidenceTotalLabel != null) {
+            ideaDemoConfidenceTotalLabel.setText("Confiance totale: " + (analysis == null ? "—" : analysis.confidencePercent() + "%"));
+        }
+        if (ideaDemoClustersBox != null) {
+            ideaDemoClustersBox.getChildren().clear();
+            if (analysis == null || analysis.clusters().isEmpty()) {
+                Label empty = new Label("Aucun cluster calculé.");
+                empty.getStyleClass().add("admin-ideas-reco-value");
+                ideaDemoClustersBox.getChildren().add(empty);
+            } else {
+                IdeaAnalysisService.ClusterResult main = analysis.mainCluster();
+                for (IdeaAnalysisService.ClusterResult c : analysis.clustersSortedByScoreDesc()) {
+                    VBox card = new VBox(4);
+                    card.getStyleClass().add("admin-ideas-submitted-card");
+                    String lead = c.id() + (main != null && c.id().equals(main.id()) ? " : principal" : "")
+                            + "   " + c.size() + " idée(s)   score " + String.format(Locale.ROOT, "%.2f", c.score());
+                    Label l1 = new Label(lead);
+                    l1.getStyleClass().add("admin-ideas-submitted-title");
+                    Label l2 = new Label("\"" + shortenText(c.representativeDescription(), 95) + "\"");
+                    l2.setWrapText(true);
+                    l2.getStyleClass().add("admin-ideas-reco-value");
+                    Label l3 = new Label("Thème: " + c.dominantThemeLabel() + "   Format: " + c.dominantFormatLabel());
+                    l3.getStyleClass().add("admin-ideas-submitted-meta");
+                    card.getChildren().addAll(l1, l2, l3);
+                    ideaDemoClustersBox.getChildren().add(card);
+                }
+            }
+        }
+        refreshIdeaDemoRecommendation();
+        onIdeaDemoExplainDominant();
+    }
+
+    private void refreshIdeaDemoRecommendation() {
+        String raw = lastIdeaRecommendationRaw == null ? "" : lastIdeaRecommendationRaw;
+        JsonObject json = parseRecommendationJson(raw);
+        String title = json != null ? getJsonString(json, "title") : extractRecommendationField(raw, "TITRE:");
+        String desc = json != null ? getJsonString(json, "description") : extractRecommendationField(raw, "DESCRIPTION:");
+        String why = json != null ? getJsonString(json, "why") : extractRecommendationField(raw, "POURQUOI:");
+        List<String> recs = json != null ? getJsonStringArray(json, "recommendations") : extractRecommendationBullets(raw);
+        if (ideaDemoRecoTitleLabel != null) ideaDemoRecoTitleLabel.setText(title.isBlank() ? "—" : title);
+        if (ideaDemoRecoDescLabel != null) ideaDemoRecoDescLabel.setText(desc.isBlank() ? "—" : desc);
+        if (ideaDemoRecoWhyLabel != null) ideaDemoRecoWhyLabel.setText(why.isBlank() ? "—" : why);
+        if (ideaDemoRecommendationsBox != null) {
+            ideaDemoRecommendationsBox.getChildren().clear();
+            if (recs.isEmpty()) {
+                Label empty = new Label("—");
+                empty.getStyleClass().add("admin-ideas-reco-value");
+                ideaDemoRecommendationsBox.getChildren().add(empty);
+            } else {
+                for (String rec : recs) {
+                    Label li = new Label("• " + rec);
+                    li.setWrapText(true);
+                    li.getStyleClass().add("admin-ideas-reco-value");
+                    ideaDemoRecommendationsBox.getChildren().add(li);
+                }
+            }
+        }
+        if (ideaDemoJsonLabel != null) {
+            if (json != null) {
+                ideaDemoJsonLabel.setText(json.toString());
+            } else {
+                ideaDemoJsonLabel.setText(raw.isBlank() ? "{}" : shortenText(raw, 400));
+            }
+        }
+    }
+
+    @FXML
+    public void onIdeaDemoExplainDominant() {
+        if (ideaDemoExplainBodyLabel == null) return;
+        IdeaAnalysisService.IdeaAnalysisResult a = lastIdeaAnalysisResult;
+        if (a == null) {
+            ideaDemoExplainBodyLabel.setText("Aucune analyse disponible.");
+            return;
+        }
+        ideaDemoExplainBodyLabel.setText(
+                "Thème \"" + a.topTheme().label() + "\", score " + String.format(Locale.ROOT, "%.2f", a.topTheme().rawScore()) + "\n"
+                        + "Occurrences × 0.6 = " + a.topTheme().occurrences() + " × 0.6 = "
+                        + String.format(Locale.ROOT, "%.2f", a.topTheme().occurrences() * 0.6) + "\n"
+                        + "Clusters liés × 0.3 = " + a.topTheme().linkedClusterSize() + " × 0.3 = "
+                        + String.format(Locale.ROOT, "%.2f", a.topTheme().linkedClusterSize() * 0.3) + "\n"
+                        + "Récence × 0.1 = " + String.format(Locale.ROOT, "%.2f", a.topTheme().recencyAvg()) + " × 0.1 = "
+                        + String.format(Locale.ROOT, "%.2f", a.topTheme().recencyAvg() * 0.1)
+        );
+    }
+
+    @FXML
+    public void onIdeaDemoExplainCluster() {
+        if (ideaDemoExplainBodyLabel == null) return;
+        IdeaAnalysisService.IdeaAnalysisResult a = lastIdeaAnalysisResult;
+        if (a == null || a.mainCluster() == null) {
+            ideaDemoExplainBodyLabel.setText("Aucun cluster principal disponible.");
+            return;
+        }
+        IdeaAnalysisService.ClusterResult c = a.mainCluster();
+        ideaDemoExplainBodyLabel.setText(
+                "Pourquoi " + c.id() + " est le cluster principal ?\n"
+                        + "Score cluster = taille (" + c.size() + ") + cohérence thème ("
+                        + String.format(Locale.ROOT, "%.2f", c.themeCoherence()) + ") = "
+                        + String.format(Locale.ROOT, "%.2f", c.score()) + "\n\n"
+                        + "Volume analysé : " + a.ideas().size() + " idées réparties en " + a.clusters().size()
+                        + " clusters (seuil Jaccard = 0.35)."
+        );
+    }
+
+    @FXML
+    public void onIdeaDemoExplainFormulas() {
+        if (ideaDemoExplainBodyLabel == null) return;
+        ideaDemoExplainBodyLabel.setText(
+                "Score dominant\nscore = occ×0.6 + clusters_liés×0.3 + récence×0.1\n\n"
+                        + "Score cluster\nclusterScore = taille + cohérence_thème\n\n"
+                        + "Confiance IA\nconfidence = (cluster_principal/total × 0.7) + (score_dom_norm × 0.3)\n\n"
+                        + "Similarité Jaccard\nsim(A,B) = |A∩B| / |A∪B| (seuil configurable : 0.35)"
+        );
+    }
+
+    private void reloadIdeaCollectionDays(boolean keepSelection) {
+        if (ideaCollectionDayBox == null) {
+            return;
+        }
+        String oldSelection = keepSelection ? ideaCollectionDayBox.getValue() : null;
+        ideaCollectionDayByLabel.clear();
+        List<String> labels = new ArrayList<>();
+        LocalDate startOfCurrentWeek = LocalDate.now().with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
+        try {
+            List<LocalDate> days = eventIdeaSuggestionService.listCollectionDaysDesc();
+            days = days.stream()
+                    .filter(day -> !day.isBefore(startOfCurrentWeek))
+                    .collect(Collectors.toList());
+            if (!days.contains(LocalDate.now())) {
+                days.add(0, LocalDate.now());
+            }
+            for (LocalDate day : days) {
+                String label = buildIdeaCollectionLabel(day);
+                ideaCollectionDayByLabel.put(label, day);
+                labels.add(label);
+            }
+        } catch (SQLException ex) {
+            LocalDate today = LocalDate.now();
+            String label = buildIdeaCollectionLabel(today);
+            ideaCollectionDayByLabel.put(label, today);
+            labels.add(label);
+        }
+        ideaCollectionDayBox.getItems().setAll(labels);
+        if (oldSelection != null && ideaCollectionDayByLabel.containsKey(oldSelection)) {
+            ideaCollectionDayBox.getSelectionModel().select(oldSelection);
+        } else if (!labels.isEmpty()) {
+            ideaCollectionDayBox.getSelectionModel().selectFirst();
+        }
+    }
+
+    private LocalDate resolveSelectedIdeaCollectionDay() {
+        if (ideaCollectionDayBox == null) {
+            return LocalDate.now();
+        }
+        String selected = ideaCollectionDayBox.getValue();
+        if (selected != null && ideaCollectionDayByLabel.containsKey(selected)) {
+            return ideaCollectionDayByLabel.get(selected);
+        }
+        return LocalDate.now();
+    }
+
+    private static String buildIdeaCollectionLabel(LocalDate day) {
+        return day.equals(LocalDate.now())
+                ? "Aujourd'hui (" + day.format(IDEA_COLLECTION_LABEL_FMT) + ")"
+                : day.format(IDEA_COLLECTION_LABEL_FMT);
+    }
+
+    private void renderThemeDistributionBars(long total, Map<String, Long> byTheme) {
+        if (ideaThemeBarsBox == null) {
+            return;
+        }
+        ideaThemeBarsBox.getChildren().clear();
+        if (total <= 0 || byTheme == null || byTheme.isEmpty()) {
+            Label empty = new Label("Aucune donnée thème pour le moment.");
+            empty.getStyleClass().add("admin-events-main-sub");
+            ideaThemeBarsBox.getChildren().add(empty);
+            return;
+        }
+        byTheme.entrySet().stream()
+                .sorted((a, b) -> Long.compare(b.getValue(), a.getValue()))
+                .forEach(e -> {
+                    double p = e.getValue() <= 0 ? 0.0 : Math.min(1.0, e.getValue() / (double) total);
+                    Label name = new Label(e.getKey());
+                    name.getStyleClass().add("admin-ideas-bar-name");
+                    ProgressBar bar = new ProgressBar(0.0);
+                    bar.getStyleClass().add("admin-ideas-progress");
+                    bar.setMaxWidth(Double.MAX_VALUE);
+                    Label pct = new Label(Math.round(p * 100.0) + "%");
+                    pct.getStyleClass().add("admin-ideas-bar-pct");
+                    HBox row = new HBox(8, name, bar, pct);
+                    row.setAlignment(Pos.CENTER_LEFT);
+                    HBox.setHgrow(bar, Priority.ALWAYS);
+                    ideaThemeBarsBox.getChildren().add(row);
+                    Timeline anim = new Timeline(
+                            new KeyFrame(Duration.ZERO, new KeyValue(bar.progressProperty(), 0.0)),
+                            new KeyFrame(Duration.millis(550), new KeyValue(bar.progressProperty(), p, Interpolator.EASE_BOTH)));
+                    anim.play();
+                });
+    }
+
+    private void renderThemePieChart(Map<String, Long> byTheme) {
+        if (ideaThemePieChart == null) {
+            return;
+        }
+        ObservableList<PieChart.Data> data = FXCollections.observableArrayList();
+        if (byTheme != null && !byTheme.isEmpty()) {
+            byTheme.entrySet().stream()
+                    .sorted((a, b) -> Long.compare(b.getValue(), a.getValue()))
+                    .limit(5)
+                    .forEach(e -> data.add(new PieChart.Data(e.getKey(), e.getValue())));
+        }
+        ideaThemePieChart.setData(data);
+        ideaThemePieChart.setVisible(!data.isEmpty());
+        ideaThemePieChart.setManaged(!data.isEmpty());
+    }
+
+    private void renderFormatDistributionChips(long total, Map<String, Long> byFormat) {
+        if (ideaFormatChipsBox == null) {
+            return;
+        }
+        ideaFormatChipsBox.getChildren().clear();
+        if (total <= 0 || byFormat == null || byFormat.isEmpty()) {
+            Label empty = new Label("Aucune donnée format.");
+            empty.getStyleClass().add("admin-events-main-sub");
+            ideaFormatChipsBox.getChildren().add(empty);
+            return;
+        }
+        byFormat.entrySet().stream()
+                .sorted((a, b) -> Long.compare(b.getValue(), a.getValue()))
+                .forEach(e -> {
+                    long pct = Math.round((e.getValue() * 100.0) / total);
+                    Label chip = new Label(e.getKey() + " • " + pct + "%");
+                    chip.getStyleClass().add("admin-ideas-chip");
+                    ideaFormatChipsBox.getChildren().add(chip);
+                });
+    }
+
+    private void setIdeasAnalysisLoading(boolean loading) {
+        if (ideaAnalyzeProgress != null) {
+            ideaAnalyzeProgress.setManaged(loading);
+            ideaAnalyzeProgress.setVisible(loading);
+        }
+        if (ideaAnalyzeButton != null) {
+            ideaAnalyzeButton.setDisable(loading);
+        }
+        if (ideaEditRecommendationBtn != null) {
+            ideaEditRecommendationBtn.setDisable(loading);
+        }
+    }
+
+    @FXML
+    public void onCreateEventFromIdeasRecommendation() {
+        String rec = ideaAiRecommendationLabel != null && ideaAiRecommendationLabel.getText() != null
+                ? ideaAiRecommendationLabel.getText().trim()
+                : "";
+        if (!canCreateEventFromRecommendation(rec)) {
+            showInfo("Recommandation IA", "Lancez d'abord l'analyse IA pour générer une recommandation.");
+            return;
+        }
+        String title = "";
+        String description = "";
+        String why = "";
+        List<String> recommendations = List.of();
+        JsonObject json = parseRecommendationJson(rec);
+        if (json != null) {
+            title = getJsonString(json, "title");
+            description = getJsonString(json, "description");
+            why = getJsonString(json, "why");
+            recommendations = getJsonStringArray(json, "recommendations");
+        } else {
+            title = extractRecommendationField(rec, "TITRE:");
+            description = extractRecommendationField(rec, "DESCRIPTION:");
+            why = extractRecommendationField(rec, "POURQUOI:");
+            recommendations = extractRecommendationBullets(rec);
+        }
+        if (title.isBlank()) {
+            title = "Événement recommandé par l'IA";
+        }
+        String composedDescription = description;
+        if (composedDescription.isBlank()) {
+            composedDescription = description.isBlank() ? rec : description;
+        }
+        onNewEvent();
+        if (formTitre != null && !title.isBlank()) {
+            formTitre.setText(title);
+        }
+        if (formDescription != null && !composedDescription.isBlank()) {
+            formDescription.setText(composedDescription);
+        }
+        showInfo("Recommandation IA", "Le formulaire de création est pré-rempli avec la suggestion IA.");
+    }
+
+    @FXML
+    public void onEditIdeasRecommendation() {
+        String current = ideaAiRecommendationLabel != null && ideaAiRecommendationLabel.getText() != null
+                ? ideaAiRecommendationLabel.getText()
+                : "";
+        Dialog<String> dialog = new Dialog<>();
+        dialog.setTitle("Modifier la recommandation IA");
+        dialog.setHeaderText("Modifiez le contenu de la recommandation");
+        ButtonType saveBtn = new ButtonType("Enregistrer", ButtonBar.ButtonData.OK_DONE);
+        dialog.getDialogPane().getButtonTypes().setAll(saveBtn, ButtonType.CANCEL);
+        TextArea area = new TextArea(current);
+        area.setWrapText(true);
+        area.setPrefWidth(760);
+        area.setPrefHeight(340);
+        area.setMinHeight(280);
+        dialog.getDialogPane().setContent(area);
+        dialog.getDialogPane().setPrefWidth(820);
+        dialog.setResultConverter(bt -> bt == saveBtn ? area.getText() : null);
+        Optional<String> res = dialog.showAndWait();
+        if (res.isEmpty()) {
+            return;
+        }
+        String edited = res.get() != null ? res.get().trim() : "";
+        if (ideaAiRecommendationLabel != null) {
+            ideaAiRecommendationLabel.setText(edited);
+        }
+        applyStructuredRecommendation(edited);
+        if (ideaCreateEventBtn != null) {
+            ideaCreateEventBtn.setDisable(!canCreateEventFromRecommendation(edited));
+        }
+    }
+
+    private static boolean canCreateEventFromRecommendation(String recText) {
+        if (recText == null) {
+            return false;
+        }
+        String rec = recText.trim();
+        if (rec.isBlank()) {
+            return false;
+        }
+        if (rec.startsWith("Cliquez sur")
+                || rec.startsWith("Analyse IA en cours")
+                || rec.startsWith("Analyse IA indisponible")
+                || rec.startsWith("Aucune proposition disponible.")) {
+            return false;
+        }
+        JsonObject json = parseRecommendationJson(rec);
+        if (json != null) {
+            String title = getJsonString(json, "title");
+            String description = getJsonString(json, "description");
+            return !title.isBlank() && !description.isBlank();
+        }
+        return true;
+    }
+
+    private void applyStructuredRecommendation(String raw) {
+        String text = raw == null ? "" : raw.trim();
+        JsonObject json = parseRecommendationJson(text);
+        String title;
+        String description;
+        String why;
+        List<String> recs;
+        long confidenceFromJson = -1L;
+        if (json != null) {
+            title = getJsonString(json, "title");
+            description = getJsonString(json, "description");
+            why = getJsonString(json, "why");
+            recs = getJsonStringArray(json, "recommendations");
+            confidenceFromJson = getJsonLong(json, "confidence", -1L);
+        } else {
+            title = extractRecommendationField(text, "TITRE:");
+            description = extractRecommendationField(text, "DESCRIPTION:");
+            why = extractRecommendationField(text, "POURQUOI:");
+            recs = extractRecommendationBullets(text);
+        }
+
+        if (ideaRecoTitleLabel != null) {
+            ideaRecoTitleLabel.setText(!title.isBlank() ? title : "—");
+        }
+        if (ideaRecoDescriptionLabel != null) {
+            ideaRecoDescriptionLabel.setText(!description.isBlank() ? description : "—");
+        }
+        if (ideaRecoWhyLabel != null) {
+            ideaRecoWhyLabel.setText(!why.isBlank() ? why : "—");
+        }
+        if (ideaRecoRecommendationsBox != null) {
+            ideaRecoRecommendationsBox.getChildren().clear();
+            if (recs.isEmpty()) {
+                Label empty = new Label("—");
+                empty.getStyleClass().add("admin-ideas-reco-value");
+                ideaRecoRecommendationsBox.getChildren().add(empty);
+            } else {
+                for (String r : recs) {
+                    Label l = new Label("• " + r);
+                    l.setWrapText(true);
+                    l.getStyleClass().add("admin-ideas-reco-value");
+                    ideaRecoRecommendationsBox.getChildren().add(l);
+                }
+            }
+        }
+        if (ideaConfidenceBadgeLabel != null) {
+            if (!canCreateEventFromRecommendation(text)) {
+                ideaConfidenceBadgeLabel.setText("Confiance IA: —");
+            } else {
+                long score = confidenceFromJson >= 0
+                        ? Math.max(0, Math.min(100, confidenceFromJson))
+                        : estimateConfidenceScore(text);
+                ideaConfidenceBadgeLabel.setText("Confiance IA: " + score + "%");
+            }
+        }
+    }
+
+    private static List<String> extractRecommendationBullets(String text) {
+        if (text == null || text.isBlank()) {
+            return List.of();
+        }
+        List<String> out = new ArrayList<>();
+        boolean inRecBlock = false;
+        for (String rawLine : text.split("\\R")) {
+            String line = rawLine == null ? "" : rawLine.trim();
+            if (line.isBlank()) {
+                continue;
+            }
+            if (line.startsWith("RECOMMANDATIONS:")) {
+                inRecBlock = true;
+                continue;
+            }
+            if (!inRecBlock) {
+                continue;
+            }
+            if (line.startsWith("-")) {
+                String v = line.substring(1).trim();
+                if (!v.isBlank()) {
+                    out.add(v);
+                }
+            } else if (line.startsWith("TITRE:") || line.startsWith("DESCRIPTION:") || line.startsWith("POURQUOI:")) {
+                break;
+            }
+        }
+        return out;
+    }
+
+    private static long estimateConfidenceScore(String text) {
+        if (text == null || text.isBlank()) {
+            return 0;
+        }
+        JsonObject json = parseRecommendationJson(text);
+        if (json != null) {
+            long parsed = getJsonLong(json, "confidence", -1L);
+            if (parsed >= 0) {
+                return Math.max(0, Math.min(100, parsed));
+            }
+        }
+        long score = 55;
+        if (text.contains("TITRE:")) score += 12;
+        if (text.contains("DESCRIPTION:")) score += 12;
+        if (text.contains("POURQUOI:")) score += 10;
+        if (text.contains("RECOMMANDATIONS:")) score += 11;
+        return Math.min(95, score);
+    }
+
+    private static JsonObject parseRecommendationJson(String text) {
+        if (text == null || text.isBlank()) {
+            return null;
+        }
+        String trimmed = text.trim();
+        String candidate = trimmed;
+        int start = trimmed.indexOf('{');
+        int end = trimmed.lastIndexOf('}');
+        if (start >= 0 && end > start) {
+            candidate = trimmed.substring(start, end + 1);
+        }
+        try {
+            JsonElement root = JsonParser.parseString(candidate);
+            return root != null && root.isJsonObject() ? root.getAsJsonObject() : null;
+        } catch (Exception ignored) {
+            return null;
+        }
+    }
+
+    private static String getJsonString(JsonObject json, String key) {
+        if (json == null || key == null || !json.has(key) || json.get(key).isJsonNull()) {
+            return "";
+        }
+        try {
+            return json.get(key).getAsString().trim();
+        } catch (Exception ignored) {
+            return "";
+        }
+    }
+
+    private static long getJsonLong(JsonObject json, String key, long fallback) {
+        if (json == null || key == null || !json.has(key) || json.get(key).isJsonNull()) {
+            return fallback;
+        }
+        try {
+            return json.get(key).getAsLong();
+        } catch (Exception ignored) {
+            return fallback;
+        }
+    }
+
+    private static List<String> getJsonStringArray(JsonObject json, String key) {
+        if (json == null || key == null || !json.has(key) || json.get(key).isJsonNull()) {
+            return List.of();
+        }
+        try {
+            JsonArray arr = json.getAsJsonArray(key);
+            List<String> out = new ArrayList<>();
+            for (JsonElement el : arr) {
+                if (el != null && !el.isJsonNull()) {
+                    String s = el.getAsString().trim();
+                    if (!s.isBlank()) {
+                        out.add(s);
+                    }
+                }
+            }
+            return out;
+        } catch (Exception ignored) {
+            return List.of();
+        }
+    }
+
+    private static String extractRecommendationField(String text, String marker) {
+        if (text == null || marker == null || marker.isBlank()) {
+            return "";
+        }
+        String[] lines = text.split("\\R");
+        for (String line : lines) {
+            if (line == null) {
+                continue;
+            }
+            String t = line.trim();
+            if (t.startsWith(marker)) {
+                return t.substring(marker.length()).trim();
+            }
+        }
+        return "";
+    }
+
+    private static String topEntryNameOrTie(Map<String, Long> values) {
+        if (values == null || values.isEmpty()) {
+            return "—";
+        }
+        long max = values.values().stream().mapToLong(Long::longValue).max().orElse(0L);
+        List<String> tied = values.entrySet().stream()
+                .filter(e -> e.getValue() != null && e.getValue() == max)
+                .map(Map.Entry::getKey)
+                .sorted(String.CASE_INSENSITIVE_ORDER)
+                .collect(Collectors.toList());
+        if (tied.isEmpty()) {
+            return "—";
+        }
+        if (tied.size() == 1) {
+            return tied.get(0);
+        }
+        return "Égalité";
+    }
+
+    private static String buildIdeaDigestForAi(
+            List<EventIdeaSuggestion> ideas,
+            Map<String, Long> byTheme,
+            Map<String, Long> byFormat,
+            Map<String, Long> byPeriod,
+            List<EventIdeaSuggestionService.IdeaCluster> clusters) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("Total idees: ").append(ideas.size()).append('\n');
+        sb.append("Themes: ").append(byTheme).append('\n');
+        sb.append("Formats: ").append(byFormat).append('\n');
+        sb.append("Periodes: ").append(byPeriod).append('\n');
+        sb.append("Clusters similaires: ").append(clusters.size()).append('\n');
+        int idx = 1;
+        for (EventIdeaSuggestionService.IdeaCluster c : clusters) {
+            sb.append("Cluster ").append(idx++).append(" (").append(c.items.size()).append(" idees) : ");
+            if (!c.items.isEmpty()) {
+                EventIdeaSuggestion first = c.items.get(0);
+                sb.append("theme=").append(first.getThemePreference()).append(", format=").append(first.getFormatPreference()).append(", periode=").append(first.getPreferredPeriod());
+            }
+            sb.append('\n');
+            if (c.exampleDescription != null && !c.exampleDescription.isBlank()) {
+                sb.append("Exemple: ").append(c.exampleDescription).append('\n');
+            }
+        }
+        return sb.toString();
+    }
+
+    private record IdeasGenerationOutcome(String text, int fallbackConfidence) {}
 
     private void setupAdminEventsUi() {
         adminEventsTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+        /*
+         * UX: sur cette page, la molette au-dessus du tableau faisait défiler le TableView,
+         * ce qui donnait l'impression que le scroll vertical global était bloqué.
+         * On redirige la molette vers le ScrollPane racine pour garder un scroll de page fluide.
+         */
+        adminEventsTable.addEventFilter(ScrollEvent.SCROLL, evt -> {
+            if (eventsScrollRoot == null) {
+                return;
+            }
+            double deltaY = evt.getDeltaY();
+            if (Math.abs(deltaY) < 0.5) {
+                return;
+            }
+            double pageHeight = Math.max(1.0, eventsScrollRoot.getContent() != null ? eventsScrollRoot.getContent().getBoundsInLocal().getHeight() : 1.0);
+            double viewportHeight = Math.max(1.0, eventsScrollRoot.getViewportBounds().getHeight());
+            double movable = Math.max(1.0, pageHeight - viewportHeight);
+            double step = (deltaY / movable) * 0.9;
+            double next = Math.max(0.0, Math.min(1.0, eventsScrollRoot.getVvalue() - step));
+            eventsScrollRoot.setVvalue(next);
+            evt.consume();
+        });
         TableColumn<Event, String> colTitre = new TableColumn<>("TITRE");
         /* Pas de PropertyValueFactory : avec JPMS, la réflexion sur org.example.models.Event échoue ;
          * les autres colonnes utilisent déjà des lambdas. */

@@ -43,7 +43,7 @@ public final class CombinedPublicNotifications {
         if (user == null) {
             return 0;
         }
-        int n = userNotif.countUnreadForUser(user.getId());
+        int n = userNotif.countUnreadEventOnlyForUser(user.getId());
         if (user.getRole() == Role.PATIENT || user.getRole() == Role.PARENT) {
             n += appointments.countUnreadPatientDecisions(user.getId());
         }
@@ -59,7 +59,7 @@ public final class CombinedPublicNotifications {
         if (user == null) {
             return out;
         }
-        List<UserNotificationItem> events = userNotif.listLatestForUser(user.getId(), FETCH_EACH);
+        List<UserNotificationItem> events = userNotif.listLatestEventOnlyForUser(user.getId(), FETCH_EACH);
         for (UserNotificationItem it : events) {
             if (!it.isLu()) {
                 LocalDateTime t = it.getDateCreation();

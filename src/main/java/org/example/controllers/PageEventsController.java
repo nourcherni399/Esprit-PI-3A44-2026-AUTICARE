@@ -6,12 +6,14 @@ import javafx.geometry.HPos;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.geometry.VPos;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
+import javafx.scene.control.TextArea;
 import javafx.scene.control.Tooltip;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.CacheHint;
@@ -26,7 +28,11 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.shape.Rectangle;
 import org.example.models.Event;
+import org.example.models.EventIdeaSuggestion;
 import org.example.models.Thematique;
+import org.example.models.User;
+import org.example.services.EventIdeaSuggestionService;
+import org.example.services.EventRegistrationService;
 import org.example.services.EventService;
 import org.example.services.ThematiqueService;
 import org.example.utils.AppState;
@@ -43,6 +49,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -174,6 +181,8 @@ public class PageEventsController implements PublicShellAware {
     private PublicShellController shell;
     private final EventService eventService = new EventService();
     private final ThematiqueService thematiqueService = new ThematiqueService();
+    private final EventRegistrationService registrationService = new EventRegistrationService();
+    private final EventIdeaSuggestionService eventIdeaSuggestionService = new EventIdeaSuggestionService();
     /** Thématiques publiques chargées depuis la BDD (vide = on utilisera {@link #FALLBACK_THEMES}). */
     private List<ThemeDef> publicThemesFromDb = List.of();
     private List<Event> sourceEvents = List.of();
@@ -203,6 +212,20 @@ public class PageEventsController implements PublicShellAware {
     private Label otherCountLabel;
     @FXML
     private VBox otherEventsHost;
+    @FXML
+    private VBox participantIdeaCard;
+    @FXML
+    private Label ideaHintLabel;
+    @FXML
+    private TextArea ideaDescriptionArea;
+    @FXML
+    private ComboBox<String> ideaThemeBox;
+    @FXML
+    private ComboBox<String> ideaFormatBox;
+    @FXML
+    private ComboBox<String> ideaPeriodBox;
+    @FXML
+    private TextArea ideaOptionalCommentArea;
 
     @Override
     public void setPublicShell(PublicShellController shell) {
@@ -283,6 +306,7 @@ public class PageEventsController implements PublicShellAware {
     }
 
     private void reloadFromDb() {
+        refreshParticipantIdeaUi();
         loadPublicThemesFromDb();
         try {
             sourceEvents = eventService.findPublishedPublic();
@@ -291,6 +315,184 @@ public class PageEventsController implements PublicShellAware {
         }
         refillThematiqueCombo();
         rebuild();
+    }
+
+    private void refreshParticipantIdeaUi() {
+        if (participantIdeaCard == null) {
+            return;
+        }
+        participantIdeaCard.setVisible(true);
+        participantIdeaCard.setManaged(true);
+        setupIdeaFormChoices();
+        User user = AppState.getCurrentUser();
+        if (user == null) {
+            if (ideaHintLabel != null) {
+                ideaHintLabel.setText("Cette box est visible pour tous. Connectez-vous pour envoyer votre proposition.");
+                ideaHintLabel.setStyle("-fx-text-fill:#64748b;");
+            }
+            return;
+        }
+        if (ideaHintLabel != null) {
+            ideaHintLabel.setText("");
+            ideaHintLabel.setManaged(false);
+            ideaHintLabel.setVisible(false);
+        }
+        clearIdeaFormInputs();
+    }
+
+    private void setupIdeaFormChoices() {
+        if (ideaThemeBox != null && ideaThemeBox.getItems().isEmpty()) {
+            ideaThemeBox.getItems().setAll(
+                    "Autisme",
+                    "Inclusion scolaire",
+                    "Communication",
+                    "Vie quotidienne",
+                    "Parentalité",
+                    "Sante mentale",
+                    "Atelier sensoriel",
+                    "Autre");
+        }
+        if (ideaFormatBox != null && ideaFormatBox.getItems().isEmpty()) {
+            ideaFormatBox.getItems().setAll("Présentiel", "En ligne", "Hybride");
+        }
+        if (ideaPeriodBox != null && ideaPeriodBox.getItems().isEmpty()) {
+            ideaPeriodBox.getItems().setAll(
+                    "Le plus tôt possible",
+                    "Cette semaine",
+                    "Ce mois-ci",
+                    "Le mois prochain",
+                    "Pendant les vacances scolaires",
+                    "Week-end uniquement",
+                    "En soirée (après 18h)",
+                    "Peu importe");
+        }
+    }
+
+    @FXML
+    public void onSubmitParticipantIdea() {
+        User user = AppState.getCurrentUser();
+        if (user == null) {
+            alert(Alert.AlertType.INFORMATION, "Connexion requise", "Connectez-vous pour envoyer votre proposition.");
+            try {
+                if (shell != null) {
+                    shell.loadPage("login");
+                }
+            } catch (Exception ignored) {
+                // navigation non bloquante
+            }
+            return;
+        }
+        try {
+            LocalDate today = LocalDate.now();
+            String description = ideaDescriptionArea != null && ideaDescriptionArea.getText() != null
+                    ? ideaDescriptionArea.getText().trim()
+                    : "";
+            String theme = ideaThemeBox != null ? ideaThemeBox.getValue() : null;
+            String format = ideaFormatBox != null ? ideaFormatBox.getValue() : null;
+            String period = ideaPeriodBox != null ? ideaPeriodBox.getValue() : null;
+            String optionalComment = ideaOptionalCommentArea != null && ideaOptionalCommentArea.getText() != null
+                    ? ideaOptionalCommentArea.getText().trim()
+                    : "";
+            if (description.isBlank()) {
+                alert(Alert.AlertType.WARNING, "Proposition", "La description de l'idée est obligatoire.");
+                return;
+            }
+            if (theme == null || theme.isBlank()) {
+                alert(Alert.AlertType.WARNING, "Proposition", "Choisissez une thematique.");
+                return;
+            }
+            if (format == null || format.isBlank()) {
+                alert(Alert.AlertType.WARNING, "Proposition", "Choisissez un format.");
+                return;
+            }
+            if (period == null || period.isBlank()) {
+                alert(Alert.AlertType.WARNING, "Proposition", "Choisissez une periode preferee.");
+                return;
+            }
+
+            Optional<EventIdeaSuggestion> existing = eventIdeaSuggestionService.findByParticipantForDay(user.getId(), today);
+            EventIdeaSuggestion idea = existing.orElseGet(EventIdeaSuggestion::new);
+            idea.setEvenementId(resolveIdeaTargetEventId(existing));
+            idea.setParticipantId(user.getId());
+            idea.setDescription(description);
+            idea.setThemePreference(theme.trim());
+            idea.setFormatPreference(format.trim());
+            idea.setPreferredPeriod(period.trim());
+            idea.setParticipantComment(optionalComment.isBlank() ? null : optionalComment);
+
+            if (existing.isPresent()) {
+                eventIdeaSuggestionService.update(idea);
+                clearIdeaFormInputs();
+                alert(Alert.AlertType.INFORMATION, "Proposition", "Votre idée a été mise à jour.");
+            } else {
+                eventIdeaSuggestionService.add(idea);
+                clearIdeaFormInputs();
+                alert(Alert.AlertType.INFORMATION, "Proposition", "Merci, votre idée a été enregistrée.");
+            }
+        } catch (IllegalStateException ex) {
+            alert(Alert.AlertType.WARNING, "Proposition", ex.getMessage());
+        } catch (SQLException ex) {
+            alert(Alert.AlertType.ERROR, "Proposition", "Impossible d'enregistrer votre idée.");
+        }
+    }
+
+    private void clearIdeaFormInputs() {
+        if (ideaDescriptionArea != null) {
+            ideaDescriptionArea.clear();
+        }
+        if (ideaThemeBox != null) {
+            ideaThemeBox.getSelectionModel().clearSelection();
+            ideaThemeBox.setValue(null);
+        }
+        if (ideaFormatBox != null) {
+            ideaFormatBox.getSelectionModel().clearSelection();
+            ideaFormatBox.setValue(null);
+        }
+        if (ideaPeriodBox != null) {
+            ideaPeriodBox.getSelectionModel().clearSelection();
+            ideaPeriodBox.setValue(null);
+        }
+        if (ideaOptionalCommentArea != null) {
+            ideaOptionalCommentArea.clear();
+        }
+    }
+
+    private int resolveIdeaTargetEventId(Optional<EventIdeaSuggestion> existing) {
+        if (existing.isPresent() && existing.get().getEvenementId() > 0) {
+            return existing.get().getEvenementId();
+        }
+        Optional<Integer> acceptedEventId = findAcceptedEventIdSafely();
+        if (acceptedEventId.isPresent()) {
+            return acceptedEventId.get();
+        }
+        List<Event> filtered = applyFilters(sourceEvents);
+        if (!filtered.isEmpty()) {
+            return filtered.get(0).getId();
+        }
+        if (!sourceEvents.isEmpty()) {
+            return sourceEvents.get(0).getId();
+        }
+        throw new IllegalStateException("Aucun événement disponible pour rattacher la proposition.");
+    }
+
+    private Optional<Integer> findAcceptedEventIdSafely() {
+        User user = AppState.getCurrentUser();
+        if (user == null) {
+            return Optional.empty();
+        }
+        try {
+            return registrationService.findAnyAcceptedEventIdForUser(user.getId());
+        } catch (SQLException ignored) {
+            return Optional.empty();
+        }
+    }
+
+    private void alert(Alert.AlertType type, String title, String msg) {
+        Alert a = new Alert(type);
+        a.setTitle(title);
+        a.setHeaderText(null);
+        a.setContentText(msg);
+        a.showAndWait();
     }
 
     private void loadPublicThemesFromDb() {

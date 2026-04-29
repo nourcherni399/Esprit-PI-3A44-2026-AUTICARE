@@ -27,6 +27,8 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.text.Text;
+import javafx.scene.text.TextFlow;
 import org.example.MainApp;
 import org.example.models.Role;
 import org.example.models.User;
@@ -144,7 +146,7 @@ public class AdminUsersController {
         }
         notificationsMenuButton.getItems().clear();
         try {
-            List<AdminNotificationItem> notifications = adminNotificationService.listLatest(8);
+            List<AdminNotificationItem> notifications = adminNotificationService.listLatest(12);
             int total = notifications.size();
 
             Label headerLabel = new Label(notificationGroupLabel(notifications) + " (" + total + ")");
@@ -163,13 +165,16 @@ public class AdminUsersController {
             for (AdminNotificationItem item : notifications) {
                 VBox card = new VBox(3);
                 card.getStyleClass().add("admin-notif-item");
-                Label title = new Label(notificationCompactText(item));
+                card.getStyleClass().add(notificationTypeStyleClass(item));
+                TextFlow title = buildNotificationTitleFlow(item);
                 title.getStyleClass().add("admin-notif-item-title");
-                String when = item.getDateCreation() != null ? NOTIF_TIME_FMT.format(item.getDateCreation()) : "";
-                String actionLabel = notificationActionLabel(item);
-                Label meta = new Label(when.isBlank() ? actionLabel : actionLabel + " • " + when);
-                meta.getStyleClass().add("admin-notif-item-meta");
-                card.getChildren().addAll(title, meta);
+                Label icon = new Label(notificationTypeIconGlyph(item));
+                icon.getStyleClass().add("admin-notif-item-icon");
+                VBox textBox = new VBox(2, title);
+                textBox.getStyleClass().add("admin-notif-item-texts");
+                HBox row = new HBox(8, icon, textBox);
+                row.getStyleClass().add("admin-notif-item-row");
+                card.getChildren().add(row);
 
                 CustomMenuItem menuItem = new CustomMenuItem(card, true);
                 menuItem.setOnAction(e -> onNotificationClick(item));
@@ -198,22 +203,47 @@ public class AdminUsersController {
         return "Messages événements";
     }
 
-    private static String notificationCompactText(AdminNotificationItem item) {
-        if (item == null) {
-            return "Notification";
+    private static TextFlow buildNotificationTitleFlow(AdminNotificationItem item) {
+        String prefix = notificationTypePrefix(item);
+        String sender = notificationSender(item);
+        String action = notificationAction(item);
+        String eventTitle = notificationEventTitle(item);
+
+        Text prefixText = new Text(prefix.isBlank() ? "" : prefix + " ");
+        Text senderText = new Text(sender);
+        senderText.getStyleClass().add("admin-notif-item-sender");
+        Text restText = new Text(" " + action + " • " + eventTitle);
+
+        TextFlow flow = new TextFlow(prefixText, senderText, restText);
+        flow.setMaxWidth(330);
+        return flow;
+    }
+
+    private static String notificationSender(AdminNotificationItem item) {
+        if (item == null || item.getExpediteurNom() == null || item.getExpediteurNom().isBlank()) {
+            return "Utilisateur";
         }
-        String sender = item.getExpediteurNom() != null && !item.getExpediteurNom().isBlank()
-                ? item.getExpediteurNom()
-                : "Utilisateur";
-        String eventTitle = item.getEvenementTitre() != null && !item.getEvenementTitre().isBlank()
-                ? item.getEvenementTitre()
-                : "Événement";
-        String action = AdminNotificationService.TYPE_MESSAGE_EVENEMENT.equals(item.getTypeCode())
-                ? "a envoyé un message"
-                : AdminNotificationService.TYPE_INSCRIPTION_DEMANDE.equals(item.getTypeCode())
-                ? "a demandé une inscription"
-                : "a envoyé une notification";
-        return sender + " " + action + " • " + eventTitle;
+        return item.getExpediteurNom();
+    }
+
+    private static String notificationEventTitle(AdminNotificationItem item) {
+        if (item == null || item.getEvenementTitre() == null || item.getEvenementTitre().isBlank()) {
+            return "Événement";
+        }
+        return item.getEvenementTitre();
+    }
+
+    private static String notificationAction(AdminNotificationItem item) {
+        if (item == null) {
+            return "a envoyé une notification";
+        }
+        if (AdminNotificationService.TYPE_MESSAGE_EVENEMENT.equals(item.getTypeCode())) {
+            return "a envoyé un message";
+        }
+        if (AdminNotificationService.TYPE_INSCRIPTION_DEMANDE.equals(item.getTypeCode())) {
+            return "a demandé une inscription";
+        }
+        return "a envoyé une notification";
     }
 
     private static String notificationActionLabel(AdminNotificationItem item) {
@@ -227,6 +257,45 @@ public class AdminUsersController {
             return "Cliquer pour accepter/refuser l'inscription";
         }
         return "Cliquer pour ouvrir";
+    }
+
+    private static String notificationTypeStyleClass(AdminNotificationItem item) {
+        if (item == null || item.getTypeCode() == null) {
+            return "admin-notif-item-generic";
+        }
+        if (AdminNotificationService.TYPE_MESSAGE_EVENEMENT.equals(item.getTypeCode())) {
+            return "admin-notif-item-message";
+        }
+        if (AdminNotificationService.TYPE_INSCRIPTION_DEMANDE.equals(item.getTypeCode())) {
+            return "admin-notif-item-inscription";
+        }
+        return "admin-notif-item-generic";
+    }
+
+    private static String notificationTypePrefix(AdminNotificationItem item) {
+        if (item == null || item.getTypeCode() == null) {
+            return "•";
+        }
+        if (AdminNotificationService.TYPE_MESSAGE_EVENEMENT.equals(item.getTypeCode())) {
+            return "";
+        }
+        if (AdminNotificationService.TYPE_INSCRIPTION_DEMANDE.equals(item.getTypeCode())) {
+            return "";
+        }
+        return "•";
+    }
+
+    private static String notificationTypeIconGlyph(AdminNotificationItem item) {
+        if (item == null || item.getTypeCode() == null) {
+            return "•";
+        }
+        if (AdminNotificationService.TYPE_MESSAGE_EVENEMENT.equals(item.getTypeCode())) {
+            return "💬";
+        }
+        if (AdminNotificationService.TYPE_INSCRIPTION_DEMANDE.equals(item.getTypeCode())) {
+            return "⏳";
+        }
+        return "•";
     }
 
     private void onNotificationClick(AdminNotificationItem item) {

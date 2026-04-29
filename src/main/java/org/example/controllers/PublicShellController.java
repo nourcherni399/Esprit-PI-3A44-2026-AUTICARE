@@ -515,6 +515,10 @@ public class PublicShellController {
         }
     }
 
+    public void refreshNotificationsBadge() {
+        refreshUserNotificationBadge();
+    }
+
     private void rebuildUserNotificationsMenuItems() {
         if (userNotifMenuButton == null) {
             return;

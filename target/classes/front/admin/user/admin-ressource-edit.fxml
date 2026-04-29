@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane styleClass="admin-root" stylesheets="@../../../styles/app.css,@../../../styles/admin.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.example.controllers.AdminRessourceEditController">
+    <left>
+        <VBox styleClass="admin-sidebar">
+            <HBox alignment="CENTER_LEFT" spacing="10" styleClass="admin-brand-row">
+                <ImageView fitHeight="38" fitWidth="38" pickOnBounds="true" preserveRatio="true" styleClass="admin-sidebar-logo">
+                    <image>
+                        <Image url="file:///C:/Users/comme/Desktop/PI/public/images/logo.png"/>
+                    </image>
+                </ImageView>
+                <Label styleClass="admin-brand" text="AutiCare Admin"/>
+            </HBox>
+            <Label alignment="CENTER_LEFT" maxWidth="Infinity" onMouseClicked="#onNavDashboard" styleClass="admin-nav-item" text="Tableau de bord"/>
+            <Label alignment="CENTER_LEFT" maxWidth="Infinity" onMouseClicked="#onNavUsers" styleClass="admin-nav-item" text="Utilisateurs"/>
+            <Label alignment="CENTER_LEFT" maxWidth="Infinity" onMouseClicked="#onNavProducts" styleClass="admin-nav-item" text="Produits"/>
+            <Label alignment="CENTER_LEFT" maxWidth="Infinity" onMouseClicked="#onNavStocks" styleClass="admin-nav-item" text="Stocks"/>
+            <Label alignment="CENTER_LEFT" maxWidth="Infinity" onMouseClicked="#onNavOrders" styleClass="admin-nav-item" text="Commandes"/>
+            <Label alignment="CENTER_LEFT" maxWidth="Infinity" onMouseClicked="#onNavEvents" styleClass="admin-nav-item" text="Événements"/>
+            <Label alignment="CENTER_LEFT" maxWidth="Infinity" onMouseClicked="#onNavTopics" styleClass="admin-nav-item" text="Thématiques"/>
+            <Label alignment="CENTER_LEFT" maxWidth="Infinity" onMouseClicked="#onNavModules" styleClass="admin-nav-item admin-nav-item-active" text="Modules"/>
+            <Label alignment="CENTER_LEFT" maxWidth="Infinity" onMouseClicked="#onNavSettings" styleClass="admin-nav-item" text="Paramètres"/>
+            <Region VBox.vgrow="ALWAYS"/>
+            <VBox styleClass="admin-nav-footer">
+                <Label alignment="CENTER_LEFT" maxWidth="Infinity" onMouseClicked="#onNavAdminHome" styleClass="admin-nav-item" text="Accueil admin"/>
+            </VBox>
+        </VBox>
+    </left>
+    <center>
+        <BorderPane styleClass="admin-main">
+            <top>
+                <HBox alignment="CENTER_LEFT" styleClass="admin-topbar">
+                    <HBox alignment="CENTER_LEFT" spacing="8" HBox.hgrow="ALWAYS">
+                        <Label text="🔍"/>
+                        <TextField fx:id="topSearchField" promptText="Rechercher" styleClass="admin-search" HBox.hgrow="ALWAYS"/>
+                    </HBox>
+                    <Region minWidth="16"/>
+                    <Region minWidth="12"/>
+                    <HBox alignment="CENTER_LEFT" onMouseClicked="#onOpenMyProfile" spacing="10" styleClass="admin-topbar-profile">
+                        <StackPane fx:id="topbarAvatarHost" styleClass="admin-topbar-avatar-host"/>
+                        <VBox styleClass="admin-user-block">
+                            <Label fx:id="userNameLabel" styleClass="admin-user-name" text="—"/>
+                            <Label fx:id="userEmailLabel" styleClass="admin-user-email" text="—"/>
+                        </VBox>
+                    </HBox>
+                    <Button onAction="#onLogout" styleClass="admin-btn-logout" text="Se déconnecter"/>
+                </HBox>
+            </top>
+            <center>
+                <ScrollPane fitToWidth="true" hbarPolicy="NEVER" style="-fx-background: transparent; -fx-background-color: transparent;">
+                    <content>
+                        <VBox styleClass="admin-content">
+                            <Label onMouseClicked="#onBackToModules" styleClass="admin-form-back" text="← Retour à la liste des modules"/>
+                            <VBox styleClass="admin-form-card">
+                                <VBox styleClass="admin-form-card-header">
+                                    <Label styleClass="admin-form-card-title" text="Modifier la ressource"/>
+                                </VBox>
+                                <GridPane hgap="14" styleClass="admin-form-grid" vgap="12">
+                                    <columnConstraints>
+                                        <ColumnConstraints hgrow="SOMETIMES" minWidth="120" prefWidth="200"/>
+                                        <ColumnConstraints hgrow="SOMETIMES" minWidth="120" prefWidth="200"/>
+                                    </columnConstraints>
+
+                                    <Label styleClass="admin-form-label" text="Titre *" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="0"/>
+                                    <TextField fx:id="titreField" promptText="Ex. Vidéo sur la communication" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="1"/>
+
+                                    <Label styleClass="admin-form-label" text="Type de ressource *" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="2"/>
+                                    <ComboBox fx:id="typeCombo" prefWidth="Infinity" promptText="Choisir un type" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="3"/>
+
+                                    <Label styleClass="admin-form-label" text="Contenu (URL ou chemin média)" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="4"/>
+                                    <TextField fx:id="contenuField" promptText="https://..." GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="5"/>
+
+                                    <Label styleClass="admin-form-label" text="Fichier vidéo/audio (optionnel)" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="6"/>
+                                    <HBox alignment="CENTER_LEFT" spacing="10" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="7">
+                                        <Button onAction="#onChooseFile" styleClass="admin-btn-outline" text="Choisir un fichier"/>
+                                        <Label fx:id="fileLabel" text="Aucun fichier choisi" styleClass="admin-form-hint"/>
+                                    </HBox>
+
+                                    <Label styleClass="admin-form-label" text="Module associé *" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="8"/>
+                                    <ComboBox fx:id="moduleCombo" prefWidth="Infinity" promptText="Choisir un module" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="9"/>
+
+                                    <Label styleClass="admin-form-label" text="Ordre d'affichage" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="10"/>
+                                    <TextField fx:id="ordreField" promptText="Ex. 1" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="11"/>
+
+                                    <CheckBox fx:id="activeCheck" mnemonicParsing="false" selected="true" styleClass="admin-form-checkbox" text="Actif" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="12"/>
+
+                                    <HBox alignment="CENTER_LEFT" spacing="12" styleClass="admin-form-actions" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="13">
+                                        <Button onAction="#onSaveEdits" styleClass="admin-btn-save" text="Enregistrer les modifications"/>
+                                        <Button onAction="#onCancel" styleClass="admin-btn-secondary" text="Annuler"/>
+                                    </HBox>
+                                </GridPane>
+                            </VBox>
+                        </VBox>
+                    </content>
+                </ScrollPane>
+            </center>
+        </BorderPane>
+    </center>
+</BorderPane>

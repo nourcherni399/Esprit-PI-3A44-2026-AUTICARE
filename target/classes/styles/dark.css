@@ -1,0 +1,1264 @@
+.root {
+    -fx-base: #121826;
+    -fx-background: #121826;
+    -fx-control-inner-background: #1b2436;
+    -fx-accent: #7dd3fc;
+    -fx-focus-color: #7dd3fc;
+    -fx-faint-focus-color: rgba(125, 211, 252, 0.25);
+}
+
+.home-root,
+.login-root,
+.admin-root,
+.admin-main {
+    -fx-background-color: #121826;
+}
+
+.top-nav,
+.admin-topbar,
+.admin-sidebar {
+    -fx-background-color: #182133;
+    -fx-border-color: #2a3449;
+}
+
+/* Accueil : même barre, surcharges maquette en mode sombre */
+.top-nav.nav-home {
+    -fx-background-color: #182133;
+    -fx-border-color: #2a3449;
+}
+
+.nav-home .nav-vsep {
+    -fx-background-color: #3d4f6a;
+}
+
+.nav-home .nav-lang-chevron {
+    -fx-text-fill: #9ca3af;
+}
+
+.nav-home .nav-item-icon {
+    -fx-text-fill: #cbd5e1;
+}
+
+.nav-home .nav-item-label {
+    -fx-text-fill: #e5e7eb;
+}
+
+.nav-home .nav-link {
+    -fx-text-fill: #e5e7eb;
+}
+
+.nav-home .nav-link:hover {
+    -fx-text-fill: #ffffff;
+}
+
+.nav-home .button.icon-btn,
+.nav-home .menu-button.icon-btn {
+    -fx-background-insets: 0;
+    -fx-border-insets: 0;
+    -fx-background-color: linear-gradient(to bottom, #3e4658 0%, #2f3545 100%);
+    -fx-background-radius: 11;
+    -fx-border-color: #252b38;
+    -fx-border-radius: 11;
+    -fx-border-width: 1;
+    -fx-text-fill: #e8eaef;
+    -fx-effect: innershadow(gaussian, rgba(0, 0, 0, 0.42), 5, 0.25, 0, 2);
+}
+
+.nav-home .button.icon-btn:hover,
+.nav-home .menu-button.icon-btn:hover {
+    -fx-background-insets: 0;
+    -fx-background-color: linear-gradient(to bottom, #4a5368 0%, #3a4254 100%);
+    -fx-border-color: #3d465a;
+}
+
+.nav-home .button.icon-btn:pressed,
+.nav-home .menu-button.icon-btn:pressed {
+    -fx-background-insets: 0;
+    -fx-background-color: linear-gradient(to bottom, #2a303e 0%, #222836 100%);
+    -fx-border-color: #1f2530;
+    -fx-effect: innershadow(gaussian, rgba(0, 0, 0, 0.55), 6, 0.3, 0, 2);
+}
+
+.nav-home .button.icon-btn:focused,
+.nav-home .menu-button.icon-btn:focused {
+    -fx-background-insets: 0;
+    -fx-background-color: linear-gradient(to bottom, #3e4658 0%, #2f3545 100%);
+    -fx-border-color: #252b38;
+}
+
+.nav-home .signup-btn {
+    -fx-background-color: #6d8568;
+    -fx-text-fill: #ffffff;
+    -fx-border-width: 0;
+}
+
+.nav-home .signup-btn:hover {
+    -fx-background-color: #5d7558;
+}
+
+.nav-home .signup-btn-icon {
+    -fx-text-fill: #ffffff;
+}
+
+.nav-home .nav-icon-symbol {
+    -fx-text-fill: #9ca3af;
+}
+
+.nav-home .lang-combo {
+    -fx-text-fill: #e5e7eb;
+}
+
+.nav-home .nav-item:hover {
+    -fx-background-color: rgba(255, 255, 255, 0.07);
+}
+
+.nav-home .nav-patient-bell-host {
+    -fx-background-color: linear-gradient(to bottom, #3e4658 0%, #2f3545 100%);
+    -fx-background-radius: 11;
+    -fx-border-color: #252b38;
+    -fx-border-radius: 11;
+    -fx-border-width: 1;
+    -fx-effect: innershadow(gaussian, rgba(0, 0, 0, 0.42), 5, 0.25, 0, 2);
+}
+
+.nav-home .nav-patient-bell-host:hover {
+    -fx-background-color: linear-gradient(to bottom, #4a5368 0%, #3a4254 100%);
+    -fx-border-color: #3d465a;
+}
+
+.nav-home .nav-patient-bell-icon {
+    -fx-text-fill: #e8eaef;
+}
+
+.nav-home .nav-patient-bell-badge {
+    -fx-background-color: #ef4444;
+    -fx-text-fill: #ffffff;
+}
+
+.nav-home .public-notif-bell-glyph {
+    -fx-text-fill: #e8eaef;
+}
+
+.home-news-ticker {
+    -fx-background-color: #4a5c47;
+    -fx-min-height: 56;
+    -fx-pref-height: 56;
+    -fx-max-height: 56;
+}
+
+.home-news-ticker-brand {
+    -fx-background-color: #3d4f3b;
+    -fx-min-height: 56;
+}
+
+.home-news-ticker-viewport {
+    -fx-background-color: #556b52;
+    -fx-min-height: 56;
+}
+
+.nav-vsep {
+    -fx-background-color: #3d4f6a;
+}
+
+.nav-item:hover {
+    -fx-background-color: rgba(255, 255, 255, 0.06);
+}
+
+.nav-item-icon,
+.nav-item-label {
+    -fx-text-fill: #e5e7eb;
+}
+
+.signup-btn {
+    -fx-background-color: #7a8f6a;
+}
+
+.signup-btn:hover {
+    -fx-background-color: #6b7d5d;
+}
+
+.home-topbar-name {
+    -fx-text-fill: #e5e7eb;
+}
+
+.home-topbar-code {
+    -fx-text-fill: #f87171;
+}
+
+.home-topbar-logout {
+    -fx-text-fill: #9ca3af;
+}
+
+.nav-link,
+.field-label,
+.form-title,
+.form-sub,
+.admin-brand,
+.admin-user-name,
+.admin-user-email,
+.admin-page-title,
+.admin-nav-item,
+.admin-nav-text {
+    -fx-text-fill: #e5e7eb;
+}
+
+.admin-nav-item-active {
+    -fx-background-color: #2a3c5e;
+}
+
+.text-field,
+.password-field,
+.combo-box,
+.date-picker,
+.text-area,
+.admin-search {
+    -fx-background-color: #1f2a3f;
+    -fx-text-fill: #e5e7eb;
+    -fx-prompt-text-fill: #9ca3af;
+    -fx-border-color: #334155;
+}
+
+.login-card,
+.admin-panel,
+.admin-form-card,
+.admin-detail-outer-card,
+.admin-delete-card {
+    -fx-background-color: #182133;
+}
+
+.home-topbar-profile:hover,
+.admin-topbar-profile:hover,
+.admin-nav-item:hover {
+    -fx-background-color: #273449;
+}
+
+/* Accueil — équivalent classe dark sur html : fonds et textes */
+.home-global-veil {
+    -fx-background-color: rgba(18, 24, 38, 0.70);
+}
+
+.home-scroll .viewport {
+    -fx-background-color: transparent;
+}
+
+.nav-home.nav-home-frosted {
+    -fx-background-color: rgba(24, 33, 51, 0.9);
+    -fx-border-color: rgba(55, 65, 85, 0.85);
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.4), 12, 0, 0, 2);
+}
+
+/* Hero sur photo : même lisibilité qu’en clair (pilule claire, titres blancs) */
+.home-hero-badge-pill {
+    -fx-background-color: rgba(255, 255, 255, 0.88);
+}
+
+.home-hero-badge-text {
+    -fx-text-fill: #2c2c2c;
+}
+
+.home-hero-badge {
+    -fx-text-fill: #2c2c2c;
+}
+
+.home-hero-badge-icon {
+    -fx-text-fill: #2c2c2c;
+}
+
+.home-hero-title-text {
+    -fx-fill: #ffffff;
+}
+
+.home-hero-title-accent {
+    -fx-fill: #ffffff;
+}
+
+.home-hero-sub {
+    -fx-text-fill: #ffffff;
+}
+
+.home-mission-title,
+.home-need-title,
+.home-testi-title,
+.home-join-title {
+    -fx-text-fill: #e5e7eb;
+}
+
+.home-mission-body,
+.home-need-sub,
+.home-testi-sub,
+.home-join-sub {
+    -fx-text-fill: #9ca3af;
+}
+
+.home-stats-only-wrap,
+.home-ai-section {
+    -fx-background-color: #1a2234;
+}
+
+.home-features-wrap {
+    -fx-background-color: rgba(18, 24, 38, 0.45);
+}
+
+.home-features-row > .home-feature-card {
+    -fx-background-color: rgba(255, 255, 255, 0.22);
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.45), 20, 0.12, 0, 6);
+}
+
+.home-features-row > .home-feature-card:hover {
+    -fx-background-color: rgba(255, 255, 255, 0.32);
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.5), 24, 0.15, 0, 8);
+}
+
+.home-features-row > .home-feature-card.home-feature-border-green {
+    -fx-border-color: rgba(150, 200, 140, 0.95);
+}
+
+.home-features-row > .home-feature-card.home-feature-border-lavender {
+    -fx-border-color: rgba(200, 175, 225, 0.95);
+}
+
+.home-features-row > .home-feature-card.home-feature-border-sky {
+    -fx-border-color: rgba(140, 195, 230, 0.95);
+}
+
+.home-features-row > .home-feature-card.home-feature-border-coral {
+    -fx-border-color: rgba(230, 165, 150, 0.95);
+}
+
+.home-feature-title {
+    -fx-text-fill: #f3f4f6;
+}
+
+.home-feature-desc {
+    -fx-text-fill: #d1d5db;
+}
+
+.home-need-bg-a {
+    -fx-background-color: linear-gradient(145deg, #1a2234 0%, #221a30 45%, #1a2838 100%);
+}
+
+.home-need-bg-b {
+    -fx-background-color: linear-gradient(145deg, #1e2038 0%, #241a28 48%, #1a2830 100%);
+}
+
+.home-join-bg-a {
+    -fx-background-color: linear-gradient(to bottom right, #1a2e22 0%, #2a1f3a 45%, #2a1e28 100%);
+}
+
+.home-join-bg-b {
+    -fx-background-color: linear-gradient(to bottom right, #162428 0%, #221f35 50%, #281a24 100%);
+}
+
+.login-page-footer {
+    -fx-background-color: #121826;
+}
+
+.home-page-footer-on-photo {
+    -fx-background-color: rgba(18, 24, 38, 0.94);
+}
+
+.home-footer-feature-wrap {
+    -fx-background-color: rgba(18, 22, 32, 0.55);
+}
+
+.home-footer-service-card {
+    -fx-background-color: rgba(40, 44, 58, 0.92);
+    -fx-border-color: #8b7aad;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.45), 20, 0.2, 0, 6);
+}
+
+.home-footer-service-card:hover {
+    -fx-background-color: rgba(48, 52, 68, 0.96);
+}
+
+.home-footer-service-card .home-feature-title {
+    -fx-text-fill: #eceef2;
+}
+
+.home-footer-service-card .home-feature-desc {
+    -fx-text-fill: #b8bcc8;
+}
+
+.home-footer-service-card .home-feature-link {
+    -fx-text-fill: #7eb8e8;
+}
+
+.home-footer-service-card .home-feature-link:hover {
+    -fx-text-fill: #a8d4f5;
+}
+
+.home-footer-copy-feature {
+    -fx-text-fill: #9ca3af;
+}
+
+.login-footer-brand,
+.login-footer-heading {
+    -fx-text-fill: #e5e7eb;
+}
+
+.login-footer-tagline,
+.login-footer-contact,
+.login-footer-link {
+    -fx-text-fill: #9ca3af;
+}
+
+.login-footer-copy {
+    -fx-text-fill: #6b7280;
+}
+
+.public-page-kicker {
+    -fx-text-fill: #a8bba3;
+}
+
+.public-page-title {
+    -fx-text-fill: #e5e7eb;
+}
+
+.public-page-lead,
+.public-page-body {
+    -fx-text-fill: #b8bcc8;
+}
+
+.public-page-card {
+    -fx-background-color: rgba(38, 42, 56, 0.88);
+    -fx-border-color: rgba(200, 185, 230, 0.35);
+}
+
+.rdv-page-title {
+    -fx-text-fill: #eceef2;
+}
+
+.rdv-page-subtitle,
+.rdv-results-count,
+.rdv-help-text,
+.rdv-pro-detail,
+.rdv-pro-phone,
+.rdv-pro-location {
+    -fx-text-fill: #b8bcc8;
+}
+
+.rdv-content-card {
+    -fx-background-color: rgba(34, 38, 52, 0.78);
+    -fx-border-color: rgba(255, 255, 255, 0.14);
+}
+
+.rdv-filters-panel {
+    -fx-border-color: transparent rgba(255, 255, 255, 0.12) transparent transparent;
+}
+
+.rdv-pro-section-title {
+    -fx-text-fill: #e5e7eb;
+}
+
+.rdv-pro-count-pill {
+    -fx-text-fill: #c5d9c0;
+    -fx-background-color: rgba(168, 187, 163, 0.2);
+}
+
+.rdv-pro-sep-line {
+    -fx-background-color: linear-gradient(to right,
+        rgba(255, 255, 255, 0) 0%,
+        rgba(255, 255, 255, 0.14) 24%,
+        rgba(255, 255, 255, 0.14) 76%,
+        rgba(255, 255, 255, 0) 100%);
+}
+
+.rdv-pro-card {
+    -fx-background-color: rgba(34, 38, 52, 0.96);
+    -fx-border-color: rgba(255, 255, 255, 0.1);
+    -fx-alignment: top-left;
+    -fx-fill-height: false;
+}
+
+.rdv-pro-card-accent-mint {
+    -fx-border-width: 1 1 1 4;
+    -fx-border-color: rgba(255, 255, 255, 0.1) rgba(255, 255, 255, 0.1) rgba(255, 255, 255, 0.1) #7d9a78;
+    -fx-background-color: linear-gradient(to right, rgba(40, 58, 44, 0.75) 0%, rgba(34, 38, 52, 0.96) 22%, rgba(34, 38, 52, 0.96) 100%);
+}
+
+.rdv-pro-card-accent-lavender {
+    -fx-border-width: 1 1 1 4;
+    -fx-border-color: rgba(255, 255, 255, 0.1) rgba(255, 255, 255, 0.1) rgba(255, 255, 255, 0.1) #9b7fad;
+    -fx-background-color: linear-gradient(to right, rgba(58, 48, 72, 0.75) 0%, rgba(34, 38, 52, 0.96) 22%, rgba(34, 38, 52, 0.96) 100%);
+}
+
+.rdv-pro-price-pill {
+    -fx-text-fill: #d4e8cf;
+    -fx-background-color: rgba(168, 187, 163, 0.18);
+}
+
+.rdv-filters-title,
+.rdv-filter-label,
+.rdv-pro-name,
+.rdv-pro-price {
+    -fx-text-fill: #eceef2;
+}
+
+.rdv-help-box {
+    -fx-background-color: rgba(120, 90, 150, 0.35);
+}
+
+.rdv-help-title {
+    -fx-text-fill: #e8dff5;
+}
+
+.rdv-pro-chip {
+    -fx-background-color: rgba(255, 255, 255, 0.08);
+    -fx-text-fill: #b8bcc8;
+}
+
+.rdv-pro-avatar {
+    -fx-background-color: linear-gradient(145deg, rgba(90, 110, 88, 0.5) 0%, rgba(60, 78, 58, 0.55) 100%);
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.35), 12, 0.12, 0, 2);
+}
+
+.rdv-pro-avatar-text {
+    -fx-text-fill: #c5d9c0;
+}
+
+/* Page RDV épurée (coque home-root + public-page) */
+.rdv-page-kicker {
+    -fx-text-fill: #fb923c;
+}
+
+.rdv-page-title-clean {
+    -fx-text-fill: #ccfbf1;
+}
+
+.rdv-page-sub-clean {
+    -fx-text-fill: #99f6e4;
+}
+
+.rdv-header-clean {
+    -fx-border-color: transparent transparent rgba(251, 146, 60, 0.45) transparent;
+    -fx-border-width: 0 0 3 0;
+}
+
+.rdv-shell {
+    -fx-background-color: linear-gradient(to bottom, rgba(30, 42, 48, 0.98) 0%, rgba(22, 32, 42, 0.98) 55%, rgba(26, 28, 46, 0.96) 100%);
+    -fx-border-color: rgba(45, 212, 191, 0.42);
+    -fx-border-width: 1.5;
+    -fx-effect: dropshadow(gaussian, rgba(13, 148, 136, 0.25), 26, 0.25, 0, 6);
+}
+
+.rdv-filters-row {
+    -fx-border-color: transparent transparent rgba(45, 212, 191, 0.28) transparent;
+}
+
+.rdv-filter-cap {
+    -fx-text-fill: #5eead4;
+}
+
+.rdv-filter-input {
+    -fx-background-color: rgba(15, 24, 32, 0.95);
+    -fx-border-color: rgba(45, 212, 191, 0.4);
+    -fx-border-width: 1.5;
+}
+
+.rdv-count-block {
+    -fx-background-color: rgba(22, 30, 36, 0.95);
+    -fx-border-color: rgba(45, 212, 191, 0.3);
+    -fx-border-width: 1;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.35), 12, 0.15, 0, 2);
+}
+
+.rdv-count-sep {
+    -fx-background-color: rgba(45, 212, 191, 0.35);
+}
+
+.rdv-count-num {
+    -fx-text-fill: #5eead4;
+}
+
+.rdv-count-cap {
+    -fx-text-fill: #94a3b8;
+}
+
+.rdv-tip {
+    -fx-background-color: linear-gradient(to right, rgba(15, 118, 110, 0.45) 0%, rgba(76, 29, 149, 0.38) 100%);
+    -fx-border-color: transparent transparent transparent #a78bfa;
+    -fx-border-width: 0 0 0 5;
+}
+
+.rdv-tip-title {
+    -fx-text-fill: #e9d5ff;
+}
+
+.rdv-tip-text {
+    -fx-text-fill: #ccfbf1;
+}
+
+.rdv-card {
+    -fx-background-color: rgba(22, 28, 38, 0.99);
+    -fx-border-color: rgba(45, 212, 191, 0.35);
+    -fx-border-width: 1.5;
+}
+
+.rdv-name {
+    -fx-text-fill: #eceef2;
+}
+
+.rdv-badge {
+    -fx-text-fill: #ccfbf1;
+    -fx-background-color: rgba(15, 118, 110, 0.45);
+    -fx-border-color: rgba(45, 212, 191, 0.5);
+    -fx-border-width: 1.5;
+}
+
+.rdv-badge-purple {
+    -fx-text-fill: #fae8ff;
+    -fx-background-color: rgba(91, 33, 182, 0.5);
+    -fx-border-color: rgba(167, 139, 250, 0.55);
+    -fx-border-width: 1.5;
+}
+
+.rdv-desc {
+    -fx-text-fill: #9ca3af;
+}
+
+.rdv-meta {
+    -fx-text-fill: #5eead4;
+    -fx-font-weight: 700;
+}
+
+.rdv-meta-muted {
+    -fx-text-fill: #6b7280;
+}
+
+.rdv-phone {
+    -fx-text-fill: #d1d5db;
+}
+
+.rdv-tarif {
+    -fx-text-fill: #5eead4;
+}
+
+.rdv-av {
+    -fx-background-color: linear-gradient(145deg, #2dd4bf 0%, #0d9488 55%, #0f766e 100%);
+    -fx-effect: dropshadow(gaussian, rgba(45, 212, 191, 0.35), 10, 0.25, 0, 3);
+}
+
+.rdv-av-alt {
+    -fx-background-color: linear-gradient(145deg, #c084fc 0%, #9333ea 50%, #6b21a8 100%);
+    -fx-effect: dropshadow(gaussian, rgba(147, 51, 234, 0.4), 10, 0.25, 0, 3);
+}
+
+.rdv-card-v2 {
+    -fx-background-color: rgba(22, 28, 38, 0.99);
+    -fx-effect: dropshadow(gaussian, rgba(13, 148, 136, 0.35), 18, 0.28, 0, 4);
+}
+
+.rdv-card-bio {
+    -fx-text-fill: #9ca3af;
+}
+
+.rdv-card-info-modern {
+    -fx-background-color: rgba(30, 41, 59, 0.96);
+    -fx-border-color: rgba(148, 163, 184, 0.22);
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.4), 16, 0.2, 0, 3);
+}
+
+.rdv-mod-section-title {
+    -fx-text-fill: #94a3b8;
+    -fx-border-color: transparent transparent rgba(51, 65, 85, 0.9) transparent;
+}
+
+.rdv-mod-cell-address,
+.rdv-mod-split-row {
+    -fx-border-color: transparent transparent rgba(51, 65, 85, 0.85) transparent;
+}
+
+.rdv-mod-vsep {
+    -fx-background-color: rgba(148, 163, 184, 0.35);
+}
+
+.rdv-mod-key {
+    -fx-text-fill: #94a3b8;
+}
+
+.rdv-mod-value {
+    -fx-text-fill: #f1f5f9;
+}
+
+.rdv-mod-cabinet-cell {
+    -fx-background-color: rgba(49, 46, 129, 0.35);
+}
+
+.rdv-mod-cabinet-cell .rdv-mod-key {
+    -fx-text-fill: #c4b5fd;
+}
+
+.rdv-mod-cabinet-cell .rdv-mod-value {
+    -fx-text-fill: #e9d5ff;
+}
+
+.rdv-card-footer {
+    -fx-border-color: rgba(167, 139, 250, 0.28);
+}
+
+.rdv-card-cabinet-pill {
+    -fx-text-fill: #99f6e4;
+    -fx-background-color: rgba(15, 118, 110, 0.25);
+    -fx-border-color: rgba(45, 212, 191, 0.4);
+}
+
+.rdv-card-tarif-sheet {
+    -fx-background-color: rgba(22, 28, 38, 0.92);
+    -fx-border-color: rgba(45, 212, 191, 0.45);
+}
+
+.rdv-card-tarif-sheet-caption {
+    -fx-text-fill: #94a3b8;
+}
+
+.rdv-card-tarif-sheet-amount {
+    -fx-font-size: 26px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #5eead4;
+}
+
+.rdv-card-price-box {
+    -fx-background-color: rgba(22, 28, 38, 0.96);
+    -fx-border-color: rgba(45, 212, 191, 0.35);
+}
+
+.rdv-card-price-top-accent {
+    -fx-background-color: linear-gradient(to right, #2dd4bf 0%, #0d9488 35%, #818cf8 70%, #c084fc 100%);
+}
+
+.rdv-card-price-body {
+    -fx-padding: 16 20 18 20;
+}
+
+.rdv-card-tarif-amount {
+    -fx-text-fill: #5eead4;
+}
+
+.rdv-card-tarif-caption {
+    -fx-text-fill: #94a3b8;
+}
+
+.rdv-card-rating-avg {
+    -fx-text-fill: #fb923c;
+}
+
+.rdv-card-rating-hint {
+    -fx-text-fill: #9ca3af;
+}
+
+.rdv-card-rating-cap {
+    -fx-text-fill: #d1d5db;
+}
+
+.rdv-card-spec-sub {
+    -fx-text-fill: #9ca3af;
+}
+
+.rdv-card-tarif-highlight {
+    -fx-text-fill: #5eead4;
+}
+
+.rdv-card-rating-avg-tiny {
+    -fx-text-fill: #9ca3af;
+}
+
+.rdv-star-readonly-on {
+    -fx-text-fill: #fb923c;
+}
+
+.rdv-star-readonly-off {
+    -fx-text-fill: rgba(251, 146, 60, 0.35);
+}
+
+.rdv-star-on {
+    -fx-text-fill: #fb923c;
+}
+
+.rdv-star-off {
+    -fx-text-fill: rgba(251, 146, 60, 0.45);
+}
+
+/* Carte inline connexion requise (liste RDV) */
+.rdv-inline-login-card {
+    -fx-background-color: rgba(30, 41, 59, 0.95);
+    -fx-border-color: rgba(45, 212, 191, 0.35);
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.45), 18, 0.2, 0, 4);
+}
+
+.rdv-inline-login-title {
+    -fx-text-fill: #f1f5f9;
+}
+
+.rdv-inline-login-sub {
+    -fx-text-fill: #94a3b8;
+}
+
+.button.rdv-inline-login-btn-primary {
+    -fx-background-color: linear-gradient(to bottom, #60a5fa 0%, #2563eb 55%, #1d4ed8 100%);
+}
+
+.button.rdv-inline-login-btn-secondary {
+    -fx-text-fill: #93c5fd;
+    -fx-border-color: rgba(147, 197, 253, 0.55);
+}
+
+.hyperlink.rdv-inline-login-back {
+    -fx-text-fill: #5eead4;
+}
+
+.rdv-review-card {
+    -fx-background-color: linear-gradient(to bottom, rgba(15, 40, 42, 0.92) 0%, rgba(35, 22, 52, 0.88) 100%);
+    -fx-border-color: rgba(167, 139, 250, 0.35);
+    -fx-border-width: 1.5;
+}
+
+.rdv-review-card-title {
+    -fx-text-fill: #eceef2;
+}
+
+.rdv-review-card-sub {
+    -fx-text-fill: #9ca3af;
+}
+
+.text-area.rdv-review-textarea {
+    -fx-background-color: rgba(18, 22, 32, 0.9);
+    -fx-border-color: rgba(255, 255, 255, 0.12);
+    -fx-text-fill: #eceef2;
+}
+
+.rdv-review-counter {
+    -fx-text-fill: #6b7280;
+}
+
+.rdv-review-actions {
+    -fx-spacing: 8;
+    -fx-alignment: center;
+    -fx-padding: 6 0 0 0;
+}
+
+.button.rdv-review-submit {
+    -fx-font-size: 13px;
+    -fx-font-weight: 700;
+    -fx-padding: 10 22;
+    -fx-min-height: 40;
+    -fx-pref-height: 40;
+    -fx-background-radius: 999;
+    -fx-border-radius: 999;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(45, 212, 191, 0.35), 12, 0.28, 0, 3);
+}
+
+.button.rdv-review-btn-primary,
+.button.rdv-review-btn-secondary {
+    -fx-text-fill: #f8fafc;
+    -fx-background-color: linear-gradient(to bottom, #2dd4bf 0%, #14b8a6 42%, #0d9488 100%);
+    -fx-border-color: transparent;
+    -fx-border-width: 0;
+}
+
+.button.rdv-review-btn-primary:hover,
+.button.rdv-review-btn-secondary:hover {
+    -fx-background-color: linear-gradient(to bottom, #14b8a6 0%, #0d9488 48%, #0f766e 100%);
+    -fx-effect: dropshadow(gaussian, rgba(45, 212, 191, 0.42), 14, 0.3, 0, 4);
+}
+
+.button.rdv-review-btn-primary:pressed,
+.button.rdv-review-btn-secondary:pressed {
+    -fx-background-color: linear-gradient(to bottom, #0f766e 0%, #115e59 50%, #134e4a 100%);
+}
+
+.button.rdv-review-btn-primary:focused,
+.button.rdv-review-btn-secondary:focused {
+    -fx-background-color: linear-gradient(to bottom, #2dd4bf 0%, #14b8a6 42%, #0d9488 100%);
+    -fx-border-color: rgba(240, 253, 250, 0.55);
+    -fx-border-width: 2;
+}
+
+/* ========= Accueil & coque : cartes, stats, photos (voiles), témoignages ========= */
+
+.home-mission-bg-veil {
+    -fx-background-color: rgba(18, 24, 38, 0.55);
+}
+
+.home-mission-twig-bg {
+    -fx-background-color: rgba(30, 38, 56, 0.35);
+}
+
+.home-fullpage-scrim {
+    -fx-background-color: linear-gradient(to bottom,
+        rgba(18, 24, 38, 0.55) 0%,
+        rgba(18, 24, 38, 0.62) 35%,
+        rgba(18, 24, 38, 0.68) 70%,
+        rgba(18, 24, 38, 0.75) 100%);
+}
+
+.home-hero-left-fallback {
+    -fx-background-color: linear-gradient(to bottom right,
+        rgba(45, 55, 85, 0.5) 0%,
+        rgba(35, 50, 65, 0.45) 100%);
+}
+
+.home-hero-darken {
+    -fx-background-color: linear-gradient(to bottom,
+        rgba(0, 0, 0, 0.45) 0%,
+        rgba(0, 0, 0, 0.22) 45%,
+        rgba(0, 0, 0, 0.12) 72%);
+}
+
+.home-hero-vignette {
+    -fx-background-color: radial-gradient(center 50% 42%, radius 90%,
+        transparent 0%,
+        rgba(0, 0, 0, 0.35) 100%);
+}
+
+.home-hero-bottom-fade {
+    -fx-background-color: linear-gradient(to top,
+        rgba(0, 0, 0, 0.38) 0%,
+        transparent 55%);
+}
+
+.home-mission-tag {
+    -fx-text-fill: #a78bca;
+}
+
+.home-mission-btn {
+    -fx-background-color: #6b5b8a;
+}
+
+.home-mission-btn:hover {
+    -fx-background-color: #5c4d78;
+}
+
+.home-stat-card {
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.35), 12, 0, 0, 3);
+}
+
+.home-stat-mint {
+    -fx-background-color: #2a3d32;
+}
+
+.home-stat-blue {
+    -fx-background-color: #2a3548;
+}
+
+.home-stat-peach {
+    -fx-background-color: #3d3230;
+}
+
+.home-stat-num {
+    -fx-text-fill: #e5e7eb;
+}
+
+.home-stat-label {
+    -fx-text-fill: #9ca3af;
+}
+
+.home-stat-icon-peach {
+    -fx-text-fill: #e5e7eb;
+}
+
+.home-banner {
+    -fx-background-color: #1a2234;
+}
+
+.home-banner-bg {
+    -fx-background-color: rgba(26, 34, 52, 0.95);
+    -fx-border-color: rgba(100, 110, 140, 0.35);
+}
+
+.home-banner-title {
+    -fx-text-fill: #e5e7eb;
+}
+
+.home-banner-sub {
+    -fx-text-fill: #9ca3af;
+}
+
+.home-ai-badge {
+    -fx-background-color: rgba(120, 90, 150, 0.35);
+    -fx-text-fill: #d4c4e8;
+}
+
+.home-ai-title {
+    -fx-text-fill: #e5e7eb;
+}
+
+.home-ai-sub {
+    -fx-text-fill: #9ca3af;
+}
+
+.home-ai-card {
+    -fx-background-color: #1e2638;
+    -fx-border-color: rgba(120, 100, 160, 0.45);
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.4), 16, 0, 0, 4);
+}
+
+.home-ai-card-title {
+    -fx-text-fill: #e5e7eb;
+}
+
+.home-ai-card-desc {
+    -fx-text-fill: #9ca3af;
+}
+
+.home-ai-card-price {
+    -fx-text-fill: #c4b5dc;
+}
+
+.home-ai-see-all {
+    -fx-background-color: #6b5b8a;
+}
+
+.home-ai-see-all:hover {
+    -fx-background-color: #5a4a75;
+}
+
+.home-need-overlay {
+    -fx-background-color: rgba(18, 24, 38, 0.38);
+}
+
+.home-need-title {
+    -fx-text-fill: #f1f5f9;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.5), 10, 0, 0, 2);
+}
+
+.home-need-sub {
+    -fx-text-fill: #cbd5e1;
+}
+
+.home-testi-left-panel {
+    -fx-background-color: #1a1f2e;
+}
+
+.home-testi-overlay {
+    -fx-background-color: rgba(0, 0, 0, 0.35);
+}
+
+.home-testi-title {
+    -fx-text-fill: #e5e7eb;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.45), 8, 0, 0, 1);
+}
+
+.home-testi-sub {
+    -fx-text-fill: #cbd5e1;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.35), 6, 0, 0, 1);
+}
+
+.home-testi-card {
+    -fx-background-color: #222838;
+    -fx-border-color: rgba(140, 120, 180, 0.5);
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.45), 20, 0, 0, 6);
+}
+
+.home-testi-text {
+    -fx-text-fill: #d1d5db;
+}
+
+.home-testi-avatar {
+    -fx-background-color: #2a3548;
+}
+
+.home-testi-name {
+    -fx-text-fill: #e5e7eb;
+}
+
+.home-testi-role {
+    -fx-text-fill: #9ca3af;
+}
+
+.home-join-title {
+    -fx-text-fill: #e5e7eb;
+}
+
+.home-join-sub {
+    -fx-text-fill: #9ca3af;
+}
+
+.home-btn-secondary {
+    -fx-background-color: #2a3348;
+    -fx-text-fill: #e5e7eb;
+    -fx-border-color: rgba(255, 255, 255, 0.12);
+}
+
+.home-btn-secondary:hover {
+    -fx-background-color: #343d54;
+}
+
+.home-footer-feature-wrap {
+    -fx-background-color: rgba(18, 22, 32, 0.72);
+}
+
+.home-footer-copy-feature {
+    -fx-text-fill: #9ca3af;
+}
+
+.home-footer-link-mini {
+    -fx-text-fill: #9ca3af;
+    -fx-border-color: transparent;
+}
+
+.home-footer-link-mini:hover {
+    -fx-text-fill: #e5e7eb;
+}
+
+.home-footer-link-sep {
+    -fx-text-fill: #4b5563;
+}
+
+.home-footer-copy-stats {
+    -fx-text-fill: #6b7280;
+}
+
+/* Login / signup dans la coque : feuilles sur la VBox locale passent après la racine — .home-root gagne en spécificité */
+.home-root .login-card {
+    -fx-background-color: #182133;
+}
+
+.home-root .login-card-left {
+    -fx-background-color: #1a2234;
+}
+
+.home-root .login-card-right {
+    -fx-background-color: #1e2638;
+}
+
+.home-root .welcome-label {
+    -fx-text-fill: #9ca3af;
+}
+
+.home-root .form-title {
+    -fx-text-fill: #e5e7eb;
+}
+
+.home-root .form-sub {
+    -fx-text-fill: #9ca3af;
+}
+
+.home-root .field-label {
+    -fx-text-fill: #8b93a8;
+}
+
+.home-root .text-input-field {
+    -fx-border-color: #334155;
+    -fx-background-color: #1f2a3f;
+    -fx-text-fill: #e5e7eb;
+}
+
+.home-root .text-input-field:focused {
+    -fx-border-color: #5a8ab8;
+    -fx-background-color: #243049;
+}
+
+.home-root .divider-label {
+    -fx-text-fill: #6b7280;
+}
+
+.home-root .social-btn {
+    -fx-background-color: #252d42;
+    -fx-border-color: #3d4a64;
+}
+
+.home-root .social-btn:hover {
+    -fx-background-color: #2e3850;
+}
+
+.home-root .social-btn Label {
+    -fx-text-fill: #e5e7eb;
+}
+
+.home-root .footer-link {
+    -fx-text-fill: #9ca3af;
+}
+
+.home-root .footer-link-bold {
+    -fx-text-fill: #6ee7b7;
+}
+
+.home-root .link-muted {
+    -fx-text-fill: #8b93a8;
+}
+
+.home-root .link-muted:hover {
+    -fx-text-fill: #cbd5e1;
+}
+
+.home-root .pw-toggle:hover {
+    -fx-background-color: rgba(255, 255, 255, 0.06);
+}
+
+.home-root .pwd-rule {
+    -fx-text-fill: #6b7280;
+}
+
+.home-root .signup-scroll {
+    -fx-background-color: transparent;
+}
+
+.home-root .signup-scroll > .viewport {
+    -fx-background-color: transparent;
+}
+
+/* Flux mot de passe oublié (racine .login-root, pas .home-root) */
+.login-root .forgot-next-box {
+    -fx-background-color: #1e2638;
+}
+
+.login-root .forgot-next-label {
+    -fx-text-fill: #9ca3af;
+}
+
+.login-root .forgot-pin-hint {
+    -fx-text-fill: #6b7280;
+}
+
+/* Modale connexion requise (RDV) — thème sombre (même esprit glassmorphism) */
+.rdv-login-req-backdrop {
+    -fx-background-color: rgba(2, 6, 23, 0.78);
+}
+
+.rdv-login-req-deco {
+    -fx-background-color:
+        radial-gradient(center 22% 32%, radius 48%, rgba(59, 130, 246, 0.22) 0%, transparent 58%),
+        radial-gradient(center 78% 58%, radius 42%, rgba(139, 92, 246, 0.2) 0%, transparent 55%),
+        radial-gradient(center 55% 22%, radius 38%, rgba(45, 212, 191, 0.18) 0%, transparent 52%);
+}
+
+.rdv-login-req-card {
+    -fx-background-color: linear-gradient(to bottom right,
+        rgba(30, 41, 59, 0.92) 0%,
+        rgba(30, 27, 75, 0.85) 50%,
+        rgba(15, 23, 42, 0.9) 100%);
+    -fx-border-color: rgba(148, 163, 184, 0.35);
+    -fx-background-radius: 25;
+    -fx-border-radius: 25;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.6), 40, 0.25, 0, 12);
+}
+
+.rdv-login-req-title {
+    -fx-text-fill: #f1f5f9;
+}
+
+.rdv-login-req-sub {
+    -fx-text-fill: #94a3b8;
+}
+
+.rdv-login-req-sparkle {
+    -fx-text-fill: #2dd4bf;
+}
+
+.button.rdv-login-req-btn-primary {
+    -fx-background-color: linear-gradient(to bottom, #60a5fa 0%, #2563eb 45%, #1d4ed8 100%);
+}
+
+.button.rdv-login-req-btn-primary:hover {
+    -fx-background-color: linear-gradient(to bottom, #3b82f6 0%, #1d4ed8 50%, #1e40af 100%);
+}
+
+.button.rdv-login-req-btn-secondary {
+    -fx-text-fill: #93c5fd;
+    -fx-border-color: rgba(147, 197, 253, 0.65);
+}
+
+.button.rdv-login-req-btn-secondary:hover {
+    -fx-background-color: rgba(59, 130, 246, 0.15);
+}

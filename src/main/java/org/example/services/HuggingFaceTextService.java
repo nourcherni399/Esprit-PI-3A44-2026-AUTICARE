@@ -157,6 +157,45 @@ public class HuggingFaceTextService {
         return runGeneration(prompt, 800, 0.65);
     }
 
+    public String recommendEventFromParticipantIdeas(String analysisDigest) throws Exception {
+        String digest = analysisDigest == null ? "" : analysisDigest.trim();
+        if (digest.isBlank()) {
+            throw new IllegalArgumentException("Analyse des idees vide.");
+        }
+        String safeDigest = digest.length() > 12000 ? digest.substring(0, 12000) + "..." : digest;
+        String prompt = """
+                Tu es un assistant IA qui aide un admin a choisir un evenement.
+                Base-toi UNIQUEMENT sur l'analyse suivante des propositions des participants :
+                %s
+
+                Tache :
+                1) Proposer un evenement principal recommande.
+                2) Donner un court "pourquoi" (2 a 3 phrases max).
+                3) Donner 3 recommandations actionnables pour l'admin.
+
+                Format de sortie strict :
+                TITRE: ...
+                DESCRIPTION: ...
+                POURQUOI: ...
+                RECOMMANDATIONS:
+                - ...
+                - ...
+                - ...
+                """.formatted(safeDigest);
+        return runGeneration(prompt, 280, 0.5);
+    }
+
+    public String recommendEventFromIdeaAnalysisJson(String structuredPrompt) throws Exception {
+        String prompt = structuredPrompt == null ? "" : structuredPrompt.trim();
+        if (prompt.isBlank()) {
+            throw new IllegalArgumentException("Prompt d'analyse idees vide.");
+        }
+        String safePrompt = prompt.length() > 14000 ? prompt.substring(0, 14000) + "..." : prompt;
+        String generated = runGeneration(safePrompt, 420, 0.35);
+        String json = extractJsonObject(generated);
+        return json.isBlank() ? generated : json;
+    }
+
     private String runGeneration(String prompt, int maxNewTokens, double temperature) throws Exception {
         String token = cfg("huggingface.apiToken", "HUGGINGFACE_API_TOKEN", "");
         if (token.isBlank()) {
@@ -439,5 +478,41 @@ public class HuggingFaceTextService {
             }
         }
         return "";
+    }
+
+    private static String extractJsonObject(String text) {
+        if (text == null || text.isBlank()) {
+            return "";
+        }
+        String s = text.trim();
+        int fenceStart = s.indexOf("```");
+        if (fenceStart >= 0) {
+            int jsonStart = s.indexOf("{", fenceStart);
+            int fenceEnd = s.lastIndexOf("```");
+            if (jsonStart >= 0 && fenceEnd > jsonStart) {
+                String fenced = s.substring(jsonStart, fenceEnd).trim();
+                if (isValidJsonObject(fenced)) {
+                    return fenced;
+                }
+            }
+        }
+        int start = s.indexOf('{');
+        int end = s.lastIndexOf('}');
+        if (start >= 0 && end > start) {
+            String candidate = s.substring(start, end + 1).trim();
+            if (isValidJsonObject(candidate)) {
+                return candidate;
+            }
+        }
+        return "";
+    }
+
+    private static boolean isValidJsonObject(String json) {
+        try {
+            JsonElement el = JsonParser.parseString(json);
+            return el != null && el.isJsonObject();
+        } catch (Exception ignored) {
+            return false;
+        }
     }
 }

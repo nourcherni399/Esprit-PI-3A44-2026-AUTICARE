@@ -133,6 +133,9 @@ public class PageNotificationsController implements PublicShellAware {
     private void onNotificationClick(UserNotificationItem item) {
         try {
             notificationService.markAsRead(item.getId());
+            if (shell != null) {
+                shell.refreshNotificationsBadge();
+            }
             String code = item.getTypeCode() != null ? item.getTypeCode() : "";
             if (shell != null && (UserNotificationService.TYPE_RDV_ACCEPTED.equals(code)
                     || UserNotificationService.TYPE_RDV_REFUSED.equals(code)

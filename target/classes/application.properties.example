@@ -1,0 +1,28 @@
+# Copy this file to application.properties for local development.
+# Do not commit real secrets.
+
+# SMTP config for forgot-password email
+auticare.smtp.user=your-email@gmail.com
+auticare.smtp.appPassword=your-app-password
+auticare.smtp.host=smtp.gmail.com
+auticare.smtp.port=587
+# Optional automatic phone check-in:
+# Set your admin PC LAN URL so phone scan validates directly.
+# Example: http://192.168.1.50:8787/checkin
+auticare.checkin.baseUrl=
+# Optional local desktop listener port (default 8787)
+auticare.checkin.port=8787
+
+# Google OAuth
+oauth.google.clientId=your-google-client-id
+oauth.google.clientSecret=your-google-client-secret
+oauth.google.redirectUri=http://127.0.0.1:8888/oauth/callback/
+
+# Recherche admin « événements dans le monde » (Custom Search JSON API)
+google.search.apiKey=your-cse-api-key
+google.search.engineId=your-search-engine-cx
+
+# Fallbacks gratuits automatiques (sans clé API) gérés dans l'application:
+# - Google News RSS
+# - Wikipedia API
+# - DuckDuckGo HTML

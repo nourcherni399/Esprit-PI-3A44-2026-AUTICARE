@@ -52,6 +52,26 @@ public class UserNotificationService {
         }
     }
 
+    /**
+     * Compte uniquement les notifications liées aux événements/messages.
+     * Les réponses RDV sont comptées séparément via la table rendez_vous pour éviter les doublons.
+     */
+    public int countUnreadEventOnlyForUser(int userId) throws SQLException {
+        String sql = "SELECT COUNT(*) AS total FROM notifications_user "
+                + "WHERE utilisateur_id=? AND lu=0 AND type_code NOT IN (?,?,?)";
+        try (PreparedStatement ps = MyDatabase.getConnection().prepareStatement(sql)) {
+            ps.setInt(1, userId);
+            ps.setString(2, TYPE_RDV_ACCEPTED);
+            ps.setString(3, TYPE_RDV_REFUSED);
+            ps.setString(4, TYPE_RDV_CANCELLED);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return rs.getInt("total");
+            }
+            return 0;
+        }
+    }
+
     public List<UserNotificationItem> listLatestForUser(int userId, int limit) throws SQLException {
         int capped = Math.max(1, Math.min(50, limit));
         String sql = "SELECT id, utilisateur_id, type_code, evenement_id, resume, lu, date_creation "
@@ -60,6 +80,30 @@ public class UserNotificationService {
         try (PreparedStatement ps = MyDatabase.getConnection().prepareStatement(sql)) {
             ps.setInt(1, userId);
             ps.setInt(2, capped);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                list.add(map(rs));
+            }
+        }
+        return list;
+    }
+
+    /**
+     * Dernières notifications événement uniquement (hors RDV) pour le menu unifié.
+     */
+    public List<UserNotificationItem> listLatestEventOnlyForUser(int userId, int limit) throws SQLException {
+        int capped = Math.max(1, Math.min(50, limit));
+        String sql = "SELECT id, utilisateur_id, type_code, evenement_id, resume, lu, date_creation "
+                + "FROM notifications_user WHERE utilisateur_id=? "
+                + "AND type_code NOT IN (?,?,?) "
+                + "ORDER BY lu ASC, date_creation DESC LIMIT ?";
+        List<UserNotificationItem> list = new ArrayList<>();
+        try (PreparedStatement ps = MyDatabase.getConnection().prepareStatement(sql)) {
+            ps.setInt(1, userId);
+            ps.setString(2, TYPE_RDV_ACCEPTED);
+            ps.setString(3, TYPE_RDV_REFUSED);
+            ps.setString(4, TYPE_RDV_CANCELLED);
+            ps.setInt(5, capped);
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
                 list.add(map(rs));
