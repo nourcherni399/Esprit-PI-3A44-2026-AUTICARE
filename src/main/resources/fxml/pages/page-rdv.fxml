@@ -18,9 +18,9 @@
            fx:controller="org.example.controllers.PageRdvController">
     <VBox alignment="TOP_CENTER" maxWidth="960" spacing="16" styleClass="rdv-page rdv-page-clean">
         <VBox maxWidth="Infinity" spacing="8" styleClass="rdv-header-clean">
-            <Label styleClass="rdv-page-kicker" text="RÉSERVATION"/>
-            <Label styleClass="rdv-page-title-clean" text="Prendre un rendez-vous" textAlignment="LEFT" wrapText="true"/>
-            <Label styleClass="rdv-page-sub-clean" text="Uniquement les professionnels disposant d’un compte AutiCare actif. Choisissez un praticien, puis réservez un créneau."
+            <Label styleClass="rdv-page-kicker" text="PROPOSITION"/>
+            <Label styleClass="rdv-page-title-clean" text="Proposer un rendez-vous" textAlignment="LEFT" wrapText="true"/>
+            <Label styleClass="rdv-page-sub-clean" text="Choisissez un professionnel et proposez un créneau. Le médecin accepte ou refuse ensuite votre demande."
                    textAlignment="LEFT" wrapText="true"/>
         </VBox>
 
@@ -45,7 +45,7 @@
             <VBox spacing="4" styleClass="rdv-tip">
                 <Label styleClass="rdv-tip-title" text="Comment ça marche ?"/>
                 <Label styleClass="rdv-tip-text" wrapText="true"
-                       text="Choisissez un professionnel, cliquez sur « Prendre RDV », puis sélectionnez date et créneau à l’étape suivante."/>
+                       text="Choisissez un professionnel, cliquez sur « Proposer un RDV », puis sélectionnez date et créneau à l’étape suivante."/>
             </VBox>
 
             <VBox spacing="10" styleClass="rdv-ai-planner">

@@ -1172,6 +1172,24 @@
     -fx-background-color: linear-gradient(to bottom, #0d9488 0%, #0f766e 50%, #115e59 100%);
 }
 
+.rdv-proposal-btn {
+    -fx-background-color: linear-gradient(to bottom right, #3b82f6 0%, #2563eb 50%, #1d4ed8 100%);
+    -fx-text-fill: #ffffff;
+    -fx-font-weight: 800;
+    -fx-font-size: 12px;
+    -fx-padding: 11 18 11 18;
+    -fx-background-radius: 999;
+    -fx-border-radius: 999;
+    -fx-border-color: rgba(255, 255, 255, 0.55);
+    -fx-border-width: 1;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(37, 99, 235, 0.38), 10, 0.28, 0, 4);
+}
+
+.rdv-proposal-btn:hover {
+    -fx-background-color: linear-gradient(to bottom right, #2563eb 0%, #1d4ed8 55%, #1e40af 100%);
+}
+
 /* Carte médecin « Prendre RDV » (liste) — mise en page type fiche */
 .rdv-card-v2 {
     -fx-background-color: #ffffff;
@@ -4238,4 +4256,141 @@
 
 .button.rdv-ai-pick-btn:hover {
     -fx-background-color: linear-gradient(to bottom right, #15803d, #0e7490);
+}
+
+/* ---------- Dialogue « Proposer un RDV » (formulaire moderne) ---------- */
+
+.dialog-pane.rdv-proposal-dialog {
+    -fx-background-color: linear-gradient(to bottom, #f8fafc 0%, #eef2ff 55%, #f5f3ff 100%);
+    -fx-background-radius: 18;
+    -fx-border-radius: 18;
+    -fx-border-color: rgba(99, 102, 241, 0.28);
+    -fx-border-width: 1.2;
+    -fx-padding: 0;
+    -fx-effect: dropshadow(gaussian, rgba(79, 70, 229, 0.22), 24, 0.18, 0, 8);
+}
+
+.dialog-pane.rdv-proposal-dialog > .content.label,
+.dialog-pane.rdv-proposal-dialog > .header-panel {
+    -fx-padding: 0;
+}
+
+.dialog-pane.rdv-proposal-dialog > .content {
+    -fx-padding: 18 22 10 22;
+}
+
+.dialog-pane.rdv-proposal-dialog > .button-bar > .container {
+    -fx-padding: 12 22 18 22;
+}
+
+.dialog-pane.rdv-proposal-dialog > .button-bar > .container > .details > .button {
+    -fx-background-insets: 0;
+}
+
+.rdv-proposal-form-root {
+    -fx-spacing: 14;
+    -fx-padding: 0 0 4 0;
+}
+
+.rdv-proposal-kicker {
+    -fx-font-size: 11px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #6366f1;
+    -fx-letter-spacing: 0.14em;
+}
+
+.rdv-proposal-form-title {
+    -fx-font-size: 22px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #1e293b;
+}
+
+.rdv-proposal-form-sub {
+    -fx-font-size: 13px;
+    -fx-text-fill: #64748b;
+    -fx-line-spacing: 2px;
+}
+
+.rdv-proposal-pill {
+    -fx-font-size: 12px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #92400e;
+    -fx-background-color: linear-gradient(to bottom, #fef3c7 0%, #fde68a 100%);
+    -fx-background-radius: 999;
+    -fx-padding: 6 14 6 14;
+    -fx-border-color: rgba(245, 158, 11, 0.45);
+    -fx-border-radius: 999;
+    -fx-border-width: 1;
+    -fx-alignment: center-left;
+    -fx-max-width: Infinity;
+}
+
+.rdv-proposal-field-cap {
+    -fx-font-size: 11px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #64748b;
+    -fx-letter-spacing: 0.06em;
+}
+
+.rdv-proposal-datepicker,
+.rdv-proposal-combo {
+    -fx-background-radius: 12;
+    -fx-border-radius: 12;
+    -fx-border-color: rgba(148, 163, 184, 0.55);
+    -fx-border-width: 1;
+    -fx-background-color: #ffffff;
+}
+
+.rdv-proposal-datepicker > .text-field,
+.rdv-proposal-combo > .list-cell {
+    -fx-background-radius: 12 12 0 0;
+}
+
+.rdv-proposal-textarea {
+    -fx-background-radius: 12;
+    -fx-border-radius: 12;
+    -fx-border-color: rgba(148, 163, 184, 0.55);
+    -fx-border-width: 1;
+    -fx-background-color: #ffffff;
+    -fx-font-size: 14px;
+    -fx-padding: 10 12 10 12;
+}
+
+.rdv-proposal-hint {
+    -fx-font-size: 12px;
+    -fx-text-fill: #94a3b8;
+    -fx-wrap-text: true;
+}
+
+.button.rdv-proposal-submit-btn {
+    -fx-background-color: linear-gradient(to bottom right, #3b82f6 0%, #2563eb 55%, #1d4ed8 100%);
+    -fx-text-fill: #ffffff;
+    -fx-font-weight: 800;
+    -fx-font-size: 13px;
+    -fx-padding: 10 20 10 20;
+    -fx-background-radius: 12;
+    -fx-border-radius: 12;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(37, 99, 235, 0.35), 12, 0.22, 0, 3);
+}
+
+.button.rdv-proposal-submit-btn:hover {
+    -fx-background-color: linear-gradient(to bottom right, #2563eb 0%, #1d4ed8 60%, #1e40af 100%);
+}
+
+.button.rdv-proposal-cancel-btn {
+    -fx-background-color: #ffffff;
+    -fx-text-fill: #475569;
+    -fx-font-weight: 700;
+    -fx-font-size: 13px;
+    -fx-padding: 10 18 10 18;
+    -fx-background-radius: 12;
+    -fx-border-radius: 12;
+    -fx-border-color: rgba(148, 163, 184, 0.65);
+    -fx-border-width: 1.2;
+    -fx-cursor: hand;
+}
+
+.button.rdv-proposal-cancel-btn:hover {
+    -fx-background-color: #f8fafc;
 }
