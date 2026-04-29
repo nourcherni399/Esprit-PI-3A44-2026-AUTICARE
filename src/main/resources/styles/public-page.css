@@ -1172,6 +1172,24 @@
     -fx-background-color: linear-gradient(to bottom, #0d9488 0%, #0f766e 50%, #115e59 100%);
 }
 
+.rdv-proposal-btn {
+    -fx-background-color: linear-gradient(to bottom right, #3b82f6 0%, #2563eb 50%, #1d4ed8 100%);
+    -fx-text-fill: #ffffff;
+    -fx-font-weight: 800;
+    -fx-font-size: 12px;
+    -fx-padding: 11 18 11 18;
+    -fx-background-radius: 999;
+    -fx-border-radius: 999;
+    -fx-border-color: rgba(255, 255, 255, 0.55);
+    -fx-border-width: 1;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(37, 99, 235, 0.38), 10, 0.28, 0, 4);
+}
+
+.rdv-proposal-btn:hover {
+    -fx-background-color: linear-gradient(to bottom right, #2563eb 0%, #1d4ed8 55%, #1e40af 100%);
+}
+
 /* Carte médecin « Prendre RDV » (liste) — mise en page type fiche */
 .rdv-card-v2 {
     -fx-background-color: #ffffff;

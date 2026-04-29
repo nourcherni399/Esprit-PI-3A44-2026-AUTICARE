@@ -6,7 +6,15 @@ import javafx.geometry.Pos;
 import javafx.scene.Cursor;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonBar;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.ComboBox;
+<<<<<<< HEAD
+=======
+import javafx.scene.control.DateCell;
+import javafx.scene.control.DatePicker;
+import javafx.scene.control.Dialog;
+>>>>>>> 404b193f (ajouter une proposition de rdv)
 import javafx.scene.control.Hyperlink;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
@@ -18,6 +26,15 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+<<<<<<< HEAD
+=======
+import javafx.scene.paint.Color;
+import javafx.scene.text.Text;
+import javafx.scene.text.TextFlow;
+import javafx.stage.Modality;
+import org.example.models.Appointment;
+import org.example.models.AppointmentStatus;
+>>>>>>> 404b193f (ajouter une proposition de rdv)
 import org.example.models.Role;
 import org.example.models.User;
 import org.example.services.MedecinRatingService;
@@ -29,6 +46,11 @@ import org.example.utils.RdvTarifFormat;
 import org.example.utils.UserAvatarGraphic;
 
 import java.io.IOException;
+<<<<<<< HEAD
+=======
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
+>>>>>>> 404b193f (ajouter une proposition de rdv)
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -230,7 +252,15 @@ public class PageRdvController implements PublicShellAware {
         rdvBtn.getStyleClass().add("rdv-btn");
         rdvBtn.setOnAction(e -> startBooking(u));
 
-        header.getChildren().addAll(av, nameCol, headerSpacer, rdvBtn);
+        Button proposalBtn = new Button("✉ Proposer un RDV");
+        proposalBtn.getStyleClass().add("rdv-proposal-btn");
+        proposalBtn.setOnAction(e -> startProposalRequest(u));
+
+        HBox actionsCol = new HBox(8);
+        actionsCol.setAlignment(Pos.CENTER_RIGHT);
+        actionsCol.getChildren().addAll(rdvBtn, proposalBtn);
+
+        header.getChildren().addAll(av, nameCol, headerSpacer, actionsCol);
 
         Label bio = new Label(buildRdvCardBio(cab));
         bio.setWrapText(true);
@@ -562,8 +592,8 @@ public class PageRdvController implements PublicShellAware {
 
         String drName = u != null ? PublicRdvDoctorSidebarHelper.formatDrName(u) : "ce professionnel";
         String subText = "ce professionnel".equals(drName)
-                ? "Connectez-vous pour finaliser votre rendez-vous avec " + drName + "."
-                : "Connectez-vous pour finaliser votre rendez-vous avec le " + drName + ".";
+                ? "Connectez-vous pour envoyer votre proposition de rendez-vous à " + drName + "."
+                : "Connectez-vous pour envoyer votre proposition de rendez-vous au " + drName + ".";
 
         StackPane logoMini = new StackPane();
         logoMini.setMinSize(40, 40);
@@ -677,6 +707,208 @@ public class PageRdvController implements PublicShellAware {
             a.setHeaderText(null);
             a.setContentText(ex.getMessage() != null ? ex.getMessage() : ex.getClass().getSimpleName());
             a.showAndWait();
+        }
+    }
+
+    private void startProposalRequest(User medecin) {
+        User current = AppState.getCurrentUser();
+        if (current == null) {
+            showLoginRequiredInline(medecin);
+            return;
+        }
+        if (current.getRole() != Role.PATIENT && current.getRole() != Role.PARENT) {
+            Alert a = new Alert(Alert.AlertType.WARNING);
+            a.setTitle("Proposition de rendez-vous");
+            a.setHeaderText(null);
+            a.setContentText("Seuls les comptes patient ou parent peuvent envoyer une proposition de rendez-vous.");
+            a.showAndWait();
+            return;
+        }
+        if (medecin == null || medecin.getId() <= 0) {
+            return;
+        }
+
+        DatePicker datePicker = new DatePicker(LocalDate.now().plusDays(1));
+        datePicker.setDayCellFactory(picker -> new DateCell() {
+            @Override
+            public void updateItem(LocalDate date, boolean empty) {
+                super.updateItem(date, empty);
+                setDisable(empty || date.isBefore(LocalDate.now()));
+            }
+        });
+        ComboBox<String> timeCombo = new ComboBox<>();
+        List<String> times = new ArrayList<>();
+        for (int h = 7; h <= 20; h++) {
+            times.add(String.format("%02d:00", h));
+            times.add(String.format("%02d:30", h));
+        }
+        timeCombo.getItems().setAll(times);
+        timeCombo.getSelectionModel().select("09:00");
+
+        TextArea motifArea = new TextArea();
+        motifArea.setWrapText(true);
+        motifArea.setPrefRowCount(4);
+        motifArea.setPromptText("Ex. disponibilité après 18h, suivi, urgence, etc.");
+
+        String drName = PublicRdvDoctorSidebarHelper.formatDrName(medecin);
+
+        Label kicker = new Label("PROPOSITION DE CRÉNEAU");
+        kicker.getStyleClass().add("rdv-proposal-kicker");
+
+        Label formTitle = new Label("Indiquez votre disponibilité");
+        formTitle.getStyleClass().add("rdv-proposal-form-title");
+        formTitle.setWrapText(true);
+
+        Label formSub = new Label("La demande sera envoyée à " + drName
+                + ". Le médecin pourra accepter ou refuser ; vous serez prévenu dans vos notifications.");
+        formSub.getStyleClass().add("rdv-proposal-form-sub");
+        formSub.setWrapText(true);
+
+        Label pill = new Label("Non confirmé — en attente du médecin");
+        pill.getStyleClass().add("rdv-proposal-pill");
+
+        HBox rowDt = new HBox(14);
+        rowDt.setAlignment(Pos.TOP_LEFT);
+        VBox colDate = new VBox(6);
+        Label capDate = new Label("Date souhaitée");
+        capDate.getStyleClass().add("rdv-proposal-field-cap");
+        datePicker.setMaxWidth(Double.MAX_VALUE);
+        datePicker.getStyleClass().add("rdv-proposal-datepicker");
+        colDate.getChildren().addAll(capDate, datePicker);
+        HBox.setHgrow(colDate, Priority.ALWAYS);
+
+        VBox colTime = new VBox(6);
+        Label capTime = new Label("Heure souhaitée");
+        capTime.getStyleClass().add("rdv-proposal-field-cap");
+        timeCombo.setMaxWidth(Double.MAX_VALUE);
+        timeCombo.getStyleClass().add("rdv-proposal-combo");
+        colTime.getChildren().addAll(capTime, timeCombo);
+        HBox.setHgrow(colTime, Priority.ALWAYS);
+        rowDt.getChildren().addAll(colDate, colTime);
+
+        Label capMotif = new Label("Votre message au médecin");
+        capMotif.getStyleClass().add("rdv-proposal-field-cap");
+        motifArea.setMaxWidth(Double.MAX_VALUE);
+        motifArea.getStyleClass().add("rdv-proposal-textarea");
+
+        Label hint = new Label("Conseil : restez bref et précis (255 caractères maximum).");
+        hint.getStyleClass().add("rdv-proposal-hint");
+        hint.setWrapText(true);
+
+        VBox formRoot = new VBox(14);
+        formRoot.getStyleClass().add("rdv-proposal-form-root");
+        formRoot.setMaxWidth(500);
+        formRoot.getChildren().addAll(kicker, formTitle, formSub, pill, rowDt, capMotif, motifArea, hint);
+
+        Dialog<ButtonType> dialog = new Dialog<>();
+        dialog.setTitle("Proposer un rendez-vous");
+        dialog.setHeaderText(null);
+        dialog.initModality(Modality.APPLICATION_MODAL);
+        if (rdvDoctorsList != null && rdvDoctorsList.getScene() != null && rdvDoctorsList.getScene().getWindow() != null) {
+            dialog.initOwner(rdvDoctorsList.getScene().getWindow());
+        }
+        URL css = MainApp.class.getResource("/styles/public-page.css");
+        if (css != null) {
+            dialog.getDialogPane().getStylesheets().add(css.toExternalForm());
+        }
+        dialog.getDialogPane().getStyleClass().add("rdv-proposal-dialog");
+        dialog.getDialogPane().setContent(formRoot);
+        dialog.getDialogPane().setPrefWidth(540);
+
+        ButtonType sendBtn = new ButtonType("Envoyer la proposition", ButtonBar.ButtonData.OK_DONE);
+        dialog.getDialogPane().getButtonTypes().setAll(sendBtn, ButtonType.CANCEL);
+
+        dialog.setOnShown(ev -> {
+            javafx.scene.Node okNode = dialog.getDialogPane().lookupButton(sendBtn);
+            if (okNode instanceof Button b) {
+                b.getStyleClass().add("rdv-proposal-submit-btn");
+            }
+            javafx.scene.Node cancelNode = dialog.getDialogPane().lookupButton(ButtonType.CANCEL);
+            if (cancelNode instanceof Button b) {
+                b.getStyleClass().add("rdv-proposal-cancel-btn");
+            }
+        });
+
+        Optional<ButtonType> choice = dialog.showAndWait();
+        if (choice.isEmpty() || choice.get() != sendBtn) {
+            return;
+        }
+
+        LocalDate d = datePicker.getValue();
+        String t = timeCombo.getValue();
+        String motif = motifArea.getText() != null ? motifArea.getText().trim() : "";
+        if (d == null || t == null || t.isBlank()) {
+            Alert a = new Alert(Alert.AlertType.WARNING);
+            a.setTitle("Proposition de rendez-vous");
+            a.setHeaderText(null);
+            a.setContentText("Veuillez indiquer une date et une heure.");
+            a.showAndWait();
+            return;
+        }
+        if (motif.isBlank()) {
+            Alert a = new Alert(Alert.AlertType.WARNING);
+            a.setTitle("Proposition de rendez-vous");
+            a.setHeaderText(null);
+            a.setContentText("Veuillez préciser votre proposition en quelques mots.");
+            a.showAndWait();
+            return;
+        }
+        if (motif.length() > 255) {
+            Alert a = new Alert(Alert.AlertType.WARNING);
+            a.setTitle("Proposition de rendez-vous");
+            a.setHeaderText(null);
+            a.setContentText("Le motif est trop long (maximum 255 caractères).");
+            a.showAndWait();
+            return;
+        }
+
+        LocalTime time;
+        try {
+            time = LocalTime.parse(t);
+        } catch (Exception e) {
+            Alert a = new Alert(Alert.AlertType.WARNING);
+            a.setTitle("Proposition de rendez-vous");
+            a.setHeaderText(null);
+            a.setContentText("Heure invalide.");
+            a.showAndWait();
+            return;
+        }
+        LocalDateTime proposedAt = LocalDateTime.of(d, time);
+        if (!proposedAt.isAfter(LocalDateTime.now())) {
+            Alert a = new Alert(Alert.AlertType.WARNING);
+            a.setTitle("Proposition de rendez-vous");
+            a.setHeaderText(null);
+            a.setContentText("Veuillez choisir un créneau futur.");
+            a.showAndWait();
+            return;
+        }
+
+        try {
+            Appointment appt = new Appointment();
+            appt.setMedecinId(medecin.getId());
+            appt.setPatientId(current.getId());
+            appt.setPatientNom(current.getNom() != null ? current.getNom().trim() : "");
+            appt.setPatientPrenom(current.getPrenom() != null ? current.getPrenom().trim() : "");
+            appt.setDateHeure(proposedAt);
+            appt.setMotif(motif);
+            appt.setStatus(AppointmentStatus.EN_ATTENTE);
+            appt.setMedecinDemandeLue(false);
+            appt.setPatientReponseLue(true);
+            appt.setNotes("Proposition envoyée par le patient (hors créneau prédéfini médecin).");
+            appointmentService.add(appt);
+
+            Alert ok = new Alert(Alert.AlertType.INFORMATION);
+            ok.setTitle("Proposition envoyée");
+            ok.setHeaderText(null);
+            ok.setContentText("Votre proposition a été envoyée au médecin. "
+                    + "Vous recevrez une réponse (acceptée ou refusée) dans vos notifications.");
+            ok.showAndWait();
+        } catch (SQLException ex) {
+            Alert err = new Alert(Alert.AlertType.ERROR);
+            err.setTitle("Proposition de rendez-vous");
+            err.setHeaderText(null);
+            err.setContentText(ex.getMessage() != null ? ex.getMessage() : "Envoi impossible.");
+            err.showAndWait();
         }
     }
 

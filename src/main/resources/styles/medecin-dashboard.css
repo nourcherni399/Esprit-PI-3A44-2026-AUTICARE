@@ -1764,6 +1764,24 @@
     -fx-text-fill: #6b7280;
 }
 
+.button.med-notif-clear-btn {
+    -fx-background-color: #ffffff;
+    -fx-text-fill: #ef4444;
+    -fx-font-size: 14px;
+    -fx-font-weight: 700;
+    -fx-padding: 4 10 4 10;
+    -fx-background-radius: 10;
+    -fx-border-radius: 10;
+    -fx-border-color: #fecaca;
+    -fx-border-width: 1.2;
+    -fx-cursor: hand;
+}
+
+.button.med-notif-clear-btn:hover {
+    -fx-background-color: #fff1f2;
+    -fx-border-color: #fda4af;
+}
+
 .med-notif-sep {
     -fx-padding: 2 0 4 0;
 }
