@@ -4,63 +4,16 @@
 <?import javafx.collections.FXCollections?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.ComboBox?>
-<<<<<<< HEAD
-<?import javafx.scene.control.Label?>
-<?import javafx.scene.control.ScrollPane?>
-<?import javafx.scene.control.TextField?>
-=======
 <?import javafx.scene.control.DatePicker?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.geometry.Insets?>
->>>>>>> b8ab02cf (integration module blog)
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 
-<<<<<<< HEAD
-<VBox alignment="TOP_CENTER" maxWidth="960" spacing="16" styleClass="rdv-page rdv-page-clean"
-      xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
-      fx:controller="org.example.controllers.PageRdvController">
-    <VBox maxWidth="Infinity" spacing="8" styleClass="rdv-header-clean">
-        <Label styleClass="rdv-page-kicker" text="RÉSERVATION"/>
-        <Label styleClass="rdv-page-title-clean" text="Prendre un rendez-vous" textAlignment="LEFT" wrapText="true"/>
-        <Label styleClass="rdv-page-sub-clean" text="Uniquement les professionnels disposant d’un compte AutiCare actif. Choisissez un praticien, puis réservez un créneau."
-               textAlignment="LEFT" wrapText="true"/>
-    </VBox>
-
-    <VBox maxWidth="Infinity" spacing="0" styleClass="rdv-shell">
-        <HBox alignment="CENTER_LEFT" spacing="16" styleClass="rdv-filters-row">
-            <VBox spacing="4" styleClass="rdv-filter-block">
-                <Label styleClass="rdv-filter-cap" text="Spécialité"/>
-                <ComboBox fx:id="rdvSpecialtyFilter" maxWidth="200" promptText="Toutes les spécialités" styleClass="rdv-filter-input"/>
-            </VBox>
-            <VBox spacing="4" HBox.hgrow="ALWAYS" styleClass="rdv-filter-block" maxWidth="Infinity">
-                <Label styleClass="rdv-filter-cap" text="Lieu"/>
-                <TextField fx:id="rdvLieuFilter" promptText="Ville ou adresse…" styleClass="rdv-filter-input" maxWidth="Infinity"/>
-            </VBox>
-            <Region minWidth="12"/>
-            <HBox alignment="CENTER_LEFT" spacing="12" styleClass="rdv-count-block">
-                <Label fx:id="rdvCountNumLabel" styleClass="rdv-count-num" text="0"/>
-                <Region prefWidth="1" minWidth="1" maxWidth="1" minHeight="32" styleClass="rdv-count-sep"/>
-                <Label styleClass="rdv-count-cap" text="professionnels" wrapText="true" maxWidth="86"/>
-            </HBox>
-        </HBox>
-
-        <VBox spacing="4" styleClass="rdv-tip">
-            <Label styleClass="rdv-tip-title" text="Comment ça marche ?"/>
-            <Label styleClass="rdv-tip-text" wrapText="true"
-                   text="Choisissez un professionnel, cliquez sur « Prendre RDV », puis sélectionnez date et créneau à l’étape suivante."/>
-        </VBox>
-
-        <ScrollPane fitToWidth="true" hbarPolicy="NEVER" minViewportHeight="0" prefViewportHeight="420" styleClass="rdv-scroll-clean" vbarPolicy="AS_NEEDED">
-            <VBox fx:id="rdvDoctorsList" spacing="20" styleClass="rdv-stack"/>
-        </ScrollPane>
-    </VBox>
-</VBox>
-=======
 <StackPane maxWidth="960" stylesheets="@../../styles/public-page.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
            fx:controller="org.example.controllers.PageRdvController">
     <VBox alignment="TOP_CENTER" maxWidth="960" spacing="16" styleClass="rdv-page rdv-page-clean">
@@ -165,4 +118,3 @@
     <Button text="💬  Besoin d'aide ?" styleClass="rdv-chatbot-toggle-btn"
             onAction="#onToggleRdvChatbot" StackPane.alignment="BOTTOM_RIGHT"/>
 </StackPane>
->>>>>>> b8ab02cf (integration module blog)

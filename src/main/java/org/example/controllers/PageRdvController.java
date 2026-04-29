@@ -9,12 +9,11 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ButtonBar;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.ComboBox;
-<<<<<<< HEAD
-=======
+
 import javafx.scene.control.DateCell;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Dialog;
->>>>>>> 404b193f (ajouter une proposition de rdv)
+
 import javafx.scene.control.Hyperlink;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
@@ -26,17 +25,17 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
-<<<<<<< HEAD
-=======
+
 import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
 import javafx.stage.Modality;
 import org.example.models.Appointment;
 import org.example.models.AppointmentStatus;
->>>>>>> 404b193f (ajouter une proposition de rdv)
+
 import org.example.models.Role;
 import org.example.models.User;
+import org.example.services.AppointmentService;
 import org.example.services.MedecinRatingService;
 import org.example.services.UserService;
 import org.example.utils.AppState;
@@ -46,11 +45,15 @@ import org.example.utils.RdvTarifFormat;
 import org.example.utils.UserAvatarGraphic;
 
 import java.io.IOException;
-<<<<<<< HEAD
-=======
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
->>>>>>> 404b193f (ajouter une proposition de rdv)
+import java.time.format.DateTimeFormatter;
+
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -79,7 +82,32 @@ public class PageRdvController implements PublicShellAware {
     @FXML
     private TextField rdvLieuFilter;
 
+    @FXML
+    private DatePicker rdvAiDatePicker;
+    @FXML
+    private ComboBox<String> rdvAiTimeCombo;
+    @FXML
+    private Label rdvAiStatusLabel;
+    @FXML
+    private VBox rdvAiSuggestionsBox;
+
+    @FXML
+    private VBox rdvChatbotPanel;
+    @FXML
+    private Button rdvChatbotExpandBtn;
+    @FXML
+    private ScrollPane rdvChatbotHistoryScroll;
+    @FXML
+    private VBox rdvChatbotHistory;
+    @FXML
+    private TextField rdvChatbotInput;
+    @FXML
+    private Button rdvChatbotSendBtn;
+
+    private boolean rdvChatbotExpanded;
+
     private final UserService userService = new UserService();
+    private final AppointmentService appointmentService = new AppointmentService();
     private final MedecinRatingService ratingService = new MedecinRatingService();
     private List<User> medecinsCompteActif = new ArrayList<>();
 
@@ -98,7 +126,23 @@ public class PageRdvController implements PublicShellAware {
         if (rdvLieuFilter != null) {
             rdvLieuFilter.textProperty().addListener((o, a, b) -> refreshDoctorCards());
         }
+        initAiPlannerControls();
         refreshDoctorCards();
+    }
+
+    private void initAiPlannerControls() {
+        if (rdvAiTimeCombo != null) {
+            List<String> times = new ArrayList<>();
+            for (int h = 7; h <= 20; h++) {
+                times.add(String.format("%02d:00", h));
+                times.add(String.format("%02d:30", h));
+            }
+            rdvAiTimeCombo.getItems().setAll(times);
+            rdvAiTimeCombo.getSelectionModel().select("09:00");
+        }
+        if (rdvAiDatePicker != null) {
+            rdvAiDatePicker.setValue(LocalDate.now().plusDays(1));
+        }
     }
 
     private void loadMedecins() {
@@ -909,6 +953,209 @@ public class PageRdvController implements PublicShellAware {
             err.setHeaderText(null);
             err.setContentText(ex.getMessage() != null ? ex.getMessage() : "Envoi impossible.");
             err.showAndWait();
+        }
+    }
+
+    /**
+     * Smart Planner : classement indicatif des médecins filtrés (notes + léger critère tarif).
+     * Les créneaux réels médecin ne sont pas interrogés ici.
+     */
+    @FXML
+    private void onSuggestByAvailability() {
+        if (rdvAiSuggestionsBox == null) {
+            return;
+        }
+        rdvAiSuggestionsBox.getChildren().clear();
+        LocalDate date = rdvAiDatePicker != null ? rdvAiDatePicker.getValue() : null;
+        String t = rdvAiTimeCombo != null ? rdvAiTimeCombo.getValue() : null;
+        if (date == null || t == null || t.isBlank()) {
+            if (rdvAiStatusLabel != null) {
+                rdvAiStatusLabel.setText("Choisissez une date et une heure pour générer un plan indicatif.");
+            }
+            return;
+        }
+        LocalTime time;
+        try {
+            time = LocalTime.parse(t);
+        } catch (Exception e) {
+            if (rdvAiStatusLabel != null) {
+                rdvAiStatusLabel.setText("Heure invalide.");
+            }
+            return;
+        }
+        LocalDateTime slot = LocalDateTime.of(date, time);
+        if (!slot.isAfter(LocalDateTime.now())) {
+            if (rdvAiStatusLabel != null) {
+                rdvAiStatusLabel.setText("Choisissez un créneau dans le futur.");
+            }
+            return;
+        }
+
+        List<User> filtered = medecinsCompteActif.stream()
+                .filter(this::matchesFilters)
+                .sorted((a, b) -> Double.compare(scoreDoctorForAiPlanner(b), scoreDoctorForAiPlanner(a)))
+                .limit(8)
+                .collect(Collectors.toList());
+
+        if (filtered.isEmpty()) {
+            if (rdvAiStatusLabel != null) {
+                rdvAiStatusLabel.setText("Aucun professionnel ne correspond aux filtres.");
+            }
+            return;
+        }
+
+        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm", Locale.FRENCH);
+        if (rdvAiStatusLabel != null) {
+            rdvAiStatusLabel.setText("Plan indicatif pour le " + slot.format(fmt)
+                    + " — classement selon note moyenne et critères locaux (approximation).");
+        }
+
+        int rank = 1;
+        for (User u : filtered) {
+            rdvAiSuggestionsBox.getChildren().add(buildAiSuggestionRow(u, rank++));
+        }
+    }
+
+    private double scoreDoctorForAiPlanner(User u) {
+        MedecinRatingService.AvgRating avg = safeAverageRating(u.getId());
+        double starsWeight = avg.average() * 4.0 + Math.min(avg.count(), 40) * 0.02;
+        double tarif = parseTarifNumeric(u);
+        double tarifBoost = tarif > 0 ? 8.0 / (1.0 + tarif / 80.0) : 0;
+        return starsWeight + tarifBoost;
+    }
+
+    private static double parseTarifNumeric(User u) {
+        if (u == null || u.getTarifConsultation() == null || u.getTarifConsultation().isBlank()) {
+            return 0;
+        }
+        try {
+            return Double.parseDouble(u.getTarifConsultation().replace(',', '.').trim());
+        } catch (NumberFormatException e) {
+            return 0;
+        }
+    }
+
+    private HBox buildAiSuggestionRow(User u, int rank) {
+        HBox row = new HBox(12);
+        row.setAlignment(Pos.CENTER_LEFT);
+        row.getStyleClass().add("rdv-ai-suggestion-row");
+        Label r = new Label("#" + rank);
+        r.getStyleClass().add("rdv-ai-suggestion-rank");
+        VBox txt = new VBox(4);
+        Label name = new Label(PublicRdvDoctorSidebarHelper.formatDrName(u));
+        name.getStyleClass().add("rdv-ai-suggestion-name");
+        MedecinRatingService.AvgRating avg = safeAverageRating(u.getId());
+        Label sub = new Label(avg.count() > 0 ? avg.labelFr() : "Pas encore d'avis");
+        sub.getStyleClass().add("rdv-ai-suggestion-sub");
+        txt.getChildren().addAll(name, sub);
+        Region sp = new Region();
+        HBox.setHgrow(sp, Priority.ALWAYS);
+        Button book = new Button("Prendre RDV");
+        book.getStyleClass().add("rdv-ai-suggestion-btn");
+        book.setOnAction(e -> startBooking(u));
+        Button prop = new Button("Proposer");
+        prop.getStyleClass().add("rdv-ai-suggestion-btn-secondary");
+        prop.setOnAction(e -> startProposalRequest(u));
+        row.getChildren().addAll(r, txt, sp, book, prop);
+        return row;
+    }
+
+    @FXML
+    private void onToggleRdvChatbot() {
+        if (rdvChatbotPanel == null) {
+            return;
+        }
+        boolean show = !rdvChatbotPanel.isVisible();
+        rdvChatbotPanel.setVisible(show);
+        rdvChatbotPanel.setManaged(show);
+    }
+
+    @FXML
+    private void onToggleRdvChatbotSize() {
+        if (rdvChatbotPanel == null) {
+            return;
+        }
+        rdvChatbotExpanded = !rdvChatbotExpanded;
+        double w = rdvChatbotExpanded ? 520 : 390;
+        rdvChatbotPanel.setPrefWidth(w);
+        rdvChatbotPanel.setMaxWidth(w);
+        if (rdvChatbotExpandBtn != null) {
+            rdvChatbotExpandBtn.setText(rdvChatbotExpanded ? "⤡" : "⤢");
+        }
+    }
+
+    @FXML
+    private void onClearRdvChatbotHistory() {
+        if (rdvChatbotHistory != null) {
+            rdvChatbotHistory.getChildren().clear();
+        }
+    }
+
+    @FXML
+    private void onSendRdvChatbotMessage() {
+        if (rdvChatbotInput == null || rdvChatbotHistory == null) {
+            return;
+        }
+        String msg = rdvChatbotInput.getText();
+        if (msg == null || msg.isBlank()) {
+            return;
+        }
+        rdvChatbotInput.clear();
+        Label userLine = new Label("Vous : " + msg.trim());
+        userLine.setWrapText(true);
+        userLine.getStyleClass().add("rdv-tip-text");
+        rdvChatbotHistory.getChildren().add(userLine);
+        Label bot = new Label("Assistant : pour prendre rendez-vous, utilisez la liste des professionnels "
+                + "ou le bouton « Prendre RDV » sur une fiche. Pour une urgence médicale, contactez le 15 ou votre médecin traitant.");
+        bot.setWrapText(true);
+        bot.getStyleClass().add("rdv-tip-text");
+        rdvChatbotHistory.getChildren().add(bot);
+        if (rdvChatbotHistoryScroll != null) {
+            javafx.application.Platform.runLater(() -> rdvChatbotHistoryScroll.setVvalue(1.0));
+        }
+    }
+
+    @FXML
+    private void onStartAutismQuestionnaireQuiz() {
+        appendRdvChatbotCanned("Quiz texte : ces parcours sont indicatifs. Pour un diagnostic ou un bilan, "
+                + "prenez rendez-vous avec un professionnel via la liste ci-dessus.");
+    }
+
+    @FXML
+    private void onStartRorschachImageQuiz() {
+        appendRdvChatbotCanned("Quiz images : fonctionnalité de démonstration. Consultez un spécialiste pour toute évaluation clinique.");
+    }
+
+    @FXML
+    private void onQuickThemeEmotions() {
+        appendRdvChatbotCanned("Émotions : décrivez ce que vous ressentez au quotidien lors du rendez-vous avec votre médecin.");
+    }
+
+    @FXML
+    private void onQuickThemeSensoriel() {
+        appendRdvChatbotCanned("Sensoriel : vous pouvez évoquer bruits, lumière, textures ou besoin de temps calme.");
+    }
+
+    @FXML
+    private void onQuickThemeRoutine() {
+        appendRdvChatbotCanned("Routine : parlez des habitudes qui vous aident (prévisibilité, transitions, rituels).");
+    }
+
+    @FXML
+    private void onQuickThemeCalme() {
+        appendRdvChatbotCanned("Anxiété / calme : signalez stress, sommeil ou situations difficiles à anticiper.");
+    }
+
+    private void appendRdvChatbotCanned(String text) {
+        if (rdvChatbotHistory == null) {
+            return;
+        }
+        Label line = new Label("Assistant : " + text);
+        line.setWrapText(true);
+        line.getStyleClass().add("rdv-tip-text");
+        rdvChatbotHistory.getChildren().add(line);
+        if (rdvChatbotHistoryScroll != null) {
+            javafx.application.Platform.runLater(() -> rdvChatbotHistoryScroll.setVvalue(1.0));
         }
     }
 

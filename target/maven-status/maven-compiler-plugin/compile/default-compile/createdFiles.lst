@@ -179,6 +179,7 @@ org\example\services\MedecinRatingService.class
 org\example\controllers\AdminAddUserController$1.class
 org\example\utils\HomeHeroTicker.class
 org\example\services\ModuleAiGenerationService$1.class
+org\example\controllers\PageRdvController$1.class
 org\example\services\SerpApiPriceSuggestionService$PriceSuggestion.class
 org\example\services\UserService$1.class
 org\example\controllers\AdminModulesController$13.class

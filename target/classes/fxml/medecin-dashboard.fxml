@@ -439,7 +439,12 @@
                             </HBox>
                             <VBox spacing="0" styleClass="med-notif-history-card" VBox.vgrow="ALWAYS">
                                 <VBox spacing="6" styleClass="med-notif-history-header">
-                                    <Label text="Historique des notifications" styleClass="med-notif-history-title"/>
+                                    <HBox alignment="CENTER_LEFT" spacing="10">
+                                        <Label text="Historique des notifications" styleClass="med-notif-history-title" HBox.hgrow="ALWAYS"/>
+                                        <Region HBox.hgrow="ALWAYS"/>
+                                        <Button mnemonicParsing="false" onAction="#onClearAllNotifications"
+                                                styleClass="med-notif-clear-btn" text="🗑"/>
+                                    </HBox>
                                     <Label fx:id="medNotifHistoryCountLabel" text="0 notifications" styleClass="med-notif-history-count"/>
                                 </VBox>
                                 <Separator styleClass="med-notif-sep"/>

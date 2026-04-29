@@ -12,7 +12,6 @@
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 
-<!-- Styles : login.css + public-page.css sont déjà chargés par public-shell.fxml (évite doubles résolutions @ et erreurs file:/…) -->
 <VBox fx:id="loginPageRoot" maxWidth="1180" spacing="0" styleClass="public-auth-page"
       xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.example.controllers.LoginController">
     <VBox alignment="CENTER" maxWidth="Infinity" styleClass="login-center" VBox.vgrow="ALWAYS">

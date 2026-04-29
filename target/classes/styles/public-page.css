@@ -986,7 +986,7 @@
 
 .rdv-inline-login-logo {
     -fx-alignment: center;
-    -fx-background-color: linear-gradient(145deg, #60a5fa 0%, #6366f1 45%, #2dd4bf 100%);
+    -fx-background-color: linear-gradient(from 0% 0% to 100% 100%, #60a5fa, #6366f1, #2dd4bf);
     -fx-background-radius: 12;
     -fx-effect: dropshadow(gaussian, rgba(79, 70, 229, 0.25), 6, 0.2, 0, 2);
 }
@@ -1083,13 +1083,13 @@
     -fx-max-width: 56;
     -fx-max-height: 56;
     -fx-background-radius: 16;
-    -fx-background-color: linear-gradient(145deg, #2dd4bf 0%, #0d9488 55%, #0f766e 100%);
+    -fx-background-color: linear-gradient(from 0% 0% to 100% 100%, #2dd4bf, #0d9488, #0f766e);
     -fx-alignment: center;
     -fx-effect: dropshadow(gaussian, rgba(13, 148, 136, 0.55), 10, 0.25, 0, 3);
 }
 
 .rdv-av-alt {
-    -fx-background-color: linear-gradient(145deg, #c084fc 0%, #9333ea 50%, #7e22ce 100%);
+    -fx-background-color: linear-gradient(from 0% 0% to 100% 100%, #c084fc, #9333ea, #7e22ce);
     -fx-effect: dropshadow(gaussian, rgba(126, 34, 206, 0.45), 10, 0.25, 0, 3);
 }
 
@@ -1170,6 +1170,24 @@
 
 .rdv-btn:hover {
     -fx-background-color: linear-gradient(to bottom, #0d9488 0%, #0f766e 50%, #115e59 100%);
+}
+
+.rdv-proposal-btn {
+    -fx-background-color: linear-gradient(to bottom right, #3b82f6 0%, #2563eb 50%, #1d4ed8 100%);
+    -fx-text-fill: #ffffff;
+    -fx-font-weight: 800;
+    -fx-font-size: 12px;
+    -fx-padding: 11 18 11 18;
+    -fx-background-radius: 999;
+    -fx-border-radius: 999;
+    -fx-border-color: rgba(255, 255, 255, 0.55);
+    -fx-border-width: 1;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(37, 99, 235, 0.38), 10, 0.28, 0, 4);
+}
+
+.rdv-proposal-btn:hover {
+    -fx-background-color: linear-gradient(to bottom right, #2563eb 0%, #1d4ed8 55%, #1e40af 100%);
 }
 
 /* Carte médecin « Prendre RDV » (liste) — mise en page type fiche */
