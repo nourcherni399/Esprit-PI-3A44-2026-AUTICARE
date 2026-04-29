@@ -69,7 +69,6 @@ import org.example.services.AvailabilityService;
 import org.example.services.GoogleCalendarApiService;
 import org.example.services.GoogleCalendarTemplateLinks;
 import org.example.services.MedecinPatientNoteService;
-import org.example.services.MultiAiProviderService;
 import org.example.services.TwilioSmsService;
 import org.example.services.UserService;
 import org.example.utils.AppState;
@@ -182,10 +181,6 @@ public class MedecinDashboardController {
     @FXML
     private ComboBox<String> rdvSortCombo;
     @FXML
-    private Button rdvPriorityAiRefreshBtn;
-    @FXML
-    private Label rdvPriorityAiStatusLabel;
-    @FXML
     private TextField rdvSearchField;
     @FXML
     private VBox rdvEmptyState;
@@ -273,7 +268,6 @@ public class MedecinDashboardController {
     private final AvailabilityService availabilityService = new AvailabilityService();
     private final AppointmentService appointmentService = new AppointmentService();
     private final MedecinPatientNoteService medecinPatientNoteService = new MedecinPatientNoteService();
-    private final MultiAiProviderService aiService = new MultiAiProviderService();
     private final UserService userService = new UserService();
     private int currentDoctorId;
     private YearMonth dispoMonth = YearMonth.from(LocalDate.now());
@@ -287,8 +281,6 @@ public class MedecinDashboardController {
     /** Créneaux dont la suppression est interdite (RDV non annulé lié). */
     private Set<Integer> disponibiliteIdsWithBlockingRdv = Set.of();
     private final List<Appointment> rdvAppointments = new ArrayList<>();
-    private Set<Integer> rdvPriorityUrgentIdsAi = Set.of();
-    private volatile boolean rdvPriorityAiLoading;
     private MainView mainView = MainView.HOME;
     /** Entrées du menu latéral filtrées par {@link #searchField}. */
     private final List<SidebarSearchTarget> sidebarSearchTargets = new ArrayList<>();
@@ -2685,7 +2677,6 @@ public class MedecinDashboardController {
         }
         updateRdvStats();
         rebuildRdvList();
-        requestAiPriorityRankingForRdv(false);
         LocalDate today = LocalDate.now();
         long rdvAujourdhui = rdvAppointments.stream()
                 .filter(a -> a.getStatus() != AppointmentStatus.ANNULE
@@ -2878,12 +2869,8 @@ public class MedecinDashboardController {
         capSt.getStyleClass().add("med-rdv-kanban-caption");
         Label stLbl = new Label(statusShortLabelFr(a.getStatus()));
         stLbl.getStyleClass().addAll("med-rdv-badge", badgeStyleForStatus(a.getStatus()));
-        Label priorityLbl = new Label(rdvPriorityLabel(a));
-        priorityLbl.getStyleClass().addAll("med-rdv-badge", rdvPriorityRank(a) > 0
-                ? "med-rdv-badge-priority-urgent"
-                : "med-rdv-badge-priority-normal");
         VBox stCol = new VBox(4);
-        stCol.getChildren().addAll(capSt, stLbl, priorityLbl);
+        stCol.getChildren().addAll(capSt, stLbl);
 
         String rawNotes = a.getNotes() != null ? a.getNotes() : "";
         boolean peutVoirDetail = rawNotes != null && !rawNotes.isBlank();
@@ -3324,148 +3311,6 @@ public class MedecinDashboardController {
         };
     }
 
-    private String rdvPriorityLabel(Appointment a) {
-        return rdvPriorityRank(a) > 0 ? "Urgent (IA)" : "Normal";
-    }
-
-    private int rdvPriorityRank(Appointment a) {
-        if (a == null) {
-            return 0;
-        }
-        if (rdvPriorityUrgentIdsAi.contains(a.getId())) {
-            return 2;
-        }
-        String motif = a.getMotif() != null ? a.getMotif().toLowerCase(Locale.ROOT) : "";
-        if (motif.contains("urgent") || motif.contains("urgence")
-                || motif.contains("prioritaire") || motif.contains("prio")) {
-            return 1;
-        }
-        return 0;
-    }
-
-    @FXML
-    private void onRdvRegeneratePriorityAi() {
-        requestAiPriorityRankingForRdv(true);
-    }
-
-    private void requestAiPriorityRankingForRdv(boolean userInitiated) {
-        if (rdvPriorityAiLoading) {
-            if (userInitiated && rdvPriorityAiStatusLabel != null) {
-                rdvPriorityAiStatusLabel.setText("Analyse en cours...");
-            }
-            return;
-        }
-        List<Appointment> snapshot = rdvAppointments.stream()
-                .filter(a -> a != null && a.getId() > 0 && a.getStatus() != AppointmentStatus.ANNULE)
-                .collect(Collectors.toList());
-        if (snapshot.isEmpty()) {
-            rdvPriorityUrgentIdsAi = Set.of();
-            if (rdvPriorityAiStatusLabel != null) {
-                rdvPriorityAiStatusLabel.setText("Aucun RDV");
-            }
-            return;
-        }
-        rdvPriorityAiLoading = true;
-        updateRdvPriorityAiButtonState();
-        new Thread(() -> {
-            Set<Integer> urgent = computeAiUrgentIds(snapshot);
-            Platform.runLater(() -> {
-                rdvPriorityUrgentIdsAi = urgent;
-                rdvPriorityAiLoading = false;
-                updateRdvPriorityAiButtonState();
-                if (mainView == MainView.RDV) {
-                    rebuildRdvList();
-                }
-                if (rdvPriorityAiStatusLabel != null) {
-                    rdvPriorityAiStatusLabel.setText(urgent.size() > 0
-                            ? urgent.size() + " urgents"
-                            : "Aucun urgent");
-                }
-            });
-        }, "med-rdv-priority-ai").start();
-    }
-
-    private void updateRdvPriorityAiButtonState() {
-        if (rdvPriorityAiRefreshBtn == null) {
-            return;
-        }
-        rdvPriorityAiRefreshBtn.setDisable(rdvPriorityAiLoading);
-        rdvPriorityAiRefreshBtn.setText(rdvPriorityAiLoading
-                ? "⏳ Analyse IA..."
-                : "✨ Priorité IA");
-        if (rdvPriorityAiStatusLabel != null && rdvPriorityAiLoading) {
-            rdvPriorityAiStatusLabel.setText("Analyse en cours...");
-        }
-    }
-
-    private Set<Integer> computeAiUrgentIds(List<Appointment> items) {
-        try {
-            String prompt = buildDoctorPriorityPrompt(items);
-            String raw = aiService.chatRdv(prompt);
-            Set<Integer> parsed = parseUrgentIdsFromAi(raw);
-            if (!parsed.isEmpty()) {
-                return parsed;
-            }
-        } catch (Exception ignored) {
-            // fallback keyword
-        }
-        return items.stream()
-                .filter(a -> a.getMotif() != null)
-                .filter(a -> {
-                    String m = a.getMotif().toLowerCase(Locale.ROOT);
-                    return m.contains("urgent") || m.contains("urgence") || m.contains("prioritaire") || m.contains("prio");
-                })
-                .map(Appointment::getId)
-                .collect(Collectors.toSet());
-    }
-
-    private String buildDoctorPriorityPrompt(List<Appointment> items) {
-        StringBuilder sb = new StringBuilder();
-        sb.append("Tu aides un médecin à prioriser ses rendez-vous.\n");
-        sb.append("Retourne UNIQUEMENT un JSON strict sans markdown: ");
-        sb.append("{\"urgent_ids\":[...],\"short_summary\":\"...\"}\n");
-        sb.append("Règle: urgent_ids contient uniquement les IDs réellement urgents à traiter en priorité.\n");
-        sb.append("Facteurs: motif, statut, proximité temporelle.\n");
-        sb.append("Rendez-vous:\n");
-        for (Appointment a : items) {
-            String when = a.getDateHeure() != null ? a.getDateHeure().toString() : "";
-            String motif = a.getMotif() != null ? a.getMotif() : "";
-            sb.append("- {\"id\":").append(a.getId())
-                    .append(",\"status\":\"").append(a.getStatus() != null ? a.getStatus().name() : "")
-                    .append("\",\"when\":\"").append(jsonEscape(when))
-                    .append("\",\"motif\":\"").append(jsonEscape(motif))
-                    .append("\"}\n");
-        }
-        return sb.toString();
-    }
-
-    private static Set<Integer> parseUrgentIdsFromAi(String raw) {
-        if (raw == null || raw.isBlank()) {
-            return Set.of();
-        }
-        String low = raw.toLowerCase(Locale.ROOT);
-        if (low.startsWith("clé ") || low.startsWith("provider ia non reconnu")
-                || low.startsWith("erreur api ia:") || low.contains("invalid_api_key")) {
-            return Set.of();
-        }
-        Pattern arrayPattern = Pattern.compile("\"urgent_ids\"\\s*:\\s*\\[([^\\]]*)\\]");
-        var m = arrayPattern.matcher(raw);
-        if (!m.find()) {
-            return Set.of();
-        }
-        String arr = m.group(1);
-        Pattern num = Pattern.compile("\\d+");
-        var n = num.matcher(arr);
-        Set<Integer> out = new HashSet<>();
-        while (n.find()) {
-            try {
-                out.add(Integer.parseInt(n.group()));
-            } catch (Exception ignored) {
-                // ignore
-            }
-        }
-        return out;
-    }
 
     private static String badgeStyleForStatus(AppointmentStatus s) {
         if (s == null) {

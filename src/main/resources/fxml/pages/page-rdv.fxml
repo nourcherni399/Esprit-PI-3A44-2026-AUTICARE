@@ -14,7 +14,7 @@
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 
-<StackPane maxWidth="960" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+<StackPane maxWidth="960" stylesheets="@../../styles/public-page.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
            fx:controller="org.example.controllers.PageRdvController">
     <VBox alignment="TOP_CENTER" maxWidth="960" spacing="16" styleClass="rdv-page rdv-page-clean">
         <VBox maxWidth="Infinity" spacing="8" styleClass="rdv-header-clean">
@@ -77,7 +77,7 @@
 
     <VBox fx:id="rdvChatbotPanel" managed="false" visible="false" spacing="10"
           styleClass="rdv-chatbot-panel" StackPane.alignment="BOTTOM_RIGHT"
-          prefWidth="430" maxWidth="430" prefHeight="560" maxHeight="560">
+          prefWidth="390" maxWidth="390" prefHeight="500" maxHeight="500">
         <HBox alignment="CENTER_LEFT" styleClass="rdv-chatbot-header">
             <Label styleClass="rdv-chatbot-title" text="Assistant AutiCare"/>
             <Region HBox.hgrow="ALWAYS"/>
@@ -107,16 +107,11 @@
                     styleClass="rdv-chatbot-history" VBox.vgrow="ALWAYS">
             <VBox fx:id="rdvChatbotHistory" spacing="8" styleClass="rdv-chatbot-history-box"/>
         </ScrollPane>
-        <HBox spacing="8" alignment="CENTER_LEFT" styleClass="rdv-chatbot-quick-row">
-            <Label styleClass="rdv-chatbot-quick-label" text="Rapide :"/>
-            <Button text="Quiz texte" styleClass="rdv-chatbot-mini-chip rdv-chip-green" onAction="#onStartAutismQuestionnaireQuiz"/>
-            <Button text="Quiz Rorschach" styleClass="rdv-chatbot-mini-chip rdv-chip-blue" onAction="#onStartRorschachImageQuiz"/>
-        </HBox>
         <HBox spacing="8" alignment="CENTER_LEFT" styleClass="rdv-chatbot-input-row">
             <TextField fx:id="rdvChatbotInput" promptText="Écrivez votre message…"
                        HBox.hgrow="ALWAYS" styleClass="rdv-chatbot-input"
                        onAction="#onSendRdvChatbotMessage"/>
-            <Button text="Envoyer" styleClass="rdv-chatbot-send-btn" onAction="#onSendRdvChatbotMessage"/>
+            <Button fx:id="rdvChatbotSendBtn" text="Envoyer" styleClass="rdv-chatbot-send-btn" onAction="#onSendRdvChatbotMessage"/>
         </HBox>
     </VBox>
 

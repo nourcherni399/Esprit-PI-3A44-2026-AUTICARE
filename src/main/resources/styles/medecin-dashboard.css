@@ -23,9 +23,9 @@
 
 /* Motif discret bas de barre (étoiles / points) */
 .med-sidebar-deco {
-    -fx-background-color: radial-gradient(center 50% 100%, radius 90%, rgba(167, 139, 250, 0.18) 0%, transparent 62%),
-        radial-gradient(center 10% 80%, radius 35%, rgba(196, 181, 253, 0.2) 0%, transparent 55%),
-        radial-gradient(center 92% 70%, radius 28%, rgba(233, 213, 255, 0.35) 0%, transparent 50%);
+    -fx-background-color: radial-gradient(center 50% 100%, radius 90%, rgba(167, 139, 250, 0.18) 0%, rgba(255, 255, 255, 0) 62%),
+        radial-gradient(center 10% 80%, radius 35%, rgba(196, 181, 253, 0.2) 0%, rgba(255, 255, 255, 0) 55%),
+        radial-gradient(center 92% 70%, radius 28%, rgba(233, 213, 255, 0.35) 0%, rgba(255, 255, 255, 0) 50%);
     -fx-background-radius: 0 0 0 0;
 }
 
@@ -142,7 +142,7 @@
 }
 
 .med-welcome-card {
-    -fx-background-color: linear-gradient(120deg, rgba(237, 233, 254, 0.95) 0%, rgba(250, 232, 255, 0.88) 45%, rgba(224, 231, 255, 0.75) 100%);
+    -fx-background-color: linear-gradient(to bottom right, rgba(237, 233, 254, 0.95) 0%, rgba(250, 232, 255, 0.88) 45%, rgba(224, 231, 255, 0.75) 100%);
     -fx-background-radius: 20;
     -fx-padding: 24 28 24 28;
     -fx-spacing: 8;
@@ -295,7 +295,7 @@
 
 /* Bloc profil : même principe que la carte « Aujourd’hui » (encart lavande à l’intérieur) */
 .med-profile-inner {
-    -fx-background-color: linear-gradient(135deg, rgba(237, 233, 254, 0.92) 0%, rgba(250, 232, 255, 0.78) 100%);
+    -fx-background-color: linear-gradient(to bottom right, rgba(237, 233, 254, 0.92) 0%, rgba(250, 232, 255, 0.78) 100%);
     -fx-background-radius: 14;
     -fx-padding: 16 18 16 18;
     -fx-spacing: 6;
@@ -470,7 +470,7 @@
 }
 
 .med-calendar-box {
-    -fx-background-color: linear-gradient(135deg, rgba(237, 233, 254, 0.92) 0%, rgba(250, 232, 255, 0.78) 100%);
+    -fx-background-color: linear-gradient(to bottom right, rgba(237, 233, 254, 0.92) 0%, rgba(250, 232, 255, 0.78) 100%);
     -fx-background-radius: 14;
     -fx-padding: 16 18 16 18;
     -fx-spacing: 6;

@@ -9,9 +9,11 @@ import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Base64;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 /**
@@ -24,9 +26,18 @@ public final class MultiAiProviderService {
      * certains modèles ne répondent que sur l'un des deux.
      */
     private static final String[] HF_IMAGE_INFERENCE_BASES = {
-            "https://router.huggingface.co/hf-inference/models/",
-            "https://api-inference.huggingface.co/models/"
+            "https://api-inference.huggingface.co/models/",
+            "https://router.huggingface.co/hf-inference/models/"
     };
+    private static final String[] HF_IMAGE_MODEL_CANDIDATES = {
+            "runwayml/stable-diffusion-v1-5",
+            "stabilityai/stable-diffusion-2-1-base",
+            "CompVis/stable-diffusion-v1-4",
+            "stabilityai/stable-diffusion-xl-base-1.0",
+            "stabilityai/sdxl-turbo",
+            "black-forest-labs/FLUX.1-schnell"
+    };
+    private static final Map<String, Boolean> HF_INFERENCE_MODEL_SUPPORT_CACHE = new HashMap<>();
 
     public record ImageGenResult(String dataUrl, String providerUsed, String error) {}
     public record RdvPlannerCandidate(int availabilityId,
@@ -43,10 +54,57 @@ public final class MultiAiProviderService {
             .build();
 
     private static final String DEFAULT_SYSTEM_PROMPT =
-            "Tu es un assistant de support pour la prise de rendez-vous medicale, sensible aux besoins TSA/autisme. "
-                    + "Reponds en francais, de facon claire, rassurante et concrete. "
-                    + "Important: tu ne poses jamais de diagnostic medical, tu proposes seulement des conseils pratiques "
-                    + "et recommandes un professionnel en cas de doute clinique.";
+            "You are an intelligent, patient, and supportive AI assistant.\n"
+                    + "\n"
+                    + "Your mission:\n"
+                    + "- Understand any user request, even if unclear or short\n"
+                    + "- Support neurodivergent users, including people with Autism (ASD)\n"
+                    + "- Communicate in a calm, structured, and predictable way\n"
+                    + "\n"
+                    + "Core abilities:\n"
+                    + "- Understand mixed languages (French, Arabic, English)\n"
+                    + "- Detect user intent accurately\n"
+                    + "- Correct spelling mistakes automatically\n"
+                    + "- Adapt to any domain (medical, admin, daily life, technical)\n"
+                    + "\n"
+                    + "Communication style (VERY IMPORTANT):\n"
+                    + "- Use simple, clear, and direct sentences\n"
+                    + "- Avoid ambiguity and complex expressions\n"
+                    + "- Be calm, neutral, and reassuring\n"
+                    + "- Structure answers step-by-step when possible\n"
+                    + "- Avoid too much information at once\n"
+                    + "- Do NOT overwhelm the user\n"
+                    + "\n"
+                    + "Behavior rules:\n"
+                    + "- If the request is clear -> give a direct answer\n"
+                    + "- If the request is unclear -> ask ONE simple clarification question\n"
+                    + "- If the user seems confused -> simplify your explanation\n"
+                    + "- Always be respectful and non-judgmental\n"
+                    + "\n"
+                    + "Understanding rules:\n"
+                    + "- Interpret incomplete or imperfect sentences\n"
+                    + "- Infer meaning from context\n"
+                    + "- Handle sensory or emotional sensitivity carefully\n"
+                    + "\n"
+                    + "Response format:\n"
+                    + "1. Short understanding (optional)\n"
+                    + "2. Clear answer\n"
+                    + "3. Optional simple question (only if needed)\n"
+                    + "\n"
+                    + "Examples:\n"
+                    + "\n"
+                    + "User: nheb rdv\n"
+                    + "Assistant: Vous souhaitez un rendez-vous.\n"
+                    + "A quelle date ?\n"
+                    + "\n"
+                    + "User: je comprend pas java\n"
+                    + "Assistant: Vous voulez comprendre Java.\n"
+                    + "Java est un langage de programmation.\n"
+                    + "Voulez-vous un exemple simple ?\n"
+                    + "\n"
+                    + "User: ana m3a9ed\n"
+                    + "Assistant: Je comprends que c'est difficile.\n"
+                    + "Pouvez-vous me dire ce qui vous pose probleme exactement ?\n";
 
     public String chatRdv(String userPrompt) {
         if (userPrompt == null || userPrompt.isBlank()) {
@@ -403,18 +461,63 @@ public final class MultiAiProviderService {
     }
 
     private static String jsonValue(String json, String key) {
-        Pattern p = Pattern.compile("\"" + Pattern.quote(key) + "\"\\s*:\\s*\"((?:\\\\.|[^\"\\\\])*)\"");
-        var m = p.matcher(json != null ? json : "");
-        if (!m.find()) {
+        if (json == null || key == null || key.isBlank()) {
             return null;
         }
-        return m.group(1)
-                .replace("\\n", "\n")
-                .replace("\\r", "\r")
-                .replace("\\t", "\t")
-                .replace("\\\"", "\"")
-                .replace("\\/", "/")
-                .replace("\\\\", "\\");
+        String src = json;
+        String token = "\"" + key + "\"";
+        int from = 0;
+        while (from >= 0 && from < src.length()) {
+            int k = src.indexOf(token, from);
+            if (k < 0) {
+                return null;
+            }
+            int i = k + token.length();
+            while (i < src.length() && Character.isWhitespace(src.charAt(i))) {
+                i++;
+            }
+            if (i >= src.length() || src.charAt(i) != ':') {
+                from = k + token.length();
+                continue;
+            }
+            i++;
+            while (i < src.length() && Character.isWhitespace(src.charAt(i))) {
+                i++;
+            }
+            if (i >= src.length() || src.charAt(i) != '"') {
+                from = k + token.length();
+                continue;
+            }
+            i++;
+            StringBuilder out = new StringBuilder();
+            boolean escaped = false;
+            for (; i < src.length(); i++) {
+                char c = src.charAt(i);
+                if (escaped) {
+                    switch (c) {
+                        case 'n' -> out.append('\n');
+                        case 'r' -> out.append('\r');
+                        case 't' -> out.append('\t');
+                        case '"' -> out.append('"');
+                        case '/' -> out.append('/');
+                        case '\\' -> out.append('\\');
+                        default -> out.append(c);
+                    }
+                    escaped = false;
+                    continue;
+                }
+                if (c == '\\') {
+                    escaped = true;
+                    continue;
+                }
+                if (c == '"') {
+                    return out.toString();
+                }
+                out.append(c);
+            }
+            return out.toString();
+        }
+        return null;
     }
 
     private static String jsonNumberValue(String json, String key) {
@@ -445,6 +548,59 @@ public final class MultiAiProviderService {
         String b64 = jsonValue(t, "image");
         if (b64 != null && !b64.isBlank() && b64.length() > 80) {
             return "data:image/png;base64," + b64.trim();
+        }
+        String b64Image = jsonValue(t, "image_base64");
+        if (b64Image != null && !b64Image.isBlank() && b64Image.length() > 80) {
+            return "data:image/png;base64," + b64Image.trim();
+        }
+        String b64Artifact = jsonValue(t, "base64");
+        if (b64Artifact != null && !b64Artifact.isBlank() && b64Artifact.length() > 80) {
+            return "data:image/png;base64," + b64Artifact.trim();
+        }
+        String imageUrl = jsonValue(t, "url");
+        if (imageUrl != null && !imageUrl.isBlank() && (imageUrl.startsWith("http://") || imageUrl.startsWith("https://"))) {
+            return imageUrl.trim();
+        }
+        String imageUrlAlt = jsonValue(t, "image_url");
+        if (imageUrlAlt != null && !imageUrlAlt.isBlank()
+                && (imageUrlAlt.startsWith("http://") || imageUrlAlt.startsWith("https://"))) {
+            return imageUrlAlt.trim();
+        }
+        return null;
+    }
+
+    private static String sanitizeMimeType(String raw, String fallback) {
+        String ct = raw != null ? raw.trim() : "";
+        if (ct.isBlank()) {
+            return fallback;
+        }
+        int semi = ct.indexOf(';');
+        if (semi > 0) {
+            ct = ct.substring(0, semi).trim();
+        }
+        if (!ct.startsWith("image/")) {
+            return fallback;
+        }
+        return ct;
+    }
+
+    private static String detectImageMimeType(byte[] bytes) {
+        if (bytes == null || bytes.length < 4) {
+            return null;
+        }
+        if ((bytes[0] & 0xFF) == 0x89 && bytes[1] == 0x50 && bytes[2] == 0x4E && bytes[3] == 0x47) {
+            return "image/png";
+        }
+        if ((bytes[0] & 0xFF) == 0xFF && (bytes[1] & 0xFF) == 0xD8) {
+            return "image/jpeg";
+        }
+        if (bytes.length >= 12 && bytes[0] == 'R' && bytes[1] == 'I' && bytes[2] == 'F' && bytes[3] == 'F'
+                && bytes[8] == 'W' && bytes[9] == 'E' && bytes[10] == 'B' && bytes[11] == 'P') {
+            return "image/webp";
+        }
+        if (bytes.length >= 6 && bytes[0] == 'G' && bytes[1] == 'I' && bytes[2] == 'F'
+                && bytes[3] == '8' && (bytes[4] == '7' || bytes[4] == '9') && bytes[5] == 'a') {
+            return "image/gif";
         }
         return null;
     }
@@ -601,13 +757,8 @@ public final class MultiAiProviderService {
             return "";
         }
         String primaryModel = sanitizeHfModelId(cfg("huggingface.imageModel", "HUGGINGFACE_IMAGE_MODEL",
-                "black-forest-labs/FLUX.1-schnell"));
-        String[] candidates = new String[] {
-                primaryModel,
-                "black-forest-labs/FLUX.1-schnell",
-                "runwayml/stable-diffusion-v1-5",
-                "stabilityai/stable-diffusion-2-1"
-        };
+                "runwayml/stable-diffusion-v1-5"));
+        String[] candidates = buildSupportedHfImageCandidates(primaryModel);
         for (String model : candidates) {
             String out = huggingFaceGenerateImageDataUrlForModel(key, model, prompt, seedIndex);
             if (out != null && !out.isBlank()) {
@@ -624,14 +775,8 @@ public final class MultiAiProviderService {
                 return new ImageGenResult("", "huggingface", "clé absente");
             }
             String model = sanitizeHfModelId(cfg("huggingface.imageModel", "HUGGINGFACE_IMAGE_MODEL",
-                    "black-forest-labs/FLUX.1-schnell"));
-            String[] candidates = new String[] {
-                    model,
-                    "black-forest-labs/FLUX.1-schnell",
-                    "stabilityai/stable-diffusion-2-1",
-                    "runwayml/stable-diffusion-v1-5",
-                    "CompVis/stable-diffusion-v1-4"
-            };
+                    "runwayml/stable-diffusion-v1-5"));
+            String[] candidates = buildSupportedHfImageCandidates(model);
             String lastErr = "";
             for (String m : candidates) {
                 var r = hfAttemptModel(key, m, prompt, seedIndex);
@@ -644,6 +789,68 @@ public final class MultiAiProviderService {
         } catch (Exception e) {
             return new ImageGenResult("", "huggingface", e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName());
         }
+    }
+
+    private String[] buildSupportedHfImageCandidates(String primaryModel) {
+        LinkedHashSet<String> ordered = new LinkedHashSet<>();
+        if (primaryModel != null && !primaryModel.isBlank()) {
+            ordered.add(sanitizeHfModelId(primaryModel));
+        }
+        for (String m : HF_IMAGE_MODEL_CANDIDATES) {
+            ordered.add(sanitizeHfModelId(m));
+        }
+        List<String> supported = new ArrayList<>();
+        List<String> unknown = new ArrayList<>();
+        for (String m : ordered) {
+            if (m == null || m.isBlank()) {
+                continue;
+            }
+            Boolean ok = isModelLikelySupportedByHfInference(m);
+            if (Boolean.TRUE.equals(ok)) {
+                supported.add(m);
+            } else {
+                unknown.add(m);
+            }
+        }
+        if (!supported.isEmpty()) {
+            return supported.toArray(String[]::new);
+        }
+        return unknown.toArray(String[]::new);
+    }
+
+    private static Boolean isModelLikelySupportedByHfInference(String modelId) {
+        if (modelId == null || modelId.isBlank()) {
+            return Boolean.FALSE;
+        }
+        synchronized (HF_INFERENCE_MODEL_SUPPORT_CACHE) {
+            if (HF_INFERENCE_MODEL_SUPPORT_CACHE.containsKey(modelId)) {
+                return HF_INFERENCE_MODEL_SUPPORT_CACHE.get(modelId);
+            }
+        }
+        boolean supported = false;
+        try {
+            String hubUrl = "https://huggingface.co/api/models/" + encPath(modelId) + "?expand[]=inferenceProviderMapping";
+            HttpRequest req = HttpRequest.newBuilder()
+                    .uri(URI.create(hubUrl))
+                    .timeout(Duration.ofSeconds(15))
+                    .header("Accept", "application/json")
+                    .header("User-Agent", "AutiCareDesktop/1.0")
+                    .GET()
+                    .build();
+            HttpResponse<String> resp = HTTP.send(req, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
+            if (resp.statusCode() / 100 == 2) {
+                String body = resp.body() != null ? resp.body().toLowerCase(Locale.ROOT) : "";
+                if (body.contains("\"hf-inference\"")) {
+                    supported = true;
+                }
+            }
+        } catch (Exception ignored) {
+            // si la sonde échoue, on garde le modèle "inconnu" et on testera quand même en requête réelle.
+        }
+        synchronized (HF_INFERENCE_MODEL_SUPPORT_CACHE) {
+            HF_INFERENCE_MODEL_SUPPORT_CACHE.put(modelId, supported);
+        }
+        return supported;
     }
 
     /** Enlève commentaire inline (#...) souvent collé par erreur dans application.properties. */
@@ -668,7 +875,14 @@ public final class MultiAiProviderService {
             String modelPath = encPath(model.trim());
             String payload = "{"
                     + "\"inputs\":\"" + j(prompt) + "\","
-                    + "\"parameters\":{\"num_inference_steps\":22,\"guidance_scale\":7.0,\"seed\":" + Math.max(1, seedIndex + 1) + "}"
+                    + "\"parameters\":{"
+                    + "\"num_inference_steps\":28,"
+                    + "\"guidance_scale\":8.0,"
+                    + "\"width\":768,"
+                    + "\"height\":512,"
+                    + "\"negative_prompt\":\"colorful, bright colors, text, watermark, logo, frame, border, photo, realistic face\","
+                    + "\"seed\":" + Math.max(1, seedIndex + 1)
+                    + "}"
                     + "}";
             String lastError = "";
             for (String base : HF_IMAGE_INFERENCE_BASES) {
@@ -679,22 +893,35 @@ public final class MultiAiProviderService {
                             .timeout(Duration.ofSeconds(90))
                             .header("Authorization", "Bearer " + key)
                             .header("Content-Type", "application/json")
-                            .header("Accept", "image/*,application/json")
+                            .header("Accept", "*/*")
                             .header("X-Wait-For-Model", "true")
                             .header("User-Agent", "AutiCareDesktop/1.0")
                             .POST(HttpRequest.BodyPublishers.ofString(payload, StandardCharsets.UTF_8))
                             .build();
                     HttpResponse<byte[]> resp = HTTP.send(req, HttpResponse.BodyHandlers.ofByteArray());
                     int status = resp.statusCode();
-                    String contentType = resp.headers().firstValue("content-type").orElse("");
-                    if (status / 100 == 2 && contentType.startsWith("image/")) {
+                    String contentType = sanitizeMimeType(resp.headers().firstValue("content-type").orElse(""), "");
+                    if (status / 100 == 2 && !contentType.isBlank()) {
                         String b64 = Base64.getEncoder().encodeToString(resp.body());
                         return new ImageGenResult("data:" + contentType + ";base64," + b64, "huggingface/" + model, "");
+                    }
+                    if (status / 100 == 2) {
+                        String sniffedMime = detectImageMimeType(resp.body());
+                        if (sniffedMime != null) {
+                            String b64 = Base64.getEncoder().encodeToString(resp.body());
+                            return new ImageGenResult("data:" + sniffedMime + ";base64," + b64, "huggingface/" + model, "");
+                        }
                     }
                     String bodyText = new String(resp.body(), StandardCharsets.UTF_8);
                     if (status / 100 == 2) {
                         String fromJson = tryExtractImageDataUrlFromHfJson(bodyText);
                         if (fromJson != null && !fromJson.isBlank()) {
+                            if (fromJson.startsWith("http://") || fromJson.startsWith("https://")) {
+                                String dataUrl = fetchUrlAsImageDataUrl(fromJson);
+                                if (dataUrl != null && !dataUrl.isBlank()) {
+                                    return new ImageGenResult(dataUrl, "huggingface/" + model, "");
+                                }
+                            }
                             return new ImageGenResult(fromJson, "huggingface/" + model, "");
                         }
                     }
@@ -711,13 +938,8 @@ public final class MultiAiProviderService {
                     break;
                 }
             }
-            ImageGenResult fal = tryFalRouterTextToImage(key, model, prompt, seedIndex);
-            if (fal.dataUrl() != null && !fal.dataUrl().isBlank()) {
-                return fal;
-            }
-            String tail = fal.error() != null && !fal.error().isBlank() ? " | fal: " + fal.error() : "";
             return new ImageGenResult("", "huggingface/" + model,
-                    (lastError.isBlank() ? "timeout/loading persistant" : lastError) + tail);
+                    (lastError.isBlank() ? "timeout/loading persistant" : lastError));
         } catch (Exception e) {
             return new ImageGenResult("", "huggingface/" + model, e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName());
         }

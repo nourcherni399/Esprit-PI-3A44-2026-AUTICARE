@@ -1957,6 +1957,13 @@
     -fx-text-fill: #6b7280;
 }
 
+.rdv-type-motif-hint {
+    -fx-font-size: 12px;
+    -fx-text-fill: #6b7280;
+    -fx-wrap-text: true;
+    -fx-padding: 0 0 4 0;
+}
+
 .rdv-type-motif-combo {
     -fx-background-radius: 10;
 }
@@ -3592,27 +3599,30 @@
 }
 
 .rdv-chatbot-panel {
-    -fx-background-color: #f6f4f3;
-    -fx-border-color: #e6e2e0;
+    -fx-background-color: linear-gradient(to bottom, #f8fbff, #f4f7fc);
+    -fx-border-color: #d8e2f0;
     -fx-border-width: 1;
-    -fx-border-radius: 20;
-    -fx-background-radius: 20;
-    -fx-padding: 12;
-    -fx-effect: dropshadow(gaussian, rgba(16, 24, 40, 0.2), 26, 0.25, 0, 8);
+    -fx-border-radius: 22;
+    -fx-background-radius: 22;
+    -fx-padding: 14;
+    -fx-effect: dropshadow(gaussian, rgba(17, 24, 39, 0.22), 34, 0.22, 0, 10);
     -fx-translate-x: -18;
     -fx-translate-y: -66;
 }
 
 .rdv-chatbot-header {
-    -fx-background-color: #e9e5e3;
+    -fx-background-color: #eef3fb;
+    -fx-border-color: #d9e4f5;
+    -fx-border-width: 1;
     -fx-background-radius: 14;
-    -fx-padding: 10 12 10 12;
+    -fx-border-radius: 14;
+    -fx-padding: 11 12 11 12;
 }
 
 .rdv-chatbot-title {
-    -fx-font-size: 16px;
+    -fx-font-size: 17px;
     -fx-font-weight: 800;
-    -fx-text-fill: #22344f;
+    -fx-text-fill: #1f3558;
 }
 
 .rdv-chatbot-subtitle {
@@ -3623,11 +3633,11 @@
 }
 
 .rdv-chatbot-intro-card {
-    -fx-background-color: #f9f8f7;
-    -fx-border-color: #ece8e6;
+    -fx-background-color: #f7faff;
+    -fx-border-color: #e1e9f6;
     -fx-border-radius: 12;
     -fx-background-radius: 12;
-    -fx-padding: 6 8 6 8;
+    -fx-padding: 8 10 8 10;
 }
 
 .rdv-chatbot-intro-title {
@@ -3647,28 +3657,88 @@
     -fx-padding: 0;
 }
 
+.rdv-chatbot-panel .button.rdv-chatbot-chip,
 .button.rdv-chatbot-chip {
-    -fx-background-color: #ece7f3;
-    -fx-text-fill: #545162;
-    -fx-font-size: 12px;
-    -fx-font-weight: 700;
+    -fx-background-color: linear-gradient(to bottom, rgba(255,255,255,0.92), rgba(239,246,255,0.78));
+    -fx-text-fill: #21456f;
+    -fx-font-size: 13px;
+    -fx-font-weight: 800;
     -fx-background-radius: 999;
-    -fx-padding: 5 10 5 10;
+    -fx-border-color: rgba(170, 194, 230, 0.9);
+    -fx-border-width: 1;
+    -fx-border-radius: 999;
+    -fx-padding: 9 16 9 16;
+    -fx-min-height: 38;
+    -fx-min-width: 112;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(90, 122, 171, 0.16), 8, 0.2, 0, 1);
+}
+
+.rdv-chatbot-panel .button.rdv-chatbot-chip:hover,
+.button.rdv-chatbot-chip:hover {
+    -fx-background-color: linear-gradient(to bottom, rgba(255,255,255,0.98), rgba(224,237,255,0.9));
+    -fx-border-color: #90aee0;
+    -fx-effect: dropshadow(gaussian, rgba(78, 116, 180, 0.28), 12, 0.22, 0, 2);
+}
+
+/* Deux boutons principaux du quiz (ligne haute) */
+#rdvQuizQuestionnaireBtn,
+#rdvQuizImagesBtn {
+    -fx-font-size: 14px;
+    -fx-font-weight: 900;
+    -fx-padding: 10 18 10 18;
+    -fx-background-radius: 999;
+    -fx-border-radius: 999;
+    -fx-border-width: 1.2;
+    -fx-min-width: 148;
+    -fx-min-height: 40;
     -fx-cursor: hand;
 }
 
-.button.rdv-chatbot-chip:hover {
-    -fx-background-color: #e5dff0;
+#rdvQuizQuestionnaireBtn {
+    -fx-background-color: linear-gradient(to bottom, #e8f9ef, #d3f1e0);
+    -fx-text-fill: #1d6a3b;
+    -fx-border-color: #9fd8b9;
+    -fx-effect: dropshadow(gaussian, rgba(36, 125, 78, 0.18), 10, 0.2, 0, 2);
 }
 
+#rdvQuizQuestionnaireBtn:hover {
+    -fx-background-color: linear-gradient(to bottom, #dcf4e6, #c5ebd6);
+    -fx-border-color: #7dc79f;
+}
+
+#rdvQuizQuestionnaireBtn:pressed {
+    -fx-background-color: linear-gradient(to bottom, #cdebd9, #b8e1ca);
+}
+
+#rdvQuizImagesBtn {
+    -fx-background-color: linear-gradient(to bottom, #eaf3ff, #d8e8ff);
+    -fx-text-fill: #1e4f95;
+    -fx-border-color: #a8c5f2;
+    -fx-effect: dropshadow(gaussian, rgba(44, 98, 179, 0.2), 10, 0.2, 0, 2);
+}
+
+#rdvQuizImagesBtn:hover {
+    -fx-background-color: linear-gradient(to bottom, #dfeeff, #cde1ff);
+    -fx-border-color: #85ace6;
+}
+
+#rdvQuizImagesBtn:pressed {
+    -fx-background-color: linear-gradient(to bottom, #d2e5ff, #bdd6fa);
+}
+
+.rdv-chatbot-panel .button.rdv-chip-green,
 .button.rdv-chip-green {
-    -fx-background-color: #dcead6;
-    -fx-text-fill: #2f5b2f;
+    -fx-background-color: linear-gradient(to bottom, rgba(243,255,246,0.96), rgba(215,246,223,0.86));
+    -fx-text-fill: #1d6b33;
+    -fx-border-color: #b4e4c2;
 }
 
+.rdv-chatbot-panel .button.rdv-chip-blue,
 .button.rdv-chip-blue {
-    -fx-background-color: #d9eaf3;
-    -fx-text-fill: #2b4f6f;
+    -fx-background-color: linear-gradient(to bottom, rgba(239,246,255,0.96), rgba(218,234,255,0.86));
+    -fx-text-fill: #1d4f93;
+    -fx-border-color: #bfd5fb;
 }
 
 .rdv-chatbot-image {
@@ -3686,7 +3756,7 @@
 
 .rdv-chatbot-history {
     -fx-background-color: #ffffff;
-    -fx-border-color: #e4dfdc;
+    -fx-border-color: #dbe5f3;
     -fx-border-radius: 14;
     -fx-background-radius: 14;
     -fx-padding: 0;
@@ -3700,24 +3770,25 @@
 .rdv-chatbot-history-box {
     -fx-padding: 12;
     -fx-background-color: #ffffff;
+    -fx-spacing: 10;
 }
 
 .rdv-chatbot-bubble {
-    -fx-padding: 10 12 10 12;
-    -fx-background-radius: 12;
-    -fx-border-radius: 12;
+    -fx-padding: 11 13 11 13;
+    -fx-background-radius: 14;
+    -fx-border-radius: 14;
     -fx-border-width: 1;
-    -fx-spacing: 4;
+    -fx-spacing: 5;
 }
 
 .rdv-chatbot-bubble-assistant {
-    -fx-background-color: #f8fbff;
-    -fx-border-color: #dce8ff;
+    -fx-background-color: #f4f8ff;
+    -fx-border-color: #d6e3fa;
 }
 
 .rdv-chatbot-bubble-user {
-    -fx-background-color: #f6f7f9;
-    -fx-border-color: #e4e7ec;
+    -fx-background-color: linear-gradient(to bottom right, #e8f0ff, #dbe8ff);
+    -fx-border-color: #c3d8fb;
 }
 
 .rdv-chatbot-bubble-typing {
@@ -3728,14 +3799,22 @@
 .rdv-chatbot-bubble-author {
     -fx-font-size: 13px;
     -fx-font-weight: 800;
-    -fx-text-fill: #1f3b73;
+    -fx-text-fill: #1d3e75;
+}
+
+.rdv-chatbot-bubble-user .rdv-chatbot-bubble-author {
+    -fx-text-fill: #204a8a;
 }
 
 .rdv-chatbot-bubble-message {
-    -fx-text-fill: #334155;
+    -fx-text-fill: #2f3f56;
     -fx-font-family: "Segoe UI Variable Text", "Segoe UI", "Inter", "Roboto", sans-serif;
     -fx-font-size: 15px;
-    -fx-line-spacing: 4px;
+    -fx-line-spacing: 5px;
+}
+
+.rdv-chatbot-bubble-user .rdv-chatbot-bubble-message {
+    -fx-text-fill: #21384f;
 }
 
 .rdv-chatbot-bubble-image {
@@ -3764,34 +3843,63 @@
     -fx-background-color: #e0e7ff;
 }
 
-.button.rdv-chatbot-icon-btn {
-    -fx-background-color: transparent;
-    -fx-text-fill: #4b5563;
-    -fx-font-size: 17px;
-    -fx-font-weight: 800;
-    -fx-padding: 0 7 0 7;
+.button.rdv-chatbot-edit-btn {
+    -fx-background-color: #eef5ff;
+    -fx-text-fill: #2d5a9b;
+    -fx-font-size: 13px;
+    -fx-font-weight: 700;
+    -fx-background-radius: 999;
+    -fx-border-radius: 999;
+    -fx-border-color: #c3d9f8;
+    -fx-border-width: 1;
+    -fx-min-width: 26;
+    -fx-min-height: 26;
+    -fx-pref-width: 26;
+    -fx-pref-height: 26;
+    -fx-padding: 0;
     -fx-cursor: hand;
+    -fx-alignment: center;
 }
 
+.button.rdv-chatbot-edit-btn:hover {
+    -fx-background-color: #e1eeff;
+    -fx-border-color: #9fc3f4;
+}
+
+.rdv-chatbot-panel .button.rdv-chatbot-icon-btn,
+.button.rdv-chatbot-icon-btn {
+    -fx-background-color: rgba(255,255,255,0.38);
+    -fx-text-fill: #3f5573;
+    -fx-font-size: 17px;
+    -fx-font-weight: 800;
+    -fx-padding: 2 8 2 8;
+    -fx-cursor: hand;
+    -fx-background-radius: 10;
+    -fx-border-color: rgba(177, 198, 225, 0.8);
+    -fx-border-width: 1;
+    -fx-border-radius: 10;
+}
+
+.rdv-chatbot-panel .button.rdv-chatbot-icon-btn:hover,
 .button.rdv-chatbot-icon-btn:hover {
-    -fx-background-color: #ddd8d5;
-    -fx-background-radius: 8;
+    -fx-background-color: rgba(232, 241, 255, 0.92);
+    -fx-border-color: #9ab6e2;
 }
 
 .rdv-chatbot-input {
-    -fx-background-color: #eceae5;
+    -fx-background-color: #ffffff;
     -fx-background-radius: 999;
     -fx-border-radius: 999;
-    -fx-border-color: #ddd8d2;
+    -fx-border-color: #cfdced;
     -fx-border-width: 1;
-    -fx-padding: 10 14 10 14;
+    -fx-padding: 11 15 11 15;
     -fx-font-size: 14px;
-    -fx-text-fill: #3b4351;
+    -fx-text-fill: #334155;
 }
 
 .rdv-chatbot-input:focused {
-    -fx-border-color: #7fa8d6;
-    -fx-effect: dropshadow(gaussian, rgba(106, 144, 187, 0.28), 8, 0.2, 0, 1);
+    -fx-border-color: #6c97d8;
+    -fx-effect: dropshadow(gaussian, rgba(76, 118, 184, 0.25), 12, 0.2, 0, 1);
 }
 
 .rdv-chatbot-input-row {
@@ -3808,11 +3916,50 @@
     -fx-text-fill: #6b7280;
 }
 
+.rdv-chatbot-panel .button.rdv-chatbot-mini-chip,
 .button.rdv-chatbot-mini-chip {
     -fx-font-size: 12px;
     -fx-font-weight: 700;
     -fx-background-radius: 999;
-    -fx-padding: 6 10 6 10;
+    -fx-border-radius: 999;
+    -fx-border-color: rgba(186, 204, 231, 0.95);
+    -fx-border-width: 1;
+    -fx-background-color: linear-gradient(to bottom, rgba(255,255,255,0.9), rgba(237,243,251,0.86));
+    -fx-text-fill: #2f4667;
+    -fx-padding: 6 12 6 12;
+}
+
+/* Cible explicite de la ligne "Rapide : Quiz texte / Quiz Rorschach" */
+.rdv-chatbot-quick-row .button {
+    -fx-font-size: 13px;
+    -fx-font-weight: 800;
+    -fx-background-radius: 999;
+    -fx-border-radius: 999;
+    -fx-border-width: 1;
+    -fx-padding: 7 14 7 14;
+    -fx-cursor: hand;
+}
+
+.rdv-chatbot-quick-row .button.rdv-chatbot-mini-chip.rdv-chip-green {
+    -fx-background-color: linear-gradient(to bottom, #e9fbef, #d5f3df);
+    -fx-text-fill: #1f6a38;
+    -fx-border-color: #b2e2c2;
+}
+
+.rdv-chatbot-quick-row .button.rdv-chatbot-mini-chip.rdv-chip-green:hover {
+    -fx-background-color: linear-gradient(to bottom, #def7e7, #c8ecd4);
+    -fx-border-color: #99d3ad;
+}
+
+.rdv-chatbot-quick-row .button.rdv-chatbot-mini-chip.rdv-chip-blue {
+    -fx-background-color: linear-gradient(to bottom, #ecf4ff, #d9e9ff);
+    -fx-text-fill: #205190;
+    -fx-border-color: #bad0f7;
+}
+
+.rdv-chatbot-quick-row .button.rdv-chatbot-mini-chip.rdv-chip-blue:hover {
+    -fx-background-color: linear-gradient(to bottom, #e1edff, #ccdfff);
+    -fx-border-color: #9fbde8;
 }
 
 .button.rdv-chatbot-media-btn {
@@ -3831,18 +3978,24 @@
     -fx-background-color: #e1dbd3;
 }
 
+.rdv-chatbot-panel .button.rdv-chatbot-send-btn,
 .button.rdv-chatbot-send-btn {
-    -fx-background-color: linear-gradient(to bottom, #8ca1be, #7d93b2);
+    -fx-background-color: linear-gradient(to bottom, rgba(132,167,219,0.98), rgba(94,132,190,0.98));
     -fx-text-fill: #ffffff;
     -fx-font-weight: 800;
     -fx-font-size: 14px;
-    -fx-background-radius: 14;
-    -fx-padding: 10 16 10 16;
+    -fx-background-radius: 16;
+    -fx-border-radius: 16;
+    -fx-border-color: rgba(84, 117, 171, 0.95);
+    -fx-border-width: 1;
+    -fx-padding: 11 18 11 18;
     -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(40, 77, 134, 0.33), 14, 0.25, 0, 2);
 }
 
+.rdv-chatbot-panel .button.rdv-chatbot-send-btn:hover,
 .button.rdv-chatbot-send-btn:hover {
-    -fx-background-color: linear-gradient(to bottom, #7f95b5, #6e86a8);
+    -fx-background-color: linear-gradient(to bottom, rgba(120,157,214,0.99), rgba(82,121,183,0.99));
 }
 
 /* Smart Planner IA (recommandation créneau) */
