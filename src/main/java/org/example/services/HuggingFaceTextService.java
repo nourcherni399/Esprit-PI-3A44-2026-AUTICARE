@@ -6,6 +6,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
 import java.io.InputStream;
+import java.text.Normalizer;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -67,7 +68,8 @@ public class HuggingFaceTextService {
         return runGeneration(prompt, 120, 0.5);
     }
 
-    public String suggestReplyForParticipantMessage(String eventTitle, String participantMessage, String conversationContext)
+    public String suggestReplyForParticipantMessage(String eventTitle, String participantMessage, String conversationContext,
+                                                    String eventFacts)
             throws Exception {
         String safeEvent = eventTitle == null || eventTitle.isBlank() ? "Événement" : eventTitle.trim();
         String safeMessage = participantMessage == null ? "" : participantMessage.trim();
@@ -75,11 +77,13 @@ public class HuggingFaceTextService {
             throw new IllegalArgumentException("Message participant introuvable pour générer une réponse.");
         }
         String safeContext = conversationContext == null ? "" : conversationContext.trim();
+        String safeFacts = eventFacts == null ? "" : eventFacts.trim();
         String prompt = """
                 Tu es un assistant de support admin d'une application d'événements.
                 Rédige une réponse en français à envoyer à un participant.
                 Contexte :
                 - Événement : %s
+                - Informations connues sur l'événement : %s
                 - Historique récent : %s
                 - Dernier message du participant : %s
 
@@ -90,9 +94,110 @@ public class HuggingFaceTextService {
                 - Si le participant dit seulement "bonjour", produire une réponse complète (salutation + proposition d'aide + prochaine étape).
                 - Ne jamais retourner "..." ni une réponse incomplète.
                 - Si une information manque, poser une courte question de clarification.
+                - Si le participant demande le lieu et qu'il est connu dans les informations, répondre directement avec ce lieu.
+                - N'invente jamais une information absente du contexte.
                 - Retourne uniquement le texte de réponse final.
-                """.formatted(safeEvent, safeContext.isBlank() ? "Aucun." : safeContext, safeMessage);
-        return runGeneration(prompt, 190, 0.6);
+                """.formatted(
+                safeEvent,
+                safeFacts.isBlank() ? "Aucune information supplémentaire." : safeFacts,
+                safeContext.isBlank() ? "Aucun." : safeContext,
+                safeMessage
+        );
+        String firstReply = runGeneration(prompt, 210, 0.55).trim();
+        if (isReplyRelevantToMessage(firstReply, safeMessage)) {
+            return firstReply;
+        }
+
+        String strictPrompt = """
+                Tu es un assistant de support admin d'une application d'événements.
+                Tu dois répondre de façon directement liée au message du participant.
+
+                Événement : %s
+                Informations connues : %s
+                Historique récent : %s
+                Message du participant : %s
+
+                Instructions strictes :
+                - La première phrase doit répondre au besoin principal exprimé dans le message du participant.
+                - Reprends explicitement au moins un mot-clé du message (ex: retard, activités, lieu, horaire, inscription).
+                - Si l'info n'est pas connue, dis-le clairement puis pose UNE question de clarification utile.
+                - Ne donne pas de réponse générique.
+                - N'invente aucune information.
+                - 2 à 5 phrases.
+                - Retourne uniquement la réponse finale en français.
+                """.formatted(
+                safeEvent,
+                safeFacts.isBlank() ? "Aucune information supplémentaire." : safeFacts,
+                safeContext.isBlank() ? "Aucun." : safeContext,
+                safeMessage
+        );
+        String secondReply = runGeneration(strictPrompt, 220, 0.35).trim();
+        if (!secondReply.isBlank()) {
+            return secondReply;
+        }
+        return firstReply;
+    }
+
+    private static boolean isReplyRelevantToMessage(String reply, String participantMessage) {
+        String safeReply = reply == null ? "" : reply.trim();
+        String safeMessage = participantMessage == null ? "" : participantMessage.trim();
+        if (safeReply.isBlank() || safeMessage.isBlank()) {
+            return false;
+        }
+        if (safeReply.length() < 25) {
+            return false;
+        }
+
+        Set<String> messageKeywords = extractMeaningfulTokens(safeMessage);
+        if (messageKeywords.isEmpty()) {
+            return true;
+        }
+        Set<String> replyKeywords = extractMeaningfulTokens(safeReply);
+        int overlaps = 0;
+        for (String keyword : messageKeywords) {
+            if (replyKeywords.contains(keyword)) {
+                overlaps++;
+            }
+        }
+        return overlaps >= 1;
+    }
+
+    private static Set<String> extractMeaningfulTokens(String text) {
+        String normalized = normalizeText(text);
+        if (normalized.isBlank()) {
+            return Set.of();
+        }
+        Set<String> stopWords = Set.of(
+                "bonjour", "bonsoir", "salut", "merci", "svp", "s il", "si", "je", "tu", "vous", "nous",
+                "de", "du", "des", "la", "le", "les", "un", "une", "et", "ou", "a", "au", "aux",
+                "est", "ce", "cela", "ça", "ca", "pour", "dans", "sur", "avec", "par", "que", "qui",
+                "qu", "mon", "ma", "mes", "ton", "ta", "tes", "notre", "votre", "leur", "leurs",
+                "pouvoir", "possible", "peut", "faire", "avoir", "etre", "savoir"
+        );
+        Set<String> tokens = new LinkedHashSet<>();
+        for (String part : normalized.split("\\s+")) {
+            String token = part.trim();
+            if (token.length() < 3) {
+                continue;
+            }
+            if (stopWords.contains(token)) {
+                continue;
+            }
+            tokens.add(token);
+        }
+        return tokens;
+    }
+
+    private static String normalizeText(String text) {
+        if (text == null) {
+            return "";
+        }
+        String lower = text.toLowerCase(Locale.ROOT);
+        String noAccent = Normalizer.normalize(lower, Normalizer.Form.NFD)
+                .replaceAll("\\p{M}+", "");
+        return noAccent.replaceAll("[^a-z0-9\\s]", " ")
+                .replaceAll("\\s+", " ")
+                .trim();
     }
 
     public String analyzeParticipantMessage(String eventTitle, String participantMessage, String conversationContext)

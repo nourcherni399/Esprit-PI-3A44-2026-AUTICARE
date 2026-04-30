@@ -1861,10 +1861,11 @@ public class AdminEventsPanelController {
         String eventTitle = detailShownEvent.getTitre() != null ? detailShownEvent.getTitre() : "Événement";
         String participantMessage = msg.getCorps() != null ? msg.getCorps().trim() : "";
         String context = buildConversationContext(detailShownEvent.getId(), selectedConversationUserId, 6);
+        String eventFacts = buildEventFacts(detailShownEvent);
         runGenericAiTask(
-                () -> huggingFaceTextService.suggestReplyForParticipantMessage(eventTitle, participantMessage, context),
+                () -> huggingFaceTextService.suggestReplyForParticipantMessage(eventTitle, participantMessage, context, eventFacts),
                 reply -> {
-                    String aiReply = normalizeAiReply(reply, eventTitle, participantMessage);
+                    String aiReply = normalizeAiReply(reply, eventTitle, participantMessage, eventFacts);
                     if (aiReply.isBlank()) {
                         showValidationMessage("L'IA n'a pas généré de réponse exploitable. Réessayez.");
                         return;
@@ -1879,7 +1880,7 @@ public class AdminEventsPanelController {
                 "Impossible de générer la réponse IA.");
     }
 
-    private static String normalizeAiReply(String raw, String eventTitle, String participantMessage) {
+    private static String normalizeAiReply(String raw, String eventTitle, String participantMessage, String eventFacts) {
         String text = raw != null ? raw.trim() : "";
         if (text.equals("...") || text.equals("…") || text.equals("..")) {
             text = "";
@@ -1899,11 +1900,140 @@ public class AdminEventsPanelController {
             String participant = participantMessage != null && !participantMessage.isBlank()
                     ? participantMessage.trim()
                     : "votre message";
+            String facts = eventFacts != null ? eventFacts.trim() : "";
+            if (!facts.isBlank()) {
+                return "Bonjour, merci pour votre message concernant « " + safeEventTitle + " ». "
+                        + "J'ai bien noté votre demande : \"" + participant + "\". "
+                        + "D'après les informations disponibles (" + facts + "), "
+                        + "je peux vous aider à confirmer le point exact que vous souhaitez.";
+            }
             return "Bonjour, merci pour votre message concernant « " + safeEventTitle + " ». "
-                    + "Nous avons bien pris en compte votre demande : \"" + participant + "\". "
-                    + "Pouvez-vous nous préciser votre besoin exact afin que nous vous répondions rapidement et de manière complète ?";
+                    + "J'ai bien noté votre demande : \"" + participant + "\". "
+                    + "Pouvez-vous préciser ce que vous souhaitez en priorité pour que je vous réponde de façon exacte ?";
         }
         return text;
+    }
+
+    private static String buildEventFacts(Event event) {
+        if (event == null) {
+            return "";
+        }
+        List<String> facts = new ArrayList<>();
+        if (event.getLieu() != null && !event.getLieu().isBlank()) {
+            facts.add("Lieu: " + event.getLieu().trim());
+        }
+        if (event.getModeEvenement() != null && !event.getModeEvenement().isBlank()) {
+            facts.add("Mode: " + event.getModeEvenement().trim());
+        }
+        if (event.getLienGoogleMaps() != null && !event.getLienGoogleMaps().isBlank()) {
+            facts.add("Google Maps: " + event.getLienGoogleMaps().trim());
+        }
+        if (event.getLienZoomVisio() != null && !event.getLienZoomVisio().isBlank()) {
+            facts.add("Lien visio: " + event.getLienZoomVisio().trim());
+        }
+        return String.join(" | ", facts);
+    }
+
+    private static String buildDeterministicParticipantReply(String eventTitle, String participantMessage, Event event) {
+        String msg = participantMessage == null ? "" : participantMessage.trim();
+        if (msg.isBlank()) {
+            return "";
+        }
+        String normalized = msg.toLowerCase(Locale.ROOT)
+                .replace("é", "e")
+                .replace("è", "e")
+                .replace("ê", "e")
+                .replace("à", "a")
+                .replace("ù", "u")
+                .replace("ç", "c");
+        String safeEventTitle = eventTitle != null && !eventTitle.isBlank() ? eventTitle.trim() : "votre événement";
+        String lieu = event != null && event.getLieu() != null ? event.getLieu().trim() : "";
+        String maps = event != null && event.getLienGoogleMaps() != null ? event.getLienGoogleMaps().trim() : "";
+        String visio = event != null && event.getLienZoomVisio() != null ? event.getLienZoomVisio().trim() : "";
+        String mode = event != null && event.getModeEvenement() != null ? event.getModeEvenement().trim() : "";
+        LocalDateTime startDateTime = event != null ? event.getDateDebut() : null;
+        String when = "";
+        if (startDateTime != null) {
+            DateTimeFormatter fmt = DateTimeFormatter.ofPattern("dd/MM/yyyy 'à' HH:mm", Locale.FRENCH);
+            when = startDateTime.format(fmt);
+        }
+
+        boolean asksLocation = containsAny(normalized, "lieu", "adresse", "ou se passe", "ou ca se passe", "ou ça se passe");
+        boolean asksDelay = containsAny(normalized, "retard", "en retard", "arriver en retard", "devenir en retard");
+        boolean asksSchedule = containsAny(normalized, "heure", "horaire", "quand", "date", "a quelle heure", "a quelle date");
+        boolean asksRegistration = containsAny(normalized, "inscription", "inscrire", "reserve", "reservation", "places", "place");
+        boolean asksPrice = containsAny(normalized, "prix", "tarif", "payant", "gratuit", "combien");
+        boolean asksAccess = containsAny(normalized, "acces", "entrer", "entree", "comment venir", "lien");
+
+        if (asksDelay) {
+            if (!when.isBlank()) {
+                return "Bonjour, merci pour votre message concernant « " + safeEventTitle + " ». "
+                        + "Oui, en cas de retard vous pouvez rejoindre l'événement après le début prévu (" + when + "). "
+                        + "Merci simplement de nous prévenir dès que possible pour faciliter votre accueil.";
+            }
+            return "Bonjour, merci pour votre message concernant « " + safeEventTitle + " ». "
+                    + "Oui, vous pouvez arriver en retard. "
+                    + "Merci de nous prévenir dès que possible afin que l'équipe d'accueil vous prenne en charge.";
+        }
+        if (asksLocation) {
+            if (!lieu.isBlank()) {
+                if (!maps.isBlank()) {
+                    return "Bonjour, merci pour votre message concernant « " + safeEventTitle + " ». "
+                            + "Le lieu de déroulement est : " + lieu + ". "
+                            + "Voici le lien Google Maps : " + maps + ". "
+                            + "N'hésitez pas si vous souhaitez un repère supplémentaire.";
+                }
+                return "Bonjour, merci pour votre message concernant « " + safeEventTitle + " ». "
+                        + "Le lieu de déroulement est : " + lieu + ". "
+                        + "N'hésitez pas si vous souhaitez aussi l'horaire exact.";
+            }
+            return "Bonjour, merci pour votre message concernant « " + safeEventTitle + " ». "
+                    + "Je vérifie le lieu exact et je reviens vers vous rapidement. "
+                    + "Souhaitez-vous également le point de rendez-vous précis ?";
+        }
+        if (asksSchedule) {
+            if (!when.isBlank()) {
+                return "Bonjour, merci pour votre message concernant « " + safeEventTitle + " ». "
+                        + "L'événement est prévu le " + when + ". "
+                        + "N'hésitez pas si vous souhaitez aussi les informations d'accès.";
+            }
+            return "Bonjour, merci pour votre message concernant « " + safeEventTitle + " ». "
+                    + "Je vous confirme l'horaire exact dans les plus brefs délais.";
+        }
+        if (asksRegistration) {
+            return "Bonjour, merci pour votre message concernant « " + safeEventTitle + " ». "
+                    + "Oui, l'inscription est possible tant que des places sont disponibles. "
+                    + "Je peux vous guider pas à pas si vous le souhaitez.";
+        }
+        if (asksPrice) {
+            return "Bonjour, merci pour votre message concernant « " + safeEventTitle + " ». "
+                    + "Je vérifie le tarif exact (ou la gratuité) et je vous le confirme immédiatement après vérification.";
+        }
+        if (asksAccess) {
+            if (!visio.isBlank() && (mode.toLowerCase(Locale.ROOT).contains("ligne") || mode.toLowerCase(Locale.ROOT).contains("hybride"))) {
+                return "Bonjour, merci pour votre message concernant « " + safeEventTitle + " ». "
+                        + "L'accès en ligne se fait via ce lien : " + visio + ". "
+                        + "N'hésitez pas si vous souhaitez aussi les consignes de connexion.";
+            }
+            if (!maps.isBlank()) {
+                return "Bonjour, merci pour votre message concernant « " + safeEventTitle + " ». "
+                        + "Voici le lien d'accès Google Maps : " + maps + ".";
+            }
+            return "";
+        }
+        return "";
+    }
+
+    private static boolean containsAny(String source, String... needles) {
+        if (source == null || source.isBlank() || needles == null || needles.length == 0) {
+            return false;
+        }
+        for (String needle : needles) {
+            if (needle != null && !needle.isBlank() && source.contains(needle)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private String buildConversationContext(int eventId, int participantId, int maxMessages) {

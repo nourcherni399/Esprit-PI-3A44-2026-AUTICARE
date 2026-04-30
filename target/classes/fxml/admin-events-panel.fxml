@@ -239,6 +239,11 @@
                         <Label styleClass="admin-new-event-label" text="Titre *"/>
                         <TextField fx:id="formTitre" maxWidth="Infinity" promptText="Lettres uniquement — ex. Atelier sensoriel" styleClass="admin-new-event-input"/>
                     </VBox>
+                    <VBox spacing="8" maxWidth="Infinity">
+                        <Label styleClass="admin-form-section-title" text="Thématique"/>
+                        <Label styleClass="admin-new-event-label" text="Thématique *"/>
+                        <ComboBox fx:id="formThematique" editable="true" maxWidth="Infinity" promptText="Choisir ou saisir une thématique" styleClass="admin-new-event-input"/>
+                    </VBox>
                     <VBox spacing="6" maxWidth="Infinity">
                         <Label styleClass="admin-new-event-label" text="Description *"/>
                         <TextArea fx:id="formDescription" maxWidth="Infinity" prefRowCount="4" promptText="Décrivez l'événement…" styleClass="admin-new-event-textarea" wrapText="true"/>
@@ -318,12 +323,6 @@
                             <Button mnemonicParsing="false" onAction="#onFormGenerateZoomLink" styleClass="admin-new-event-btn-outline-blue" text="Générer le lien Zoom"/>
                         </HBox>
                     </VBox>
-                </VBox>
-
-                <VBox alignment="TOP_LEFT" spacing="8" maxWidth="Infinity" styleClass="admin-form-card">
-                    <Label styleClass="admin-form-section-title" text="Thématique"/>
-                    <Label styleClass="admin-new-event-label" text="Thématique *"/>
-                    <ComboBox fx:id="formThematique" editable="true" maxWidth="Infinity" promptText="Choisir ou saisir une thématique" styleClass="admin-new-event-input"/>
                 </VBox>
 
                 <HBox alignment="CENTER" maxWidth="Infinity" spacing="12" styleClass="admin-form-actions">

@@ -66,19 +66,69 @@ public class EventReminderEmailService {
 
         String smtpHost = readConfig("auticare.smtp.host", "AUTICARE_SMTP_HOST", DEFAULT_HOST);
         String smtpPort = readConfig("auticare.smtp.port", "AUTICARE_SMTP_PORT", DEFAULT_PORT);
+        String debug = readConfig("auticare.smtp.debug", "AUTICARE_SMTP_DEBUG", "false");
 
+        String to = recipientEmail.trim();
+        String finalHtml = safeHtml.isBlank()
+                ? "<html><body><p>Notification AutiCare</p></body></html>"
+                : safeHtml;
+
+        // Si port=465, on utilise SSL direct immédiatement. Sinon STARTTLS, puis fallback 465.
+        boolean preferSslDirect = "465".equals(smtpPort);
+        MessagingException firstError = null;
+        try {
+            sendWithSmtpProfile(
+                    smtpUser, smtpPassword, smtpHost, smtpPort, preferSslDirect, debug,
+                    to, safeSubject, finalHtml);
+            return;
+        } catch (MessagingException ex) {
+            firstError = ex;
+        }
+
+        if (!"465".equals(smtpPort)) {
+            try {
+                sendWithSmtpProfile(
+                        smtpUser, smtpPassword, smtpHost, "465", true, debug,
+                        to, safeSubject, finalHtml);
+                return;
+            } catch (MessagingException secondError) {
+                secondError.addSuppressed(firstError);
+                throw secondError;
+            }
+        }
+
+        throw firstError;
+    }
+
+    private static void sendWithSmtpProfile(
+            String smtpUser,
+            String smtpPassword,
+            String smtpHost,
+            String smtpPort,
+            boolean sslDirect,
+            String debugFlag,
+            String to,
+            String subject,
+            String htmlBody) throws MessagingException {
         Properties props = new Properties();
         props.put("mail.smtp.auth", "true");
-        props.put("mail.smtp.starttls.enable", "true");
-        props.put("mail.smtp.starttls.required", "true");
         props.put("mail.smtp.host", smtpHost);
         props.put("mail.smtp.port", smtpPort);
         props.put("mail.smtp.ssl.trust", smtpHost);
         props.put("mail.smtp.ssl.protocols", "TLSv1.2");
         props.put("mail.smtp.auth.mechanisms", "LOGIN");
-        props.put("mail.smtp.connectiontimeout", "10000");
-        props.put("mail.smtp.timeout", "10000");
-        props.put("mail.smtp.writetimeout", "10000");
+        props.put("mail.smtp.connectiontimeout", "20000");
+        props.put("mail.smtp.timeout", "20000");
+        props.put("mail.smtp.writetimeout", "20000");
+        if (sslDirect) {
+            props.put("mail.smtp.ssl.enable", "true");
+            props.put("mail.smtp.starttls.enable", "false");
+            props.put("mail.smtp.starttls.required", "false");
+        } else {
+            props.put("mail.smtp.starttls.enable", "true");
+            props.put("mail.smtp.starttls.required", "true");
+            props.put("mail.smtp.ssl.enable", "false");
+        }
 
         Session session = Session.getInstance(props, new Authenticator() {
             @Override
@@ -86,20 +136,15 @@ public class EventReminderEmailService {
                 return new PasswordAuthentication(smtpUser, smtpPassword);
             }
         });
-        String debug = readConfig("auticare.smtp.debug", "AUTICARE_SMTP_DEBUG", "false");
-        if ("true".equalsIgnoreCase(debug)) {
+        if ("true".equalsIgnoreCase(debugFlag)) {
             session.setDebug(true);
         }
 
-        String to = recipientEmail.trim();
         Message message = new MimeMessage(session);
         message.setFrom(new InternetAddress(smtpUser));
         message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(to, false));
-        message.setSubject(safeSubject);
-        String finalHtml = safeHtml.isBlank()
-                ? "<html><body><p>Notification AutiCare</p></body></html>"
-                : safeHtml;
-        message.setContent(finalHtml, "text/html; charset=UTF-8");
+        message.setSubject(subject);
+        message.setContent(htmlBody, "text/html; charset=UTF-8");
         Transport.send(message);
     }
 
