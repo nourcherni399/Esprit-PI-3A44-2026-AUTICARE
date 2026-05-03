@@ -1,7 +1,9 @@
 package org.example.services;
 
+import jakarta.mail.MessagingException;
 import org.example.models.CartLineView;
 import org.example.models.CheckoutFormData;
+import org.example.models.Product;
 import org.example.models.Role;
 import org.example.models.User;
 import org.example.utils.AppState;
@@ -18,15 +20,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Checkout panier -> commande (+ lignes + notifications admin), aligné sur Symfony.
+ * Checkout panier → commande + lignes + notification admin (validation) + notification client « en attente ».
+ * Le débit de stock est effectué lors de la première validation admin ({@link CustomerOrderService#advanceCommandeStatut}).
  */
 public class OrderCheckoutService {
 
     private final CartService cartService = new CartService();
     private final UserService userService = new UserService();
-    private static final String PAYMENT_CARD = "carte_bancaire";
+    private final OrderConfirmationEmailService orderConfirmationEmailService = new OrderConfirmationEmailService();
+    private final NotificationService notificationService = new NotificationService();
 
-    public int placeOrder(User currentUser, CheckoutFormData form) throws SQLException {
+    public PlaceOrderResult placeOrder(User currentUser, CheckoutFormData form) throws SQLException {
         if (currentUser == null) {
             throw new SQLException("Utilisateur non connecté.");
         }
@@ -49,11 +53,21 @@ public class OrderCheckoutService {
             conn.setAutoCommit(false);
             int commandeId = insertCommande(conn, currentUser.getId(), form, cartLines);
             insertLignesCommande(conn, commandeId, cartLines);
-            decrementInventoryForOrder(conn, cartLines);
-            insertAdminNotifications(conn, commandeId, form.modePayment());
+            /* Stock débité uniquement après validation admin (voir CustomerOrderService.advanceCommandeStatut). */
+            insertAdminNotifications(conn, commandeId);
             cartService.clearCart(currentUser.getId());
             conn.commit();
-            return commandeId;
+            try {
+                notificationService.insertClientOrderNotification(
+                    currentUser.getId(),
+                    NotificationService.TYPE_COMMANDE_EN_ATTENTE_ADMIN,
+                    commandeId
+                );
+            } catch (SQLException ex) {
+                System.err.println("[OrderCheckout] Notification client en attente admin : " + ex.getMessage());
+            }
+            String emailError = sendOrderConfirmationEmailSafe(form, cartLines);
+            return new PlaceOrderResult(commandeId, emailError == null, emailError);
         } catch (SQLException ex) {
             conn.rollback();
             throw ex;
@@ -63,8 +77,8 @@ public class OrderCheckoutService {
     }
 
     private static int insertCommande(Connection conn, int userId, CheckoutFormData form, List<CartLineView> lines) throws SQLException {
-        String sql = "INSERT INTO `commande`(nom, email, telephone, adresse, code_postal, ville, total, statut, mode_payment, date_creation, user_id) "
-            + "VALUES(?,?,?,?,?,?,?,?,?,?,?)";
+        String sql = "INSERT INTO `commande`(nom, email, telephone, adresse, code_postal, ville, total, statut, mode_payment, date_creation, stripe_payment_intent, user_id) "
+            + "VALUES(?,?,?,?,?,?,?,?,?,?,?,?)";
         try (PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setString(1, form.nom());
             ps.setString(2, form.email());
@@ -76,7 +90,8 @@ public class OrderCheckoutService {
             ps.setString(8, "en_attente");
             ps.setString(9, form.modePayment());
             ps.setTimestamp(10, Timestamp.valueOf(LocalDateTime.now()));
-            ps.setInt(11, userId);
+            ps.setString(11, form.stripePaymentIntent());
+            ps.setInt(12, userId);
             ps.executeUpdate();
             try (ResultSet keys = ps.getGeneratedKeys()) {
                 if (keys.next()) {
@@ -100,6 +115,40 @@ public class OrderCheckoutService {
             }
             ps.executeBatch();
         }
+    }
+
+    /**
+     * Charge les lignes d’une commande pour appliquer la même logique de stock que le panier.
+     */
+    public static List<CartLineView> loadCommandeLinesAsCartLineViews(Connection conn, int commandeId, ProductService productService)
+        throws SQLException {
+        String sql = "SELECT lc.id, lc.quantite, lc.prix, lc.produit_id FROM ligne_commande lc WHERE lc.commande_id=? ORDER BY lc.id";
+        List<CartLineView> out = new ArrayList<>();
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, commandeId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    int lineId = rs.getInt("id");
+                    int qty = rs.getInt("quantite");
+                    double prix = rs.getDouble("prix");
+                    int pid = rs.getInt("produit_id");
+                    Product p = productService.findById(pid).orElseThrow(
+                        () -> new SQLException("Produit introuvable pour la ligne de commande (id=" + pid + ").")
+                    );
+                    out.add(new CartLineView(lineId, p, qty, prix));
+                }
+            }
+        }
+        return out;
+    }
+
+    /**
+     * Décrémente le stock catalogue / emplacement pour une commande déjà validée par l’admin (même règles que l’ancien checkout).
+     */
+    public static void applyInventoryDeductionForApprovedCommande(Connection conn, int commandeId, ProductService productService)
+        throws SQLException {
+        List<CartLineView> lines = loadCommandeLinesAsCartLineViews(conn, commandeId, productService);
+        decrementInventoryForOrder(conn, lines);
     }
 
     /**
@@ -151,11 +200,7 @@ public class OrderCheckoutService {
         }
     }
 
-    private void insertAdminNotifications(Connection conn, int commandeId, String modePayment) throws SQLException {
-        // Validation manuelle demandée uniquement pour les paiements en ligne.
-        if (modePayment == null || !PAYMENT_CARD.equalsIgnoreCase(modePayment.trim())) {
-            return;
-        }
+    private void insertAdminNotifications(Connection conn, int commandeId) throws SQLException {
         User current = AppState.getCurrentUser();
         if (current == null || !isCustomerRoleForAdminNotif(current)) {
             return;
@@ -191,5 +236,20 @@ public class OrderCheckoutService {
             case PARENT, PATIENT, USER -> true;
             case ADMIN, MEDECIN -> false;
         };
+    }
+
+    private String sendOrderConfirmationEmailSafe(CheckoutFormData form, List<CartLineView> cartLines) {
+        try {
+            orderConfirmationEmailService.sendOrderConfirmation(form, cartLines, CartService.totalPrice(cartLines));
+            return null;
+        } catch (MessagingException ex) {
+            // L'envoi mail ne doit pas annuler une commande déjà validée en base.
+            // On loggue l'erreur pour faciliter le diagnostic SMTP.
+            System.err.println("[OrderEmail] Echec envoi mail commande vers " + form.email() + " : " + ex.getMessage());
+            return ex.getMessage();
+        }
+    }
+
+    public record PlaceOrderResult(int commandeId, boolean emailSent, String emailErrorMessage) {
     }
 }

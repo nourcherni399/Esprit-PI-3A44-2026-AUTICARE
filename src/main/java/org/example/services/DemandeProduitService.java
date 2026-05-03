@@ -64,12 +64,11 @@ public class DemandeProduitService {
         Double budgetClient,
         Integer demandeurId
     ) throws SQLException {
-        return insertDemandeSimple(
-            demandeClient, nomSuggere, descriptionSuggeree, categorieDb, prixEstime, budgetClient, demandeurId, null);
+        return insertDemandeSimple(demandeClient, nomSuggere, descriptionSuggeree, categorieDb, prixEstime, budgetClient, demandeurId, null);
     }
 
     /**
-     * @param donneesExternesJson JSON optionnel (ex. URL image Pexels) pour la colonne {@code donnees_externes}.
+     * @param donneesExternesJson JSON optionnel (ex. {@code {"imageUrl":"https://..."}}) pour aperçu admin.
      */
     public int insertDemandeSimple(
         String demandeClient,
@@ -83,7 +82,7 @@ public class DemandeProduitService {
     ) throws SQLException {
         String sql = "INSERT INTO `demande_produit`(demande_client, nom, description, categorie, prix_estime, budget_client, "
             + "caracteristiques, donnees_externes, statut, created_at, validated_at, demandeur_id, validated_by_id, produit_id) "
-            + "VALUES(?,?,?,?,?,?,NULL,?, ?,NOW(),NULL,?,NULL,NULL)";
+            + "VALUES(?,?,?,?,?,?,NULL,?,?,NOW(),NULL,?,NULL,NULL)";
         try (PreparedStatement ps = MyDatabase.getConnection().prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS)) {
             ps.setString(1, demandeClient);
             ps.setString(2, nomSuggere);
@@ -98,7 +97,7 @@ public class DemandeProduitService {
             if (donneesExternesJson != null && !donneesExternesJson.isBlank()) {
                 ps.setString(7, donneesExternesJson.trim());
             } else {
-                ps.setNull(7, Types.LONGVARCHAR);
+                ps.setNull(7, Types.VARCHAR);
             }
             ps.setString(8, STATUT_EN_ATTENTE);
             if (demandeurId != null) {
@@ -141,6 +140,7 @@ public class DemandeProduitService {
     }
 
     public void approuver(int id, int adminUserId) throws SQLException {
+        Optional<DemandeProduit> before = findById(id);
         String sql = "UPDATE `demande_produit` SET statut=?, validated_at=NOW(), validated_by_id=? WHERE id=? AND statut=?";
         try (PreparedStatement ps = MyDatabase.getConnection().prepareStatement(sql)) {
             ps.setString(1, STATUT_APPROUVE);
@@ -151,9 +151,15 @@ public class DemandeProduitService {
                 throw new SQLException("Demande introuvable ou déjà traitée.");
             }
         }
+        if (before.isPresent()) {
+            DemandeProduit d = before.get();
+            new NotificationService().markAdminDemandeProduitNotificationsRead(id);
+            notifyClientDemandeOutcome(d, true);
+        }
     }
 
     public void rejeter(int id, int adminUserId) throws SQLException {
+        Optional<DemandeProduit> before = findById(id);
         String sql = "UPDATE `demande_produit` SET statut=?, validated_at=NOW(), validated_by_id=? WHERE id=? AND statut=?";
         try (PreparedStatement ps = MyDatabase.getConnection().prepareStatement(sql)) {
             ps.setString(1, STATUT_REJETE);
@@ -164,6 +170,50 @@ public class DemandeProduitService {
                 throw new SQLException("Demande introuvable ou déjà traitée.");
             }
         }
+        if (before.isPresent()) {
+            DemandeProduit d = before.get();
+            new NotificationService().markAdminDemandeProduitNotificationsRead(id);
+            notifyClientDemandeOutcome(d, false);
+        }
+    }
+
+    private static void notifyClientDemandeOutcome(DemandeProduit d, boolean accepted) throws SQLException {
+        Integer uid = d.demandeurId();
+        if (uid == null || uid <= 0) {
+            return;
+        }
+        String nom = d.nom() == null || d.nom().isBlank() ? "votre demande" : d.nom().trim();
+        UserNotificationService uns = new UserNotificationService();
+        if (accepted) {
+            uns.addNotification(
+                uid,
+                UserNotificationService.TYPE_DEMANDE_PRODUIT_ACCEPTEE,
+                null,
+                "Bonne nouvelle : votre demande de produit « " + nom + " » a été acceptée. "
+                    + "Elle sera ajoutée au catalogue dès qu’un administrateur aura créé la fiche produit."
+            );
+        } else {
+            uns.addNotification(
+                uid,
+                UserNotificationService.TYPE_DEMANDE_PRODUIT_REFUSEE,
+                null,
+                "Votre demande de produit « " + nom + " » n’a pas été retenue par l’équipe AutiCare."
+            );
+        }
+    }
+
+    private static void notifyClientProduitPublie(DemandeProduit d, int produitId) throws SQLException {
+        Integer uid = d.demandeurId();
+        if (uid == null || uid <= 0 || produitId <= 0) {
+            return;
+        }
+        String nom = d.nom() == null || d.nom().isBlank() ? "Votre produit" : d.nom().trim();
+        new UserNotificationService().addNotification(
+            uid,
+            UserNotificationService.TYPE_DEMANDE_PRODUIT_PUBLIEE,
+            null,
+            "Le produit « " + nom + " » issu de votre demande est disponible dans la boutique."
+        );
     }
 
     /**
@@ -201,6 +251,64 @@ public class DemandeProduitService {
             u.setInt(2, demandeId);
             u.executeUpdate();
         }
+        notifyClientProduitPublie(d, newPid);
+        return newPid;
+    }
+
+    /**
+     * Variante formulaire admin : création produit avec champs édités (incluant image),
+     * puis liaison à la demande.
+     */
+    public int creerProduitDepuisDemandeAvecFormulaire(
+        int demandeId,
+        int stockId,
+        int quantiteCatalogue,
+        int adminUserId,
+        String nom,
+        String description,
+        String categorie,
+        double prix,
+        String imagePath
+    ) throws SQLException {
+        DemandeProduit d = findById(demandeId).orElseThrow(() -> new SQLException("Demande introuvable."));
+        if (!STATUT_APPROUVE.equals(d.statut())) {
+            throw new SQLException("La demande doit être au statut « approuvé ».");
+        }
+        if (d.produitId() != null && d.produitId() > 0) {
+            throw new SQLException("Un produit est déjà associé à cette demande.");
+        }
+
+        String nomFinal = (nom == null || nom.isBlank()) ? (d.nom() == null ? "Produit" : d.nom()) : nom.trim();
+        String descFinal = description == null ? "" : description.trim();
+        String catFinal = (categorie == null || categorie.isBlank()) ? d.categorie() : categorie.trim();
+        String imgFinal = imagePath == null || imagePath.isBlank() ? null : imagePath.trim();
+        double prixFinal = prix > 0 ? prix : d.prixEstime();
+
+        Product p = new Product();
+        p.setNom(nomFinal);
+        p.setDescription(descFinal);
+        p.setPrix(prixFinal);
+        p.setCategorie(catFinal);
+        p.setStock(Math.max(1, quantiteCatalogue));
+        p.setStockId(stockId);
+        p.setImagePath(imgFinal);
+        p.setDisponible(true);
+        p.setPublie(true);
+        p.setValide(true);
+        p.setGenereParIa(true);
+        p.setUserId(d.demandeurId() != null ? d.demandeurId() : adminUserId);
+        p.setStatutPublication("publie");
+
+        ProductService psvc = new ProductService();
+        int newPid = psvc.addReturningId(p);
+
+        String up = "UPDATE `demande_produit` SET produit_id=? WHERE id=?";
+        try (PreparedStatement u = MyDatabase.getConnection().prepareStatement(up)) {
+            u.setInt(1, newPid);
+            u.setInt(2, demandeId);
+            u.executeUpdate();
+        }
+        notifyClientProduitPublie(d, newPid);
         return newPid;
     }
 

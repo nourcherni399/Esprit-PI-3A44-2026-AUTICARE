@@ -11,12 +11,15 @@ import javafx.scene.control.MenuButton;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.control.ScrollPane;
-import javafx.scene.control.TableCell;
+import javafx.scene.control.TextArea;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
+import javafx.scene.control.TableCell;
 import javafx.scene.control.TextField;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.property.SimpleDoubleProperty;
+import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.scene.Cursor;
 import javafx.scene.image.Image;
@@ -30,14 +33,18 @@ import javafx.scene.layout.VBox;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.Scene;
+import javafx.scene.shape.Rectangle;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.Window;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import org.example.MainApp;
+import org.example.elasticsearch.ElasticsearchCatalogService;
 import org.example.models.Product;
 import org.example.models.Stock;
+import org.example.services.GroqChatCompletionService;
+import org.example.services.GroqChatMessage;
 import org.example.services.ProductExcelExportService;
 import org.example.services.ProductService;
 import org.example.services.StockService;
@@ -47,8 +54,10 @@ import org.example.utils.AppState;
 import org.example.stats.ProductStatsCalculator;
 import org.example.stats.ProductStatsCalculator.ProductStatsResult;
 import org.example.ui.product.ProductEditorPane;
+import org.example.ui.product.ProductFormUi;
 import org.example.ui.product.ProductImagePlaceholder;
 import org.example.ui.product.ProductFormValidation;
+import org.example.ui.product.AdminCatalogPredictionWindow;
 import org.example.ui.product.ProductStatsWindow;
 import org.example.utils.UiResources;
 import org.example.utils.ProductImageLoader;
@@ -64,8 +73,11 @@ import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
 /**
@@ -97,6 +109,12 @@ public class AdminProductsController {
 
     private final ProductService productService = new ProductService();
     private final StockService stockService = new StockService();
+    private final GroqChatCompletionService groqService = new GroqChatCompletionService();
+    private final ExecutorService descriptionAiExecutor = Executors.newSingleThreadExecutor(r -> {
+        Thread t = new Thread(r, "admin-products-description-ai");
+        t.setDaemon(true);
+        return t;
+    });
     private final ObservableList<Product> rows = FXCollections.observableArrayList();
     private String productsSearchText = "";
     private TextField innerSearchField;
@@ -118,6 +136,7 @@ public class AdminProductsController {
         UiResources.applySidebarLogo(sidebarLogoView);
         AdminTopbarHelper.applyToTopbar(topbarAvatarHost, userNameLabel, userEmailLabel);
         AdminNotificationBellHelper.attach(notifBellLabel);
+        boolean openEditorDirect = AppState.consumePendingOpenAdminProductEditor();
 
         if (topSearchField != null) {
             topSearchField.setText(productsSearchText);
@@ -136,6 +155,10 @@ public class AdminProductsController {
         }
 
         showMainProductsPage();
+        if (openEditorDirect) {
+            Platform.runLater(() -> showProductEditor(null));
+        }
+        Platform.runLater(() -> ElasticsearchCatalogService.getInstance().reindexAllProductsAsync(productService));
     }
 
     private void resetProductSearchFilter() {
@@ -181,6 +204,14 @@ public class AdminProductsController {
         applySymfonyStatsOutlineButton(statsBtn);
         statsBtn.setOnAction(e -> showStats());
 
+        Button predictionBtn = new Button("Prédiction");
+        predictionBtn.setMnemonicParsing(false);
+        predictionBtn.setStyle(
+            "-fx-background-color: #7c3aed; -fx-text-fill: white; -fx-background-radius: 8; "
+                + "-fx-font-size: 13px; -fx-padding: 8 14 8 14;"
+        );
+        predictionBtn.setOnAction(e -> showAiPredictionWindow());
+
         Button exportExcelBtn = new Button("Exporter Excel");
         exportExcelBtn.setMnemonicParsing(false);
         applySymfonyExportExcelButton(exportExcelBtn);
@@ -223,6 +254,7 @@ public class AdminProductsController {
         HBox actions = new HBox(
             10,
             statsBtn,
+            predictionBtn,
             exportExcelBtn,
             afficherBtn,
             editSelectedBtn,
@@ -479,25 +511,7 @@ public class AdminProductsController {
         final int imgMaxW = 780;
         final int imgMaxH = 520;
 
-        StackPane imgHost = new StackPane();
-        imgHost.setMaxWidth(imgMaxW);
-        imgHost.setStyle(
-            "-fx-background-color: linear-gradient(to bottom, #f8fafc, #f1f5f9); "
-                + "-fx-background-radius: 12; -fx-border-radius: 12; -fx-border-color: #e2e8f0; -fx-border-width: 1;"
-        );
-
-        String path = p.getImagePath();
-        Image img = path != null && !path.isBlank() ? ProductImageLoader.loadForDisplay(path, imgMaxW, imgMaxH) : null;
-        if (img != null && !img.isError()) {
-            ImageView iv = new ImageView(img);
-            iv.setFitWidth(imgMaxW);
-            iv.setFitHeight(imgMaxH);
-            iv.setPreserveRatio(true);
-            iv.setSmooth(true);
-            imgHost.getChildren().add(iv);
-        } else {
-            imgHost.getChildren().add(ProductImagePlaceholder.create(imgMaxW, imgMaxH));
-        }
+        VBox galleryBox = buildAdminProductGallery(p, imgMaxW, imgMaxH);
 
         Label nameLbl = new Label(p.getNom() != null ? p.getNom() : "—");
         nameLbl.setWrapText(true);
@@ -517,10 +531,10 @@ public class AdminProductsController {
         descLbl.setMaxWidth(imgMaxW);
         descLbl.setStyle("-fx-font-size: 15px; -fx-text-fill: #374151; -fx-line-spacing: 4px;");
 
-        String stockNom = stockNames.get(p.getStockId());
+        String stockNom = (p.getStockNom() != null && !p.getStockNom().isBlank()) ? p.getStockNom() : stockNames.get(p.getStockId());
         String stockLine = stockNom != null && !stockNom.isBlank()
             ? "Stock : " + stockNom
-            : "Stock : #" + p.getStockId();
+            : "Stock : non renseigné";
         Label stockLbl = new Label(stockLine);
         stockLbl.setWrapText(true);
         stockLbl.setStyle("-fx-font-size: 14px; -fx-font-weight: 600; -fx-text-fill: #5c6d4a;");
@@ -528,7 +542,7 @@ public class AdminProductsController {
         Label statutLbl = new Label("Statut : " + formatStatutProduct(p));
         statutLbl.setStyle("-fx-font-size: 13px; -fx-text-fill: #6b7280;");
 
-        VBox content = new VBox(14, imgHost, nameLbl, priceLbl, catLbl, descLbl, stockLbl, statutLbl);
+        VBox content = new VBox(14, galleryBox, nameLbl, priceLbl, catLbl, descLbl, stockLbl, statutLbl);
         content.setPadding(new Insets(8, 0, 0, 0));
 
         ScrollPane scroll = new ScrollPane(content);
@@ -557,6 +571,97 @@ public class AdminProductsController {
         stage.show();
     }
 
+    private VBox buildAdminProductGallery(Product p, int imgMaxW, int imgMaxH) {
+        List<String> images = p.getImagePaths();
+        int[] selectedIndex = {0};
+
+        StackPane imgHost = new StackPane();
+        imgHost.setMaxWidth(imgMaxW);
+        imgHost.setMinHeight(imgMaxH + 8);
+        imgHost.setStyle(
+            "-fx-background-color: linear-gradient(to bottom, #f8fafc, #f1f5f9); "
+                + "-fx-background-radius: 12; -fx-border-radius: 12; -fx-border-color: #e2e8f0; -fx-border-width: 1;"
+        );
+
+        Runnable refreshMain = () -> {
+            imgHost.getChildren().clear();
+            if (images.isEmpty()) {
+                imgHost.getChildren().add(ProductImagePlaceholder.create(imgMaxW, imgMaxH));
+                return;
+            }
+            int idx = Math.max(0, Math.min(selectedIndex[0], images.size() - 1));
+            Image img = ProductImageLoader.loadForDisplay(images.get(idx), imgMaxW, imgMaxH);
+            if (img != null && !img.isError()) {
+                ImageView iv = new ImageView(img);
+                iv.setFitWidth(imgMaxW);
+                iv.setFitHeight(imgMaxH);
+                iv.setPreserveRatio(true);
+                iv.setSmooth(true);
+                imgHost.getChildren().add(iv);
+            } else {
+                imgHost.getChildren().add(ProductImagePlaceholder.create(imgMaxW, imgMaxH));
+            }
+        };
+        refreshMain.run();
+
+        VBox thumbs = new VBox(8);
+        thumbs.setPrefWidth(96);
+        thumbs.setMinWidth(96);
+        thumbs.setMaxWidth(96);
+        for (int i = 0; i < images.size(); i++) {
+            final int idx = i;
+            StackPane thumbHost = new StackPane();
+            thumbHost.setPrefSize(86, 72);
+            thumbHost.setMinSize(86, 72);
+            thumbHost.setMaxSize(86, 72);
+            thumbHost.setStyle(
+                "-fx-background-color: #ffffff; -fx-border-color: #d1d5db; -fx-border-width: 1; "
+                    + "-fx-border-radius: 8; -fx-background-radius: 8; -fx-cursor: hand;"
+            );
+            Image thumb = ProductImageLoader.loadForDisplay(images.get(i), 78, 62);
+            if (thumb != null && !thumb.isError()) {
+                ImageView iv = new ImageView(thumb);
+                iv.setFitWidth(78);
+                iv.setFitHeight(62);
+                iv.setPreserveRatio(true);
+                iv.setSmooth(true);
+                thumbHost.getChildren().add(iv);
+            } else {
+                thumbHost.getChildren().add(ProductImagePlaceholder.create(78, 62));
+            }
+            thumbHost.setOnMouseClicked(e -> {
+                selectedIndex[0] = idx;
+                refreshMain.run();
+                for (javafx.scene.Node n : thumbs.getChildren()) {
+                    n.setStyle(
+                        "-fx-background-color: #ffffff; -fx-border-color: #d1d5db; -fx-border-width: 1; "
+                            + "-fx-border-radius: 8; -fx-background-radius: 8; -fx-cursor: hand;"
+                    );
+                }
+                thumbHost.setStyle(
+                    "-fx-background-color: #eef6ff; -fx-border-color: #2563eb; -fx-border-width: 2; "
+                        + "-fx-border-radius: 8; -fx-background-radius: 8; -fx-cursor: hand;"
+                );
+            });
+            if (i == 0) {
+                thumbHost.setStyle(
+                    "-fx-background-color: #eef6ff; -fx-border-color: #2563eb; -fx-border-width: 2; "
+                        + "-fx-border-radius: 8; -fx-background-radius: 8; -fx-cursor: hand;"
+                );
+            }
+            thumbs.getChildren().add(thumbHost);
+        }
+
+        if (images.size() <= 1) {
+            return new VBox(8, imgHost);
+        }
+        HBox galleryRow = new HBox(12, thumbs, imgHost);
+        galleryRow.setAlignment(Pos.TOP_LEFT);
+        Label hint = new Label("Cliquez sur une miniature (à gauche) pour changer l'image principale.");
+        hint.setStyle("-fx-font-size: 12px; -fx-text-fill: #64748b;");
+        return new VBox(8, galleryRow, hint);
+    }
+
     /** Carte lecture seule (même structure que la grille admin : image, nom, prix, description, stock). */
     private VBox buildProductPreviewCard(Product p, Map<Integer, String> stockNames, boolean selected) {
         final int cardW = 280;
@@ -579,6 +684,7 @@ public class AdminProductsController {
             "-fx-background-color: linear-gradient(to bottom, #f8fafc, #f1f5f9); "
                 + "-fx-background-radius: 12; -fx-border-radius: 12; -fx-border-color: #e2e8f0; -fx-border-width: 1;"
         );
+        enforceImageFrameClip(imgFrame, 12);
 
         String path = p.getImagePath();
         Image img = path != null && !path.isBlank() ? ProductImageLoader.loadForDisplay(path, imgW, imgH) : null;
@@ -611,10 +717,10 @@ public class AdminProductsController {
         descLbl.setMaxHeight(descMaxHeight);
         descLbl.setStyle("-fx-font-size: 12.5px; -fx-text-fill: #64748b; -fx-line-spacing: 2px;");
 
-        String stockNom = stockNames.get(p.getStockId());
+        String stockNom = (p.getStockNom() != null && !p.getStockNom().isBlank()) ? p.getStockNom() : stockNames.get(p.getStockId());
         String stockLine = stockNom != null && !stockNom.isBlank()
             ? "Stock : " + stockNom
-            : "Stock : #" + p.getStockId();
+            : "Stock : non renseigné";
         Label stockLbl = new Label(stockLine);
         stockLbl.setWrapText(true);
         stockLbl.setStyle("-fx-font-size: 12px; -fx-font-weight: 600; -fx-text-fill: #5c6d4a;");
@@ -726,12 +832,20 @@ public class AdminProductsController {
         applySymfonyStatsOutlineButton(listStatsBtn);
         listStatsBtn.setOnAction(e -> showStats());
 
+        Button listPredictionBtn = new Button("Prédiction");
+        listPredictionBtn.setMnemonicParsing(false);
+        listPredictionBtn.setStyle(
+            "-fx-background-color: #7c3aed; -fx-text-fill: white; -fx-background-radius: 8; "
+                + "-fx-font-size: 13px; -fx-padding: 8 14 8 14;"
+        );
+        listPredictionBtn.setOnAction(e -> showAiPredictionWindow());
+
         Button listExportBtn = new Button("Exporter Excel");
         listExportBtn.setMnemonicParsing(false);
         applySymfonyExportExcelButton(listExportBtn);
         listExportBtn.setOnAction(e -> exportProductsExcel());
 
-        HBox actions = new HBox(10, backBtn, refreshBtn, listStatsBtn, listExportBtn);
+        HBox actions = new HBox(10, backBtn, refreshBtn, listStatsBtn, listPredictionBtn, listExportBtn);
         actions.setAlignment(Pos.CENTER_LEFT);
 
         VBox page = new VBox(12, title, listHint, searchRow, sortRow, cardsScroll, actions);
@@ -746,7 +860,7 @@ public class AdminProductsController {
     private HBox buildSearchRow() {
         innerSearchField = new TextField();
         innerSearchField.setPromptText(
-            "Rechercher un produit (id, nom, description, catégorie, prix, quantité, stock…)"
+            "Rechercher (Elasticsearch si configuré : fautes tolérées) — sinon id, nom, description, catégorie…"
         );
         innerSearchField.setText(productsSearchText);
         innerSearchField.setMaxWidth(Double.MAX_VALUE);
@@ -923,6 +1037,7 @@ public class AdminProductsController {
             "-fx-background-color: linear-gradient(to bottom, #f8fafc, #f1f5f9); "
                 + "-fx-background-radius: 12; -fx-border-radius: 12; -fx-border-color: #e2e8f0; -fx-border-width: 1;"
         );
+        enforceImageFrameClip(imgFrame, 12);
 
         String path = p.getImagePath();
         Image img = path != null && !path.isBlank() ? ProductImageLoader.loadForDisplay(path, imgW, imgH) : null;
@@ -968,10 +1083,10 @@ public class AdminProductsController {
                 + "; -fx-text-fill: #64748b; -fx-line-spacing: 2px;"
         );
 
-        String stockNom = stockNames.get(p.getStockId());
+        String stockNom = (p.getStockNom() != null && !p.getStockNom().isBlank()) ? p.getStockNom() : stockNames.get(p.getStockId());
         String stockLine = stockNom != null && !stockNom.isBlank()
             ? "Stock : " + stockNom
-            : "Stock : #" + p.getStockId();
+            : "Stock : non renseigné";
         Label stockLbl = new Label(stockLine);
         stockLbl.setWrapText(true);
         stockLbl.setStyle(
@@ -1043,6 +1158,21 @@ public class AdminProductsController {
         }
     }
 
+    /**
+     * Force le clip des enfants (ImageView) à l'intérieur du cadre arrondi.
+     */
+    private static void enforceImageFrameClip(StackPane frame, double radius) {
+        if (frame == null) {
+            return;
+        }
+        Rectangle clip = new Rectangle();
+        clip.setArcWidth(radius * 2);
+        clip.setArcHeight(radius * 2);
+        clip.widthProperty().bind(frame.widthProperty());
+        clip.heightProperty().bind(frame.heightProperty());
+        frame.setClip(clip);
+    }
+
     private Product getSingleSelectedProduct() {
         if (selectedProductIds.size() != 1) {
             return null;
@@ -1072,7 +1202,20 @@ public class AdminProductsController {
     private void loadProducts() {
         try {
             String q = productsSearchText == null ? "" : productsSearchText.trim();
-            List<Product> list = q.isEmpty() ? productService.findAll() : productService.search(q);
+            ElasticsearchCatalogService es = ElasticsearchCatalogService.getInstance();
+            List<Product> list;
+            if (es.isUsable() && !q.isEmpty()) {
+                List<Integer> ids = es.searchAdminProductIds(q, 200);
+                if (!ids.isEmpty()) {
+                    Map<Integer, Product> byId = productService.findAll().stream()
+                        .collect(Collectors.toMap(Product::getId, p -> p, (a, b) -> a));
+                    list = ids.stream().map(byId::get).filter(Objects::nonNull).toList();
+                } else {
+                    list = productService.searchSmart(q);
+                }
+            } else {
+                list = q.isEmpty() ? productService.findAll() : productService.searchSmart(q);
+            }
             rows.setAll(list);
             if (expandedProductId != null && rows.stream().noneMatch(x -> x.getId() == expandedProductId)) {
                 expandedProductId = null;
@@ -1131,6 +1274,13 @@ public class AdminProductsController {
         }
     }
 
+    private void showAiPredictionWindow() {
+        Window owner = productsHost != null && productsHost.getScene() != null
+            ? productsHost.getScene().getWindow()
+            : null;
+        AdminCatalogPredictionWindow.show(owner);
+    }
+
     /** Bouton secondaire bordé — comme {@code admin/produit/index.html.twig} (Stats). */
     private static void applySymfonyStatsOutlineButton(Button b) {
         b.getStyleClass().add("admin-produit-stats-outline");
@@ -1156,6 +1306,10 @@ public class AdminProductsController {
         }
 
         ProductEditorPane editor = new ProductEditorPane(existing, stocks, msg -> alert(Alert.AlertType.ERROR, "Image", msg));
+        if (!edit) {
+            applyAssistantDraftIfAny(editor, stocks);
+        }
+        wireDescriptionApiButtons(editor);
 
         Button saveBtn = new Button(edit ? "Enregistrer" : "Publier produit");
         saveBtn.setStyle(
@@ -1188,6 +1342,7 @@ public class AdminProductsController {
                 String description = editor.descriptionArea.getText() == null ? "" : editor.descriptionArea.getText().trim();
                 String prixText = editor.prixField.getText() == null ? "" : editor.prixField.getText().trim();
                 String imagePath = editor.imagePathField.getText() == null ? "" : editor.imagePathField.getText().trim();
+                imagePath = ProductFormValidation.normalizeImagePaths(imagePath);
 
                 // Contrôles dans l’ordre d’affichage du formulaire (nom → description → catégorie → prix → image → stock → quantité…)
                 String err = ProductFormValidation.validateNom(nom);
@@ -1243,13 +1398,17 @@ public class AdminProductsController {
                     return;
                 }
 
-                if (!edit && loc.getQuantite() < qtyProduit) {
-                    alert(
-                        Alert.AlertType.WARNING,
-                        "Stock",
-                        "Stock insuffisant : « " + loc.getNom() + " » n'a plus d'unité disponible."
-                    );
-                    return;
+                if (!edit) {
+                    int currentStockQty = stockService.getQuantityOrZero(loc.getId());
+                    if (currentStockQty < qtyProduit) {
+                        alert(
+                            Alert.AlertType.WARNING,
+                            "Stock",
+                            "Stock insuffisant : « " + loc.getNom() + " » a actuellement "
+                                + currentStockQty + " unité(s) disponible(s)."
+                        );
+                        return;
+                    }
                 }
 
                 Product p = new Product();
@@ -1308,6 +1467,180 @@ public class AdminProductsController {
         });
 
         productsHost.getChildren().setAll(scroll);
+    }
+
+    private void applyAssistantDraftIfAny(ProductEditorPane editor, ObservableList<Stock> stocks) {
+        AppState.AdminProductDraft draft = AppState.consumePendingAdminProductDraft();
+        if (draft == null) {
+            if (editor.stockCombo.getValue() == null && !stocks.isEmpty()) {
+                editor.stockCombo.setValue(stocks.get(0));
+            }
+            return;
+        }
+        if (draft.getNom() != null && !draft.getNom().isBlank()) {
+            editor.nomField.setText(draft.getNom().trim());
+        }
+        if (draft.getDescription() != null && !draft.getDescription().isBlank()) {
+            editor.descriptionArea.setText(draft.getDescription().trim());
+        }
+        if (draft.getPrixText() != null && !draft.getPrixText().isBlank()) {
+            editor.prixField.setText(draft.getPrixText().trim());
+        }
+        if (draft.getImagePath() != null && !draft.getImagePath().isBlank()) {
+            editor.imagePathField.setText(draft.getImagePath().trim());
+        }
+        ProductFormUi.ProductCategoryChoice cat = resolveCategoryFromDraft(draft.getCategorie());
+        if (cat != null) {
+            editor.categoryCombo.setValue(cat);
+        }
+        if (editor.stockCombo.getValue() == null) {
+            Stock byHint = resolveStockFromDraft(stocks, draft.getStockHint());
+            if (byHint != null) {
+                editor.stockCombo.setValue(byHint);
+            } else if (!stocks.isEmpty()) {
+                editor.stockCombo.setValue(stocks.get(0));
+            }
+        }
+    }
+
+    private static ProductFormUi.ProductCategoryChoice resolveCategoryFromDraft(String raw) {
+        if (raw == null || raw.isBlank()) {
+            return ProductFormUi.getDefaultCategoryChoice();
+        }
+        String key = raw.trim().toLowerCase(Locale.ROOT);
+        for (ProductFormUi.ProductCategoryChoice c : ProductFormUi.getProductCategories()) {
+            String db = c.getDbValue() == null ? "" : c.getDbValue().toLowerCase(Locale.ROOT);
+            String label = c.getLabel() == null ? "" : c.getLabel().toLowerCase(Locale.ROOT);
+            if (db.equals(key) || label.equals(key) || label.contains(key) || key.contains(label)) {
+                return c;
+            }
+        }
+        return ProductFormUi.getDefaultCategoryChoice();
+    }
+
+    private static Stock resolveStockFromDraft(List<Stock> stocks, String raw) {
+        if (stocks == null || stocks.isEmpty() || raw == null || raw.isBlank()) {
+            return null;
+        }
+        String key = raw.trim().toLowerCase(Locale.ROOT);
+        for (Stock s : stocks) {
+            String nom = s.getNom() == null ? "" : s.getNom().toLowerCase(Locale.ROOT);
+            if (nom.equals(key) || nom.contains(key) || key.contains(nom)) {
+                return s;
+            }
+        }
+        return null;
+    }
+
+    private void wireDescriptionApiButtons(ProductEditorPane editor) {
+        editor.suggestDescriptionButton.setOnAction(e -> requestDescriptionSuggestion(editor, false));
+        editor.summarizeDescriptionButton.setOnAction(e -> requestDescriptionSuggestion(editor, true));
+    }
+
+    private void requestDescriptionSuggestion(ProductEditorPane editor, boolean summaryMode) {
+        if (!GroqChatCompletionService.hasApiKeyConfigured()) {
+            alert(
+                Alert.AlertType.WARNING,
+                "API IA",
+                "Clé API Groq absente. Configurez GROQ_API_KEY / CHAT_API_KEY "
+                    + "ou groq.api.key dans assistant-local.properties, puis relancez l'application."
+            );
+            return;
+        }
+
+        final String oldSuggestLabel = editor.suggestDescriptionButton.getText();
+        final String oldSummaryLabel = editor.summarizeDescriptionButton.getText();
+        if (summaryMode) {
+            editor.summarizeDescriptionButton.setDisable(true);
+            editor.summarizeDescriptionButton.setText("Résumé…");
+        } else {
+            editor.suggestDescriptionButton.setDisable(true);
+            editor.suggestDescriptionButton.setText("Génération…");
+        }
+
+        String nom = editor.nomField.getText() == null ? "" : editor.nomField.getText().trim();
+        String categorie = editor.categoryCombo.getValue() == null ? ProductFormUi.DEFAULT_CATEGORY : editor.categoryCombo.getValue().getLabel();
+        String description = editor.descriptionArea.getText() == null ? "" : editor.descriptionArea.getText().trim();
+
+        String prompt;
+        String system;
+        if (summaryMode) {
+            String sourceToSummarize = description;
+            String lastSuggested = editor.getLastSuggestedDescription();
+            /*
+             * Si l'utilisateur a modifié la zone description, on respecte sa saisie manuelle.
+             * Sinon, on résume la dernière suggestion IA mémorisée.
+             */
+            if (sourceToSummarize.isBlank() || sourceToSummarize.equals(lastSuggested)) {
+                sourceToSummarize = lastSuggested;
+            }
+            if (sourceToSummarize.isBlank()) {
+                editor.suggestDescriptionButton.setDisable(false);
+                editor.summarizeDescriptionButton.setDisable(false);
+                editor.suggestDescriptionButton.setText(oldSuggestLabel);
+                editor.summarizeDescriptionButton.setText(oldSummaryLabel);
+                alert(Alert.AlertType.INFORMATION, "Résumé", "Commencez par suggérer une description.");
+                return;
+            }
+            prompt = "Nom: " + nom + "\nCatégorie: " + categorie + "\nDescription à résumer:\n" + sourceToSummarize;
+            system = """
+                Tu résumes une description produit e-commerce en français.
+                Contraintes :
+                - 1 phrase très courte (maximum 12 mots)
+                - style professionnel et vendeur
+                - garder uniquement l'idée principale du produit
+                - pas de markdown, pas de liste
+                """;
+        } else {
+            prompt = "Nom: " + nom + "\nCatégorie: " + categorie + "\nContexte actuel:\n" + description;
+            system = """
+                Tu rédiges une description produit e-commerce en français.
+                Contraintes :
+                - 3 à 5 phrases
+                - ton naturel, clair et crédible
+                - orientée bénéfices client sans exagération
+                - pas de markdown, pas de liste
+                """;
+        }
+        final String promptFinal = prompt;
+        final String systemFinal = system;
+
+        descriptionAiExecutor.submit(() -> {
+            try {
+                String text = groqService.completeWithSystem(
+                    List.of(new GroqChatMessage("user", promptFinal)),
+                    systemFinal,
+                    0.45,
+                    0.9,
+                    260
+                );
+                String clean = text == null ? "" : text.trim();
+                Platform.runLater(() -> {
+                    if (!clean.isBlank()) {
+                        editor.descriptionArea.setText(clean);
+                        if (!summaryMode) {
+                            editor.setLastSuggestedDescription(clean);
+                        }
+                    }
+                    editor.suggestDescriptionButton.setDisable(false);
+                    editor.summarizeDescriptionButton.setDisable(false);
+                    editor.suggestDescriptionButton.setText(oldSuggestLabel);
+                    editor.summarizeDescriptionButton.setText(oldSummaryLabel);
+                });
+            } catch (Exception ex) {
+                Platform.runLater(() -> {
+                    editor.suggestDescriptionButton.setDisable(false);
+                    editor.summarizeDescriptionButton.setDisable(false);
+                    editor.suggestDescriptionButton.setText(oldSuggestLabel);
+                    editor.summarizeDescriptionButton.setText(oldSummaryLabel);
+                    alert(
+                        Alert.AlertType.WARNING,
+                        "Suggestion IA",
+                        ex.getMessage() != null ? ex.getMessage() : "Impossible d’appeler l’API IA."
+                    );
+                });
+            }
+        });
     }
 
     private void alert(Alert.AlertType type, String title, String msg) {

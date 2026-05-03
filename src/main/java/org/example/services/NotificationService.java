@@ -106,13 +106,14 @@ public class NotificationService {
         if (userId <= 0) {
             return 0;
         }
-        String sql = "SELECT COUNT(*) AS c FROM `notification` WHERE destinataire_id=? AND lu=0 AND type IN (?,?,?)";
+        String sql = "SELECT COUNT(*) AS c FROM `notification` WHERE destinataire_id=? AND lu=0 AND type IN (?,?,?,?)";
         try (Connection conn = MyDatabase.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, userId);
             ps.setString(2, TYPE_COMMANDE_VALIDEE);
             ps.setString(3, TYPE_COMMANDE_LIVREE);
             ps.setString(4, TYPE_COMMANDE_ANNULEE);
+            ps.setString(5, TYPE_COMMANDE_EN_ATTENTE_ADMIN);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     return rs.getInt("c");
@@ -130,13 +131,14 @@ public class NotificationService {
         String sql = "SELECT n.id, n.type, n.created_at, n.commande_id, c.nom AS order_nom "
             + "FROM `notification` n "
             + "LEFT JOIN `commande` c ON c.id = n.commande_id "
-            + "WHERE n.destinataire_id=? AND n.lu=0 AND n.type IN (?,?,?) ORDER BY n.created_at DESC";
+            + "WHERE n.destinataire_id=? AND n.lu=0 AND n.type IN (?,?,?,?) ORDER BY n.created_at DESC";
         try (Connection conn = MyDatabase.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, userId);
             ps.setString(2, TYPE_COMMANDE_VALIDEE);
             ps.setString(3, TYPE_COMMANDE_LIVREE);
             ps.setString(4, TYPE_COMMANDE_ANNULEE);
+            ps.setString(5, TYPE_COMMANDE_EN_ATTENTE_ADMIN);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     out.add(new ClientOrderNotificationView(
@@ -166,8 +168,43 @@ public class NotificationService {
             case TYPE_COMMANDE_VALIDEE -> "La commande « " + nom + " » a été validée et sera préparée.";
             case TYPE_COMMANDE_LIVREE -> "Bonne nouvelle : la commande « " + nom + " » a été livrée.";
             case TYPE_COMMANDE_ANNULEE -> "La commande « " + nom + " » a été annulée par l’administration.";
+            case TYPE_COMMANDE_EN_ATTENTE_ADMIN -> "La commande « " + nom + " » est enregistrée et attend la validation de l’équipe.";
             default -> "Mise à jour pour la commande « " + nom + " ».";
         };
+    }
+
+    /**
+     * Marque comme lues les notifications de suivi commande pour ce client (ex. après visite « Mes commandes »).
+     */
+    public void markAllClientOrderNotificationsRead(int userId) throws SQLException {
+        if (userId <= 0) {
+            return;
+        }
+        String sql = "UPDATE `notification` SET lu = 1 WHERE destinataire_id = ? AND lu = 0 AND type IN (?,?,?,?)";
+        try (Connection conn = MyDatabase.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, userId);
+            ps.setString(2, TYPE_COMMANDE_VALIDEE);
+            ps.setString(3, TYPE_COMMANDE_LIVREE);
+            ps.setString(4, TYPE_COMMANDE_ANNULEE);
+            ps.setString(5, TYPE_COMMANDE_EN_ATTENTE_ADMIN);
+            ps.executeUpdate();
+        }
+    }
+
+    /** À l’approbation : masque la notification « en attente validation » pour cette commande. */
+    public void markPendingClientOrderNotificationRead(int userId, int commandeId) throws SQLException {
+        if (userId <= 0 || commandeId <= 0) {
+            return;
+        }
+        String sql = "UPDATE `notification` SET lu = 1 WHERE destinataire_id = ? AND commande_id = ? AND type = ? AND lu = 0";
+        try (Connection conn = MyDatabase.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, userId);
+            ps.setInt(2, commandeId);
+            ps.setString(3, TYPE_COMMANDE_EN_ATTENTE_ADMIN);
+            ps.executeUpdate();
+        }
     }
 
     public void deleteAdminNotificationsForCommande(int commandeId) throws SQLException {
@@ -175,6 +212,19 @@ public class NotificationService {
         try (Connection conn = MyDatabase.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, commandeId);
+            ps.executeUpdate();
+        }
+    }
+
+    /** Quand une demande produit est traitée : masque les alertes admin « nouvelle demande » liées. */
+    public void markAdminDemandeProduitNotificationsRead(int demandeProduitId) throws SQLException {
+        if (demandeProduitId <= 0) {
+            return;
+        }
+        String sql = "UPDATE `notification` SET lu = 1 WHERE demande_produit_id = ? AND type = 'nouvelle_demande_produit' AND lu = 0";
+        try (Connection conn = MyDatabase.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, demandeProduitId);
             ps.executeUpdate();
         }
     }

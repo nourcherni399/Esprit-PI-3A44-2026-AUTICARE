@@ -10,6 +10,7 @@ public record CheckoutFormData(
     String adresse,
     String codePostal,
     String ville,
-    String modePayment
+    String modePayment,
+    String stripePaymentIntent
 ) {
 }

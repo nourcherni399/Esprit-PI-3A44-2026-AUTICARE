@@ -21,6 +21,7 @@ import java.util.Optional;
 public class CustomerOrderService {
 
     private final NotificationService notificationService = new NotificationService();
+    private final ProductService productService = new ProductService();
 
     public Optional<CustomerOrder> findByIdForUser(int commandeId, int userId) throws SQLException {
         String sql = "SELECT id, nom, email, telephone, adresse, code_postal, ville, total, statut, mode_payment, "
@@ -302,6 +303,7 @@ public class CustomerOrderService {
             }
         }
         if (uid > 0) {
+            notificationService.markPendingClientOrderNotificationRead(uid, commandeId);
             notificationService.insertClientOrderNotification(uid, NotificationService.TYPE_COMMANDE_ANNULEE, commandeId);
         }
         notificationService.deleteAdminNotificationsForCommande(commandeId);
@@ -319,22 +321,41 @@ public class CustomerOrderService {
     }
 
     private void advanceCommandeStatut(int commandeId) throws SQLException {
-        String cur = fetchStatutCommande(commandeId).orElseThrow(
-            () -> new SQLException("Commande introuvable.")
-        );
-        String next = nextStatutForCommande(cur).orElseThrow(
-            () -> new SQLException("Cette commande est déjà au dernier statut ou le statut n’est pas géré.")
-        );
-        int uid = fetchUserIdForCommande(commandeId);
-        String sql = "UPDATE `commande` SET statut=? WHERE id=? AND statut=?";
-        try (Connection conn = MyDatabase.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, next);
-            ps.setInt(2, commandeId);
-            ps.setString(3, cur);
-            if (ps.executeUpdate() != 1) {
-                throw new SQLException("Impossible de mettre à jour le statut (commande modifiée entre-temps).");
+        Connection conn = MyDatabase.getConnection();
+        boolean prevAuto = conn.getAutoCommit();
+        String cur;
+        String next;
+        int uid;
+        try {
+            conn.setAutoCommit(false);
+            cur = fetchStatutCommandeOnConnection(conn, commandeId).orElseThrow(
+                () -> new SQLException("Commande introuvable.")
+            );
+            next = nextStatutForCommande(cur).orElseThrow(
+                () -> new SQLException("Cette commande est déjà au dernier statut ou le statut n’est pas géré.")
+            );
+            uid = fetchUserIdForCommandeOnConnection(conn, commandeId);
+            if ("en_attente".equalsIgnoreCase(cur.trim()) && "livraison".equalsIgnoreCase(next.trim())) {
+                OrderCheckoutService.applyInventoryDeductionForApprovedCommande(conn, commandeId, productService);
             }
+            String sql = "UPDATE `commande` SET statut=? WHERE id=? AND statut=?";
+            try (PreparedStatement ps = conn.prepareStatement(sql)) {
+                ps.setString(1, next);
+                ps.setInt(2, commandeId);
+                ps.setString(3, cur);
+                if (ps.executeUpdate() != 1) {
+                    throw new SQLException("Impossible de mettre à jour le statut (commande modifiée entre-temps).");
+                }
+            }
+            conn.commit();
+        } catch (SQLException ex) {
+            conn.rollback();
+            throw ex;
+        } finally {
+            conn.setAutoCommit(prevAuto);
+        }
+        if ("en_attente".equalsIgnoreCase(cur.trim()) && "livraison".equalsIgnoreCase(next.trim())) {
+            notificationService.deleteAdminNotificationsForCommande(commandeId);
         }
         notifyClientAfterCommandeAdvance(uid, next, commandeId);
     }
@@ -345,6 +366,7 @@ public class CustomerOrderService {
         }
         String n = nextStatut.trim().toLowerCase(Locale.ROOT);
         if ("livraison".equals(n) || "confirmer".equals(n)) {
+            notificationService.markPendingClientOrderNotificationRead(clientUserId, commandeId);
             notificationService.insertClientOrderNotification(
                 clientUserId, NotificationService.TYPE_COMMANDE_VALIDEE, commandeId
             );
@@ -356,9 +378,12 @@ public class CustomerOrderService {
     }
 
     private static int fetchUserIdForCommande(int commandeId) throws SQLException {
+        return fetchUserIdForCommandeOnConnection(MyDatabase.getConnection(), commandeId);
+    }
+
+    private static int fetchUserIdForCommandeOnConnection(Connection conn, int commandeId) throws SQLException {
         String sql = "SELECT user_id FROM `commande` WHERE id=?";
-        try (Connection conn = MyDatabase.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, commandeId);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next() && rs.getObject("user_id") != null) {
@@ -389,9 +414,12 @@ public class CustomerOrderService {
     }
 
     private static Optional<String> fetchStatutCommande(int commandeId) throws SQLException {
+        return fetchStatutCommandeOnConnection(MyDatabase.getConnection(), commandeId);
+    }
+
+    private static Optional<String> fetchStatutCommandeOnConnection(Connection conn, int commandeId) throws SQLException {
         String sql = "SELECT statut FROM `commande` WHERE id=?";
-        try (Connection conn = MyDatabase.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, commandeId);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {

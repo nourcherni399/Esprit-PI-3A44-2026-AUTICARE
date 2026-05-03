@@ -109,18 +109,56 @@ public final class ProductFormValidation {
 
     /** Image obligatoire à la création (comme ppp). */
     public static String validateImageRequiredForCreate(String imagePath) {
-        if (imagePath == null || imagePath.trim().isEmpty()) {
-            return "Le champ Image principale est obligatoire.";
+        if (!hasAtLeastOneImage(imagePath)) {
+            return "Ajoutez au moins une image produit.";
         }
         return null;
     }
 
     /** À l’édition, une image doit rester définie (chemin copié ou existant). */
     public static String validateImagePresentEdit(String imagePath) {
-        if (imagePath == null || imagePath.trim().isEmpty()) {
-            return "Choisissez une image ou conservez celle du produit.";
+        if (!hasAtLeastOneImage(imagePath)) {
+            return "Conservez au moins une image du produit.";
         }
         return null;
+    }
+
+    public static String normalizeImagePaths(String raw) {
+        if (raw == null || raw.isBlank()) {
+            return "";
+        }
+        String trimmed = raw.trim();
+        if (isDataImageUrl(trimmed)) {
+            return trimmed;
+        }
+        StringBuilder out = new StringBuilder();
+        String[] parts = raw.split("[;|\\n]");
+        for (String part : parts) {
+            if (part == null) {
+                continue;
+            }
+            String x = part.trim();
+            if (x.isBlank()) {
+                continue;
+            }
+            if (out.length() > 0) {
+                out.append(" ; ");
+            }
+            out.append(x);
+        }
+        return out.toString();
+    }
+
+    private static boolean isDataImageUrl(String value) {
+        if (value == null) {
+            return false;
+        }
+        String low = value.trim().toLowerCase();
+        return low.startsWith("data:image/");
+    }
+
+    private static boolean hasAtLeastOneImage(String raw) {
+        return !normalizeImagePaths(raw).isBlank();
     }
 
     public static String validateCatalogQuantity(int q) {

@@ -162,7 +162,6 @@ public class AdminStocksController {
                         Alert.AlertType.WARNING,
                         "Suppression impossible",
                         "Impossible de supprimer ce stock : " + linked
-                            + " produit(s) du catalogue y sont encore associés. Modifiez d'abord ces fiches produit."
                             + " produit(s) y sont liés (stock_id). Modifiez d'abord ces produits."
                     );
                     return;
@@ -232,9 +231,12 @@ public class AdminStocksController {
         refreshStockCardStyles();
     }
 
-    private VBox buildStockCard(Stock s) {
+    private VBox buildStockCard(Stock stock) {
+        final int stockId = stock.getId();
+        final Stock captured = stock;
+
         VBox card = new VBox(0);
-        card.setUserData(s.getId());
+        card.setUserData(stockId);
         card.setMinWidth(252);
         card.setMaxWidth(272);
         card.setCursor(Cursor.HAND);
@@ -253,14 +255,15 @@ public class AdminStocksController {
         VBox body = new VBox(8);
         body.setPadding(new Insets(12, 14, 14, 14));
 
-        Label nomLbl = new Label(s.getNom() != null ? s.getNom() : "—");
-        nomLbl.setWrapText(true);
-        nomLbl.setStyle("-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: #111827;");
+        String nom = stock.getNom() != null ? stock.getNom() : "—";
+        Label nameLabel = new Label(nom);
+        nameLabel.setWrapText(true);
+        nameLabel.setStyle("-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: #111827;");
 
-        Label refLbl = new Label("Réf. #" + s.getId());
-        refLbl.setStyle("-fx-font-size: 11px; -fx-text-fill: #6b7280;");
+        Label refLabel = new Label("Réf. #" + stockId);
+        refLabel.setStyle("-fx-font-size: 11px; -fx-text-fill: #6b7280;");
 
-        Label qtyVal = new Label(String.valueOf(s.getQuantite()));
+        Label qtyVal = new Label(String.valueOf(stock.getQuantite()));
         qtyVal.setStyle("-fx-font-size: 26px; -fx-font-weight: bold; -fx-text-fill: #166534;");
         Label qtyUnit = new Label("unités");
         qtyUnit.setStyle("-fx-font-size: 13px; -fx-text-fill: #64748b;");
@@ -272,15 +275,14 @@ public class AdminStocksController {
         hint.setMaxHeight(44);
         hint.setStyle("-fx-font-size: 11px; -fx-text-fill: #64748b;");
 
-        body.getChildren().addAll(nomLbl, qtyRow, hint);
-        body.getChildren().addAll(nomLbl, refLbl, qtyRow, hint);
+        body.getChildren().addAll(nameLabel, refLabel, qtyRow, hint);
         card.getChildren().addAll(header, body);
 
         card.addEventFilter(MouseEvent.MOUSE_CLICKED, e -> {
             if (e.getButton() != MouseButton.PRIMARY) {
                 return;
             }
-            selectedStock = s;
+            selectedStock = captured;
             refreshStockCardStyles();
             e.consume();
         });
@@ -307,7 +309,6 @@ public class AdminStocksController {
 
     private HBox buildStockSearchRow() {
         innerSearchField = new TextField();
-        innerSearchField.setPromptText("Rechercher un stock (nom ou quantité)");
         innerSearchField.setPromptText("Rechercher un stock (id, nom ou quantité)");
         innerSearchField.setText(stocksSearchText);
         innerSearchField.setMaxWidth(Double.MAX_VALUE);
@@ -500,10 +501,6 @@ public class AdminStocksController {
         GridPane form = new GridPane();
         form.setHgap(10);
         form.setVgap(12);
-        form.add(new Label("Nom du stock *"), 0, 0);
-        form.add(nomField, 1, 0);
-        form.add(new Label("Quantité *"), 0, 1);
-        form.add(quantiteSpinner, 1, 1);
         form.add(new Label("ID"), 0, 0);
         form.add(new Label(String.valueOf(stock.getId())), 1, 0);
         form.add(new Label("Nom du stock *"), 0, 1);
@@ -644,6 +641,3 @@ public class AdminStocksController {
         }
     }
 }
-
-
-

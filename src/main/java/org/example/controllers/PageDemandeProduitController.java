@@ -7,20 +7,25 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
+import javafx.scene.layout.VBox;
 import org.example.models.User;
 import org.example.services.DemandeProduitService;
+import org.example.services.GroqAssistantContext;
+import org.example.ui.product.ProductAssistantAccess;
+import org.example.ui.product.ProductAssistantPanel;
 import org.example.ui.product.ProductFormUi;
 import org.example.utils.AppState;
 import org.example.utils.ProductDescriptionSuggest;
 
 import java.sql.SQLException;
-import java.util.Locale;
 
 /**
- * Formulaire public « demande produit » (équivalent Symfony création de demande côté utilisateur).
+ * Formulaire public « demande produit » avec assistant (Groq + Unsplash) pour les comptes famille / patient.
  */
 public class PageDemandeProduitController implements PublicShellAware {
 
+    @FXML
+    private VBox assistantBox;
     @FXML
     private TextArea demandeArea;
     @FXML
@@ -42,6 +47,23 @@ public class PageDemandeProduitController implements PublicShellAware {
         categorieCombo.setItems(FXCollections.observableArrayList(ProductFormUi.getProductCategories()));
         categorieCombo.setValue(ProductFormUi.getDefaultCategoryChoice());
         submitBtn.setOnAction(e -> onSubmit());
+
+        User u = AppState.getCurrentUser();
+        if (!ProductAssistantAccess.isEligible(u)) {
+            assistantBox.setVisible(false);
+            assistantBox.setManaged(false);
+        } else {
+            ProductAssistantPanel panel = new ProductAssistantPanel(
+                GroqAssistantContext.UNIVERSAL_ASSISTANT,
+                "Ajouter la dernière réponse à ma demande",
+                text -> {
+                    String cur = demandeArea.getText() == null ? "" : demandeArea.getText();
+                    String sep = cur.isBlank() ? "" : "\n\n---\n";
+                    demandeArea.setText(cur + sep + text);
+                }
+            );
+            assistantBox.getChildren().setAll(panel);
+        }
     }
 
     private void onSubmit() {

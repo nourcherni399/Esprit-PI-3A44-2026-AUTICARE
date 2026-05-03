@@ -375,7 +375,7 @@ public class HomeController {
                 loggedUserNameLabel.setText(name);
             }
             if (loggedUserCodeLabel != null) {
-                loggedUserCodeLabel.setText(String.format("%04d", Math.max(0, u.getId())));
+                loggedUserCodeLabel.setText(UserAvatarGraphic.initialsFor(u));
             }
             if (loggedAvatarHost != null) {
                 loggedAvatarHost.getChildren().setAll(

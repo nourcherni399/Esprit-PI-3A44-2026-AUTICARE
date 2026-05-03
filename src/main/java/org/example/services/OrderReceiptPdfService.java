@@ -8,7 +8,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
@@ -18,13 +18,13 @@ import java.util.List;
  */
 public final class OrderReceiptPdfService {
 
-    private static final DateTimeFormatter FILE_DATE = DateTimeFormatter.ISO_LOCAL_DATE;
+    private static final DateTimeFormatter FILE_STAMP = DateTimeFormatter.ofPattern("yyyy-MM-dd_HHmmss");
 
     private OrderReceiptPdfService() {
     }
 
-    public static String defaultFileName(int commandeId) {
-        return "recu_commande_" + commandeId + "_" + LocalDate.now().format(FILE_DATE) + ".pdf";
+    public static String defaultFileName() {
+        return "facture_auticare_" + LocalDateTime.now().format(FILE_STAMP) + ".pdf";
     }
 
     public static void writePdf(CustomerOrder commande, List<CustomerOrderLine> lignes, OutputStream out) throws IOException {

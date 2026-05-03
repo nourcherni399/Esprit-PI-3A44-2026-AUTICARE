@@ -81,6 +81,7 @@ public class AppState {
             return imagePath;
         }
     }
+
     private AppState() {
     }
 

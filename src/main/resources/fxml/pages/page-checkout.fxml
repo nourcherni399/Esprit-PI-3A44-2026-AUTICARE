@@ -27,39 +27,44 @@
         <HBox alignment="TOP_LEFT" spacing="28" styleClass="checkout-split">
             <!-- Colonne gauche : formulaire scrollable + barre d’actions toujours visible -->
             <VBox maxWidth="Infinity" spacing="0" styleClass="checkout-left-stack" HBox.hgrow="ALWAYS">
-                <ScrollPane fitToWidth="true" hbarPolicy="NEVER" maxHeight="Infinity" minViewportHeight="360"
-                            prefViewportHeight="480" styleClass="catalog-scroll checkout-form-scroll"
+                <ScrollPane fitToWidth="true" hbarPolicy="NEVER" maxHeight="Infinity" minViewportHeight="500"
+                            prefViewportHeight="620" styleClass="catalog-scroll checkout-form-scroll"
                             vbarPolicy="AS_NEEDED" VBox.vgrow="ALWAYS">
                     <VBox styleClass="checkout-form-column">
                         <VBox styleClass="public-product-form-card checkout-form-inner">
+                            <Label styleClass="checkout-form-title" text="Formulaire de livraison et de paiement"/>
+
                             <Label styleClass="checkout-section-title" text="Informations personnelles"/>
-                            <VBox spacing="6">
-                                <Label styleClass="checkout-form-label" text="Nom complet"/>
+                            <VBox spacing="8">
+                                <Label styleClass="checkout-form-label" text="👤  Nom complet"/>
                                 <TextField fx:id="fullNameField" promptText="Votre nom complet" styleClass="product-form-input"/>
                             </VBox>
-                            <VBox spacing="6">
-                                <Label styleClass="checkout-form-label" text="Adresse e-mail"/>
+                            <VBox spacing="8">
+                                <Label styleClass="checkout-form-label" text="✉  Adresse e-mail"/>
                                 <TextField fx:id="emailField" promptText="exemple@gmail.com" styleClass="product-form-input"/>
                             </VBox>
-                            <VBox spacing="6">
-                                <Label styleClass="checkout-form-label" text="Téléphone"/>
-                                <TextField fx:id="phoneField" promptText="+216 XX XXX XXX" styleClass="product-form-input"/>
+                            <VBox spacing="8">
+                                <Label styleClass="checkout-form-label" text="☎  Téléphone"/>
+                                <HBox spacing="10">
+                                    <ComboBox fx:id="phoneCountryCombo" prefWidth="240" styleClass="product-form-input"/>
+                                    <TextField fx:id="phoneField" promptText="XX XXX XXX" styleClass="product-form-input" HBox.hgrow="ALWAYS"/>
+                                </HBox>
                             </VBox>
 
                             <Separator styleClass="checkout-section-sep"/>
 
                             <Label styleClass="checkout-section-title" text="Adresse de livraison"/>
-                            <VBox spacing="6">
-                                <Label styleClass="checkout-form-label" text="Adresse"/>
+                            <VBox spacing="8">
+                                <Label styleClass="checkout-form-label" text="📍  Adresse"/>
                                 <TextField fx:id="addressField" promptText="Numéro et rue" styleClass="product-form-input"/>
                             </VBox>
-                            <HBox spacing="10">
-                                <VBox HBox.hgrow="ALWAYS" spacing="6">
-                                    <Label styleClass="checkout-form-label" text="Code postal"/>
+                            <HBox spacing="14">
+                                <VBox HBox.hgrow="ALWAYS" spacing="8">
+                                    <Label styleClass="checkout-form-label" text="🏷  Code postal"/>
                                     <TextField fx:id="zipCodeField" promptText="12345" styleClass="product-form-input"/>
                                 </VBox>
-                                <VBox HBox.hgrow="ALWAYS" spacing="6">
-                                    <Label styleClass="checkout-form-label" text="Ville"/>
+                                <VBox HBox.hgrow="ALWAYS" spacing="8">
+                                    <Label styleClass="checkout-form-label" text="🏙  Ville"/>
                                     <TextField fx:id="cityField" promptText="Votre ville" styleClass="product-form-input"/>
                                 </VBox>
                             </HBox>
@@ -67,22 +72,22 @@
                             <Separator styleClass="checkout-section-sep"/>
 
                             <Label styleClass="checkout-section-title" text="Mode de paiement"/>
-                            <VBox spacing="6">
-                                <Label styleClass="checkout-form-label" text="Choix du paiement"/>
-                                <ComboBox fx:id="paymentCombo" maxWidth="Infinity" styleClass="product-form-input"/>
+                            <VBox spacing="10">
+                                <Label styleClass="checkout-form-label" text="💳  Choix du paiement"/>
+                                <ComboBox fx:id="paymentCombo" maxWidth="Infinity" prefHeight="44" styleClass="product-form-input"/>
                             </VBox>
                             <VBox fx:id="cardFieldsBox" spacing="8" styleClass="checkout-card-fields">
                                 <Label styleClass="checkout-field-hint"
-                                       text="Ces champs sont requis uniquement si vous choisissez la carte bancaire."
+                                       text="Paiement carte sur AutiCare : saisissez votre carte ici. Après « Finaliser ma commande », vous enregistrez un fichier Excel récapitulant votre paiement (puis il s’ouvre), et vous recevez un e-mail confirmant le paiement par carte."
                                        wrapText="true"/>
-                                <VBox spacing="6">
-                                    <Label styleClass="checkout-form-label" text="Numéro de carte"/>
-                                    <TextField fx:id="cardNumberField" promptText="1234 5678 9012 3456"
+                                <VBox spacing="8">
+                                    <Label styleClass="checkout-form-label" text="💳  Numéro de carte"/>
+                                    <TextField fx:id="cardNumberField" promptText="16 chiffres (contrôle Luhn)"
                                                styleClass="product-form-input"/>
                                 </VBox>
-                                <VBox spacing="6">
-                                    <Label styleClass="checkout-form-label" text="Date d'expiration (MM/YY)"/>
-                                    <TextField fx:id="cardExpiryField" promptText="MM/YY" styleClass="product-form-input"/>
+                                <VBox spacing="8">
+                                    <Label styleClass="checkout-form-label" text="📅  Date d'expiration"/>
+                                    <TextField fx:id="cardExpiryField" promptText="MM/AA" styleClass="product-form-input"/>
                                 </VBox>
                             </VBox>
 
@@ -94,7 +99,7 @@
                 <VBox spacing="10" styleClass="checkout-actions-bar">
                     <Separator/>
                     <Button defaultButton="true" maxWidth="Infinity" mnemonicParsing="false" onAction="#onConfirmOrder"
-                            styleClass="cart-primary-btn" text="Confirmer la commande"/>
+                            styleClass="checkout-primary-btn" text="✔ Finaliser ma commande"/>
                     <HBox alignment="CENTER" spacing="10">
                         <Button maxWidth="Infinity" mnemonicParsing="false" onAction="#onContinueShopping"
                                 styleClass="cart-secondary-btn" text="Continuer les achats" HBox.hgrow="ALWAYS"/>
@@ -130,6 +135,8 @@
                         <Label styleClass="checkout-delivery-title" text="Livraison gratuite"/>
                         <Label styleClass="checkout-delivery-text"
                                text="Votre commande sera livrée sous 2 à 3 jours ouvrables." wrapText="true"/>
+                        <Button maxWidth="Infinity" mnemonicParsing="false" onAction="#onExportCheckoutExcel"
+                                styleClass="cart-outline-btn" text="Exporter en Excel"/>
                     </VBox>
                 </VBox>
             </VBox>
