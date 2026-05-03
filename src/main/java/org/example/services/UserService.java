@@ -2,15 +2,11 @@ package org.example.services;
 
 import org.example.models.Role;
 import org.example.models.User;
-import org.example.models.UserFactory;
 import org.example.utils.MyDatabase;
 import org.example.utils.PasswordUtil;
 
 import java.math.BigDecimal;
-import java.net.URLEncoder;
 import java.sql.*;
-import java.nio.charset.StandardCharsets;
-import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
@@ -20,19 +16,18 @@ import java.util.Optional;
 public class UserService implements IService<User> {
 
     public record ResetPinIssue(int userId, String email, String pinCode) {}
-    public record EmailVerificationIssue(int userId, String email, String token, String verifyUrl) {}
 
     /** Colonnes alignées sur la table Symfony {@code user}. */
     private static final String MYSQL_USER_SELECT =
             "SELECT id, nom, prenom, email, CAST(telephone AS CHAR) AS telephone, password AS mot_de_passe_hash, "
                     + "is_active AS actif, role, specialite, nom_cabinet AS cabinet, relation_avec_patient AS relation_parent, "
-                    + "date_naissance, adresse, tarif_consultation, sexe, created_at, updated_at, image, data_face_api FROM `user` WHERE ";
+                    + "date_naissance, adresse, tarif_consultation, sexe, created_at, updated_at, image FROM `user` WHERE ";
 
     @Override
     public void add(User u) throws SQLException {
         String sql = "INSERT INTO `user` (nom, prenom, email, telephone, password, is_active, created_at, updated_at, role, type, "
-                + "specialite, nom_cabinet, relation_avec_patient, date_naissance, adresse, sexe, tarif_consultation, image, data_face_api) "
-                + "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+                + "specialite, nom_cabinet, relation_avec_patient, date_naissance, adresse, sexe, tarif_consultation, image) "
+                + "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
         try (PreparedStatement ps = MyDatabase.getConnection().prepareStatement(sql)) {
             fillMysqlInsert(ps, u);
             ps.executeUpdate();
@@ -43,7 +38,7 @@ public class UserService implements IService<User> {
     public void update(User u) throws SQLException {
         String sql = "UPDATE `user` SET nom=?, prenom=?, email=?, telephone=?, password=?, is_active=?, role=?, type=?, "
                 + "specialite=?, nom_cabinet=?, relation_avec_patient=?, date_naissance=?, adresse=?, sexe=?, image=?, "
-                + "data_face_api=?, tarif_consultation=?, updated_at=? WHERE id=?";
+                + "tarif_consultation=?, updated_at=? WHERE id=?";
         try (PreparedStatement ps = MyDatabase.getConnection().prepareStatement(sql)) {
             fillMysqlUpdate(ps, u);
             ps.executeUpdate();
@@ -75,7 +70,7 @@ public class UserService implements IService<User> {
         List<User> users = new ArrayList<>();
         String sql = "SELECT id, nom, prenom, email, CAST(telephone AS CHAR) AS telephone, password AS mot_de_passe_hash, "
                 + "is_active AS actif, role, specialite, nom_cabinet AS cabinet, relation_avec_patient AS relation_parent, "
-                + "date_naissance, adresse, tarif_consultation, sexe, created_at, updated_at, image, data_face_api FROM `user` ORDER BY created_at DESC";
+                + "date_naissance, adresse, tarif_consultation, sexe, created_at, updated_at, image FROM `user` ORDER BY created_at DESC";
         try (Statement st = MyDatabase.getConnection().createStatement();
              ResultSet rs = st.executeQuery(sql)) {
             while (rs.next()) {
@@ -90,7 +85,7 @@ public class UserService implements IService<User> {
         String pattern = "%" + keyword + "%";
         String sql = "SELECT id, nom, prenom, email, CAST(telephone AS CHAR) AS telephone, password AS mot_de_passe_hash, "
                 + "is_active AS actif, role, specialite, nom_cabinet AS cabinet, relation_avec_patient AS relation_parent, "
-                + "date_naissance, adresse, tarif_consultation, sexe, created_at, updated_at, image, data_face_api FROM `user` "
+                + "date_naissance, adresse, tarif_consultation, sexe, created_at, updated_at, image FROM `user` "
                 + "WHERE email LIKE ? OR nom LIKE ? OR prenom LIKE ? ORDER BY created_at DESC";
         try (PreparedStatement ps = MyDatabase.getConnection().prepareStatement(sql)) {
             ps.setString(1, pattern);
@@ -108,7 +103,7 @@ public class UserService implements IService<User> {
         List<User> users = new ArrayList<>();
         String sql = "SELECT id, nom, prenom, email, CAST(telephone AS CHAR) AS telephone, password AS mot_de_passe_hash, "
                 + "is_active AS actif, role, specialite, nom_cabinet AS cabinet, relation_avec_patient AS relation_parent, "
-                + "date_naissance, adresse, tarif_consultation, sexe, created_at, updated_at, image, data_face_api FROM `user` WHERE role=? ORDER BY created_at DESC";
+                + "date_naissance, adresse, tarif_consultation, sexe, created_at, updated_at, image FROM `user` WHERE role=? ORDER BY created_at DESC";
         try (PreparedStatement ps = MyDatabase.getConnection().prepareStatement(sql)) {
             ps.setString(1, "ROLE_" + role.name());
             ResultSet rs = ps.executeQuery();
@@ -212,68 +207,6 @@ public class UserService implements IService<User> {
     }
 
     /**
-     * Génère un token de vérification email (24h), désactive le compte et stocke l'expiration.
-     */
-    public Optional<EmailVerificationIssue> createAndStoreEmailVerificationForUser(int userId, String verificationBaseUrl)
-            throws SQLException {
-        Optional<User> u = findById(userId);
-        if (u.isEmpty() || u.get().getEmail() == null || u.get().getEmail().isBlank()) {
-            return Optional.empty();
-        }
-        String token = randomToken64();
-        LocalDateTime expiresAt = LocalDateTime.now().plus(24, ChronoUnit.HOURS);
-        String sql = "UPDATE `user` SET is_active=0, email_verification_token=?, email_verification_expires_at=?, "
-                + "email_verified_at=NULL, updated_at=? WHERE id=?";
-        try (PreparedStatement ps = MyDatabase.getConnection().prepareStatement(sql)) {
-            Timestamp now = new Timestamp(System.currentTimeMillis());
-            ps.setString(1, token);
-            ps.setTimestamp(2, Timestamp.valueOf(expiresAt));
-            ps.setTimestamp(3, now);
-            ps.setInt(4, userId);
-            ps.executeUpdate();
-        }
-        String baseUrl = (verificationBaseUrl == null || verificationBaseUrl.isBlank())
-                ? "http://127.0.0.1:8899/verify-email"
-                : verificationBaseUrl.trim();
-        String verifyUrl = baseUrl + (baseUrl.contains("?") ? "&" : "?")
-                + "token=" + URLEncoder.encode(token, StandardCharsets.UTF_8);
-        return Optional.of(new EmailVerificationIssue(userId, u.get().getEmail(), token, verifyUrl));
-    }
-
-    /**
-     * Active le compte à partir du token email (si valide et non expiré).
-     */
-    public boolean activateByEmailVerificationToken(String token) throws SQLException {
-        if (token == null || token.isBlank()) {
-            return false;
-        }
-        String select = "SELECT id, email_verification_expires_at FROM `user` WHERE email_verification_token=?";
-        int userId;
-        Timestamp exp;
-        try (PreparedStatement ps = MyDatabase.getConnection().prepareStatement(select)) {
-            ps.setString(1, token.trim());
-            ResultSet rs = ps.executeQuery();
-            if (!rs.next()) {
-                return false;
-            }
-            userId = rs.getInt("id");
-            exp = rs.getTimestamp("email_verification_expires_at");
-        }
-        if (exp == null || exp.toInstant().isBefore(java.time.Instant.now())) {
-            return false;
-        }
-        String update = "UPDATE `user` SET is_active=1, email_verified_at=?, email_verification_token=NULL, "
-                + "email_verification_expires_at=NULL, updated_at=? WHERE id=?";
-        try (PreparedStatement ps = MyDatabase.getConnection().prepareStatement(update)) {
-            Timestamp now = new Timestamp(System.currentTimeMillis());
-            ps.setTimestamp(1, now);
-            ps.setTimestamp(2, now);
-            ps.setInt(3, userId);
-            return ps.executeUpdate() > 0;
-        }
-    }
-
-    /**
      * Met a jour le mot de passe (bcrypt) et efface reset_pin/reset_pin_expires_at.
      */
     public void updatePasswordAfterReset(int userId, String rawPassword) throws SQLException {
@@ -320,7 +253,6 @@ public class UserService implements IService<User> {
         ps.setString(16, u.getSexe());
         ps.setString(17, u.getTarifConsultation());
         ps.setString(18, u.getImage());
-        ps.setString(19, u.getDataFaceApi());
     }
 
     private void fillMysqlUpdate(PreparedStatement ps, User u) throws SQLException {
@@ -352,10 +284,9 @@ public class UserService implements IService<User> {
         ps.setString(13, u.getAdresse());
         ps.setString(14, u.getSexe());
         ps.setString(15, u.getImage());
-        ps.setString(16, u.getDataFaceApi());
-        ps.setString(17, u.getTarifConsultation());
-        ps.setTimestamp(18, new Timestamp(System.currentTimeMillis()));
-        ps.setInt(19, u.getId());
+        ps.setString(16, u.getTarifConsultation());
+        ps.setTimestamp(17, new Timestamp(System.currentTimeMillis()));
+        ps.setInt(18, u.getId());
     }
 
     private static String roleToType(Role r) {
@@ -368,26 +299,15 @@ public class UserService implements IService<User> {
         };
     }
 
-    private static String randomToken64() {
-        byte[] bytes = new byte[32];
-        new SecureRandom().nextBytes(bytes);
-        StringBuilder sb = new StringBuilder(bytes.length * 2);
-        for (byte b : bytes) {
-            sb.append(String.format("%02x", b));
-        }
-        return sb.toString();
-    }
-
     private User map(ResultSet rs) throws SQLException {
-        Role role = fromDbRole(rs.getString("role"));
-        User u = UserFactory.createByRole(role);
+        User u = new User();
         u.setId(rs.getInt("id"));
         u.setNom(rs.getString("nom"));
         u.setPrenom(rs.getString("prenom"));
         u.setEmail(rs.getString("email"));
         u.setTelephone(rs.getString("telephone"));
         u.setMotDePasseHash(rs.getString("mot_de_passe_hash"));
-        u.setRole(role);
+        u.setRole(fromDbRole(rs.getString("role")));
         u.setActif(rs.getBoolean("actif"));
         u.setSpecialite(rs.getString("specialite"));
         u.setCabinet(rs.getString("cabinet"));
@@ -408,7 +328,6 @@ public class UserService implements IService<User> {
             u.setUpdatedAt(updated.toLocalDateTime());
         }
         u.setImage(rs.getString("image"));
-        u.setDataFaceApi(rs.getString("data_face_api"));
         return u;
     }
 

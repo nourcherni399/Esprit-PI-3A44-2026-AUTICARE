@@ -2,6 +2,16 @@ package org.example.ui.product;
 
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Group;
+import javafx.scene.AmbientLight;
+import javafx.scene.PointLight;
+import javafx.scene.PerspectiveCamera;
+import javafx.scene.SubScene;
+import javafx.scene.SceneAntialiasing;
+import javafx.scene.paint.Color;
+import javafx.scene.paint.PhongMaterial;
+import javafx.scene.shape.Box;
+import javafx.scene.transform.Rotate;
 import javafx.scene.Scene;
 import javafx.scene.chart.BarChart;
 import javafx.scene.chart.CategoryAxis;
@@ -134,6 +144,7 @@ public final class ProductStatsWindow {
         HBox.setHgrow(chartPrice, Priority.ALWAYS);
         chartsRow.getChildren().addAll(chartCount, chartPrice);
 
+        VBox chart3d = build3dSalesCard(s);
         HBox topsRow = new HBox(16);
         topsRow.setAlignment(Pos.TOP_LEFT);
         VBox topChers = topBox("Top 5 — plus chers", s.topPlusChers(), true);
@@ -144,8 +155,167 @@ public final class ProductStatsWindow {
 
         VBox synth = synthSection(s);
 
-        VBox page = new VBox(18, title, sub, kpiRow, chartsRow, topsRow, synth);
+        VBox page = new VBox(18, title, sub, kpiRow, chartsRow, chart3d, topsRow, synth);
         return page;
+    }
+
+    private static VBox build3dSalesCard(ProductStatsResult s) {
+        Label h = new Label("Vue 3D — Produits par catégorie");
+        h.setWrapText(true);
+        h.setStyle("-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: " + TEXT_MAIN + ";");
+
+        Label hint = new Label("Glissez pour tourner, molette pour zoom.");
+        hint.setStyle("-fx-font-size: 11px; -fx-text-fill: " + TEXT_MUTED + ";");
+
+        List<CategoryCount> cats = s.parCategorie();
+        if (cats == null || cats.isEmpty()) {
+            VBox emptyCard = new VBox(8, h, new Label("Aucune donnée catégorie pour le rendu 3D."), hint);
+            emptyCard.setPadding(new Insets(12));
+            emptyCard.setStyle(
+                "-fx-background-color: white; -fx-background-radius: 12; -fx-border-color: " + BORDER
+                    + "; -fx-border-radius: 12; -fx-border-width: 1;"
+            );
+            return emptyCard;
+        }
+
+        Group root3d = new Group();
+        Group barsGroup = new Group();
+        root3d.getChildren().add(barsGroup);
+
+        int n = Math.min(8, cats.size());
+        double spacing = 85.0;
+        double startX = -((n - 1) * spacing) / 2.0;
+        int maxCount = cats.stream().mapToInt(CategoryCount::nombre).max().orElse(1);
+        if (maxCount <= 0) {
+            maxCount = 1;
+        }
+
+        Box ground = new Box(720, 2, 300);
+        ground.setTranslateY(120);
+        PhongMaterial groundMat = new PhongMaterial(Color.web("#e2e8f0"));
+        ground.setMaterial(groundMat);
+        barsGroup.getChildren().add(ground);
+
+        // Axes (X horizontal catégories, Y vertical volume)
+        Box xAxis = new Box(720, 2, 2);
+        xAxis.setTranslateY(120);
+        xAxis.setMaterial(new PhongMaterial(Color.web("#64748b")));
+        Box yAxis = new Box(2, 240, 2);
+        yAxis.setTranslateX(startX - 70);
+        yAxis.setTranslateY(0);
+        yAxis.setMaterial(new PhongMaterial(Color.web("#64748b")));
+        barsGroup.getChildren().addAll(xAxis, yAxis);
+
+        // Lignes de grille pour lecture visuelle des hauteurs
+        for (int i = 1; i <= 4; i++) {
+            double y = 120 - (i * 45.0);
+            Box grid = new Box(720, 1, 1);
+            grid.setTranslateY(y);
+            grid.setTranslateZ(80);
+            grid.setMaterial(new PhongMaterial(Color.web("#cbd5e1")));
+            barsGroup.getChildren().add(grid);
+        }
+
+        Color[] palette = {
+            Color.web("#3b82f6"),
+            Color.web("#16a34a"),
+            Color.web("#f59e0b"),
+            Color.web("#8b5cf6"),
+            Color.web("#ef4444"),
+            Color.web("#06b6d4"),
+            Color.web("#84cc16"),
+            Color.web("#f97316")
+        };
+
+        VBox legend = new VBox(8);
+        legend.setMinWidth(230);
+        legend.setPrefWidth(230);
+        legend.setPadding(new Insets(6, 4, 6, 6));
+        for (int i = 0; i < n; i++) {
+            CategoryCount c = cats.get(i);
+            double hVal = 28.0 + (190.0 * c.nombre() / maxCount);
+            Box bar = new Box(48, hVal, 48);
+            bar.setTranslateX(startX + i * spacing);
+            bar.setTranslateY(120.0 - hVal / 2.0);
+            bar.setTranslateZ(0.0);
+            PhongMaterial mat = new PhongMaterial(palette[i % palette.length]);
+            bar.setMaterial(mat);
+            barsGroup.getChildren().add(bar);
+
+            Label dot = new Label("■");
+            dot.setStyle("-fx-font-size: 12px; -fx-text-fill: " + toHex(palette[i % palette.length]) + ";");
+            Label text = new Label(c.categorieLabel() + "  (" + c.nombre() + ")");
+            text.setWrapText(true);
+            text.setStyle("-fx-font-size: 11px; -fx-text-fill: #475569;");
+            HBox row = new HBox(6, dot, text);
+            row.setAlignment(Pos.CENTER_LEFT);
+            legend.getChildren().add(row);
+        }
+
+        AmbientLight ambient = new AmbientLight(Color.color(0.75, 0.75, 0.75));
+        PointLight keyLight = new PointLight(Color.WHITE);
+        keyLight.setTranslateX(-220);
+        keyLight.setTranslateY(-180);
+        keyLight.setTranslateZ(-260);
+        root3d.getChildren().addAll(ambient, keyLight);
+
+        Rotate rx = new Rotate(-20, Rotate.X_AXIS);
+        Rotate ry = new Rotate(-32, Rotate.Y_AXIS);
+        barsGroup.getTransforms().addAll(rx, ry);
+
+        SubScene sub = new SubScene(root3d, 700, 340, true, SceneAntialiasing.BALANCED);
+        sub.setFill(Color.web("#f8fafc"));
+
+        PerspectiveCamera cam = new PerspectiveCamera(true);
+        cam.setNearClip(0.1);
+        cam.setFarClip(3000.0);
+        cam.setTranslateZ(-980);
+        cam.setTranslateY(-40);
+        sub.setCamera(cam);
+
+        final double[] anchor = new double[2];
+        sub.setOnMousePressed(e -> {
+            anchor[0] = e.getSceneX();
+            anchor[1] = e.getSceneY();
+        });
+        sub.setOnMouseDragged(e -> {
+            double dx = e.getSceneX() - anchor[0];
+            double dy = e.getSceneY() - anchor[1];
+            ry.setAngle(ry.getAngle() + dx * 0.3);
+            rx.setAngle(Math.max(-70, Math.min(10, rx.getAngle() - dy * 0.2)));
+            anchor[0] = e.getSceneX();
+            anchor[1] = e.getSceneY();
+        });
+        sub.setOnScroll(e -> {
+            double z = cam.getTranslateZ() + (e.getDeltaY() > 0 ? 60 : -60);
+            cam.setTranslateZ(Math.max(-1500, Math.min(-520, z)));
+        });
+
+        VBox legendCard = new VBox(8, new Label("Légende"), legend);
+        legendCard.setStyle(
+            "-fx-background-color: #ffffff; -fx-background-radius: 10; -fx-border-color: #e2e8f0;"
+                + "-fx-border-radius: 10; -fx-padding: 8;"
+        );
+        ((Label) legendCard.getChildren().get(0))
+            .setStyle("-fx-font-size: 12px; -fx-font-weight: 700; -fx-text-fill: #334155;");
+
+        HBox content = new HBox(12, sub, legendCard);
+        HBox.setHgrow(sub, Priority.ALWAYS);
+
+        VBox card = new VBox(8, h, content, hint);
+        card.setPadding(new Insets(12));
+        card.setStyle(
+            "-fx-background-color: white; -fx-background-radius: 12; -fx-border-color: " + BORDER
+                + "; -fx-border-radius: 12; -fx-border-width: 1;"
+        );
+        return card;
+    }
+
+    private static String toHex(Color color) {
+        int r = (int) Math.round(color.getRed() * 255.0);
+        int g = (int) Math.round(color.getGreen() * 255.0);
+        int b = (int) Math.round(color.getBlue() * 255.0);
+        return String.format("#%02x%02x%02x", r, g, b);
     }
 
     private static VBox synthSection(ProductStatsResult s) {

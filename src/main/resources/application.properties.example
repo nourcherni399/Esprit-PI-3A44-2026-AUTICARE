@@ -10,10 +10,4 @@ auticare.smtp.port=587
 # Google OAuth
 oauth.google.clientId=your-google-client-id
 oauth.google.clientSecret=your-google-client-secret
-oauth.google.redirectUri=http://127.0.0.1:8888/oauth/callback
-
-# Face ID (microservice local)
-faceid.enabled=true
-faceid.service.url=http://127.0.0.1:8099
-faceid.threshold=0.75
-faceid.requireHealthy=true
+oauth.google.redirectUri=http://127.0.0.1:8888/oauth/callback/

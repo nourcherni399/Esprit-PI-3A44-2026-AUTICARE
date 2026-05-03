@@ -17,7 +17,6 @@ import javafx.stage.StageStyle;
 import org.example.controllers.AdminMyProfileController;
 import org.example.models.Role;
 import org.example.models.User;
-import org.example.services.EmailVerificationCallbackServer;
 import org.example.utils.AdminTopbarHelper;
 import org.example.utils.AppState;
 
@@ -50,30 +49,15 @@ public class MainApp extends Application {
      */
     private static final double DEFAULT_WINDOW_WIDTH = 1360;
     private static final double DEFAULT_WINDOW_HEIGHT = 760;
-    private static EmailVerificationCallbackServer emailVerificationServer;
 
     @Override
     public void start(Stage stage) throws IOException {
         primaryStage = stage;
-        try {
-            emailVerificationServer = new EmailVerificationCallbackServer();
-            emailVerificationServer.start();
-        } catch (Exception ignored) {
-            // L'app continue même si le port du callback est indisponible.
-        }
         installMaximizedGuard();
         showHome();
         primaryStage.setTitle("AutiCare Desktop");
         primaryStage.show();
         scheduleMaximizedEnforcement();
-    }
-
-    @Override
-    public void stop() throws Exception {
-        if (emailVerificationServer != null) {
-            emailVerificationServer.close();
-        }
-        super.stop();
     }
 
     /** Page d'accueil (défilement, sections, fond animé). */

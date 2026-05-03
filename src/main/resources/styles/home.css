@@ -18,10 +18,12 @@
 
 /* Barre nav accueil — alignée maquette : blanc, séparateurs, Inter / Segoe, logo + typo marque */
 .nav-home {
-    -fx-background-color: #ffffff;
-    -fx-padding: 10 40 10 40;
-    -fx-border-color: #e8eaed;
+    -fx-background-color: rgba(247, 249, 252, 0.95);
+    -fx-padding: 10 18 10 18;
+    -fx-border-color: #e3e8ee;
     -fx-border-width: 0 0 1 0;
+    -fx-background-radius: 0 0 16 16;
+    -fx-effect: dropshadow(gaussian, rgba(15, 23, 42, 0.11), 20, 0.2, 0, 4);
     /* Logo vertical (AutiCare + baseline) : un peu plus de hauteur que l’ancien picto seul */
     -fx-min-height: 88;
 }
@@ -39,6 +41,22 @@
     -fx-smooth: true;
 }
 
+.nav-home .nav-brand-mark {
+    -fx-min-width: 34;
+    -fx-min-height: 34;
+    -fx-pref-width: 34;
+    -fx-pref-height: 34;
+    -fx-background-color: linear-gradient(to bottom right, #7ea6dd 0%, #5a7fb5 100%);
+    -fx-background-radius: 10;
+    -fx-effect: dropshadow(gaussian, rgba(90, 127, 181, 0.34), 8, 0.25, 0, 2);
+}
+
+.nav-home .nav-brand-mark-label {
+    -fx-text-fill: white;
+    -fx-font-size: 18px;
+    -fx-font-weight: 800;
+}
+
 .nav-home .nav-vsep {
     -fx-background-color: #e5e7eb;
     -fx-min-height: 40;
@@ -50,34 +68,37 @@
 
 .nav-home .nav-center-links {
     -fx-alignment: center;
-    -fx-spacing: 2;
-    -fx-padding: 0 24 0 24;
+    -fx-spacing: 0;
+    -fx-padding: 0 2 0 2;
 }
 
 .nav-home .nav-item {
-    -fx-spacing: 8;
-    -fx-padding: 8 18 8 18;
-    -fx-background-radius: 10;
+    -fx-spacing: 6;
+    -fx-padding: 8 8 8 8;
+    -fx-background-radius: 12;
+    -fx-border-width: 0 0 2.5 0;
+    -fx-border-color: transparent;
+    -fx-cursor: hand;
 }
 
 .nav-home .nav-item:hover {
-    -fx-background-color: rgba(0, 0, 0, 0.04);
+    -fx-background-color: rgba(148, 163, 184, 0.10);
 }
 
 .nav-home .nav-item.nav-item-active {
-    -fx-background-color: rgba(52, 152, 219, 0.14);
-    -fx-border-color: rgba(52, 152, 219, 0.35);
-    -fx-border-width: 1;
-    -fx-border-radius: 10;
+    -fx-background-color: rgba(102, 157, 233, 0.15);
+    -fx-border-color: transparent transparent #5f94d8 transparent;
+    -fx-border-width: 0 0 2.5 0;
+    -fx-border-radius: 12;
 }
 
 .nav-home .nav-item.nav-item-active .nav-item-label {
-    -fx-text-fill: #1e6fa8;
+    -fx-text-fill: #245b96;
     -fx-font-weight: 700;
 }
 
 .nav-home .nav-item.nav-item-active .nav-item-icon {
-    -fx-text-fill: #2980b9;
+    -fx-text-fill: #2d6aa9;
 }
 
 .nav-home .nav-link.nav-auth-active {
@@ -92,21 +113,52 @@
 }
 
 .nav-home .nav-item-icon {
-    -fx-font-size: 15px;
-    -fx-text-fill: #6b7280;
-    -fx-min-width: 20;
+    -fx-font-size: 10px;
+    -fx-text-fill: #66768d;
+    -fx-min-width: 10;
+    -fx-font-family: "Segoe UI Symbol", "Segoe UI", "Inter", sans-serif;
 }
 
 .nav-home .nav-item-label {
-    -fx-font-size: 13px;
-    -fx-font-weight: 500;
-    -fx-text-fill: #2c3e50;
+    -fx-font-size: 12px;
+    -fx-font-weight: 600;
+    -fx-text-fill: #344256;
+    -fx-wrap-text: false;
+    -fx-text-overrun: clip;
 }
 
 .nav-home .nav-trailing {
     -fx-alignment: center-right;
-    -fx-spacing: 16;
-    -fx-padding: 0 0 0 16;
+    -fx-spacing: 6;
+    -fx-padding: 0 0 0 4;
+}
+
+.nav-home .nav-search-box {
+    -fx-alignment: center-left;
+    -fx-padding: 0 7 0 9;
+    -fx-background-color: rgba(242, 246, 250, 0.96);
+    -fx-background-radius: 11;
+    -fx-border-color: #d9e2ec;
+    -fx-border-radius: 11;
+    -fx-border-width: 1;
+    -fx-max-width: 120;
+}
+
+.nav-home .nav-search-icon {
+    -fx-text-fill: #6c7b90;
+    -fx-font-size: 14px;
+}
+
+.nav-home .nav-search-input {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-padding: 7 6 7 2;
+    -fx-font-size: 13px;
+    -fx-text-fill: #334155;
+    -fx-prompt-text-fill: #94a3b8;
+    -fx-min-width: 70;
+    -fx-pref-width: 80;
+    -fx-max-width: 90;
 }
 
 /* Pastilles d’icônes — Modena empile plusieurs calques sur .button : sans -fx-background-insets: 0 le fond ne change pas */
@@ -114,38 +166,43 @@
 .nav-home .menu-button.icon-btn {
     -fx-background-insets: 0;
     -fx-border-insets: 0;
-    -fx-background-color: linear-gradient(to bottom, #eceef2 0%, #d8dae1 100%);
+    -fx-background-color: linear-gradient(to bottom, #f8fafc 0%, #e9eef5 100%);
     -fx-background-radius: 11;
-    -fx-border-color: #b4b8c4;
+    -fx-border-color: #d2dbe6;
     -fx-border-radius: 11;
     -fx-border-width: 1;
     -fx-padding: 7 9 7 9;
-    -fx-font-size: 16px;
-    -fx-text-fill: #141414;
-    -fx-effect: innershadow(gaussian, rgba(255, 255, 255, 0.55), 1, 0.4, 0, -0.8);
+    -fx-font-size: 15px;
+    -fx-text-fill: #334155;
+    -fx-effect: dropshadow(gaussian, rgba(148, 163, 184, 0.22), 6, 0.18, 0, 1);
     -fx-cursor: hand;
 }
 
 .nav-home .button.icon-btn:hover,
 .nav-home .menu-button.icon-btn:hover {
     -fx-background-insets: 0;
-    -fx-background-color: linear-gradient(to bottom, #f4f5f8 0%, #e4e6ee 100%);
-    -fx-border-color: #9ca0ae;
+    -fx-background-color: linear-gradient(to bottom, #ffffff 0%, #f1f5fa 100%);
+    -fx-border-color: #c5d1df;
 }
 
 .nav-home .button.icon-btn:pressed,
 .nav-home .menu-button.icon-btn:pressed {
     -fx-background-insets: 0;
-    -fx-background-color: linear-gradient(to bottom, #cfd2dc 0%, #c2c5cf 100%);
-    -fx-border-color: #9ca0ae;
+    -fx-background-color: linear-gradient(to bottom, #e8edf4 0%, #dbe4ee 100%);
+    -fx-border-color: #bcc9d8;
     -fx-effect: innershadow(gaussian, rgba(0, 0, 0, 0.18), 4, 0.2, 0, 1.5);
 }
 
 .nav-home .button.icon-btn:focused,
 .nav-home .menu-button.icon-btn:focused {
     -fx-background-insets: 0;
-    -fx-background-color: linear-gradient(to bottom, #eceef2 0%, #d8dae1 100%);
-    -fx-border-color: #b4b8c4;
+    -fx-background-color: linear-gradient(to bottom, #f8fafc 0%, #e9eef5 100%);
+    -fx-border-color: #d2dbe6;
+}
+
+.nav-home .header-avatar-btn {
+    -fx-font-size: 14px;
+    -fx-font-weight: 700;
 }
 
 .nav-home .nav-logged-shortcuts {

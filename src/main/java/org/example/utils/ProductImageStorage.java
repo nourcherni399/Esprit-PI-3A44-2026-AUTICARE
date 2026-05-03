@@ -100,4 +100,5 @@ public final class ProductImageStorage {
         }
         return ".jpg";
     }
+
 }

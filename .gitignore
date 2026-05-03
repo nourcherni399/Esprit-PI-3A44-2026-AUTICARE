@@ -38,6 +38,14 @@ build/
 
 ### Secrets / local config ###
 src/main/resources/application.properties
+assistant-local.properties
+.env.local
 
 ### Mac OS ###
 .DS_Store
+
+### Local tooling (ne pas versionner) ###
+sqldeveloper-19.2.1.247.2212-x64/
+
+### Artefacts d’autre branche (hors module AutiCare) ###
+src/main/java/com/ecommerce/

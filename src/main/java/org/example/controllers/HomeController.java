@@ -52,7 +52,6 @@ import org.example.services.CustomerOrderService;
 import org.example.services.ProductService;
 import org.example.services.UserNotificationService;
 import org.example.services.AppointmentService;
-import org.example.services.ProductService;
 import org.example.services.UserService;
 import org.example.models.Appointment;
 import org.example.utils.AppState;

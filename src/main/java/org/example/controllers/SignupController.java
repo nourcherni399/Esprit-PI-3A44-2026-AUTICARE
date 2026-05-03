@@ -2,36 +2,24 @@ package org.example.controllers;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 
-import java.io.File;
 import java.util.Map;
+import javafx.stage.FileChooser;
 import javafx.stage.Window;
 import org.example.MainApp;
-import org.example.models.AdminUser;
-import org.example.models.Medecin;
 import org.example.models.Role;
 import org.example.models.User;
-import org.example.models.UserFactory;
-import org.example.services.FaceBiometricException;
-import org.example.services.FaceBiometricService;
-import org.example.services.FaceIdClientService;
-import org.example.services.FaceIdConfig;
 import org.example.services.GoogleOAuthService;
-import org.example.services.EmailVerificationEmailService;
 import org.example.services.UserService;
 import org.example.utils.AppState;
-import org.example.utils.FaceCameraCapture;
 import org.example.utils.PasswordUtil;
 
 import java.io.IOException;
 import java.sql.SQLException;
-import jakarta.mail.MessagingException;
 import java.util.regex.Pattern;
 
 public class SignupController implements PublicShellAware {
@@ -76,8 +64,6 @@ public class SignupController implements PublicShellAware {
     @FXML
     private Label biometricPathLabel;
     @FXML
-    private ImageView biometricPreviewImage;
-    @FXML
     private Button chooseFileBtn;
     @FXML
     private VBox patientFieldsBox;
@@ -93,10 +79,6 @@ public class SignupController implements PublicShellAware {
     private TextField relationParentField;
 
     private final UserService userService = new UserService();
-    private final EmailVerificationEmailService verificationEmailService = new EmailVerificationEmailService();
-    private final FaceIdConfig faceIdConfig = new FaceIdConfig();
-    private final FaceBiometricService faceBiometricService = new FaceIdClientService(faceIdConfig);
-    private File biometricFile;
 
     @Override
     public void setPublicShell(PublicShellController shell) {
@@ -136,13 +118,7 @@ public class SignupController implements PublicShellAware {
             sexeCombo.getItems().setAll("Choisir", "Femme", "Homme");
             sexeCombo.getSelectionModel().selectFirst();
         }
-        biometricFile = null;
         biometricPathLabel.setText("Aucun fichier choisi");
-        if (biometricPreviewImage != null) {
-            biometricPreviewImage.setImage(null);
-            biometricPreviewImage.setVisible(false);
-            biometricPreviewImage.setManaged(false);
-        }
         if (passwordField != null) {
             passwordField.textProperty().addListener((obs, o, n) -> updatePasswordRules(n));
             updatePasswordRules(passwordField.getText());
@@ -151,16 +127,14 @@ public class SignupController implements PublicShellAware {
 
     @FXML
     public void onChooseBiometricFile() {
-        Window owner = chooseFileBtn != null && chooseFileBtn.getScene() != null ? chooseFileBtn.getScene().getWindow() : null;
-        try {
-            var captured = FaceCameraCapture.capture(owner);
-            if (captured.isPresent()) {
-                updateBiometricPreview(captured.get(), "Capture caméra sélectionnée");
-                return;
-            }
-            alert(Alert.AlertType.INFORMATION, "Face ID", "Capture annulée. La caméra est obligatoire pour Face ID.");
-        } catch (FaceCameraCapture.FaceCameraException e) {
-            alert(Alert.AlertType.WARNING, "Face ID", e.getMessage() != null ? e.getMessage() : "Caméra indisponible.");
+        FileChooser chooser = new FileChooser();
+        chooser.setTitle("Photo visage");
+        chooser.getExtensionFilters().add(
+                new FileChooser.ExtensionFilter("Images", "*.png", "*.jpg", "*.jpeg", "*.gif"));
+        Window w = chooseFileBtn.getScene().getWindow();
+        java.io.File f = chooser.showOpenDialog(w);
+        if (f != null) {
+            biometricPathLabel.setText(f.getName());
         }
     }
 
@@ -218,27 +192,13 @@ public class SignupController implements PublicShellAware {
                 alert(Alert.AlertType.WARNING, "Email", "Un compte existe déjà avec cet email.");
                 return;
             }
-            User u = UserFactory.createByRole(role);
+            User u = new User();
             u.setPrenom(prenom);
             u.setNom(nom);
             u.setEmail(email);
             u.setTelephone(tel);
             u.setMotDePasseHash(PasswordUtil.hash(pwd));
             u.setRole(role);
-            if (faceIdConfig.isEnabled()) {
-                if (biometricFile == null) {
-                    alert(Alert.AlertType.WARNING, "Face ID",
-                            "Veuillez capturer votre visage via la caméra pour activer la connexion Face ID.");
-                    return;
-                }
-                try {
-                    String templateJson = faceBiometricService.enrollFromImage(biometricFile);
-                    u.setDataFaceApi(templateJson);
-                } catch (FaceBiometricException ex) {
-                    alert(Alert.AlertType.WARNING, "Face ID", faceMessageForCode(ex));
-                    return;
-                }
-            }
             if (role == Role.PATIENT) {
                 u.setDateNaissance(dateNaissancePicker.getValue());
                 u.setAdresse(trim(adresseField));
@@ -250,21 +210,11 @@ public class SignupController implements PublicShellAware {
                 u.setAdresse(null);
                 u.setSexe(null);
             }
-            u.setActif(false);
+            u.setActif(true);
             userService.add(u);
-            var created = userService.findByEmail(email);
-            if (created.isPresent()) {
-                var issue = userService.createAndStoreEmailVerificationForUser(created.get().getId(), null);
-                if (issue.isPresent()) {
-                    verificationEmailService.sendVerificationEmail(issue.get().email(), issue.get().verifyUrl());
-                }
-            }
             alert(Alert.AlertType.INFORMATION, "Compte créé",
-                    "Un email d'activation a été envoyé. Cliquez sur le lien pour activer votre compte.");
+                    "Vous pouvez maintenant vous connecter avec votre email.");
             goToLoginPage();
-        } catch (MessagingException e) {
-            alert(Alert.AlertType.WARNING, "Activation email",
-                    "Compte créé, mais email d'activation non envoyé. Vérifiez la config SMTP.");
         } catch (SQLException e) {
             alert(Alert.AlertType.ERROR, "Erreur", e.getMessage());
         } catch (IOException e) {
@@ -295,9 +245,9 @@ public class SignupController implements PublicShellAware {
         try {
             User u = google.signInWithGoogle();
             AppState.setCurrentUser(u);
-            if (u instanceof AdminUser) {
+            if (u.getRole() == Role.ADMIN) {
                 MainApp.showAdminUsers();
-            } else if (u instanceof Medecin) {
+            } else if (u.getRole() == Role.MEDECIN) {
                 MainApp.showMedecinDashboard();
             } else {
                 MainApp.showHome();
@@ -442,46 +392,6 @@ public class SignupController implements PublicShellAware {
 
     private static String trim(TextField f) {
         return f.getText() == null ? "" : f.getText().trim();
-    }
-
-    private void updateBiometricPreview(File f, String okText) {
-        if (f == null) {
-            return;
-        }
-        Image img = new Image(f.toURI().toString(), 84, 84, true, true);
-        if (img.isError()) {
-            biometricPathLabel.setText("Image invalide");
-            biometricFile = null;
-            if (biometricPreviewImage != null) {
-                biometricPreviewImage.setImage(null);
-                biometricPreviewImage.setVisible(false);
-                biometricPreviewImage.setManaged(false);
-            }
-            return;
-        }
-        biometricFile = f;
-        if (biometricPreviewImage != null) {
-            biometricPreviewImage.setImage(img);
-            biometricPreviewImage.setVisible(true);
-            biometricPreviewImage.setManaged(true);
-        }
-        biometricPathLabel.setText(okText);
-    }
-
-    private static String faceMessageForCode(FaceBiometricException ex) {
-        if (ex == null) {
-            return "Erreur Face ID.";
-        }
-        String code = ex.getCode() != null ? ex.getCode().trim().toUpperCase() : "";
-        return switch (code) {
-            case "NO_FACE" -> "Aucun visage détecté. Utilisez une photo nette du visage.";
-            case "MULTIPLE_FACES" -> "Plusieurs visages détectés. Utilisez une image avec un seul visage.";
-            case "INVALID_IMAGE" -> "Image invalide. Veuillez choisir un fichier image valide.";
-            case "SERVICE_UNAVAILABLE" -> "Service Face ID indisponible. Réessayez plus tard.";
-            default -> (ex.getMessage() != null && !ex.getMessage().isBlank())
-                    ? ex.getMessage()
-                    : "Erreur Face ID.";
-        };
     }
 
     private void alert(Alert.AlertType type, String title, String msg) {

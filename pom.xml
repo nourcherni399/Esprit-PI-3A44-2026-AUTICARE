@@ -77,6 +77,42 @@
             <artifactId>jackson-databind</artifactId>
             <version>2.19.0</version>
         </dependency>
+        <dependency>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+            <version>2.11.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.stripe</groupId>
+            <artifactId>stripe-java</artifactId>
+            <version>32.0.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.googlecode.libphonenumber</groupId>
+            <artifactId>libphonenumber</artifactId>
+            <version>8.13.55</version>
+        </dependency>
+        <!-- ImageIO plugins: broaden support for local image formats (webp/tiff/bmp variants, etc.). -->
+        <dependency>
+            <groupId>com.twelvemonkeys.imageio</groupId>
+            <artifactId>imageio-core</artifactId>
+            <version>3.12.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.twelvemonkeys.imageio</groupId>
+            <artifactId>imageio-tiff</artifactId>
+            <version>3.12.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.twelvemonkeys.imageio</groupId>
+            <artifactId>imageio-bmp</artifactId>
+            <version>3.12.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.twelvemonkeys.imageio</groupId>
+            <artifactId>imageio-webp</artifactId>
+            <version>3.12.0</version>
+        </dependency>
     </dependencies>
 
     <build>
@@ -90,7 +126,7 @@
                 </configuration>
             </plugin>
             <!-- Lancer l'app : mvn javafx:run (configure le module-path JavaFX ; ne pas lancer MainApp en « Application » sans VM options). -->
-            <!-- Lancer l’app : mvn javafx:run (configure le module-path JavaFX ; ne pas lancer MainApp en « Application » sans VM options). -->
+            <!-- Lancer l'app : mvn javafx:run (configure le module-path JavaFX ; ne pas lancer MainApp en « Application » sans VM options). -->
             <plugin>
                 <groupId>org.openjfx</groupId>
                 <artifactId>javafx-maven-plugin</artifactId>
@@ -104,4 +140,3 @@
     </build>
 
 </project>
-

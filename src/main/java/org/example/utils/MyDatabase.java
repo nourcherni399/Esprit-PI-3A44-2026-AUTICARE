@@ -32,6 +32,7 @@ public class MyDatabase {
     private final String password;
     private Connection connection;
     private static MyDatabase instance;
+    private static volatile boolean schemaInitialized = false;
 
     private MyDatabase() {
         this.url = readConfig("db.url", "PIDB_JDBC_URL", DEFAULT_URL);
@@ -79,39 +80,55 @@ public class MyDatabase {
      * Équivalent pratique de l’ancien constructeur qui ouvrait tout de suite la connexion.
      */
     public Connection openConnection() throws SQLException {
-        if (connection == null || connection.isClosed()) {
-            try {
-                connection = DriverManager.getConnection(url, user, password);
-                try (Statement st = connection.createStatement()) {
-                    st.execute("SET NAMES utf8mb4");
-                }
-                ensureRendezVousOptionalColumns(connection);
-                ensureRendezVousMotifColumnWide(connection);
-                ensureRendezVousPatientReponseLueColumn(connection);
-                ensureRendezVousMedecinDemandeLueColumn(connection);
-                ensureRendezVousDisponibiliteIdColumn(connection);
-                AppointmentService.clearRendezVousSchemaCache();
-                ensureNoteTable(connection);
-                ensureMedecinRatingTable(connection);
-                ensureMedecinRatingPatientColumnCompat(connection);
-                ensureMedecinRatingStarsColumnCompat(connection);
-                ensureMedecinRatingCommentColumnCompat(connection);
-                ensureMedecinRatingTimestampColumnCompat(connection);
-                System.out.println("Connected");
-            } catch (SQLException e) {
-                System.err.println(e.getMessage());
-                throw e;
-            }
-        }
-        /* Idempotent : crée les tables ajoutées dans une nouvelle version sans obliger à redémarrer la JVM. */
-        ensureMysqlPidbTables(connection);
-        ensureStockTableAndQuantityColumn(connection);
+        connection = openNewConnection();
         return connection;
     }
 
     /** Utilisé par les services ({@code MyDatabase.getConnection()}). */
     public static Connection getConnection() throws SQLException {
-        return getInstance().openConnection();
+        return getInstance().openNewConnection();
+    }
+
+    private Connection openNewConnection() throws SQLException {
+        try {
+            Connection conn = DriverManager.getConnection(url, user, password);
+            try (Statement st = conn.createStatement()) {
+                st.execute("SET NAMES utf8mb4");
+            }
+            ensureSchemaOnce(conn);
+            return conn;
+        } catch (SQLException e) {
+            System.err.println(e.getMessage());
+            throw e;
+        }
+    }
+
+    private static void ensureSchemaOnce(Connection conn) throws SQLException {
+        if (schemaInitialized) {
+            return;
+        }
+        synchronized (MyDatabase.class) {
+            if (schemaInitialized) {
+                return;
+            }
+            ensureRendezVousOptionalColumns(conn);
+            ensureRendezVousMotifColumnWide(conn);
+            ensureRendezVousPatientReponseLueColumn(conn);
+            ensureRendezVousMedecinDemandeLueColumn(conn);
+            ensureRendezVousDisponibiliteIdColumn(conn);
+            AppointmentService.clearRendezVousSchemaCache();
+            ensureNoteTable(conn);
+            ensureMedecinRatingTable(conn);
+            ensureMedecinRatingPatientColumnCompat(conn);
+            ensureMedecinRatingStarsColumnCompat(conn);
+            ensureMedecinRatingCommentColumnCompat(conn);
+            ensureMedecinRatingTimestampColumnCompat(conn);
+            /* Idempotent : crée les tables ajoutées dans une nouvelle version sans obliger à redémarrer la JVM. */
+            ensureMysqlPidbTables(conn);
+            ensureStockTableAndQuantityColumn(conn);
+            schemaInitialized = true;
+            System.out.println("Connected");
+        }
     }
 
     /** URL JDBC (logs / debug). */

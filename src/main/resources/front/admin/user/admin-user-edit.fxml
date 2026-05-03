@@ -91,7 +91,6 @@
                                     <HBox alignment="CENTER_LEFT" spacing="10" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="7">
                                         <Button onAction="#onChoosePhoto" styleClass="admin-btn-outline" text="Choisir un fichier"/>
                                         <Label fx:id="photoPathLabel" styleClass="admin-form-hint" text="Aucun fichier choisi"/>
-                                        <ImageView fx:id="photoPreviewImage" fitHeight="84.0" fitWidth="84.0" managed="false" pickOnBounds="true" preserveRatio="true" visible="false"/>
                                     </HBox>
                                     <Label styleClass="admin-form-label" text="Nouveau mot de passe" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="8"/>
                                     <PasswordField fx:id="passwordField" promptText="Laisser vide pour ne pas changer" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="9"/>

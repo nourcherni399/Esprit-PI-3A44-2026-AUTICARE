@@ -11,7 +11,6 @@ import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
-import javafx.scene.control.ComboBox;
 import javafx.scene.control.CustomMenuItem;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuButton;
@@ -64,8 +63,6 @@ public class AdminUsersController {
     @FXML
     private TextField filterField;
     @FXML
-    private ComboBox<String> roleFilterCombo;
-    @FXML
     private HBox statsRow;
     @FXML
     private TableView<User> usersTable;
@@ -108,16 +105,6 @@ public class AdminUsersController {
         }
         if (topSearchField != null) {
             topSearchField.textProperty().addListener((o, old, v) -> applyFilters());
-        }
-        if (roleFilterCombo != null) {
-            roleFilterCombo.getItems().setAll(
-                    "Tous",
-                    "Administrateur",
-                    "Médecin",
-                    "Parent",
-                    "Patient");
-            roleFilterCombo.getSelectionModel().selectFirst();
-            roleFilterCombo.valueProperty().addListener((o, old, v) -> applyFilters());
         }
 
         String pendingSection = AppState.consumePendingAdminUsersSection();
@@ -484,30 +471,14 @@ public class AdminUsersController {
         }
         String f1 = filterField != null && filterField.getText() != null ? filterField.getText().trim().toLowerCase(Locale.FRENCH) : "";
         String f2 = topSearchField != null && topSearchField.getText() != null ? topSearchField.getText().trim().toLowerCase(Locale.FRENCH) : "";
-        String roleLabel = roleFilterCombo != null ? roleFilterCombo.getValue() : null;
-        Role roleFilter = roleFromFilterLabel(roleLabel);
         Predicate<User> p = u -> {
             String nom = ((u.getPrenom() != null ? u.getPrenom() : "") + " " + (u.getNom() != null ? u.getNom() : "")).toLowerCase(Locale.FRENCH);
             String mail = u.getEmail() != null ? u.getEmail().toLowerCase(Locale.FRENCH) : "";
             boolean ok1 = f1.isEmpty() || nom.contains(f1) || mail.contains(f1);
             boolean ok2 = f2.isEmpty() || nom.contains(f2) || mail.contains(f2);
-            boolean okRole = roleFilter == null || u.getRole() == roleFilter;
-            return ok1 && ok2 && okRole;
+            return ok1 && ok2;
         };
         filteredList.setPredicate(p);
-    }
-
-    private static Role roleFromFilterLabel(String label) {
-        if (label == null || label.isBlank() || "Tous".equalsIgnoreCase(label)) {
-            return null;
-        }
-        return switch (label.trim().toLowerCase(Locale.FRENCH)) {
-            case "administrateur" -> Role.ADMIN;
-            case "médecin", "medecin" -> Role.MEDECIN;
-            case "parent" -> Role.PARENT;
-            case "patient" -> Role.PATIENT;
-            default -> null;
-        };
     }
 
     @FXML

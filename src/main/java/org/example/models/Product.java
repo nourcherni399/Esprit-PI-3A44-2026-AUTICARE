@@ -1,5 +1,8 @@
 package org.example.models;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class Product {
     private int id;
     private String nom;
@@ -18,6 +21,7 @@ public class Product {
     private Integer userId;
     private String statutPublication;
     private Double noteMoyenne;
+    private String stockNom;
 
     public int getId() { return id; }
     public void setId(int id) { this.id = id; }
@@ -35,6 +39,44 @@ public class Product {
     public void setStockId(int stockId) { this.stockId = stockId; }
     public String getImagePath() { return imagePath; }
     public void setImagePath(String imagePath) { this.imagePath = imagePath; }
+    /** Retourne la première image utilisable quand plusieurs chemins sont stockés (séparateurs ; , \n |). */
+    public String getPrimaryImagePath() {
+        if (imagePath == null || imagePath.isBlank()) {
+            return null;
+        }
+        for (String token : splitImagePaths(imagePath)) {
+            if (!token.isBlank()) {
+                return token;
+            }
+        }
+        return null;
+    }
+    /** Liste normalisée des images associées au produit. */
+    public List<String> getImagePaths() {
+        return splitImagePaths(imagePath);
+    }
+
+    private static List<String> splitImagePaths(String raw) {
+        List<String> out = new ArrayList<>();
+        if (raw == null || raw.isBlank()) {
+            return out;
+        }
+        String t = raw.trim();
+        if (t.toLowerCase().startsWith("data:image/")) {
+            out.add(t);
+            return out;
+        }
+        String[] parts = t.split("[;|\\n]");
+        for (String p : parts) {
+            if (p != null) {
+                String x = p.trim();
+                if (!x.isBlank()) {
+                    out.add(x);
+                }
+            }
+        }
+        return out;
+    }
     public boolean isDisponible() { return disponible; }
     public void setDisponible(boolean disponible) { this.disponible = disponible; }
     public boolean isPublie() { return publie; }
@@ -53,6 +95,8 @@ public class Product {
     public void setStatutPublication(String statutPublication) { this.statutPublication = statutPublication; }
     public Double getNoteMoyenne() { return noteMoyenne; }
     public void setNoteMoyenne(Double noteMoyenne) { this.noteMoyenne = noteMoyenne; }
+    public String getStockNom() { return stockNom; }
+    public void setStockNom(String stockNom) { this.stockNom = stockNom; }
 
     @Override
     public String toString() {

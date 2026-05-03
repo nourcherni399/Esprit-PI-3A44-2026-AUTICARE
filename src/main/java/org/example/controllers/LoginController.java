@@ -8,28 +8,15 @@ import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.VBox;
-import javafx.stage.FileChooser;
 import org.example.MainApp;
-import org.example.models.AdminUser;
-import org.example.models.Medecin;
-import org.example.models.User;
-import org.example.services.FaceBiometricException;
-import org.example.services.FaceBiometricService;
-import org.example.services.FaceIdentifyMatch;
-import org.example.services.FaceIdClientService;
-import org.example.services.FaceIdConfig;
+import org.example.models.Role;
 import org.example.services.GoogleOAuthService;
 import org.example.services.UserService;
 import org.example.utils.AppState;
-import org.example.utils.FaceCameraCapture;
 import org.example.utils.PasswordRecoveryState;
 import org.example.utils.PasswordUtil;
 
 import java.io.IOException;
-import java.io.File;
-import java.sql.SQLException;
-import java.util.List;
-import java.util.Locale;
 
 public class LoginController implements PublicShellAware {
 
@@ -63,8 +50,6 @@ public class LoginController implements PublicShellAware {
     private TextField pinCodeField;
 
     private final UserService userService = new UserService();
-    private final FaceIdConfig faceIdConfig = new FaceIdConfig();
-    private final FaceBiometricService faceBiometricService = new FaceIdClientService(faceIdConfig);
     private boolean passwordVisible;
 
     @Override
@@ -113,7 +98,7 @@ public class LoginController implements PublicShellAware {
             var cand = account.get();
             if (!cand.isActif()) {
                 show(Alert.AlertType.WARNING, "Compte désactivé",
-                        "Ce compte n'est pas encore activé. Vérifiez votre email et cliquez sur le lien d'activation.");
+                        "Ce compte n'est pas activé (is_active = 0 en base). Activez-le dans MySQL ou utilisez un autre utilisateur.");
                 return;
             }
             if (!PasswordUtil.matches(pwd, cand.getMotDePasseHash())) {
@@ -122,9 +107,9 @@ public class LoginController implements PublicShellAware {
             }
             var u = cand;
             AppState.setCurrentUser(u);
-            if (u instanceof AdminUser) {
+            if (u.getRole() == Role.ADMIN) {
                 MainApp.showAdminUsers();
-            } else if (u instanceof Medecin) {
+            } else if (u.getRole() == Role.MEDECIN) {
                 MainApp.showMedecinDashboard();
             } else {
                 if (AppState.getPendingPublicEventDetailId() > 0) {
@@ -252,9 +237,9 @@ public class LoginController implements PublicShellAware {
         try {
             var u = google.signInWithGoogle();
             AppState.setCurrentUser(u);
-            if (u instanceof AdminUser) {
+            if (u.getRole() == Role.ADMIN) {
                 MainApp.showAdminUsers();
-            } else if (u instanceof Medecin) {
+            } else if (u.getRole() == Role.MEDECIN) {
                 MainApp.showMedecinDashboard();
             } else {
                 MainApp.showHome();
@@ -269,116 +254,7 @@ public class LoginController implements PublicShellAware {
 
     @FXML
     public void onFaceIdSignIn() {
-        if (!faceIdConfig.isEnabled()) {
-            show(Alert.AlertType.INFORMATION, "Face ID", "Face ID est désactivé.");
-            return;
-        }
-        if (faceIdConfig.isRequireHealthy() && faceBiometricService instanceof FaceIdClientService client && !client.isHealthy()) {
-            show(Alert.AlertType.WARNING, "Face ID", "Service Face ID indisponible.");
-            return;
-        }
-        var owner = emailField != null && emailField.getScene() != null ? emailField.getScene().getWindow() : null;
-        File probe = null;
-        try {
-            var captured = FaceCameraCapture.capture(owner);
-            if (captured.isPresent()) {
-                probe = captured.get();
-                show(Alert.AlertType.INFORMATION, "Face ID", "Capture caméra réussie.");
-            } else {
-                show(Alert.AlertType.INFORMATION, "Face ID", "Capture annulée, sélectionnez une image.");
-            }
-        } catch (FaceCameraCapture.FaceCameraException e) {
-            show(Alert.AlertType.WARNING, "Face ID", e.getMessage() != null ? e.getMessage() : "Caméra indisponible.");
-        }
-        if (probe == null) {
-            probe = chooseProbeImage(owner);
-        }
-        if (probe == null) {
-            return;
-        }
-        try {
-            List<User> users = userService.findAll().stream()
-                    .filter(User::isActif)
-                    .filter(u -> u.getDataFaceApi() != null && !u.getDataFaceApi().isBlank())
-                    .toList();
-            if (users.isEmpty()) {
-                show(Alert.AlertType.INFORMATION, "Face ID", "Aucun utilisateur enrôlé Face ID.");
-                return;
-            }
-            User bestUser = null;
-            double bestScore = -1.0;
-            if (faceBiometricService instanceof FaceIdClientService faceClient) {
-                FaceIdentifyMatch match = faceClient.identifyBestAmongUsers(users, probe);
-                if (!match.hasMatch()) {
-                    show(Alert.AlertType.INFORMATION, "Face ID", "Aucun visage reconnu.");
-                    return;
-                }
-                bestScore = match.similarity();
-                int uid = match.userId();
-                bestUser = users.stream().filter(u -> u.getId() == uid).findFirst().orElse(null);
-                if (bestUser == null) {
-                    show(Alert.AlertType.WARNING, "Face ID", "Erreur Face ID (utilisateur introuvable).");
-                    return;
-                }
-            } else {
-                FaceBiometricException lastProcessingError = null;
-                for (User user : users) {
-                    try {
-                        double score = faceBiometricService.similarity(user.getDataFaceApi(), probe);
-                        if (score > bestScore) {
-                            bestScore = score;
-                            bestUser = user;
-                        }
-                    } catch (FaceBiometricException ex) {
-                        String code = ex.getCode() != null ? ex.getCode().trim().toUpperCase() : "";
-                        if ("NO_FACE".equals(code) || "MULTIPLE_FACES".equals(code) || "INVALID_IMAGE".equals(code)) {
-                            show(Alert.AlertType.WARNING, "Face ID", faceMessageForCode(ex));
-                            return;
-                        }
-                        lastProcessingError = ex;
-                    }
-                }
-                if (bestUser == null) {
-                    if (lastProcessingError != null) {
-                        show(Alert.AlertType.WARNING, "Face ID", faceMessageForCode(lastProcessingError));
-                        return;
-                    }
-                    show(Alert.AlertType.INFORMATION, "Face ID", "Aucun visage reconnu.");
-                    return;
-                }
-            }
-            final double threshold = faceIdConfig.threshold();
-            final double eps = 1e-6;
-            if (bestScore + eps < threshold) {
-                String score = String.format(Locale.ROOT, "%.4f", bestScore);
-                String thresholdStr = String.format(Locale.ROOT, "%.4f", threshold);
-                show(Alert.AlertType.INFORMATION, "Face ID",
-                        "Visage non reconnu (score " + score + " < seuil " + thresholdStr + ").");
-                return;
-            }
-            AppState.setCurrentUser(bestUser);
-            if (bestUser instanceof AdminUser) {
-                MainApp.showAdminUsers();
-            } else if (bestUser instanceof Medecin) {
-                MainApp.showMedecinDashboard();
-            } else {
-                MainApp.showHome();
-            }
-        } catch (FaceBiometricException ex) {
-            show(Alert.AlertType.WARNING, "Face ID", faceMessageForCode(ex));
-        } catch (SQLException e) {
-            show(Alert.AlertType.ERROR, "Erreur", e.getMessage());
-        } catch (Exception e) {
-            show(Alert.AlertType.ERROR, "Face ID", "Erreur lors de la connexion Face ID.");
-        }
-    }
-
-    private static File chooseProbeImage(javafx.stage.Window owner) {
-        FileChooser chooser = new FileChooser();
-        chooser.setTitle("Image de vérification Face ID");
-        chooser.getExtensionFilters().add(
-                new FileChooser.ExtensionFilter("Images", "*.png", "*.jpg", "*.jpeg", "*.gif", "*.webp"));
-        return chooser.showOpenDialog(owner);
+        show(Alert.AlertType.INFORMATION, "Face ID", "Face ID non disponible sur cette plateforme.");
     }
 
     @FXML
@@ -499,21 +375,5 @@ public class LoginController implements PublicShellAware {
         alert.setHeaderText(null);
         alert.setContentText(message);
         alert.showAndWait();
-    }
-
-    private static String faceMessageForCode(FaceBiometricException ex) {
-        if (ex == null) {
-            return "Erreur Face ID.";
-        }
-        String code = ex.getCode() != null ? ex.getCode().trim().toUpperCase() : "";
-        return switch (code) {
-            case "NO_FACE" -> "Aucun visage détecté. Utilisez une photo nette du visage.";
-            case "MULTIPLE_FACES" -> "Plusieurs visages détectés. Utilisez une image avec un seul visage.";
-            case "INVALID_IMAGE" -> "Image invalide. Veuillez choisir un fichier image valide.";
-            case "SERVICE_UNAVAILABLE" -> "Service Face ID indisponible. Réessayez plus tard.";
-            default -> (ex.getMessage() != null && !ex.getMessage().isBlank())
-                    ? ex.getMessage()
-                    : "Erreur Face ID.";
-        };
     }
 }

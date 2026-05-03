@@ -47,9 +47,8 @@ public class GoogleOAuthService {
     private final UserService userService = new UserService();
 
     public String getConfiguredRedirectUri() {
-        String raw = cfgPreferFile("oauth.google.redirectUri", "OAUTH_GOOGLE_REDIRECT_URI",
+        return cfgPreferFile("oauth.google.redirectUri", "OAUTH_GOOGLE_REDIRECT_URI",
                 "http://127.0.0.1:8888/oauth/callback");
-        return normalizeRedirectUri(raw);
     }
 
     public String getConfiguredClientIdMasked() {
@@ -230,34 +229,6 @@ public class GoogleOAuthService {
 
     private static String enc(String x) {
         return URLEncoder.encode(x == null ? "" : x, StandardCharsets.UTF_8);
-    }
-
-    /**
-     * Normalise la redirect URI pour éviter les mismatch Google
-     * (ex: "/oauth/callback/" -> "/oauth/callback").
-     */
-    private static String normalizeRedirectUri(String raw) {
-        if (raw == null || raw.isBlank()) {
-            return "http://127.0.0.1:8888/oauth/callback";
-        }
-        try {
-            URI uri = URI.create(raw.trim());
-            String path = uri.getPath();
-            if (path != null && path.length() > 1 && path.endsWith("/")) {
-                path = path.substring(0, path.length() - 1);
-            }
-            URI normalized = new URI(
-                    uri.getScheme(),
-                    uri.getUserInfo(),
-                    uri.getHost(),
-                    uri.getPort(),
-                    path,
-                    uri.getQuery(),
-                    uri.getFragment());
-            return normalized.toString();
-        } catch (Exception ignored) {
-            return raw.trim();
-        }
     }
 
     private static Properties loadFileConfig() {

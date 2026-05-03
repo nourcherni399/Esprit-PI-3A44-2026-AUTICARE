@@ -609,7 +609,7 @@ public class AdminEventsPanelController {
                 u = userService.findById(r.getUtilisateurId()).orElse(null);
             } catch (Exception ignored) {
             }
-            String name = displayNameForUser(u, r.getUtilisateurId());
+            String name = displayNameForUser(u);
             String email = u != null && u.getEmail() != null ? u.getEmail() : "—";
             String when = r.getDateInscription() != null ? r.getDateInscription().format(f) : "—";
             String status = switch (r.getStatut()) {
@@ -716,7 +716,7 @@ public class AdminEventsPanelController {
                     u = userService.findById(r.getUtilisateurId()).orElse(null);
                 } catch (Exception ignored) {
                 }
-                String name = displayNameForUser(u, r.getUtilisateurId());
+                String name = displayNameForUser(u);
                 String email = u != null && u.getEmail() != null ? u.getEmail() : "—";
                 String when = r.getDateInscription() != null ? r.getDateInscription().format(f) : "—";
                 lines.add("- " + name + " | " + email + " | " + when + " | " + r.getStatut());
@@ -792,7 +792,7 @@ public class AdminEventsPanelController {
         }
         try {
             User user = userService.findById(participantId).orElse(null);
-            String name = displayNameForUser(user, participantId);
+            String name = displayNameForUser(user);
             List<EventMessage> conv = eventMessageService.listConversationForEventAndParticipant(eventId, participantId);
             String when = conv.isEmpty() || conv.get(conv.size() - 1).getDateEnvoi() == null
                     ? ""
@@ -828,7 +828,7 @@ public class AdminEventsPanelController {
         renderConversationList(eventId);
         try {
             User u = userService.findById(participantId).orElse(null);
-            String name = displayNameForUser(u, participantId);
+            String name = displayNameForUser(u);
             if (detailSelectedConversationTitle != null) {
                 detailSelectedConversationTitle.setText("Conversation avec " + name);
             }
@@ -931,12 +931,18 @@ public class AdminEventsPanelController {
         }
     }
 
-    private static String displayNameForUser(User u, int fallbackId) {
+    private static String displayNameForUser(User u) {
         if (u == null) {
-            return "Utilisateur #" + fallbackId;
+            return "Compte membre";
         }
         String n = ((u.getPrenom() != null ? u.getPrenom() : "") + " " + (u.getNom() != null ? u.getNom() : "")).trim();
-        return n.isBlank() ? ("Utilisateur #" + fallbackId) : n;
+        if (!n.isBlank()) {
+            return n;
+        }
+        if (u.getEmail() != null && !u.getEmail().isBlank()) {
+            return u.getEmail();
+        }
+        return "Compte membre";
     }
 
     private void openEditEvent(Event ev) {

@@ -9,8 +9,6 @@ import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
@@ -24,13 +22,10 @@ import org.example.utils.AdminTopbarHelper;
 import org.example.utils.AppState;
 import org.example.utils.PasswordUtil;
 import org.example.utils.UserImageStorage;
-import org.example.utils.UserPublicAssets;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Path;
 import java.sql.SQLException;
-import java.time.LocalDate;
 import java.util.Locale;
 import java.util.Optional;
 
@@ -60,8 +55,6 @@ public class AdminUserEditController {
     private TextField telephoneField;
     @FXML
     private Label photoPathLabel;
-    @FXML
-    private ImageView photoPreviewImage;
     @FXML
     private PasswordField passwordField;
     @FXML
@@ -178,19 +171,10 @@ public class AdminUserEditController {
             chosenPhoto = null;
             String img = editingUser.getImage();
             if (img != null && !img.isBlank()) {
-                Path p = UserPublicAssets.resolvePublicRelative(img);
-                if (setPhotoPreview(p != null ? p.toUri().toString() : null)) {
-                    photoPathLabel.setText("Image actuelle");
-                } else {
-                    photoPathLabel.setText("Aucune photo enregistrée");
-                }
+                int sl = Math.max(img.lastIndexOf('/'), img.lastIndexOf('\\'));
+                photoPathLabel.setText(sl >= 0 ? img.substring(sl + 1) : img);
             } else {
                 photoPathLabel.setText("Aucune photo enregistrée");
-                if (photoPreviewImage != null) {
-                    photoPreviewImage.setImage(null);
-                    photoPreviewImage.setVisible(false);
-                    photoPreviewImage.setManaged(false);
-                }
             }
 
             roleListener = (obs, o, n) -> refreshRoleSections(n);
@@ -226,11 +210,7 @@ public class AdminUserEditController {
         File f = ch.showOpenDialog(st);
         if (f != null) {
             chosenPhoto = f;
-            if (setPhotoPreview(f.toURI().toString())) {
-                photoPathLabel.setText("Image sélectionnée");
-            } else {
-                photoPathLabel.setText("Image invalide");
-            }
+            photoPathLabel.setText(f.getName());
         }
     }
 
@@ -281,10 +261,6 @@ public class AdminUserEditController {
             alert(Alert.AlertType.WARNING, "Champs requis", "Indiquez le nom et le prénom.");
             return;
         }
-        if (!isValidName(nom) || !isValidName(prenom)) {
-            alert(Alert.AlertType.WARNING, "Nom invalide", "Le nom et le prénom ne doivent pas contenir de chiffres.");
-            return;
-        }
         if (email.isEmpty() || !email.contains("@")) {
             alert(Alert.AlertType.WARNING, "Email", "Indiquez une adresse email valide.");
             return;
@@ -293,13 +269,6 @@ public class AdminUserEditController {
         if (role == null) {
             alert(Alert.AlertType.WARNING, "Rôle", "Choisissez un rôle.");
             return;
-        }
-        if (role == Role.PATIENT && dateNaissancePicker != null) {
-            LocalDate dn = dateNaissancePicker.getValue();
-            if (dn != null && dn.isAfter(LocalDate.now())) {
-                alert(Alert.AlertType.WARNING, "Date de naissance", "La date de naissance ne peut pas être supérieure à la date du jour.");
-                return;
-            }
         }
         if (role == Role.MEDECIN) {
             if (AdminUserRoleFormHelper.trim(cabinetTelField).isEmpty()) {
@@ -414,42 +383,6 @@ public class AdminUserEditController {
             return "";
         }
         return f.getText().trim();
-    }
-
-    private static boolean isValidName(String value) {
-        if (value == null || value.isBlank()) {
-            return false;
-        }
-        for (int i = 0; i < value.length(); i++) {
-            if (Character.isDigit(value.charAt(i))) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    private boolean setPhotoPreview(String uri) {
-        if (photoPreviewImage == null || uri == null || uri.isBlank()) {
-            return false;
-        }
-        try {
-            Image image = new Image(uri, 84, 84, true, true, true);
-            if (image.isError()) {
-                photoPreviewImage.setImage(null);
-                photoPreviewImage.setVisible(false);
-                photoPreviewImage.setManaged(false);
-                return false;
-            }
-            photoPreviewImage.setImage(image);
-            photoPreviewImage.setVisible(true);
-            photoPreviewImage.setManaged(true);
-            return true;
-        } catch (Exception ignored) {
-            photoPreviewImage.setImage(null);
-            photoPreviewImage.setVisible(false);
-            photoPreviewImage.setManaged(false);
-            return false;
-        }
     }
 
     @FXML

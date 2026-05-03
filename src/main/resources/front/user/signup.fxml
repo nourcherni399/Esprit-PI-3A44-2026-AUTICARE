@@ -154,7 +154,6 @@
                                 <HBox alignment="CENTER_LEFT" spacing="12">
                                     <Button fx:id="chooseFileBtn" onAction="#onChooseBiometricFile" text="Choisir un fichier" />
                                     <Label fx:id="biometricPathLabel" styleClass="signup-file-hint" text="Aucun fichier choisi" />
-                            <ImageView fx:id="biometricPreviewImage" fitHeight="84.0" fitWidth="84.0" managed="false" pickOnBounds="true" preserveRatio="true" visible="false" />
                                 </HBox>
                             </VBox>
                             <Button onAction="#onCreateAccount" styleClass="login-primary-btn" text="Créer mon compte" />

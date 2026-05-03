@@ -9,8 +9,6 @@ import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
@@ -19,7 +17,6 @@ import javafx.util.StringConverter;
 import org.example.MainApp;
 import org.example.models.Role;
 import org.example.models.User;
-import org.example.models.UserFactory;
 import org.example.services.UserService;
 import org.example.utils.AdminTopbarHelper;
 import org.example.utils.AppState;
@@ -29,7 +26,6 @@ import org.example.utils.UserImageStorage;
 import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
-import java.time.LocalDate;
 import java.util.Optional;
 
 public class AdminAddUserController {
@@ -54,8 +50,6 @@ public class AdminAddUserController {
     private TextField telephoneField;
     @FXML
     private Label photoPathLabel;
-    @FXML
-    private ImageView photoPreviewImage;
     @FXML
     private PasswordField passwordField;
     @FXML
@@ -151,11 +145,7 @@ public class AdminAddUserController {
         File f = ch.showOpenDialog(st);
         if (f != null) {
             chosenPhoto = f;
-            if (setPhotoPreview(f.toURI().toString())) {
-                photoPathLabel.setText("Image sélectionnée");
-            } else {
-                photoPathLabel.setText("Image invalide");
-            }
+            photoPathLabel.setText(f.getName());
         }
     }
 
@@ -186,10 +176,6 @@ public class AdminAddUserController {
             alert(Alert.AlertType.WARNING, "Champs requis", "Indiquez le nom et le prénom.");
             return;
         }
-        if (!isValidName(nom) || !isValidName(prenom)) {
-            alert(Alert.AlertType.WARNING, "Nom invalide", "Le nom et le prénom ne doivent pas contenir de chiffres.");
-            return;
-        }
         if (email.isEmpty() || !email.contains("@")) {
             alert(Alert.AlertType.WARNING, "Email", "Indiquez une adresse email valide.");
             return;
@@ -198,13 +184,6 @@ public class AdminAddUserController {
         if (role == null) {
             alert(Alert.AlertType.WARNING, "Rôle", "Choisissez un rôle.");
             return;
-        }
-        if (role == Role.PATIENT && dateNaissancePicker != null) {
-            LocalDate dn = dateNaissancePicker.getValue();
-            if (dn != null && dn.isAfter(LocalDate.now())) {
-                alert(Alert.AlertType.WARNING, "Date de naissance", "La date de naissance ne peut pas être supérieure à la date du jour.");
-                return;
-            }
         }
         if (role == Role.MEDECIN) {
             if (AdminUserRoleFormHelper.trim(cabinetTelField).isEmpty()) {
@@ -230,7 +209,7 @@ public class AdminAddUserController {
                 return;
             }
 
-            User u = UserFactory.createByRole(role);
+            User u = new User();
             u.setNom(nom);
             u.setPrenom(prenom);
             u.setEmail(email);
@@ -279,42 +258,6 @@ public class AdminAddUserController {
             return "";
         }
         return f.getText().trim();
-    }
-
-    private static boolean isValidName(String value) {
-        if (value == null || value.isBlank()) {
-            return false;
-        }
-        for (int i = 0; i < value.length(); i++) {
-            if (Character.isDigit(value.charAt(i))) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    private boolean setPhotoPreview(String uri) {
-        if (photoPreviewImage == null || uri == null || uri.isBlank()) {
-            return false;
-        }
-        try {
-            Image image = new Image(uri, 84, 84, true, true, true);
-            if (image.isError()) {
-                photoPreviewImage.setImage(null);
-                photoPreviewImage.setVisible(false);
-                photoPreviewImage.setManaged(false);
-                return false;
-            }
-            photoPreviewImage.setImage(image);
-            photoPreviewImage.setVisible(true);
-            photoPreviewImage.setManaged(true);
-            return true;
-        } catch (Exception ignored) {
-            photoPreviewImage.setImage(null);
-            photoPreviewImage.setVisible(false);
-            photoPreviewImage.setManaged(false);
-            return false;
-        }
     }
 
     @FXML

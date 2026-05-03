@@ -79,7 +79,7 @@ public final class ProductExcelExportService {
             num2.setDataFormat(wb.createDataFormat().getFormat("0.00"));
 
             String[] headers = {
-                "ID", "Nom", "Description", "Catégorie", "Prix (DT)", "Stock", "Quantité",
+                "Nom", "Description", "Catégorie", "Prix (DT)", "Stock", "Quantité",
                 "Valeur totale du stock", "Disponible"
             };
             var headRow = sheet.createRow(0);
@@ -94,20 +94,19 @@ public final class ProductExcelExportService {
                 var row = sheet.createRow(rowIdx);
                 int excelRow1 = rowIdx + 1;
 
-                row.createCell(0).setCellValue(p.getId());
-                row.createCell(1).setCellValue(nullToEmpty(p.getNom()));
-                row.createCell(2).setCellValue(nullToEmpty(p.getDescription()));
-                row.createCell(3).setCellValue(categorieLabel(p.getCategorie()));
+                row.createCell(0).setCellValue(nullToEmpty(p.getNom()));
+                row.createCell(1).setCellValue(nullToEmpty(p.getDescription()));
+                row.createCell(2).setCellValue(categorieLabel(p.getCategorie()));
 
-                var priceCell = row.createCell(4);
+                var priceCell = row.createCell(3);
                 priceCell.setCellValue(p.getPrix());
                 priceCell.setCellStyle(num2);
 
                 String stockNom = stockNames.get(p.getStockId());
-                row.createCell(5).setCellValue(stockNom != null && !stockNom.isBlank() ? stockNom : "");
+                row.createCell(4).setCellValue(stockNom != null && !stockNom.isBlank() ? stockNom : "");
 
                 int q = p.getStock();
-                var qtyCell = row.createCell(6);
+                var qtyCell = row.createCell(5);
                 qtyCell.setCellValue(q);
                 if (q == 0) {
                     qtyCell.setCellStyle(qtyStyle0);
@@ -117,11 +116,11 @@ public final class ProductExcelExportService {
                     qtyCell.setCellStyle(qtyStyleGe5);
                 }
 
-                var valCell = row.createCell(7);
-                valCell.setCellFormula("E" + excelRow1 + "*G" + excelRow1);
+                var valCell = row.createCell(6);
+                valCell.setCellFormula("D" + excelRow1 + "*F" + excelRow1);
                 valCell.setCellStyle(num2);
 
-                row.createCell(8).setCellValue(p.isDisponible() ? "Oui" : "Non");
+                row.createCell(7).setCellValue(p.isDisponible() ? "Oui" : "Non");
 
                 rowIdx++;
             }
@@ -146,20 +145,20 @@ public final class ProductExcelExportService {
             foot.createCell(1).setCellValue(sorted.size() + " produit(s) exporté(s)");
             foot.getCell(1).setCellStyle(footerBase);
 
-            var sumCell = foot.createCell(7);
+            var sumCell = foot.createCell(6);
             if (sorted.isEmpty()) {
                 sumCell.setCellValue(0);
             } else {
-                sumCell.setCellFormula("SUM(H2:H" + (dataLastExcelRow) + ")");
+                sumCell.setCellFormula("SUM(G2:G" + (dataLastExcelRow) + ")");
             }
             sumCell.setCellStyle(footerNum);
 
-            for (int c = 2; c <= 6; c++) {
+            for (int c = 2; c <= 5; c++) {
                 foot.createCell(c).setCellStyle(footerBase);
             }
-            foot.createCell(8).setCellStyle(footerBase);
+            foot.createCell(7).setCellStyle(footerBase);
 
-            for (int c = 0; c < 9; c++) {
+            for (int c = 0; c < 8; c++) {
                 sheet.autoSizeColumn(c);
             }
             sheet.createFreezePane(0, 1);
