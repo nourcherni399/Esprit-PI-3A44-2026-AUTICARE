@@ -24,6 +24,8 @@ public class User {
     private LocalDateTime updatedAt;
     /** Chemin relatif sous {@code public/}, ex. {@code uploads/users/uuid.jpg} (aligné Symfony / colonne {@code image}). */
     private String image;
+    /** Données biométriques / template Face API (colonne MySQL {@code data_face_api}). */
+    private String dataFaceApi;
 
     public User() {
     }
@@ -64,6 +66,8 @@ public class User {
     public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
     public String getImage() { return image; }
     public void setImage(String image) { this.image = image; }
+    public String getDataFaceApi() { return dataFaceApi; }
+    public void setDataFaceApi(String dataFaceApi) { this.dataFaceApi = dataFaceApi; }
 
     @Override
     public String toString() {

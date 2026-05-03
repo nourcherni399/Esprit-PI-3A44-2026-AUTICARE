@@ -4,19 +4,24 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
 
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.URI;
+import java.net.URLEncoder;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 
 /**
  * Petit serveur local pour traiter les clics du lien d'activation email.
  */
 public class EmailVerificationCallbackServer implements AutoCloseable {
+
+    private static final Properties FILE_CONFIG = loadFileConfig();
 
     private final UserService userService = new UserService();
     private HttpServer server;
@@ -40,12 +45,72 @@ public class EmailVerificationCallbackServer implements AutoCloseable {
         }
     }
 
-    private static String readCallbackUrl() {
+    /**
+     * URL de base du lien dans l’email (sans {@code ?token=}), alignée sur le port d’écoute de ce serveur.
+     */
+    public static String readCallbackUrl() {
         String prop = System.getProperty("auticare.emailVerification.baseUrl");
-        if (prop != null && !prop.isBlank()) return prop.trim();
+        if (prop != null && !prop.isBlank()) {
+            return prop.trim();
+        }
         String env = System.getenv("AUTICARE_EMAIL_VERIFICATION_BASE_URL");
-        if (env != null && !env.isBlank()) return env.trim();
+        if (env != null && !env.isBlank()) {
+            return env.trim();
+        }
+        String file = FILE_CONFIG.getProperty("auticare.emailVerification.baseUrl");
+        if (file != null && !file.isBlank()) {
+            return file.trim();
+        }
         return "http://127.0.0.1:8899/verify-email";
+    }
+
+    /** Lien complet à mettre dans l’email (même base que {@link #readCallbackUrl()}). */
+    public static String buildVerifyUrl(String token) {
+        if (token == null || token.isBlank()) {
+            throw new IllegalArgumentException("token");
+        }
+        String base = readCallbackUrl();
+        String sep = base.contains("?") ? "&" : "?";
+        return base + sep + "token=" + URLEncoder.encode(token.trim(), StandardCharsets.UTF_8);
+    }
+
+    /**
+     * Si {@code false}, l’app n’exige pas l’email pour activer le compte (inscription immédiatement active).
+     */
+    public static boolean isEmailVerificationEnabled() {
+        String v = firstNonBlank(
+                System.getProperty("auticare.emailVerification.enabled"),
+                System.getenv("AUTICARE_EMAIL_VERIFICATION_ENABLED"),
+                FILE_CONFIG.getProperty("auticare.emailVerification.enabled"));
+        if (v == null || v.isBlank()) {
+            return true;
+        }
+        return !"false".equalsIgnoreCase(v.trim());
+    }
+
+    private static String firstNonBlank(String a, String b, String c) {
+        if (a != null && !a.isBlank()) {
+            return a;
+        }
+        if (b != null && !b.isBlank()) {
+            return b;
+        }
+        if (c != null && !c.isBlank()) {
+            return c;
+        }
+        return null;
+    }
+
+    private static Properties loadFileConfig() {
+        Properties p = new Properties();
+        try (InputStream in = EmailVerificationCallbackServer.class.getClassLoader()
+                .getResourceAsStream("application.properties")) {
+            if (in != null) {
+                p.load(in);
+            }
+        } catch (Exception ignored) {
+        }
+        return p;
     }
 
     private static final class VerifyEmailHandler implements HttpHandler {

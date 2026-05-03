@@ -141,6 +141,8 @@ public class PublicShellController {
     @FXML
     private HBox shellNavProduits;
     @FXML
+    private HBox shellNavPanier;
+    @FXML
     private HBox shellNavMesCommandes;
     @FXML
     private HBox shellNavRdv;
@@ -152,6 +154,9 @@ public class PublicShellController {
     private Hyperlink shellConnexionLink;
     @FXML
     private Button shellSignupBtn;
+    /** Placeholder nav (invité) ; même action que « Connexion » pour un invité, profil pour un utilisateur connecté. */
+    @FXML
+    private Button shellAvatarBtn;
     @FXML
     private StackPane patientNotifBellHost;
     @FXML
@@ -438,6 +443,19 @@ public class PublicShellController {
             guestNavActions.setVisible(!logged);
             guestNavActions.setManaged(!logged);
         }
+        if (shellAvatarBtn != null) {
+            shellAvatarBtn.setVisible(!logged);
+            shellAvatarBtn.setManaged(!logged);
+        }
+        /* Panier / commandes : réservés aux utilisateurs connectés. */
+        if (shellNavPanier != null) {
+            shellNavPanier.setVisible(logged);
+            shellNavPanier.setManaged(logged);
+        }
+        if (shellNavMesCommandes != null) {
+            shellNavMesCommandes.setVisible(logged);
+            shellNavMesCommandes.setManaged(logged);
+        }
         if (loggedNavActions != null) {
             loggedNavActions.setVisible(logged);
             loggedNavActions.setManaged(logged);
@@ -473,6 +491,13 @@ public class PublicShellController {
             }
             refreshUserNotificationBadge();
         }
+    }
+
+    /**
+     * Rafraîchit badges / état de la barre publique (ex. après « tout lu » sur Mes commandes).
+     */
+    public void refreshPublicNavBadges() {
+        refreshTopNavState();
     }
 
     private void configureNotificationsMenu() {
@@ -730,7 +755,7 @@ public class PublicShellController {
         }
         currentShellPageKey = pageId != null && !pageId.isBlank() ? pageId.trim() : "produits";
         String path = resolvePagePath(currentShellPageKey);
-        URL url = getClass().getResource(path);
+        URL url = MainApp.class.getResource(path);
         if (url == null) {
             throw new IOException("Page introuvable : " + path);
         }
@@ -744,11 +769,6 @@ public class PublicShellController {
             aware.setPublicShell(this);
             aware.onShellReady();
         }
-        if (ctrl instanceof PublicShellAware aware) {
-            aware.setPublicShell(this);
-        }
-        pageContentHost.getChildren().setAll(page);
-        StackPane.setAlignment(page, Pos.TOP_CENTER);
         applyShellHeroForPage(currentShellPageKey);
         refreshTopNavState();
         updatePublicNavHighlight();
@@ -758,7 +778,7 @@ public class PublicShellController {
     }
 
     private void clearPublicNavHighlight() {
-        HBox[] navBoxes = {shellNavAccueil, shellNavProduits, shellNavMesCommandes, shellNavRdv, shellNavEvents, shellNavBlog};
+        HBox[] navBoxes = {shellNavAccueil, shellNavProduits, shellNavPanier, shellNavMesCommandes, shellNavRdv, shellNavEvents, shellNavBlog};
         for (HBox box : navBoxes) {
             if (box != null) {
                 box.getStyleClass().remove("nav-item-active");
@@ -777,6 +797,7 @@ public class PublicShellController {
         String id = normalizeNavPageKey(currentShellPageKey);
         switch (id) {
             case "produits" -> addNavItemActive(shellNavProduits);
+            case "panier" -> addNavItemActive(shellNavPanier);
             case "mes-commandes" -> addNavItemActive(shellNavMesCommandes);
             case "rdv" -> addNavItemActive(shellNavRdv);
             case "events" -> addNavItemActive(shellNavEvents);
@@ -815,7 +836,8 @@ public class PublicShellController {
             case "connexion", "login" -> "login";
             case "signup", "inscription", "register" -> "signup";
             case "products" -> "produits";
-            case "orders", "commandes", "panier", "cart", "checkout", "mes-commandes" -> "mes-commandes";
+            case "panier", "cart", "checkout", "paiement" -> "panier";
+            case "mes-commandes", "orders", "commandes" -> "mes-commandes";
             default -> x;
         };
     }
@@ -908,7 +930,8 @@ public class PublicShellController {
                  "events", "evenements", "événements",
                  "event-detail", "evenement", "événement",
                  "login", "connexion", "signup", "inscription", "register",
-                 "notifications", "notifs" -> true;
+                 "notifications", "notifs",
+                 "panier", "cart", "checkout", "paiement" -> true;
             default -> false;
         };
     }
@@ -983,6 +1006,11 @@ public class PublicShellController {
     }
 
     @FXML
+    private void onNavPanier(MouseEvent e) {
+        openInShell("panier");
+    }
+
+    @FXML
     private void onNavRdv(MouseEvent e) {
         openInShell("rdv");
     }
@@ -1023,7 +1051,7 @@ public class PublicShellController {
 
     @FXML
     private void onUserShortcutBag() {
-        openInShell("produits");
+        openInShell("panier");
     }
 
     @FXML
@@ -1034,6 +1062,16 @@ public class PublicShellController {
     @FXML
     private void onNavConnexion() {
         openInShell("login");
+    }
+
+    @FXML
+    private void onNavAvatar() {
+        User u = AppState.getCurrentUser();
+        if (u != null) {
+            onOpenMyProfile(null);
+        } else {
+            openInShell("login");
+        }
     }
 
     @FXML

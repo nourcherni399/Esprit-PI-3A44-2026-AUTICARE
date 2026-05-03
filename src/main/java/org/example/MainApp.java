@@ -17,6 +17,7 @@ import javafx.stage.StageStyle;
 import org.example.controllers.AdminMyProfileController;
 import org.example.models.Role;
 import org.example.models.User;
+import org.example.services.EmailVerificationCallbackServer;
 import org.example.utils.AdminTopbarHelper;
 import org.example.utils.AppState;
 
@@ -26,6 +27,8 @@ import java.net.URL;
 public class MainApp extends Application {
 
     private static Stage primaryStage;
+    /** Écoute les clics sur le lien d’activation email (ex. {@code http://127.0.0.1:8899/verify-email?token=...}). */
+    private EmailVerificationCallbackServer emailVerificationCallbackServer;
     private static final String DARK_THEME_STYLESHEET = MainApp.class.getResource("/styles/dark.css").toExternalForm();
     /** Curseur « main » sur boutons, onglets, listes, etc. (voir {@code /styles/cursor-pointer.css}). */
     private static final String CURSOR_POINTER_STYLESHEET =
@@ -54,10 +57,27 @@ public class MainApp extends Application {
     public void start(Stage stage) throws IOException {
         primaryStage = stage;
         installMaximizedGuard();
+        try {
+            emailVerificationCallbackServer = new EmailVerificationCallbackServer();
+            emailVerificationCallbackServer.start();
+        } catch (Exception e) {
+            System.err.println("AutiCare: serveur d'activation email non démarré (port 8899 occupé ou refusé ?) — "
+                    + "les liens dans les mails ne fonctionneront pas tant que l'app ne peut pas écouter ce port. "
+                    + e.getMessage());
+        }
         showHome();
         primaryStage.setTitle("AutiCare Desktop");
         primaryStage.show();
         scheduleMaximizedEnforcement();
+    }
+
+    @Override
+    public void stop() throws Exception {
+        if (emailVerificationCallbackServer != null) {
+            emailVerificationCallbackServer.close();
+            emailVerificationCallbackServer = null;
+        }
+        super.stop();
     }
 
     /** Page d'accueil (défilement, sections, fond animé). */

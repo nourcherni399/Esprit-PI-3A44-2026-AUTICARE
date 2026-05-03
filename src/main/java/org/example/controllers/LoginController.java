@@ -10,13 +10,26 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.VBox;
 import org.example.MainApp;
 import org.example.models.Role;
+import org.example.models.User;
+import org.example.services.FaceBiometricException;
+import org.example.services.FaceIdClientService;
+import org.example.services.FaceIdConfig;
+import org.example.services.FaceIdentifyMatch;
 import org.example.services.GoogleOAuthService;
 import org.example.services.UserService;
 import org.example.utils.AppState;
+import org.example.utils.FaceCameraCapture;
+import org.example.utils.SqlConnectivityErrors;
 import org.example.utils.PasswordRecoveryState;
 import org.example.utils.PasswordUtil;
+import javafx.stage.Window;
 
+import java.io.File;
 import java.io.IOException;
+import java.sql.SQLException;
+import java.util.List;
+import java.util.Locale;
+import java.util.Optional;
 
 public class LoginController implements PublicShellAware {
 
@@ -105,22 +118,35 @@ public class LoginController implements PublicShellAware {
                 show(Alert.AlertType.INFORMATION, "Échec", "Email ou mot de passe invalide.");
                 return;
             }
-            var u = cand;
-            AppState.setCurrentUser(u);
-            if (u.getRole() == Role.ADMIN) {
-                MainApp.showAdminUsers();
-            } else if (u.getRole() == Role.MEDECIN) {
-                MainApp.showMedecinDashboard();
-            } else {
-                if (AppState.getPendingPublicEventDetailId() > 0) {
-                    MainApp.showPublicPage("event-detail");
-                    return;
-                }
-                MainApp.showHome();
-            }
+            routeAfterSuccessfulLogin(cand);
         } catch (Exception e) {
             show(Alert.AlertType.ERROR, "Erreur", e.getMessage());
         }
+    }
+
+    private void routeAfterSuccessfulLogin(User u) throws IOException {
+        AppState.setCurrentUser(u);
+        if (u.getRole() == Role.ADMIN) {
+            MainApp.showAdminUsers();
+        } else if (u.getRole() == Role.MEDECIN) {
+            MainApp.showMedecinDashboard();
+        } else {
+            if (AppState.getPendingPublicEventDetailId() > 0) {
+                MainApp.showPublicPage("event-detail");
+                return;
+            }
+            MainApp.showHome();
+        }
+    }
+
+    private Window loginOwnerWindow() {
+        if (loginPageRoot != null && loginPageRoot.getScene() != null && loginPageRoot.getScene().getWindow() != null) {
+            return loginPageRoot.getScene().getWindow();
+        }
+        if (emailField != null && emailField.getScene() != null && emailField.getScene().getWindow() != null) {
+            return emailField.getScene().getWindow();
+        }
+        return MainApp.getPrimaryStage();
     }
 
     @FXML
@@ -236,25 +262,98 @@ public class LoginController implements PublicShellAware {
         GoogleOAuthService google = new GoogleOAuthService();
         try {
             var u = google.signInWithGoogle();
-            AppState.setCurrentUser(u);
-            if (u.getRole() == Role.ADMIN) {
-                MainApp.showAdminUsers();
-            } else if (u.getRole() == Role.MEDECIN) {
-                MainApp.showMedecinDashboard();
-            } else {
-                MainApp.showHome();
-            }
+            routeAfterSuccessfulLogin(u);
         } catch (Exception e) {
-            show(Alert.AlertType.ERROR, "Google OAuth",
-                    "Echec connexion Google: " + (e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName())
-                            + "\nredirectUri utilisee: " + google.getConfiguredRedirectUri()
-                            + "\nclientId: " + google.getConfiguredClientIdMasked());
+            boolean db = SqlConnectivityErrors.isLikelyDbConnectivity(e);
+            String title = db ? "Base de données (MySQL)" : "Google OAuth";
+            StringBuilder msg = new StringBuilder(256);
+            if (db) {
+                msg.append("L’authentification Google a probablement réussi, mais l’application ne peut pas joindre MySQL ")
+                        .append("(recherche ou création du compte).\n\n")
+                        .append("Démarrez le serveur MySQL et vérifiez jdbc.url / utilisateur dans application.properties ")
+                        .append("(ou votre fichier local équivalent).\n\n");
+            } else {
+                msg.append("Échec connexion Google : ");
+            }
+            msg.append(e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName());
+            if (!db) {
+                msg.append("\nredirectUri utilisee: ").append(google.getConfiguredRedirectUri())
+                        .append("\nclientId: ").append(google.getConfiguredClientIdMasked());
+            }
+            show(Alert.AlertType.ERROR, title, msg.toString());
         }
     }
 
     @FXML
     public void onFaceIdSignIn() {
-        show(Alert.AlertType.INFORMATION, "Face ID", "Face ID non disponible sur cette plateforme.");
+        FaceIdConfig faceCfg = new FaceIdConfig();
+        if (!faceCfg.isEnabled()) {
+            show(Alert.AlertType.INFORMATION, "Face ID",
+                    "La connexion par visage est désactivée (faceid.enabled=false dans application.properties).");
+            return;
+        }
+        FaceIdClientService faceClient = new FaceIdClientService(faceCfg);
+        if (faceCfg.isRequireHealthy() && !faceClient.isHealthy()) {
+            show(Alert.AlertType.WARNING, "Service Face ID",
+                    "Le service visage ne répond pas sur "
+                            + faceCfg.serviceUrl()
+                            + "\n\nDémarrez le service Python (face-service) sur ce port, ou mettez faceid.requireHealthy=false pour tenter quand même.");
+            return;
+        }
+        List<User> candidates;
+        try {
+            candidates = userService.findUsersWithFaceEnrollment();
+        } catch (SQLException e) {
+            boolean db = SqlConnectivityErrors.isLikelyDbConnectivity(e);
+            show(Alert.AlertType.ERROR, db ? "Base de données (MySQL)" : "Erreur",
+                    db ? "Impossible de charger les comptes avec visage enregistré.\n\n" + e.getMessage()
+                            : (e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName()));
+            return;
+        }
+        if (candidates.isEmpty()) {
+            show(Alert.AlertType.INFORMATION, "Face ID",
+                    "Aucun compte n’a encore enrôlé un visage. Connectez-vous par email puis enregistrez votre visage depuis votre profil.");
+            return;
+        }
+        Optional<File> probe;
+        try {
+            probe = FaceCameraCapture.capture(loginOwnerWindow());
+        } catch (FaceCameraCapture.FaceCameraException e) {
+            show(Alert.AlertType.WARNING, "Caméra", e.getMessage());
+            return;
+        }
+        if (probe.isEmpty()) {
+            return;
+        }
+        File image = probe.get();
+        try {
+            FaceIdentifyMatch match = faceClient.identifyBestAmongUsers(candidates, image);
+            double minScore = faceCfg.threshold();
+            if (!match.hasMatch() || match.similarity() < minScore) {
+                show(Alert.AlertType.INFORMATION, "Face ID",
+                        "Visage non reconnu ou score insuffisant (seuil " + String.format(Locale.FRENCH, "%.2f", minScore)
+                                + "). Réessayez ou utilisez l’email et le mot de passe.");
+                return;
+            }
+            Optional<User> found = userService.findById(match.userId());
+            if (found.isEmpty()) {
+                show(Alert.AlertType.ERROR, "Face ID", "Utilisateur introuvable après identification.");
+                return;
+            }
+            User u = found.get();
+            if (!u.isActif()) {
+                show(Alert.AlertType.WARNING, "Compte désactivé",
+                        "Ce compte n’est pas activé. Activez-le en base ou utilisez un autre utilisateur.");
+                return;
+            }
+            routeAfterSuccessfulLogin(u);
+        } catch (FaceBiometricException e) {
+            show(Alert.AlertType.ERROR, "Face ID", e.getMessage());
+        } catch (IOException e) {
+            show(Alert.AlertType.ERROR, "Navigation", e.getMessage());
+        } catch (SQLException e) {
+            show(Alert.AlertType.ERROR, "Erreur", e.getMessage());
+        }
     }
 
     @FXML

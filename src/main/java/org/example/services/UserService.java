@@ -21,7 +21,7 @@ public class UserService implements IService<User> {
     private static final String MYSQL_USER_SELECT =
             "SELECT id, nom, prenom, email, CAST(telephone AS CHAR) AS telephone, password AS mot_de_passe_hash, "
                     + "is_active AS actif, role, specialite, nom_cabinet AS cabinet, relation_avec_patient AS relation_parent, "
-                    + "date_naissance, adresse, tarif_consultation, sexe, created_at, updated_at, image FROM `user` WHERE ";
+                    + "date_naissance, adresse, tarif_consultation, sexe, created_at, updated_at, image, data_face_api FROM `user` WHERE ";
 
     @Override
     public void add(User u) throws SQLException {
@@ -30,6 +30,31 @@ public class UserService implements IService<User> {
                 + "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
         try (PreparedStatement ps = MyDatabase.getConnection().prepareStatement(sql)) {
             fillMysqlInsert(ps, u);
+            ps.executeUpdate();
+        }
+    }
+
+    /**
+     * Inscription avec validation email : compte créé inactif jusqu’au clic sur le lien.
+     * Le jeton doit tenir dans {@code email_verification_token VARCHAR(64)} (p. ex. 32 octets en hex).
+     */
+    public void addWithEmailVerification(User u, String verificationToken, LocalDateTime verificationExpiresAt)
+            throws SQLException {
+        if (verificationToken != null && verificationToken.length() > 64) {
+            throw new SQLException("Jeton de vérification trop long pour la colonne email_verification_token (max 64).");
+        }
+        String sql = "INSERT INTO `user` (nom, prenom, email, telephone, password, is_active, created_at, updated_at, role, type, "
+                + "specialite, nom_cabinet, relation_avec_patient, date_naissance, adresse, sexe, tarif_consultation, image, "
+                + "email_verification_token, email_verification_expires_at) "
+                + "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+        try (PreparedStatement ps = MyDatabase.getConnection().prepareStatement(sql)) {
+            fillMysqlInsert(ps, u);
+            ps.setString(19, verificationToken);
+            if (verificationExpiresAt != null) {
+                ps.setTimestamp(20, Timestamp.valueOf(verificationExpiresAt));
+            } else {
+                ps.setNull(20, Types.TIMESTAMP);
+            }
             ps.executeUpdate();
         }
     }
@@ -70,7 +95,23 @@ public class UserService implements IService<User> {
         List<User> users = new ArrayList<>();
         String sql = "SELECT id, nom, prenom, email, CAST(telephone AS CHAR) AS telephone, password AS mot_de_passe_hash, "
                 + "is_active AS actif, role, specialite, nom_cabinet AS cabinet, relation_avec_patient AS relation_parent, "
-                + "date_naissance, adresse, tarif_consultation, sexe, created_at, updated_at, image FROM `user` ORDER BY created_at DESC";
+                + "date_naissance, adresse, tarif_consultation, sexe, created_at, updated_at, image, data_face_api FROM `user` ORDER BY created_at DESC";
+        try (Statement st = MyDatabase.getConnection().createStatement();
+             ResultSet rs = st.executeQuery(sql)) {
+            while (rs.next()) {
+                users.add(map(rs));
+            }
+        }
+        return users;
+    }
+
+    /** Utilisateurs avec enrôlement visage ({@code data_face_api} non vide), pour la connexion Face ID. */
+    public List<User> findUsersWithFaceEnrollment() throws SQLException {
+        List<User> users = new ArrayList<>();
+        String sql = "SELECT id, nom, prenom, email, CAST(telephone AS CHAR) AS telephone, password AS mot_de_passe_hash, "
+                + "is_active AS actif, role, specialite, nom_cabinet AS cabinet, relation_avec_patient AS relation_parent, "
+                + "date_naissance, adresse, tarif_consultation, sexe, created_at, updated_at, image, data_face_api FROM `user` "
+                + "WHERE data_face_api IS NOT NULL AND CHAR_LENGTH(TRIM(data_face_api)) > 0 ORDER BY created_at DESC";
         try (Statement st = MyDatabase.getConnection().createStatement();
              ResultSet rs = st.executeQuery(sql)) {
             while (rs.next()) {
@@ -85,7 +126,7 @@ public class UserService implements IService<User> {
         String pattern = "%" + keyword + "%";
         String sql = "SELECT id, nom, prenom, email, CAST(telephone AS CHAR) AS telephone, password AS mot_de_passe_hash, "
                 + "is_active AS actif, role, specialite, nom_cabinet AS cabinet, relation_avec_patient AS relation_parent, "
-                + "date_naissance, adresse, tarif_consultation, sexe, created_at, updated_at, image FROM `user` "
+                + "date_naissance, adresse, tarif_consultation, sexe, created_at, updated_at, image, data_face_api FROM `user` "
                 + "WHERE email LIKE ? OR nom LIKE ? OR prenom LIKE ? ORDER BY created_at DESC";
         try (PreparedStatement ps = MyDatabase.getConnection().prepareStatement(sql)) {
             ps.setString(1, pattern);
@@ -103,7 +144,7 @@ public class UserService implements IService<User> {
         List<User> users = new ArrayList<>();
         String sql = "SELECT id, nom, prenom, email, CAST(telephone AS CHAR) AS telephone, password AS mot_de_passe_hash, "
                 + "is_active AS actif, role, specialite, nom_cabinet AS cabinet, relation_avec_patient AS relation_parent, "
-                + "date_naissance, adresse, tarif_consultation, sexe, created_at, updated_at, image FROM `user` WHERE role=? ORDER BY created_at DESC";
+                + "date_naissance, adresse, tarif_consultation, sexe, created_at, updated_at, image, data_face_api FROM `user` WHERE role=? ORDER BY created_at DESC";
         try (PreparedStatement ps = MyDatabase.getConnection().prepareStatement(sql)) {
             ps.setString(1, "ROLE_" + role.name());
             ResultSet rs = ps.executeQuery();
@@ -220,6 +261,60 @@ public class UserService implements IService<User> {
         }
     }
 
+    /** Met à jour le template visage (JSON renvoyé par le service Face ID). */
+    public void updateDataFaceApi(int userId, String templateJson) throws SQLException {
+        if (templateJson == null || templateJson.isBlank()) {
+            return;
+        }
+        String sql = "UPDATE `user` SET data_face_api = ?, updated_at = ? WHERE id = ?";
+        try (PreparedStatement ps = MyDatabase.getConnection().prepareStatement(sql)) {
+            ps.setString(1, templateJson);
+            ps.setTimestamp(2, new Timestamp(System.currentTimeMillis()));
+            ps.setInt(3, userId);
+            ps.executeUpdate();
+        }
+    }
+
+    /**
+     * Active le compte via le jeton envoyé par email (lien {@code ?token=...}).
+     *
+     * @return {@code true} si exactement une ligne a été mise à jour (jeton valide et non expiré).
+     */
+    public boolean activateByEmailVerificationToken(String rawToken) throws SQLException {
+        if (rawToken == null || rawToken.isBlank()) {
+            return false;
+        }
+        String token = rawToken.trim();
+        /* Colonne MySQL typique : VARCHAR(64) — accepter au moins les jetons hex 32 octets. */
+        if (token.length() > 128) {
+            return false;
+        }
+        Timestamp now = new Timestamp(System.currentTimeMillis());
+        String sql = "UPDATE `user` SET is_active = 1, "
+                + "email_verification_token = NULL, email_verification_expires_at = NULL, "
+                + "email_verified_at = NOW(), updated_at = ? "
+                + "WHERE email_verification_token = ? "
+                + "AND (email_verification_expires_at IS NULL OR email_verification_expires_at > ?)";
+        try (PreparedStatement ps = MyDatabase.getConnection().prepareStatement(sql)) {
+            ps.setTimestamp(1, now);
+            ps.setString(2, token);
+            ps.setTimestamp(3, now);
+            return ps.executeUpdate() == 1;
+        } catch (SQLException first) {
+            // Bases sans email_verified_at ou colonnes partielles : activation minimale.
+            String fallback = "UPDATE `user` SET is_active = 1, "
+                    + "email_verification_token = NULL, email_verification_expires_at = NULL, "
+                    + "updated_at = ? WHERE email_verification_token = ? "
+                    + "AND (email_verification_expires_at IS NULL OR email_verification_expires_at > ?)";
+            try (PreparedStatement ps2 = MyDatabase.getConnection().prepareStatement(fallback)) {
+                ps2.setTimestamp(1, now);
+                ps2.setString(2, token);
+                ps2.setTimestamp(3, now);
+                return ps2.executeUpdate() == 1;
+            }
+        }
+    }
+
     private void fillMysqlInsert(PreparedStatement ps, User u) throws SQLException {
         String tel = u.getTelephone();
         int telInt = 0;
@@ -328,6 +423,12 @@ public class UserService implements IService<User> {
             u.setUpdatedAt(updated.toLocalDateTime());
         }
         u.setImage(rs.getString("image"));
+        try {
+            String dfa = rs.getString("data_face_api");
+            u.setDataFaceApi(rs.wasNull() ? null : dfa);
+        } catch (SQLException ignored) {
+            /* colonne absente sur très anciennes bases */
+        }
         return u;
     }
 

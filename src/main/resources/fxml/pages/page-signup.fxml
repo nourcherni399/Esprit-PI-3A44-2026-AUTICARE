@@ -95,10 +95,10 @@
                     </VBox>
                     <VBox spacing="8" styleClass="signup-bio-panel">
                         <Label styleClass="signup-bio-title" text="Option biométrique (facultatif)"/>
-                        <Label styleClass="signup-bio-desc" text="Ajoutez une photo visage nette pour préparer la connexion faciale." wrapText="true"/>
+                        <Label styleClass="signup-bio-desc" text="Ouvrez la caméra pour une capture nette du visage (connexion Face ID ultérieure)." wrapText="true"/>
                         <HBox alignment="CENTER_LEFT" spacing="12">
-                            <Button fx:id="chooseFileBtn" onAction="#onChooseBiometricFile" text="Choisir un fichier"/>
-                            <Label fx:id="biometricPathLabel" styleClass="signup-file-hint" text="Aucun fichier choisi"/>
+                            <Button fx:id="chooseFileBtn" onAction="#onCaptureBiometricFace" text="Ouvrir la caméra"/>
+                            <Label fx:id="biometricPathLabel" styleClass="signup-file-hint" text="Aucune capture enregistrée"/>
                         </HBox>
                     </VBox>
                     <Button onAction="#onCreateAccount" styleClass="login-primary-btn" text="Créer mon compte"/>
