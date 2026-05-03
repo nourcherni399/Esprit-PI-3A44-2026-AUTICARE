@@ -46,6 +46,9 @@ import org.example.models.Role;
 import org.example.models.User;
 import org.example.models.UserNotificationItem;
 import org.example.services.EventService;
+import org.example.services.AiRecommendationService;
+import org.example.services.EventRegistrationService;
+import org.example.services.CustomerOrderService;
 import org.example.services.ProductService;
 import org.example.services.UserNotificationService;
 import org.example.services.AppointmentService;
@@ -195,6 +198,9 @@ public class HomeController {
     private final UserNotificationService userNotificationService = new UserNotificationService();
     private final AppointmentService appointmentService = new AppointmentService();
     private final EventService eventService = new EventService();
+    private final EventRegistrationService eventRegistrationService = new EventRegistrationService();
+    private final CustomerOrderService customerOrderService = new CustomerOrderService();
+    private final AiRecommendationService aiRecommendationService = new AiRecommendationService();
     private final UserService userService = new UserService();
     private final ContextMenu homeNotifContextMenu = new ContextMenu();
 
@@ -248,7 +254,14 @@ public class HomeController {
         if (newsTickerViewport == null) {
             return;
         }
-        List<String> headlines = NewsTickerHeadlines.loadFromDatabase(eventService);
+        Integer currentUserId = AppState.getCurrentUser() != null ? AppState.getCurrentUser().getId() : null;
+        List<String> headlines = NewsTickerHeadlines.loadFromDatabase(
+                eventService,
+                productService,
+                eventRegistrationService,
+                customerOrderService,
+                aiRecommendationService,
+                currentUserId);
         newsTickerTrack = new HBox(0);
         newsTickerTrack.setAlignment(Pos.CENTER_LEFT);
         newsTickerTrack.getStyleClass().add("home-news-ticker-track");

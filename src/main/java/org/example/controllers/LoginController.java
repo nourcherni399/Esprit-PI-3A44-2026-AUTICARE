@@ -15,6 +15,7 @@ import org.example.models.Medecin;
 import org.example.models.User;
 import org.example.services.FaceBiometricException;
 import org.example.services.FaceBiometricService;
+import org.example.services.FaceIdentifyMatch;
 import org.example.services.FaceIdClientService;
 import org.example.services.FaceIdConfig;
 import org.example.services.GoogleOAuthService;
@@ -28,6 +29,7 @@ import java.io.IOException;
 import java.io.File;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Locale;
 
 public class LoginController implements PublicShellAware {
 
@@ -111,7 +113,7 @@ public class LoginController implements PublicShellAware {
             var cand = account.get();
             if (!cand.isActif()) {
                 show(Alert.AlertType.WARNING, "Compte désactivé",
-                        "Ce compte n'est pas activé (is_active = 0 en base). Activez-le dans MySQL ou utilisez un autre utilisateur.");
+                        "Ce compte n'est pas encore activé. Vérifiez votre email et cliquez sur le lien d'activation.");
                 return;
             }
             if (!PasswordUtil.matches(pwd, cand.getMotDePasseHash())) {
@@ -305,23 +307,53 @@ public class LoginController implements PublicShellAware {
             }
             User bestUser = null;
             double bestScore = -1.0;
-            for (User user : users) {
-                try {
-                    double score = faceBiometricService.similarity(user.getDataFaceApi(), probe);
-                    if (score > bestScore) {
-                        bestScore = score;
-                        bestUser = user;
-                    }
-                } catch (FaceBiometricException ex) {
-                    String code = ex.getCode() != null ? ex.getCode().trim().toUpperCase() : "";
-                    if ("NO_FACE".equals(code) || "MULTIPLE_FACES".equals(code) || "INVALID_IMAGE".equals(code)) {
-                        show(Alert.AlertType.WARNING, "Face ID", faceMessageForCode(ex));
-                        return;
+            if (faceBiometricService instanceof FaceIdClientService faceClient) {
+                FaceIdentifyMatch match = faceClient.identifyBestAmongUsers(users, probe);
+                if (!match.hasMatch()) {
+                    show(Alert.AlertType.INFORMATION, "Face ID", "Aucun visage reconnu.");
+                    return;
+                }
+                bestScore = match.similarity();
+                int uid = match.userId();
+                bestUser = users.stream().filter(u -> u.getId() == uid).findFirst().orElse(null);
+                if (bestUser == null) {
+                    show(Alert.AlertType.WARNING, "Face ID", "Erreur Face ID (utilisateur introuvable).");
+                    return;
+                }
+            } else {
+                FaceBiometricException lastProcessingError = null;
+                for (User user : users) {
+                    try {
+                        double score = faceBiometricService.similarity(user.getDataFaceApi(), probe);
+                        if (score > bestScore) {
+                            bestScore = score;
+                            bestUser = user;
+                        }
+                    } catch (FaceBiometricException ex) {
+                        String code = ex.getCode() != null ? ex.getCode().trim().toUpperCase() : "";
+                        if ("NO_FACE".equals(code) || "MULTIPLE_FACES".equals(code) || "INVALID_IMAGE".equals(code)) {
+                            show(Alert.AlertType.WARNING, "Face ID", faceMessageForCode(ex));
+                            return;
+                        }
+                        lastProcessingError = ex;
                     }
                 }
+                if (bestUser == null) {
+                    if (lastProcessingError != null) {
+                        show(Alert.AlertType.WARNING, "Face ID", faceMessageForCode(lastProcessingError));
+                        return;
+                    }
+                    show(Alert.AlertType.INFORMATION, "Face ID", "Aucun visage reconnu.");
+                    return;
+                }
             }
-            if (bestUser == null || bestScore < faceIdConfig.threshold()) {
-                show(Alert.AlertType.INFORMATION, "Face ID", "Aucun visage reconnu.");
+            final double threshold = faceIdConfig.threshold();
+            final double eps = 1e-6;
+            if (bestScore + eps < threshold) {
+                String score = String.format(Locale.ROOT, "%.4f", bestScore);
+                String thresholdStr = String.format(Locale.ROOT, "%.4f", threshold);
+                show(Alert.AlertType.INFORMATION, "Face ID",
+                        "Visage non reconnu (score " + score + " < seuil " + thresholdStr + ").");
                 return;
             }
             AppState.setCurrentUser(bestUser);
@@ -332,6 +364,8 @@ public class LoginController implements PublicShellAware {
             } else {
                 MainApp.showHome();
             }
+        } catch (FaceBiometricException ex) {
+            show(Alert.AlertType.WARNING, "Face ID", faceMessageForCode(ex));
         } catch (SQLException e) {
             show(Alert.AlertType.ERROR, "Erreur", e.getMessage());
         } catch (Exception e) {

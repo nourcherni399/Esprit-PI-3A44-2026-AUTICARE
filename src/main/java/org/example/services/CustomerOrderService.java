@@ -11,9 +11,13 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * Lecture des commandes côté client (propriétaire {@code user_id}), aligné sur Symfony.
@@ -80,6 +84,46 @@ public class CustomerOrderService {
             }
         }
         return list;
+    }
+
+    public Set<Integer> findPurchasedProductIdsForUser(int userId) throws SQLException {
+        String sql = "SELECT DISTINCT lc.produit_id "
+            + "FROM commande c "
+            + "JOIN ligne_commande lc ON lc.commande_id = c.id "
+            + "WHERE c.user_id=? AND lc.produit_id IS NOT NULL";
+        Set<Integer> ids = new LinkedHashSet<>();
+        try (Connection conn = MyDatabase.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, userId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    ids.add(rs.getInt("produit_id"));
+                }
+            }
+        }
+        return ids;
+    }
+
+    public Map<String, Integer> findTopPurchasedCategoriesForUser(int userId, int limit) throws SQLException {
+        int safeLimit = Math.max(1, limit);
+        String sql = "SELECT p.categorie AS categorie, COUNT(*) AS cnt "
+            + "FROM commande c "
+            + "JOIN ligne_commande lc ON lc.commande_id = c.id "
+            + "JOIN produit p ON p.id = lc.produit_id "
+            + "WHERE c.user_id=? AND p.categorie IS NOT NULL AND TRIM(p.categorie) <> '' "
+            + "GROUP BY p.categorie "
+            + "ORDER BY cnt DESC";
+        Map<String, Integer> out = new LinkedHashMap<>();
+        try (Connection conn = MyDatabase.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, userId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next() && out.size() < safeLimit) {
+                    out.put(rs.getString("categorie"), rs.getInt("cnt"));
+                }
+            }
+        }
+        return out;
     }
 
     /**

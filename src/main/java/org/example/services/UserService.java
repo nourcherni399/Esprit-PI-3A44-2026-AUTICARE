@@ -7,7 +7,10 @@ import org.example.utils.MyDatabase;
 import org.example.utils.PasswordUtil;
 
 import java.math.BigDecimal;
+import java.net.URLEncoder;
 import java.sql.*;
+import java.nio.charset.StandardCharsets;
+import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
@@ -17,6 +20,7 @@ import java.util.Optional;
 public class UserService implements IService<User> {
 
     public record ResetPinIssue(int userId, String email, String pinCode) {}
+    public record EmailVerificationIssue(int userId, String email, String token, String verifyUrl) {}
 
     /** Colonnes alignées sur la table Symfony {@code user}. */
     private static final String MYSQL_USER_SELECT =
@@ -208,6 +212,68 @@ public class UserService implements IService<User> {
     }
 
     /**
+     * Génère un token de vérification email (24h), désactive le compte et stocke l'expiration.
+     */
+    public Optional<EmailVerificationIssue> createAndStoreEmailVerificationForUser(int userId, String verificationBaseUrl)
+            throws SQLException {
+        Optional<User> u = findById(userId);
+        if (u.isEmpty() || u.get().getEmail() == null || u.get().getEmail().isBlank()) {
+            return Optional.empty();
+        }
+        String token = randomToken64();
+        LocalDateTime expiresAt = LocalDateTime.now().plus(24, ChronoUnit.HOURS);
+        String sql = "UPDATE `user` SET is_active=0, email_verification_token=?, email_verification_expires_at=?, "
+                + "email_verified_at=NULL, updated_at=? WHERE id=?";
+        try (PreparedStatement ps = MyDatabase.getConnection().prepareStatement(sql)) {
+            Timestamp now = new Timestamp(System.currentTimeMillis());
+            ps.setString(1, token);
+            ps.setTimestamp(2, Timestamp.valueOf(expiresAt));
+            ps.setTimestamp(3, now);
+            ps.setInt(4, userId);
+            ps.executeUpdate();
+        }
+        String baseUrl = (verificationBaseUrl == null || verificationBaseUrl.isBlank())
+                ? "http://127.0.0.1:8899/verify-email"
+                : verificationBaseUrl.trim();
+        String verifyUrl = baseUrl + (baseUrl.contains("?") ? "&" : "?")
+                + "token=" + URLEncoder.encode(token, StandardCharsets.UTF_8);
+        return Optional.of(new EmailVerificationIssue(userId, u.get().getEmail(), token, verifyUrl));
+    }
+
+    /**
+     * Active le compte à partir du token email (si valide et non expiré).
+     */
+    public boolean activateByEmailVerificationToken(String token) throws SQLException {
+        if (token == null || token.isBlank()) {
+            return false;
+        }
+        String select = "SELECT id, email_verification_expires_at FROM `user` WHERE email_verification_token=?";
+        int userId;
+        Timestamp exp;
+        try (PreparedStatement ps = MyDatabase.getConnection().prepareStatement(select)) {
+            ps.setString(1, token.trim());
+            ResultSet rs = ps.executeQuery();
+            if (!rs.next()) {
+                return false;
+            }
+            userId = rs.getInt("id");
+            exp = rs.getTimestamp("email_verification_expires_at");
+        }
+        if (exp == null || exp.toInstant().isBefore(java.time.Instant.now())) {
+            return false;
+        }
+        String update = "UPDATE `user` SET is_active=1, email_verified_at=?, email_verification_token=NULL, "
+                + "email_verification_expires_at=NULL, updated_at=? WHERE id=?";
+        try (PreparedStatement ps = MyDatabase.getConnection().prepareStatement(update)) {
+            Timestamp now = new Timestamp(System.currentTimeMillis());
+            ps.setTimestamp(1, now);
+            ps.setTimestamp(2, now);
+            ps.setInt(3, userId);
+            return ps.executeUpdate() > 0;
+        }
+    }
+
+    /**
      * Met a jour le mot de passe (bcrypt) et efface reset_pin/reset_pin_expires_at.
      */
     public void updatePasswordAfterReset(int userId, String rawPassword) throws SQLException {
@@ -300,6 +366,16 @@ public class UserService implements IService<User> {
             case PATIENT -> "patient";
             case USER -> "user";
         };
+    }
+
+    private static String randomToken64() {
+        byte[] bytes = new byte[32];
+        new SecureRandom().nextBytes(bytes);
+        StringBuilder sb = new StringBuilder(bytes.length * 2);
+        for (byte b : bytes) {
+            sb.append(String.format("%02x", b));
+        }
+        return sb.toString();
     }
 
     private User map(ResultSet rs) throws SQLException {

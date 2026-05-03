@@ -11,7 +11,6 @@ import javafx.scene.layout.VBox;
 
 import java.io.File;
 import java.util.Map;
-import javafx.stage.FileChooser;
 import javafx.stage.Window;
 import org.example.MainApp;
 import org.example.models.AdminUser;
@@ -24,6 +23,7 @@ import org.example.services.FaceBiometricService;
 import org.example.services.FaceIdClientService;
 import org.example.services.FaceIdConfig;
 import org.example.services.GoogleOAuthService;
+import org.example.services.EmailVerificationEmailService;
 import org.example.services.UserService;
 import org.example.utils.AppState;
 import org.example.utils.FaceCameraCapture;
@@ -31,6 +31,7 @@ import org.example.utils.PasswordUtil;
 
 import java.io.IOException;
 import java.sql.SQLException;
+import jakarta.mail.MessagingException;
 import java.util.regex.Pattern;
 
 public class SignupController implements PublicShellAware {
@@ -92,6 +93,7 @@ public class SignupController implements PublicShellAware {
     private TextField relationParentField;
 
     private final UserService userService = new UserService();
+    private final EmailVerificationEmailService verificationEmailService = new EmailVerificationEmailService();
     private final FaceIdConfig faceIdConfig = new FaceIdConfig();
     private final FaceBiometricService faceBiometricService = new FaceIdClientService(faceIdConfig);
     private File biometricFile;
@@ -156,13 +158,9 @@ public class SignupController implements PublicShellAware {
                 updateBiometricPreview(captured.get(), "Capture caméra sélectionnée");
                 return;
             }
-            alert(Alert.AlertType.INFORMATION, "Face ID", "Capture annulée. Choisissez une image manuellement.");
+            alert(Alert.AlertType.INFORMATION, "Face ID", "Capture annulée. La caméra est obligatoire pour Face ID.");
         } catch (FaceCameraCapture.FaceCameraException e) {
             alert(Alert.AlertType.WARNING, "Face ID", e.getMessage() != null ? e.getMessage() : "Caméra indisponible.");
-        }
-        File f = chooseBiometricFile(owner);
-        if (f != null) {
-            updateBiometricPreview(f, "Image sélectionnée");
         }
     }
 
@@ -230,7 +228,7 @@ public class SignupController implements PublicShellAware {
             if (faceIdConfig.isEnabled()) {
                 if (biometricFile == null) {
                     alert(Alert.AlertType.WARNING, "Face ID",
-                            "Veuillez choisir une image visage pour activer la connexion Face ID.");
+                            "Veuillez capturer votre visage via la caméra pour activer la connexion Face ID.");
                     return;
                 }
                 try {
@@ -252,11 +250,21 @@ public class SignupController implements PublicShellAware {
                 u.setAdresse(null);
                 u.setSexe(null);
             }
-            u.setActif(true);
+            u.setActif(false);
             userService.add(u);
+            var created = userService.findByEmail(email);
+            if (created.isPresent()) {
+                var issue = userService.createAndStoreEmailVerificationForUser(created.get().getId(), null);
+                if (issue.isPresent()) {
+                    verificationEmailService.sendVerificationEmail(issue.get().email(), issue.get().verifyUrl());
+                }
+            }
             alert(Alert.AlertType.INFORMATION, "Compte créé",
-                    "Vous pouvez maintenant vous connecter avec votre email.");
+                    "Un email d'activation a été envoyé. Cliquez sur le lien pour activer votre compte.");
             goToLoginPage();
+        } catch (MessagingException e) {
+            alert(Alert.AlertType.WARNING, "Activation email",
+                    "Compte créé, mais email d'activation non envoyé. Vérifiez la config SMTP.");
         } catch (SQLException e) {
             alert(Alert.AlertType.ERROR, "Erreur", e.getMessage());
         } catch (IOException e) {
@@ -434,14 +442,6 @@ public class SignupController implements PublicShellAware {
 
     private static String trim(TextField f) {
         return f.getText() == null ? "" : f.getText().trim();
-    }
-
-    private File chooseBiometricFile(Window owner) {
-        FileChooser chooser = new FileChooser();
-        chooser.setTitle("Photo visage");
-        chooser.getExtensionFilters().add(
-                new FileChooser.ExtensionFilter("Images", "*.png", "*.jpg", "*.jpeg", "*.gif", "*.webp"));
-        return chooser.showOpenDialog(owner);
     }
 
     private void updateBiometricPreview(File f, String okText) {

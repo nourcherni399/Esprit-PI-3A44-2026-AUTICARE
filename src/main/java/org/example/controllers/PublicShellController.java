@@ -53,7 +53,11 @@ import org.example.MainApp;
 import org.example.models.Role;
 import org.example.models.User;
 import org.example.services.AppointmentService;
+import org.example.services.AiRecommendationService;
+import org.example.services.CustomerOrderService;
 import org.example.services.EventService;
+import org.example.services.EventRegistrationService;
+import org.example.services.ProductService;
 import org.example.services.UserService;
 import org.example.utils.AppState;
 import org.example.utils.CombinedPublicNotifications;
@@ -167,6 +171,10 @@ public class PublicShellController {
 
     private final AppointmentService shellAppointmentService = new AppointmentService();
     private final EventService shellEventService = new EventService();
+    private final ProductService shellProductService = new ProductService();
+    private final EventRegistrationService shellRegistrationService = new EventRegistrationService();
+    private final CustomerOrderService shellOrderService = new CustomerOrderService();
+    private final AiRecommendationService shellAiRecommendationService = new AiRecommendationService();
     private final UserService shellUserService = new UserService();
 
     /** Dernière page chargée (pour surbrillance nav). */
@@ -344,7 +352,14 @@ public class PublicShellController {
         newsTickerTrack = new HBox(0);
         newsTickerTrack.setAlignment(Pos.CENTER_LEFT);
         newsTickerTrack.getStyleClass().add("home-news-ticker-track");
-        List<String> headlines = NewsTickerHeadlines.loadFromDatabase(shellEventService);
+        Integer currentUserId = AppState.getCurrentUser() != null ? AppState.getCurrentUser().getId() : null;
+        List<String> headlines = NewsTickerHeadlines.loadFromDatabase(
+                shellEventService,
+                shellProductService,
+                shellRegistrationService,
+                shellOrderService,
+                shellAiRecommendationService,
+                currentUserId);
         newsTickerSeg1 = buildNewsTickerSegment(headlines);
         HBox seg2 = buildNewsTickerSegment(headlines);
         newsTickerTrack.getChildren().setAll(newsTickerSeg1, seg2);
