@@ -81,6 +81,14 @@ public class PasswordRecoveryEmailService {
         Transport.send(message);
     }
 
+    /**
+     * E-mail HTML transactionnel (même compte SMTP que le PIN « mot de passe oublié »),
+     * via {@link SmtpMailUtil#sendHtml} (fichiers locaux + classpath).
+     */
+    public void sendTransactionalHtml(String recipientEmail, String subject, String htmlBody) throws MessagingException {
+        SmtpMailUtil.sendHtml(recipientEmail, subject, htmlBody);
+    }
+
     private static String readConfig(String propKey, String envKey, String fallback) {
         String fromProp = System.getProperty(propKey);
         if (fromProp != null && !fromProp.isBlank()) {

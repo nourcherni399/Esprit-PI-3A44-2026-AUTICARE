@@ -23,6 +23,12 @@ public class UserNotificationService {
     public static final String TYPE_RDV_REFUSED = "RDV_REFUSED";
     /** Rendez-vous déjà planifié annulé par le médecin. */
     public static final String TYPE_RDV_CANCELLED = "RDV_CANCELLED";
+    /** Demande de création produit acceptée par l'admin. */
+    public static final String TYPE_DEMANDE_PRODUIT_ACCEPTEE = "DEMANDE_PRODUIT_ACCEPTEE";
+    /** Demande de création produit refusée par l'admin. */
+    public static final String TYPE_DEMANDE_PRODUIT_REFUSEE = "DEMANDE_PRODUIT_REFUSEE";
+    /** Le produit demandé a été créé et publié dans le catalogue. */
+    public static final String TYPE_DEMANDE_PRODUIT_PUBLIEE = "DEMANDE_PRODUIT_PUBLIEE";
 
     public void addNotification(int userId, String typeCode, Integer eventId, String summary) throws SQLException {
         String sql = "INSERT INTO notifications_user(utilisateur_id, type_code, evenement_id, resume, lu, date_creation) "

@@ -8,6 +8,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  * Avis 1–5 sur un produit ({@code avis_produit}), mise à jour de {@code produit.note_moyenne}.
@@ -43,6 +45,21 @@ public class AvisProduitService {
             }
         }
         return null;
+    }
+
+    /** Toutes les notes d'un utilisateur (produit_id -> note). */
+    public Map<Integer, Integer> listNotesByUser(int userId) throws SQLException {
+        Map<Integer, Integer> out = new LinkedHashMap<>();
+        String sql = "SELECT produit_id, note FROM `avis_produit` WHERE user_id=? ORDER BY produit_id DESC";
+        try (PreparedStatement ps = MyDatabase.getConnection().prepareStatement(sql)) {
+            ps.setInt(1, userId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    out.put(rs.getInt("produit_id"), rs.getInt("note"));
+                }
+            }
+        }
+        return out;
     }
 
     private static void refreshAverage(Connection conn, int produitId) throws SQLException {

@@ -150,7 +150,7 @@ public class PageFavorisController implements PublicShellAware {
         Label priceLbl = new Label(String.format(Locale.FRENCH, "%.2f DT", p.getPrix()));
         priceLbl.setStyle("-fx-font-size: 14px; -fx-font-weight: 600; -fx-text-fill: #0f172a;");
         String stockNom = stockNames.get(p.getStockId());
-        String stockLine = stockNom != null && !stockNom.isBlank() ? "Stock : " + stockNom : "Réf. stock #" + p.getStockId();
+        String stockLine = stockNom != null && !stockNom.isBlank() ? "Stock : " + stockNom : "Emplacement catalogue";
         Label stockLbl = new Label(stockLine);
         stockLbl.setStyle("-fx-font-size: 12px; -fx-font-weight: 600; -fx-text-fill: #5c6d4a;");
         Button removeFav = new Button("Retirer des favoris");

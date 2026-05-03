@@ -3,6 +3,7 @@ package org.example.utils;
 import org.example.models.ModuleContent;
 import org.example.models.Ressource;
 import org.example.models.User;
+import org.example.models.AppLanguage;
 
 
 import java.util.ArrayList;
@@ -12,6 +13,7 @@ import java.util.Map;
 
 public class AppState {
     private static User currentUser;
+    private static AppLanguage currentLanguage = resolveDefaultLanguage();
     /** Utilisateur affiché sur l’écran admin « détail » (œil dans la liste). */
     private static User adminDetailUser;
     /** Utilisateur en cours d’édition (formulaire Modifier). */
@@ -29,10 +31,71 @@ public class AppState {
     private static String pendingAdminUsersSection;
     /** Panier invité (clé = productId, valeur = quantity). */
     private static final Map<Integer, Integer> guestCart = new LinkedHashMap<>();
+    /** Historique léger de comportement catalogue (clics/consultations panier) pour suggestions. */
+    private static final Map<Integer, Integer> productInterestCounts = new LinkedHashMap<>();
     /** Listeners UI déclenchés après mise à jour du panier invité. */
     private static final List<Runnable> cartChangeListeners = new ArrayList<>();
+    /** Brouillon de produit alimenté par l’assistant chat avant ouverture du formulaire admin. */
+    private static AdminProductDraft pendingAdminProductDraft;
+    /** Si vrai, ouvrir directement le formulaire produit admin (mode prérempli) au chargement. */
+    private static boolean pendingOpenAdminProductEditor;
+
+    public static final class AdminProductDraft {
+        private final String nom;
+        private final String description;
+        private final String categorie;
+        private final String prixText;
+        private final String stockHint;
+        private final String imagePath;
+
+        public AdminProductDraft(String nom, String description, String categorie, String prixText, String stockHint, String imagePath) {
+            this.nom = nom;
+            this.description = description;
+            this.categorie = categorie;
+            this.prixText = prixText;
+            this.stockHint = stockHint;
+            this.imagePath = imagePath;
+        }
+
+        public String getNom() {
+            return nom;
+        }
+
+        public String getDescription() {
+            return description;
+        }
+
+        public String getCategorie() {
+            return categorie;
+        }
+
+        public String getPrixText() {
+            return prixText;
+        }
+
+        public String getStockHint() {
+            return stockHint;
+        }
+
+        public String getImagePath() {
+            return imagePath;
+        }
+    }
 
     private AppState() {
+    }
+
+    private static AppLanguage resolveDefaultLanguage() {
+        String configured = LocalAiPropertiesFile.readProperty("app.default.language");
+        return AppLanguage.fromCode(configured);
+    }
+
+    public static AppLanguage getCurrentLanguage() {
+        return currentLanguage != null ? currentLanguage : AppLanguage.FR;
+    }
+
+    public static void setCurrentLanguage(AppLanguage language) {
+        currentLanguage = language != null ? language : AppLanguage.FR;
     }
 
     public static User getCurrentUser() {
@@ -45,6 +108,7 @@ public class AppState {
 
     public static void clear() {
         currentUser = null;
+        currentLanguage = AppLanguage.FR;
         adminDetailUser = null;
         clearAdminEditContext();
         clearAdminDeleteContext();
@@ -53,7 +117,38 @@ public class AppState {
         clearPendingAdminUsersSection();
         clearPendingPublicRdvBooking();
         clearPendingPublicEventDetailId();
+        clearPendingAdminProductDraft();
+        clearPendingOpenAdminProductEditor();
         guestCartClear();
+        clearProductInterest();
+    }
+
+    public static void setPendingAdminProductDraft(AdminProductDraft draft) {
+        pendingAdminProductDraft = draft;
+    }
+
+    public static AdminProductDraft consumePendingAdminProductDraft() {
+        AdminProductDraft draft = pendingAdminProductDraft;
+        pendingAdminProductDraft = null;
+        return draft;
+    }
+
+    public static void clearPendingAdminProductDraft() {
+        pendingAdminProductDraft = null;
+    }
+
+    public static void requestOpenAdminProductEditor() {
+        pendingOpenAdminProductEditor = true;
+    }
+
+    public static boolean consumePendingOpenAdminProductEditor() {
+        boolean v = pendingOpenAdminProductEditor;
+        pendingOpenAdminProductEditor = false;
+        return v;
+    }
+
+    public static void clearPendingOpenAdminProductEditor() {
+        pendingOpenAdminProductEditor = false;
     }
 
     public static User getAdminDetailUser() {
@@ -245,6 +340,21 @@ public class AppState {
                 // Do not block cart updates if a listener fails.
             }
         }
+    }
+
+    public static void markProductInterest(int productId) {
+        if (productId <= 0) {
+            return;
+        }
+        productInterestCounts.put(productId, productInterestCounts.getOrDefault(productId, 0) + 1);
+    }
+
+    public static Map<Integer, Integer> productInterestSnapshot() {
+        return new LinkedHashMap<>(productInterestCounts);
+    }
+
+    public static void clearProductInterest() {
+        productInterestCounts.clear();
     }
 
     public static int getPendingPublicRdvAvailabilityId() {

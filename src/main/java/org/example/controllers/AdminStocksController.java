@@ -231,9 +231,12 @@ public class AdminStocksController {
         refreshStockCardStyles();
     }
 
-    private VBox buildStockCard(Stock s) {
+    private VBox buildStockCard(Stock stock) {
+        final int stockId = stock.getId();
+        final Stock captured = stock;
+
         VBox card = new VBox(0);
-        card.setUserData(s.getId());
+        card.setUserData(stockId);
         card.setMinWidth(252);
         card.setMaxWidth(272);
         card.setCursor(Cursor.HAND);
@@ -252,14 +255,15 @@ public class AdminStocksController {
         VBox body = new VBox(8);
         body.setPadding(new Insets(12, 14, 14, 14));
 
-        Label nomLbl = new Label(s.getNom() != null ? s.getNom() : "—");
-        nomLbl.setWrapText(true);
-        nomLbl.setStyle("-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: #111827;");
+        String nom = stock.getNom() != null ? stock.getNom() : "—";
+        Label nameLabel = new Label(nom);
+        nameLabel.setWrapText(true);
+        nameLabel.setStyle("-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: #111827;");
 
-        Label refLbl = new Label("Réf. #" + s.getId());
-        refLbl.setStyle("-fx-font-size: 11px; -fx-text-fill: #6b7280;");
+        Label refLabel = new Label("Réf. #" + stockId);
+        refLabel.setStyle("-fx-font-size: 11px; -fx-text-fill: #6b7280;");
 
-        Label qtyVal = new Label(String.valueOf(s.getQuantite()));
+        Label qtyVal = new Label(String.valueOf(stock.getQuantite()));
         qtyVal.setStyle("-fx-font-size: 26px; -fx-font-weight: bold; -fx-text-fill: #166534;");
         Label qtyUnit = new Label("unités");
         qtyUnit.setStyle("-fx-font-size: 13px; -fx-text-fill: #64748b;");
@@ -271,14 +275,14 @@ public class AdminStocksController {
         hint.setMaxHeight(44);
         hint.setStyle("-fx-font-size: 11px; -fx-text-fill: #64748b;");
 
-        body.getChildren().addAll(nomLbl, refLbl, qtyRow, hint);
+        body.getChildren().addAll(nameLabel, refLabel, qtyRow, hint);
         card.getChildren().addAll(header, body);
 
         card.addEventFilter(MouseEvent.MOUSE_CLICKED, e -> {
             if (e.getButton() != MouseButton.PRIMARY) {
                 return;
             }
-            selectedStock = s;
+            selectedStock = captured;
             refreshStockCardStyles();
             e.consume();
         });

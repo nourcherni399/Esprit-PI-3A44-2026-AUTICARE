@@ -20,6 +20,8 @@ import javafx.scene.control.Hyperlink;
 import javafx.scene.control.Label;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
+import javafx.geometry.Side;
+import javafx.scene.CacheHint;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -29,6 +31,15 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.Hyperlink;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.control.TextField;
+import javafx.scene.control.ContextMenu;
+import javafx.scene.control.CustomMenuItem;
+import javafx.scene.control.Hyperlink;
+import javafx.scene.control.Label;
+import javafx.scene.control.ListCell;
+import javafx.scene.control.MenuItem;
+import javafx.scene.control.ScrollPane;
+import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
@@ -54,6 +65,20 @@ import org.example.models.Role;
 import org.example.models.User;
 import org.example.services.AppointmentService;
 import org.example.services.EventService;
+import org.example.services.NotificationService;
+import javafx.stage.Window;
+import javafx.util.Duration;
+import javafx.util.StringConverter;
+import org.example.MainApp;
+import org.example.models.AppLanguage;
+import org.example.models.Appointment;
+import org.example.models.Role;
+import org.example.models.User;
+import org.example.models.UserNotificationItem;
+import org.example.services.AppointmentService;
+import org.example.services.EventService;
+import org.example.services.NotificationService;
+import org.example.services.UserNotificationService;
 import org.example.services.UserService;
 import org.example.utils.AppState;
 import org.example.utils.CombinedPublicNotifications;
@@ -517,6 +542,12 @@ public class PublicShellController {
 
     public void refreshNotificationsBadge() {
         refreshUserNotificationBadge();
+    }
+
+    /** Rafraîchit les pastilles de la barre de navigation (notifications, RDV patient, etc.). */
+    public void refreshPublicNavBadges() {
+        refreshUserNotificationBadge();
+        refreshPatientNotifBadge();
     }
 
     private void rebuildUserNotificationsMenuItems() {
@@ -1035,6 +1066,15 @@ public class PublicShellController {
     @FXML
     private void onNavConnexion() {
         openInShell("login");
+    }
+
+    @FXML
+    private void onNavAvatar() {
+        if (AppState.getCurrentUser() == null) {
+            onNavConnexion();
+        } else {
+            onOpenMyProfile(null);
+        }
     }
 
     @FXML

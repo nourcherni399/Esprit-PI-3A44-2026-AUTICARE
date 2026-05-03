@@ -19,6 +19,10 @@ public class Appointment {
     private String patientPrenom;
     /** Lien vers {@code disponibilite.id} si la prise de RDV vient du parcours public (créneau choisi). */
     private int disponibiliteId;
+    /** Jeton secret pour lien « gérer le RDV » dans l'e-mail (sans connexion), colonne {@code gestion_token}. */
+    private String gestionToken;
+    /** Quand le SMS rappel 24 h (Twilio) a été envoyé ; colonne {@code sms_rappel_24h_envoye_at}. */
+    private LocalDateTime smsRappel24hEnvoyeAt;
 
     public int getId() { return id; }
     public void setId(int id) { this.id = id; }
@@ -73,6 +77,22 @@ public class Appointment {
 
     public void setDisponibiliteId(int disponibiliteId) {
         this.disponibiliteId = disponibiliteId;
+    }
+
+    public String getGestionToken() {
+        return gestionToken;
+    }
+
+    public void setGestionToken(String gestionToken) {
+        this.gestionToken = gestionToken;
+    }
+
+    public LocalDateTime getSmsRappel24hEnvoyeAt() {
+        return smsRappel24hEnvoyeAt;
+    }
+
+    public void setSmsRappel24hEnvoyeAt(LocalDateTime smsRappel24hEnvoyeAt) {
+        this.smsRappel24hEnvoyeAt = smsRappel24hEnvoyeAt;
     }
 
     @Override

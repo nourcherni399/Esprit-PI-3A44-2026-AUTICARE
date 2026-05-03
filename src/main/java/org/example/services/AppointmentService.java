@@ -12,6 +12,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
 import java.sql.Types;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -489,6 +490,45 @@ public class AppointmentService implements IService<Appointment> {
         }
     }
 
+    /**
+     * Sélectionne les RDV PLANIFIÉ entre +1 h et +48 h pour le rappel SMS (fenêtre de test / prod).
+     */
+    public List<Appointment> findPlanifiesForSmsReminderWindow(LocalDateTime now) throws SQLException {
+        if (!hasRdvColumn("sms_rappel_24h_envoye_at")) {
+            return List.of();
+        }
+        String col = dateTimeColumn();
+        LocalDateTime winStart = now.plusHours(1);
+        LocalDateTime winEnd = now.plusHours(48);
+        String sql = "SELECT * FROM rendez_vous WHERE statut='PLANIFIE' AND `" + col + "` > ? AND `" + col + "` >= ? AND `"
+                + col + "` <= ? AND sms_rappel_24h_envoye_at IS NULL";
+        List<Appointment> list = new ArrayList<>();
+        try (PreparedStatement ps = MyDatabase.getConnection().prepareStatement(sql)) {
+            ps.setTimestamp(1, Timestamp.valueOf(now));
+            ps.setTimestamp(2, Timestamp.valueOf(winStart));
+            ps.setTimestamp(3, Timestamp.valueOf(winEnd));
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    list.add(map(rs));
+                }
+            }
+        }
+        return list;
+    }
+
+    /** Marque le rappel SMS comme envoyé (évite les doublons). */
+    public void markSmsRappel24hEnvoye(int appointmentId) throws SQLException {
+        if (!hasRdvColumn("sms_rappel_24h_envoye_at")) {
+            return;
+        }
+        String sql = "UPDATE rendez_vous SET sms_rappel_24h_envoye_at=? WHERE id=?";
+        try (PreparedStatement ps = MyDatabase.getConnection().prepareStatement(sql)) {
+            ps.setTimestamp(1, Timestamp.valueOf(LocalDateTime.now()));
+            ps.setInt(2, appointmentId);
+            ps.executeUpdate();
+        }
+    }
+
     private List<Appointment> findByForeign(String field, int value) throws SQLException {
         String col = dateTimeColumn();
         List<Appointment> list = new ArrayList<>();
@@ -545,6 +585,18 @@ public class AppointmentService implements IService<Appointment> {
         }
         if (hasRdvColumn("medecin_demande_lue")) {
             a.setMedecinDemandeLue(rs.getInt("medecin_demande_lue") != 0);
+        }
+        if (hasRdvColumn("gestion_token")) {
+            String tok = rs.getString("gestion_token");
+            if (tok != null && !tok.isBlank()) {
+                a.setGestionToken(tok);
+            }
+        }
+        if (hasRdvColumn("sms_rappel_24h_envoye_at")) {
+            Timestamp smsTs = rs.getTimestamp("sms_rappel_24h_envoye_at");
+            if (smsTs != null) {
+                a.setSmsRappel24hEnvoyeAt(smsTs.toLocalDateTime());
+            }
         }
         return a;
     }

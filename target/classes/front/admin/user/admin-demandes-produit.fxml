@@ -67,14 +67,15 @@
                 </HBox>
             </top>
             <center>
-                <VBox spacing="12" style="-fx-padding: 18;">
+                <VBox spacing="14" style="-fx-padding: 18;">
+                    <Label text="Chaque carte est une demande client. Acceptez ou refusez : le demandeur reçoit une notification. Après acceptation, vous pouvez créer la fiche produit depuis la carte."
+                           wrapText="true" style="-fx-text-fill: #64748b; -fx-font-size: 13px;" maxWidth="960" />
                     <HBox spacing="10" alignment="CENTER_LEFT">
-                        <Button text="Rafraîchir" onAction="#onRefresh" />
-                        <Button text="Approuver" onAction="#onApprouver" />
-                        <Button text="Rejeter" onAction="#onRejeter" />
-                        <Button text="Créer le produit (demande approuvée)" onAction="#onCreerProduit" />
+                        <Button text="Rafraîchir la liste" onAction="#onRefresh" style="-fx-background-color: #2563eb; -fx-text-fill: white; -fx-font-weight: 700; -fx-background-radius: 8; -fx-padding: 8 16;" />
                     </HBox>
-                    <TableView fx:id="table" prefHeight="520" VBox.vgrow="ALWAYS" />
+                    <ScrollPane fitToWidth="true" style="-fx-background-color: transparent;" VBox.vgrow="ALWAYS">
+                        <VBox fx:id="cardsBox" spacing="16" style="-fx-padding: 4 4 24 4;" maxWidth="Infinity" />
+                    </ScrollPane>
                 </VBox>
             </center>
         </BorderPane>
