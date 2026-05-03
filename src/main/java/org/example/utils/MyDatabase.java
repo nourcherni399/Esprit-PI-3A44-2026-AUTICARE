@@ -32,6 +32,7 @@ public class MyDatabase {
     private final String password;
     private Connection connection;
     private static MyDatabase instance;
+    private static volatile boolean schemaInitialized = false;
 
     private MyDatabase() {
         this.url = readConfig("db.url", "PIDB_JDBC_URL", DEFAULT_URL);

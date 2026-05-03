@@ -105,10 +105,13 @@ public class PageNotificationsController implements PublicShellAware {
         return switch (typeCode) {
             case UserNotificationService.TYPE_EVENT_REGISTRATION_REFUSED,
                  UserNotificationService.TYPE_RDV_REFUSED,
-                 UserNotificationService.TYPE_RDV_CANCELLED -> "\u2716";
+                 UserNotificationService.TYPE_RDV_CANCELLED,
+                 UserNotificationService.TYPE_DEMANDE_PRODUIT_REFUSEE -> "\u2716";
             case UserNotificationService.TYPE_EVENT_MESSAGE_REPLY -> "\u2709";
             case UserNotificationService.TYPE_EVENT_REGISTRATION_PENDING -> "\u23F3";
-            case UserNotificationService.TYPE_RDV_ACCEPTED -> "\u2713";
+            case UserNotificationService.TYPE_RDV_ACCEPTED,
+                 UserNotificationService.TYPE_DEMANDE_PRODUIT_ACCEPTEE,
+                 UserNotificationService.TYPE_DEMANDE_PRODUIT_PUBLIEE -> "\u2713";
             default -> "\u2713";
         };
     }
@@ -121,11 +124,14 @@ public class PageNotificationsController implements PublicShellAware {
         return switch (typeCode) {
             case UserNotificationService.TYPE_EVENT_REGISTRATION_REFUSED,
                  UserNotificationService.TYPE_RDV_REFUSED,
-                 UserNotificationService.TYPE_RDV_CANCELLED -> "public-notifications-card--refused";
+                 UserNotificationService.TYPE_RDV_CANCELLED,
+                 UserNotificationService.TYPE_DEMANDE_PRODUIT_REFUSEE -> "public-notifications-card--refused";
             case UserNotificationService.TYPE_EVENT_MESSAGE_REPLY -> "public-notifications-card--msg";
             case UserNotificationService.TYPE_EVENT_REGISTRATION_PENDING -> "public-notifications-card--pending";
             case UserNotificationService.TYPE_EVENT_REGISTRATION_ACCEPTED,
-                 UserNotificationService.TYPE_RDV_ACCEPTED -> "public-notifications-card--ok";
+                 UserNotificationService.TYPE_RDV_ACCEPTED,
+                 UserNotificationService.TYPE_DEMANDE_PRODUIT_ACCEPTEE,
+                 UserNotificationService.TYPE_DEMANDE_PRODUIT_PUBLIEE -> "public-notifications-card--ok";
             default -> "public-notifications-card--ok";
         };
     }
@@ -143,6 +149,13 @@ public class PageNotificationsController implements PublicShellAware {
             if (shell != null && item.getEvenementId() != null && item.getEvenementId() > 0) {
                 AppState.setPendingPublicEventDetailId(item.getEvenementId());
                 shell.loadPage("event-detail");
+                return;
+            }
+            if (shell != null && (UserNotificationService.TYPE_DEMANDE_PRODUIT_ACCEPTEE.equals(code)
+                    || UserNotificationService.TYPE_DEMANDE_PRODUIT_REFUSEE.equals(code)
+                    || UserNotificationService.TYPE_DEMANDE_PRODUIT_PUBLIEE.equals(code))) {
+                shell.loadPage("produits");
+                refreshNotifications();
                 return;
             }
             refreshNotifications();

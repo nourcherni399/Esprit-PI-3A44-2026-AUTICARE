@@ -2,7 +2,9 @@
 
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.Separator?>
 <?import javafx.scene.control.TextField?>
@@ -11,12 +13,10 @@
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
 
-<!-- Structure type page RDV : bandeau titre, puis carte blanche (filtres | catalogue). -->
 <VBox alignment="TOP_CENTER" maxWidth="1140" spacing="0" styleClass="catalog-page"
       xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="org.example.controllers.PageProduitsController">
 
-    <!-- Bloc titre (au-dessus de la carte, lisible sur le fond) -->
     <VBox alignment="TOP_CENTER" styleClass="catalog-hero">
         <Label styleClass="public-page-kicker" text="CATALOGUE"/>
         <Label styleClass="public-page-title" text="Produits adaptés" textAlignment="CENTER" wrapText="true"/>
@@ -25,11 +25,9 @@
                textAlignment="CENTER" wrapText="true"/>
     </VBox>
 
-    <!-- Carte unique : colonne filtres | zone résultats -->
     <VBox maxWidth="Infinity" spacing="0" styleClass="rdv-content-card">
         <HBox alignment="TOP_LEFT" spacing="28" styleClass="rdv-two-col">
 
-            <!-- Colonne gauche : filtres -->
             <VBox minWidth="260" prefWidth="300" spacing="16" styleClass="rdv-filters-panel">
                 <Label styleClass="rdv-filters-title" text="Filtres"/>
                 <VBox spacing="8">
@@ -48,29 +46,39 @@
                 </VBox>
             </VBox>
 
-            <!-- Colonne droite : recherche, tri, grille -->
             <VBox maxWidth="Infinity" spacing="14" styleClass="rdv-main-col" HBox.hgrow="ALWAYS">
                 <VBox spacing="8">
-                    <Label styleClass="rdv-filter-label" text="Recherche"/>
                     <HBox alignment="CENTER_LEFT" spacing="10">
                         <TextField fx:id="searchField" maxWidth="Infinity" onAction="#onSearch"
-                                   promptText="Nom, description, catégorie, prix…" styleClass="rdv-field"
+                                   promptText="Nom, description, catégorie…" styleClass="rdv-field"
                                    HBox.hgrow="ALWAYS"/>
                         <Button minWidth="110" mnemonicParsing="false" onAction="#onSearch"
                                 styleClass="public-product-form-primary-btn" text="Rechercher"/>
                     </HBox>
+                    <ListView fx:id="searchSuggestionList" maxHeight="160" prefHeight="120" visible="false" managed="false"
+                              styleClass="rdv-field"/>
+                </VBox>
+
+                <VBox fx:id="recommendationsSection" spacing="8" managed="false" visible="false">
+                    <Label styleClass="rdv-filter-label" text="Recommandé pour vous"/>
+                    <ScrollPane fitToHeight="true" hbarPolicy="AS_NEEDED" maxHeight="360" styleClass="catalog-scroll"
+                                vbarPolicy="NEVER">
+                        <HBox fx:id="recommendationsRow" spacing="16" styleClass="catalog-flow"/>
+                    </ScrollPane>
                 </VBox>
 
                 <Separator/>
 
-                <HBox alignment="CENTER_LEFT" styleClass="catalog-results-toolbar">
+                <HBox alignment="CENTER_LEFT" spacing="12" styleClass="catalog-results-toolbar">
+                    <Button fx:id="createProductBtn" mnemonicParsing="false" onAction="#onCreateProduct"
+                            text="+ Créer un produit" styleClass="catalog-create-product-btn"/>
+                    <Button fx:id="favoritesToggleBtn" mnemonicParsing="false" onAction="#onToggleFavorites"
+                            text="Favoris" styleClass="catalog-create-product-btn"/>
                     <Label fx:id="resultsCountLabel" styleClass="rdv-results-count" text=" "/>
                     <Region maxWidth="Infinity" HBox.hgrow="ALWAYS"/>
-                    <HBox fx:id="sortToolbar" alignment="CENTER_RIGHT" spacing="8"/>
+                    <ComboBox fx:id="sortCombo" prefWidth="230" styleClass="product-form-input"/>
                 </HBox>
 
-                <!-- Hauteur explicite : dans la coque (ScrollPane extérieur), le VBox parent a une hauteur « illimitée »,
-                     donc vgrow ne donne pas d’espace au ScrollPane interne — la grille disparaissait. -->
                 <ScrollPane fx:id="productsScroll" fitToWidth="true" hbarPolicy="NEVER" maxHeight="680.0" minHeight="440.0"
                             minViewportHeight="420" prefHeight="540.0" prefViewportHeight="520" styleClass="catalog-scroll"
                             vbarPolicy="AS_NEEDED">

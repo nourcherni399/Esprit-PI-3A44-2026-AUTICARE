@@ -1,0 +1,24 @@
+# Copiez ce fichier vers : assistant-local.properties (à la racine du projet Java, à côté de pom.xml).
+# Ce fichier est ignoré par Git — ne le commitez pas.
+#
+# Si le répertoire de travail de l’IDE n’est pas la racine du projet, vous pouvez lancer avec :
+#   -Dacticare.project.root=C:/chemin/vers/AutiCare
+
+# Clé API Groq (https://console.groq.com/keys)
+groq.api.key=
+
+# Access Key Unsplash = Client ID (https://unsplash.com/oauth/applications)
+unsplash.access.key=
+
+# Stripe (https://dashboard.stripe.com/apikeys)
+stripe.secret.key=
+# Devise Stripe (ex: eur, usd, tnd)
+stripe.currency=eur
+# Multiplicateur vers unité mineure (100 pour EUR/USD, 1000 pour TND)
+stripe.amount.multiplier=100
+# URLs de redirection Stripe Checkout
+stripe.checkout.success.url=https://example.com/payment/success?session_id={CHECKOUT_SESSION_ID}
+stripe.checkout.cancel.url=https://example.com/payment/cancel
+
+# Optionnel :
+# groq.model=llama-3.1-8b-instant
