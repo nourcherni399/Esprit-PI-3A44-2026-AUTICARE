@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.chart.PieChart?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.*?>
+
+<ScrollPane fx:id="thematiquesScrollRoot" fitToWidth="true" hbarPolicy="NEVER" styleClass="admin-events-scroll-root" vbarPolicy="AS_NEEDED"
+            xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="org.example.controllers.AdminThematiquesPanelController"
+            stylesheets="@../styles/app.css">
+    <StackPane fx:id="thematiquesStackPane" alignment="TOP_CENTER" maxWidth="Infinity">
+        <VBox fx:id="listLayer" spacing="16" styleClass="admin-events-tab-root">
+            <padding><Insets bottom="16" left="16" right="16" top="16"/></padding>
+            <Label styleClass="admin-events-main-title" text="Gestion des thématiques"/>
+            <HBox alignment="CENTER_LEFT" spacing="10" styleClass="admin-events-toolbar">
+                <TextField fx:id="searchField" prefWidth="320" promptText="Rechercher une thématique..." styleClass="admin-events-field"/>
+                <Button mnemonicParsing="false" onAction="#onApplySearch" styleClass="admin-events-btn-filter" text="Rechercher"/>
+                <Button mnemonicParsing="false" onAction="#onNewThematique" styleClass="admin-events-btn-new" text="+ Nouvel élément"/>
+            </HBox>
+            <FlowPane fx:id="cardsFlow" hgap="16" prefWrapLength="920" vgap="16"/>
+
+            <HBox alignment="TOP_LEFT" spacing="16" styleClass="admin-events-charts-row">
+                <VBox spacing="10" styleClass="admin-events-chart-card" HBox.hgrow="ALWAYS">
+                    <Label styleClass="admin-events-chart-title" text="Répartition des thématiques"/>
+                    <StackPane minHeight="220" prefHeight="240" maxHeight="Infinity" maxWidth="Infinity" styleClass="admin-events-pie-placeholder" VBox.vgrow="ALWAYS">
+                        <PieChart fx:id="pieThematiquesChart" labelsVisible="false" legendSide="BOTTOM" legendVisible="true"
+                                  minHeight="190" prefHeight="210" maxWidth="Infinity" maxHeight="Infinity"/>
+                    </StackPane>
+                </VBox>
+                <VBox spacing="10" styleClass="admin-events-chart-card" HBox.hgrow="ALWAYS">
+                    <Label styleClass="admin-events-chart-title" text="Répartition des événements par thématique"/>
+                    <StackPane minHeight="220" prefHeight="240" maxHeight="Infinity" maxWidth="Infinity" styleClass="admin-events-pie-placeholder" VBox.vgrow="ALWAYS">
+                        <PieChart fx:id="pieEventsParThematiqueChart" labelsVisible="false" legendSide="BOTTOM" legendVisible="true"
+                                  minHeight="190" prefHeight="210" maxWidth="Infinity" maxHeight="Infinity"/>
+                    </StackPane>
+                </VBox>
+            </HBox>
+
+            <HBox alignment="TOP_LEFT" spacing="12" styleClass="admin-events-stats-row">
+                <VBox spacing="8" styleClass="admin-events-stat-card" HBox.hgrow="ALWAYS">
+                    <Label styleClass="admin-events-stat-title" text="Événements par thématique"/>
+                    <VBox fx:id="statListEventsBox" spacing="8"/>
+                </VBox>
+                <VBox spacing="8" styleClass="admin-events-stat-card" HBox.hgrow="ALWAYS">
+                    <Label styleClass="admin-events-stat-title" text="Thématiques par type"/>
+                    <VBox fx:id="statThematiquesTypeBox" spacing="8"/>
+                </VBox>
+                <VBox spacing="8" styleClass="admin-events-stat-card" HBox.hgrow="ALWAYS">
+                    <Label styleClass="admin-events-stat-title" text="Statistiques générales"/>
+                    <HBox alignment="CENTER_LEFT" spacing="10" styleClass="admin-stat-row-badge">
+                        <Label styleClass="admin-events-stat-line" text="Total des thématiques"/>
+                        <Region HBox.hgrow="ALWAYS" minWidth="8"/>
+                        <Label fx:id="statBigTotalThem" styleClass="admin-stat-num-badge admin-stat-num-badge-grey" text=""/>
+                    </HBox>
+                    <HBox alignment="CENTER_LEFT" spacing="10" styleClass="admin-stat-row-badge">
+                        <Label styleClass="admin-events-stat-line" text="Avec événements"/>
+                        <Region HBox.hgrow="ALWAYS" minWidth="8"/>
+                        <Label fx:id="statBigAvecThem" styleClass="admin-stat-num-badge admin-stat-num-badge-green" text=""/>
+                    </HBox>
+                    <HBox alignment="CENTER_LEFT" spacing="10" styleClass="admin-stat-row-badge">
+                        <Label styleClass="admin-events-stat-line" text="Total événements"/>
+                        <Region HBox.hgrow="ALWAYS" minWidth="8"/>
+                        <Label fx:id="statBigTotalEvtKpi" styleClass="admin-stat-num-badge admin-stat-num-badge-purple" text=""/>
+                    </HBox>
+                </VBox>
+            </HBox>
+        </VBox>
+
+        <VBox fx:id="detailLayer" alignment="TOP_CENTER" managed="false" maxWidth="900" spacing="16" styleClass="admin-thematiques-detail-root" visible="false" StackPane.alignment="TOP_CENTER">
+            <StackPane.margin>
+                <Insets bottom="24" left="16" right="16" top="8"/>
+            </StackPane.margin>
+            <padding><Insets bottom="24" left="8" right="8" top="8"/></padding>
+            <HBox alignment="CENTER_LEFT" onMouseClicked="#onDetailBack" spacing="12">
+                <Button alignment="BASELINE_LEFT" onAction="#onDetailBack" styleClass="admin-new-event-back-link" text="← Retour aux thématiques"/>
+                <Region HBox.hgrow="ALWAYS" minWidth="8"/>
+                <Button mnemonicParsing="false" onAction="#onDetailEdit" styleClass="admin-new-event-btn-primary" text="Modifier"/>
+                <Button mnemonicParsing="false" onAction="#onDetailDelete" styleClass="admin-thematiques-btn-danger" text="Supprimer"/>
+            </HBox>
+            <VBox maxWidth="Infinity" spacing="12" styleClass="admin-thematiques-detail-card">
+                <StackPane fx:id="detailHeroStack" maxHeight="220" maxWidth="Infinity" minHeight="200" minWidth="400" prefHeight="208" styleClass="admin-thematiques-detail-hero-wrap">
+                    <ImageView fx:id="detailHeroImage" preserveRatio="true" smooth="true" styleClass="admin-thematiques-detail-hero"/>
+                </StackPane>
+                <HBox alignment="TOP_LEFT" spacing="12">
+                    <Region fx:id="detailColorSwatch" maxHeight="28" maxWidth="28" minHeight="28" minWidth="28" styleClass="admin-thematiques-detail-swatch"/>
+                    <VBox spacing="6">
+                        <Label fx:id="detailTitleLabel" styleClass="admin-new-event-h1" text=""/>
+                        <Label fx:id="detailMetaLabel" styleClass="admin-thematiques-detail-meta" text=""/>
+                        <Label fx:id="detailSousTitreLabel" styleClass="admin-thematiques-detail-sub" text="" wrapText="true"/>
+                    </VBox>
+                </HBox>
+                <Separator/>
+                <Label styleClass="admin-new-event-label" text="Description"/>
+                <Label fx:id="detailDescriptionLabel" styleClass="admin-thematiques-detail-body" wrapText="true"/>
+                <HBox alignment="CENTER" spacing="24">
+                    <Label fx:id="detailPublicLabel" styleClass="admin-thematiques-detail-meta"/>
+                    <Label fx:id="detailNiveauLabel" styleClass="admin-thematiques-detail-meta"/>
+                    <HBox alignment="CENTER" spacing="8">
+                        <Label styleClass="admin-thematiques-detail-meta" text="Couleur :"/>
+                        <Region fx:id="detailColorDot" maxHeight="16" maxWidth="16" minHeight="16" minWidth="16" styleClass="admin-thematiques-detail-dot"/>
+                        <Label fx:id="detailColorHexLabel" styleClass="admin-thematiques-detail-meta"/>
+                    </HBox>
+                </HBox>
+            </VBox>
+            <VBox spacing="10" styleClass="admin-thematiques-detail-card">
+                <HBox alignment="CENTER_LEFT" spacing="12">
+                    <Label styleClass="admin-events-main-title" text="Événements de cette thématique"/>
+                    <Region HBox.hgrow="ALWAYS" minWidth="8"/>
+                    <Button mnemonicParsing="false" onAction="#onDetailNouvelEvenement" styleClass="admin-events-btn-new" text="Nouvel événement"/>
+                </HBox>
+                <TableView fx:id="detailEventsTable" minHeight="180" prefHeight="220" styleClass="admin-thematiques-events-table"/>
+            </VBox>
+        </VBox>
+
+        <AnchorPane fx:id="formLayerHost" managed="false" maxHeight="Infinity" maxWidth="Infinity" visible="false" StackPane.alignment="CENTER">
+            <StackPane alignment="CENTER" maxHeight="Infinity" maxWidth="Infinity"
+                       AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+            <VBox fx:id="formLayer" alignment="TOP_LEFT" maxHeight="Infinity" minWidth="680" spacing="0" styleClass="admin-new-event-layer">
+            <padding><Insets bottom="8" left="0" right="0" top="12"/></padding>
+            <VBox alignment="TOP_LEFT" maxWidth="Infinity" spacing="16" styleClass="admin-form-stack-inner" VBox.vgrow="ALWAYS">
+                <VBox maxWidth="Infinity" spacing="6" styleClass="admin-form-hero">
+                    <Button alignment="BASELINE_LEFT" onAction="#onCloseForm" styleClass="admin-new-event-back-link" text="← Retour aux thématiques"/>
+                    <Label fx:id="formPageTitle" styleClass="admin-new-event-h1" text="Nouvelle thématique"/>
+                </VBox>
+
+                <VBox spacing="16" maxWidth="Infinity" styleClass="admin-form-white-sheet">
+                <VBox alignment="TOP_LEFT" spacing="12" maxWidth="Infinity" styleClass="admin-form-card">
+                    <Label styleClass="admin-form-section-title" text="Identité"/>
+                    <VBox spacing="6" maxWidth="Infinity">
+                        <Label styleClass="admin-new-event-label" text="Nom de la thématique *"/>
+                        <TextField fx:id="formNom" maxWidth="Infinity" promptText="Ex. Art &amp; sensoriel" styleClass="admin-new-event-input"/>
+                    </VBox>
+                    <VBox spacing="6" maxWidth="Infinity">
+                        <Label styleClass="admin-new-event-label" text="Code thématique *"/>
+                        <TextField fx:id="formCode" maxWidth="Infinity" promptText="ex. ART_SENSORIEL" styleClass="admin-new-event-input"/>
+                    </VBox>
+                </VBox>
+
+                <VBox alignment="TOP_LEFT" spacing="8" maxWidth="Infinity" styleClass="admin-form-card">
+                    <Label styleClass="admin-form-section-title" text="Description"/>
+                    <Label styleClass="admin-new-event-label" text="Description *"/>
+                    <TextArea fx:id="formDescription" maxWidth="Infinity" prefRowCount="4" promptText="Texte présenté sur la fiche thématique…" styleClass="admin-new-event-textarea" wrapText="true"/>
+                </VBox>
+
+                <VBox alignment="TOP_LEFT" spacing="12" maxWidth="Infinity" styleClass="admin-form-card">
+                    <Label styleClass="admin-form-section-title" text="Apparence"/>
+                    <HBox alignment="TOP_LEFT" maxWidth="Infinity" spacing="16">
+                        <VBox spacing="6" HBox.hgrow="ALWAYS" maxWidth="Infinity" minWidth="200">
+                            <Label styleClass="admin-new-event-label" text="Couleur *"/>
+                            <TextField fx:id="formCouleur" maxWidth="Infinity" promptText="#A7C7E7 ou A7C7E7" styleClass="admin-new-event-input"/>
+                            <Label styleClass="admin-thematiques-swatch-hint" text="Couleurs suggérées :"/>
+                            <FlowPane fx:id="colorSwatches" hgap="8" maxWidth="Infinity" vgap="8"/>
+                        </VBox>
+                        <VBox spacing="6" HBox.hgrow="ALWAYS" maxWidth="Infinity" minWidth="200">
+                            <Label styleClass="admin-new-event-label" text="Sous-titre *"/>
+                            <TextField fx:id="formSousTitre" maxWidth="Infinity" promptText="Accroche courte" styleClass="admin-new-event-input"/>
+                        </VBox>
+                    </HBox>
+                    <VBox spacing="6" maxWidth="Infinity">
+                        <Label styleClass="admin-new-event-label" text="Image (JPG, PNG, GIF, WebP) *"/>
+                        <Button onAction="#onPickImage" styleClass="admin-new-event-btn-secondary" text="Choisir un fichier"/>
+                    </VBox>
+                </VBox>
+
+                <VBox alignment="TOP_LEFT" spacing="12" maxWidth="Infinity" styleClass="admin-form-card">
+                    <Label styleClass="admin-form-section-title" text="Paramètres"/>
+                    <HBox alignment="CENTER_LEFT" maxWidth="Infinity" spacing="20">
+                        <VBox spacing="6" maxWidth="Infinity" HBox.hgrow="SOMETIMES">
+                            <Label styleClass="admin-new-event-label" text="Ordre d'affichage"/>
+                            <TextField fx:id="formOrdre" maxWidth="Infinity" prefWidth="160" promptText="0 par défaut" styleClass="admin-new-event-input"/>
+                        </VBox>
+                        <CheckBox fx:id="formVisible" mnemonicParsing="false" selected="true" styleClass="admin-thematiques-check" text="Visible sur le site"/>
+                    </HBox>
+                    <HBox alignment="CENTER_LEFT" maxWidth="Infinity" spacing="16">
+                        <VBox spacing="6" HBox.hgrow="ALWAYS" maxWidth="Infinity" minWidth="200">
+                            <Label styleClass="admin-new-event-label" text="Public cible *"/>
+                            <ComboBox fx:id="formPublicCible" maxWidth="Infinity" styleClass="admin-new-event-input"/>
+                        </VBox>
+                        <VBox spacing="6" HBox.hgrow="ALWAYS" maxWidth="Infinity" minWidth="200">
+                            <Label styleClass="admin-new-event-label" text="Niveau de difficulté *"/>
+                            <ComboBox fx:id="formNiveau" maxWidth="Infinity" styleClass="admin-new-event-input"/>
+                        </VBox>
+                    </HBox>
+                </VBox>
+
+                <HBox alignment="CENTER" maxWidth="Infinity" spacing="12" styleClass="admin-form-actions">
+                    <Button defaultButton="true" onAction="#onSaveThematique" styleClass="admin-new-event-btn-primary" text="Enregistrer la thématique"/>
+                    <Button cancelButton="true" onAction="#onCloseForm" styleClass="admin-new-event-btn-secondary" text="Annuler"/>
+                </HBox>
+                </VBox>
+            </VBox>
+            </VBox>
+            </StackPane>
+        </AnchorPane>
+    </StackPane>
+</ScrollPane>

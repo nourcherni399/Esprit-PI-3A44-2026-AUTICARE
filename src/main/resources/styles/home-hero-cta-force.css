@@ -1,0 +1,51 @@
+/*
+ * Feuille chargée en dernier sur la Scene (voir HomeController.ensureHeroCtaStylesOnScene).
+ * Aligné sur .home-btn-cta-sage (« En savoir plus »).
+ */
+.home-root .button.home-hero-cta-primary,
+.home-root .button.home-hero-cta-secondary {
+    -fx-font-family: "Montserrat", "Segoe UI Variable", "Segoe UI", system-ui, sans-serif;
+    -fx-font-size: 15px;
+    -fx-font-weight: 600;
+    -fx-letter-spacing: 0.02em;
+    -fx-padding: 14 28 14 28;
+    -fx-min-height: 46;
+    -fx-background-insets: 0;
+    -fx-border-insets: 0;
+    -fx-background-radius: 14;
+    -fx-border-radius: 14;
+    -fx-border-width: 1;
+    -fx-border-color: rgba(255, 255, 255, 0.55);
+    -fx-cursor: hand;
+    -fx-content-display: CENTER;
+    -fx-text-fill: #2c2c2c;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.18), 18, 0.18, 0, 6);
+}
+
+.home-root .button.home-hero-cta-primary {
+    -fx-background-color: #ffffff;
+    -fx-border-color: rgba(255, 255, 255, 0.7);
+}
+
+.home-root .button.home-hero-cta-secondary {
+    -fx-background-color: rgba(255, 255, 255, 0.92);
+}
+
+.home-root .button.home-hero-cta-primary:hover,
+.home-root .button.home-hero-cta-secondary:hover {
+    -fx-background-color: #ffffff;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.22), 22, 0.2, 0, 8);
+}
+
+.home-root .button.home-hero-cta-primary:pressed,
+.home-root .button.home-hero-cta-secondary:pressed {
+    -fx-background-color: rgba(245, 245, 245, 0.96);
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.14), 10, 0.15, 0, 3);
+}
+
+.home-root .button.home-hero-cta-primary:focused,
+.home-root .button.home-hero-cta-secondary:focused {
+    -fx-background-color: #ffffff;
+    -fx-border-color: rgba(255, 255, 255, 0.9);
+    -fx-border-width: 2;
+}

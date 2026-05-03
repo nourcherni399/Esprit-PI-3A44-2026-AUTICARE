@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane styleClass="admin-root" stylesheets="@../../../styles/app.css,@../../../styles/admin.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.example.controllers.AdminDemandeProduitController">
+    <left>
+        <VBox styleClass="admin-sidebar">
+            <HBox alignment="CENTER_LEFT" spacing="14" styleClass="admin-brand-row">
+                <ImageView fx:id="sidebarLogoView" fitHeight="52" fitWidth="52" pickOnBounds="true" preserveRatio="true" styleClass="admin-sidebar-logo" />
+                <Label styleClass="admin-brand" text="AutiCare Admin" />
+            </HBox>
+            <HBox alignment="CENTER_LEFT" maxWidth="Infinity" onMouseClicked="#onNavDashboard" spacing="12" styleClass="admin-nav-item">
+                <Label styleClass="admin-nav-icon" text="◻" />
+                <Label styleClass="admin-nav-text" text="Tableau de bord" />
+            </HBox>
+            <HBox alignment="CENTER_LEFT" maxWidth="Infinity" onMouseClicked="#onNavUsers" spacing="12" styleClass="admin-nav-item">
+                <Label styleClass="admin-nav-icon" text="👥" />
+                <Label styleClass="admin-nav-text" text="Utilisateurs" />
+            </HBox>
+            <HBox alignment="CENTER_LEFT" maxWidth="Infinity" onMouseClicked="#onNavProducts" spacing="12" styleClass="admin-nav-item">
+                <Label styleClass="admin-nav-icon" text="🏷" />
+                <Label styleClass="admin-nav-text" text="Produits" />
+            </HBox>
+            <HBox alignment="CENTER_LEFT" maxWidth="Infinity" spacing="12" styleClass="admin-nav-item admin-nav-item-active">
+                <Label styleClass="admin-nav-icon admin-nav-icon-active" text="📋" />
+                <Label styleClass="admin-nav-text admin-nav-text-active" text="Demandes produit" />
+            </HBox>
+            <HBox alignment="CENTER_LEFT" maxWidth="Infinity" onMouseClicked="#onNavStocks" spacing="12" styleClass="admin-nav-item">
+                <Label styleClass="admin-nav-icon" text="💳" />
+                <Label styleClass="admin-nav-text" text="Stocks" />
+            </HBox>
+            <Region VBox.vgrow="ALWAYS" />
+            <VBox styleClass="admin-nav-footer">
+                <HBox alignment="CENTER_LEFT" maxWidth="Infinity" onMouseClicked="#onNavAdminHome" spacing="12" styleClass="admin-nav-item">
+                    <Label styleClass="admin-nav-icon" text="⌂" />
+                    <Label styleClass="admin-nav-text" text="Accueil admin" />
+                </HBox>
+            </VBox>
+        </VBox>
+    </left>
+    <center>
+        <BorderPane styleClass="admin-main">
+            <top>
+                <HBox alignment="CENTER_LEFT" styleClass="admin-topbar">
+                    <Label text="Demandes produit" styleClass="admin-page-title" />
+                    <Region minWidth="16" HBox.hgrow="ALWAYS" />
+                    <Label fx:id="notifBellLabel" text="🔔" />
+                    <Region minWidth="12" />
+                    <HBox alignment="CENTER_LEFT" onMouseClicked="#onOpenMyProfile" spacing="10" styleClass="admin-topbar-profile">
+                        <StackPane fx:id="topbarAvatarHost" styleClass="admin-topbar-avatar-host"/>
+                        <VBox styleClass="admin-user-block">
+                            <Label fx:id="userNameLabel" styleClass="admin-user-name" text="—" />
+                            <Label fx:id="userEmailLabel" styleClass="admin-user-email" text="—" />
+                        </VBox>
+                    </HBox>
+                </HBox>
+            </top>
+            <center>
+                <VBox spacing="14" style="-fx-padding: 18;">
+                    <Label text="Chaque carte est une demande client. Acceptez ou refusez : le demandeur reçoit une notification. Après acceptation, vous pouvez créer la fiche produit depuis la carte."
+                           wrapText="true" style="-fx-text-fill: #64748b; -fx-font-size: 13px;" maxWidth="960" />
+                    <HBox spacing="10" alignment="CENTER_LEFT">
+                        <Button text="Rafraîchir la liste" onAction="#onRefresh" style="-fx-background-color: #2563eb; -fx-text-fill: white; -fx-font-weight: 700; -fx-background-radius: 8; -fx-padding: 8 16;" />
+                    </HBox>
+                    <ScrollPane fitToWidth="true" style="-fx-background-color: transparent;" VBox.vgrow="ALWAYS">
+                        <VBox fx:id="cardsBox" spacing="16" style="-fx-padding: 4 4 24 4;" maxWidth="Infinity" />
+                    </ScrollPane>
+                </VBox>
+            </center>
+        </BorderPane>
+    </center>
+</BorderPane>

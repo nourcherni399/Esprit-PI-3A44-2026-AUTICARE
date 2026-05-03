@@ -1,0 +1,20 @@
+.dialog-pane.rdv-login-required-dialog {
+    -fx-background-color: #ffffff;
+}
+
+.dialog-pane.rdv-login-required-dialog .content.label {
+    -fx-text-fill: #0f172a;
+    -fx-font-size: 13px;
+}
+
+.dialog-pane.rdv-login-required-dialog .button {
+    -fx-background-color: #6b5cae;
+    -fx-text-fill: #ffffff;
+    -fx-background-radius: 10;
+    -fx-padding: 8 16 8 16;
+}
+
+.dialog-pane.rdv-login-required-dialog .button:hover {
+    -fx-background-color: #5a4a96;
+}
+

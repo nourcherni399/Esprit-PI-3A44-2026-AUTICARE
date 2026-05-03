@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Hyperlink?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox styleClass="home-root" stylesheets="@../styles/login.css,@../styles/home.css,@../styles/public-page.css,@../styles/page-blog.css" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.example.controllers.PublicShellController">
+        <HBox alignment="CENTER_LEFT" minHeight="88.0" prefHeight="88.0" style="-fx-min-height: 88px; -fx-pref-height: 88px;" styleClass="top-nav nav-home">
+            <HBox alignment="CENTER_LEFT" spacing="14" styleClass="nav-brand-block">
+                <ImageView fitHeight="58" pickOnBounds="true" preserveRatio="true" styleClass="nav-brand-logo-img">
+                    <image>
+                        <Image url="@../images/brand/auticare-logo-auth.png" />
+                    </image>
+                </ImageView>
+                <Region styleClass="nav-vsep" />
+            </HBox>
+            <Region minWidth="8" HBox.hgrow="ALWAYS" />
+            <HBox alignment="CENTER" spacing="4" styleClass="nav-center-links">
+                <HBox fx:id="shellNavAccueil" alignment="CENTER_LEFT" onMouseClicked="#onNavAccueil" spacing="10" styleClass="nav-item">
+                    <Label styleClass="nav-item-icon" text="⌂" />
+                    <Label styleClass="nav-item-label" text="Accueil" />
+                </HBox>
+                <HBox fx:id="shellNavProduits" alignment="CENTER_LEFT" onMouseClicked="#onNavProduits" spacing="10" styleClass="nav-item">
+                    <Label styleClass="nav-item-icon" text="◫" />
+                    <Label styleClass="nav-item-label" text="Produits" />
+                </HBox>
+                <HBox fx:id="shellNavPanier" alignment="CENTER_LEFT" onMouseClicked="#onNavPanier" spacing="10" styleClass="nav-item">
+                    <Label styleClass="nav-item-icon" text="⍟" />
+                    <Label styleClass="nav-item-label" text="Panier" />
+                </HBox>
+                <HBox fx:id="shellNavMesCommandes" alignment="CENTER_LEFT" onMouseClicked="#onNavMesCommandes" spacing="10" styleClass="nav-item">
+                    <Label styleClass="nav-item-icon" text="▤" />
+                    <Label styleClass="nav-item-label" text="Mes commandes" />
+                </HBox>
+                <HBox fx:id="shellNavRdv" alignment="CENTER_LEFT" onMouseClicked="#onNavRdv" spacing="10" styleClass="nav-item">
+                    <Label styleClass="nav-item-icon" text="◷" />
+                    <Label styleClass="nav-item-label" text="Rendez-vous" />
+                </HBox>
+                <HBox fx:id="shellNavEvents" alignment="CENTER_LEFT" onMouseClicked="#onNavEvents" spacing="10" styleClass="nav-item">
+                    <Label styleClass="nav-item-icon" text="▦" />
+                    <Label styleClass="nav-item-label" text="Événements" />
+                </HBox>
+                <HBox fx:id="shellNavBlog" alignment="CENTER_LEFT" onMouseClicked="#onNavBlog" spacing="10" styleClass="nav-item">
+                    <Label styleClass="nav-item-icon" text="☰" />
+                    <Label styleClass="nav-item-label" text="Blog" />
+                </HBox>
+            </HBox>
+            <Region minWidth="8" HBox.hgrow="ALWAYS" />
+            <Region styleClass="nav-vsep" />
+            <HBox alignment="CENTER_RIGHT" spacing="18" styleClass="nav-trailing">
+<HBox alignment="CENTER_LEFT" styleClass="nav-search-box">
+    <Label styleClass="nav-search-icon" text="⌕" />
+    <TextField fx:id="navSearchField" promptText="Rechercher" styleClass="nav-search-input" />
+</HBox>
+<Hyperlink fx:id="dashboardQuickLink" managed="false" onAction="#onNavDashboard" styleClass="nav-link" text="Gestion" visible="false" />
+<Button focusTraversable="false" onAction="#onToggleTheme" styleClass="icon-btn" text="🌙" />
+<HBox fx:id="loggedShortcutIcons" alignment="CENTER" managed="false" spacing="10" styleClass="nav-logged-shortcuts" visible="false">
+    <Button focusTraversable="false" onAction="#onUserShortcutBook" styleClass="icon-btn nav-logged-icon-btn" text="📖" />
+    <Button focusTraversable="false" onAction="#onUserShortcutBag" styleClass="icon-btn nav-logged-icon-btn" text="🛒" />
+    <Button fx:id="userNotifMenuButton" focusTraversable="false" mnemonicParsing="false" styleClass="icon-btn nav-logged-icon-btn public-notif-menu public-notif-bell-btn">
+        <graphic>
+            <StackPane styleClass="public-notif-icon-wrap">
+                <Label styleClass="public-notif-bell-glyph" text="🔔" />
+                <Label fx:id="userNotifBadgeLabel" managed="false" styleClass="public-notif-badge" text="0" visible="false"/>
+            </StackPane>
+        </graphic>
+    </Button>
+</HBox>
+<StackPane fx:id="patientNotifBellHost" alignment="CENTER" managed="false" minHeight="40" minWidth="40" onMouseClicked="#onPatientNotifBell" styleClass="nav-patient-bell-host" visible="false">
+    <Label styleClass="nav-patient-bell-icon" text="🔔" />
+    <Label fx:id="patientNotifBadge" alignment="CENTER" managed="false" styleClass="nav-patient-bell-badge" text="0" visible="false" StackPane.alignment="TOP_RIGHT" />
+</StackPane>
+                <Button fx:id="shellAvatarBtn" focusTraversable="false" onAction="#onNavAvatar" styleClass="icon-btn header-avatar-btn" text="◯" />
+                <HBox fx:id="guestNavActions" alignment="CENTER_RIGHT" spacing="16">
+                    <Hyperlink fx:id="shellConnexionLink" onAction="#onNavConnexion" styleClass="nav-link" text="Connexion" />
+                    <Button fx:id="shellSignupBtn" contentDisplay="LEFT" graphicTextGap="10" onAction="#onRegister" styleClass="signup-btn" text="S'inscrire">
+                        <graphic>
+                            <Label styleClass="signup-btn-icon" text="👤" />
+                        </graphic>
+                    </Button>
+                </HBox>
+                <HBox fx:id="loggedNavActions" alignment="CENTER_RIGHT" managed="false" onMouseClicked="#onOpenMyProfile" spacing="8" styleClass="home-topbar-profile" visible="false">
+                    <Label fx:id="clientOrderNotifLabel" managed="false" minWidth="32" onMouseClicked="#onClientOrderNotifications" styleClass="nav-link" text="🔔" visible="false" />
+                    <StackPane fx:id="loggedAvatarHost" minHeight="42" minWidth="42" prefHeight="42" prefWidth="42" />
+                    <VBox alignment="CENTER_LEFT" spacing="1">
+                        <HBox alignment="CENTER_LEFT" spacing="4">
+                            <Label fx:id="loggedUserNameLabel" styleClass="home-topbar-name" text="Utilisateur" />
+                            <Label fx:id="loggedUserCodeLabel" styleClass="home-topbar-code" text="0000" />
+                        </HBox>
+                        <Hyperlink onAction="#onLogout" onMouseClicked="#onLogoutLinkClick" styleClass="home-topbar-logout" text="Se déconnecter" />
+                    </VBox>
+                </HBox>
+                <HBox alignment="CENTER_LEFT" spacing="4" styleClass="nav-lang-row">
+                    <Label styleClass="nav-icon-symbol" text="🌐" />
+                    <ComboBox fx:id="langCombo" prefWidth="56" styleClass="lang-combo" />
+                    <Label styleClass="nav-lang-chevron" text="▾" />
+                </HBox>
+            </HBox>
+        </HBox>
+    <BorderPane VBox.vgrow="ALWAYS">
+    <center>
+        <StackPane styleClass="home-page-stack">
+            <StackPane styleClass="home-global-bg-clip">
+                <ImageView fx:id="globalBgA" preserveRatio="false" styleClass="home-global-bg-img" />
+                <ImageView fx:id="globalBgB" preserveRatio="false" styleClass="home-global-bg-img" />
+<Region fx:id="globalVeilRegion" styleClass="home-global-veil" />
+            </StackPane>
+            <StackPane fx:id="shellHeroLayer" mouseTransparent="true" pickOnBounds="false" styleClass="home-fixed-hero-layer">
+                <HBox styleClass="home-hero-bg">
+                    <StackPane styleClass="home-hero-photo-wrap" HBox.hgrow="ALWAYS">
+                        <ImageView fx:id="heroBgImageA" preserveRatio="false" styleClass="home-hero-bg-img" />
+                        <ImageView fx:id="heroBgImageB" preserveRatio="false" styleClass="home-hero-bg-img" />
+                        <Region styleClass="home-hero-left-fallback" />
+                        <Region mouseTransparent="true" styleClass="home-hero-left-toning" />
+                    </StackPane>
+                </HBox>
+                <Region mouseTransparent="true" styleClass="home-hero-vignette" />
+                <Region mouseTransparent="true" styleClass="home-fullpage-scrim" />
+            </StackPane>
+            <ScrollPane fx:id="shellScrollPane" fitToWidth="true" hbarPolicy="NEVER" styleClass="home-scroll" vbarPolicy="AS_NEEDED">
+                <VBox fx:id="shellScrollContentVBox" spacing="0" styleClass="home-scroll-content">
+                    <StackPane fx:id="shellHeroScrollSpacer" minHeight="0" prefHeight="0" styleClass="public-shell-hero-scroll-slot" />
+                    <Region styleClass="public-shell-bg-strip public-shell-strip-top" />
+                    <HBox alignment="TOP_CENTER" styleClass="public-shell-listing-canvas">
+                        <StackPane fx:id="shellPageBody" styleClass="public-shell-page-body" HBox.hgrow="ALWAYS">
+                            <StackPane fx:id="pageContentHost" styleClass="public-shell-page-host" />
+                        </StackPane>
+                    </HBox>
+                    <Region styleClass="public-shell-bg-strip public-shell-strip-mid" />
+                    <VBox alignment="CENTER" spacing="10" styleClass="public-shell-mini-footer">
+                        <HBox alignment="CENTER" spacing="6" styleClass="public-shell-footer-links">
+                            <Hyperlink onAction="#onShellFooterAccueil" styleClass="home-footer-link-mini" text="Accueil" />
+                            <Label styleClass="home-footer-link-sep" text="·" />
+                            <Hyperlink onAction="#onShellFooterProduits" styleClass="home-footer-link-mini" text="Produits" />
+                            <Label styleClass="home-footer-link-sep" text="·" />
+                            <Hyperlink onAction="#onShellFooterRdv" styleClass="home-footer-link-mini" text="Rendez-vous" />
+                            <Label styleClass="home-footer-link-sep" text="·" />
+                            <Hyperlink onAction="#onShellFooterEvents" styleClass="home-footer-link-mini" text="Événements" />
+                            <Label styleClass="home-footer-link-sep" text="·" />
+                            <Hyperlink onAction="#onShellFooterBlog" styleClass="home-footer-link-mini" text="Blog" />
+                        </HBox>
+                        <Label alignment="CENTER" styleClass="home-footer-copy-stats" text="© 2026 AutiCare — Écouter · Aider · Accompagner" />
+                    </VBox>
+                    <Region styleClass="public-shell-bg-strip public-shell-strip-tail" />
+                </VBox>
+            </ScrollPane>
+        </StackPane>
+    </center>
+    <bottom>
+        <HBox fx:id="publicNewsTickerBar" alignment="CENTER_LEFT" minHeight="56.0" prefHeight="56.0" styleClass="home-news-ticker">
+            <HBox alignment="CENTER" styleClass="home-news-ticker-brand">
+                <Label styleClass="home-news-ticker-brand-text" text="Actualités" />
+            </HBox>
+            <StackPane fx:id="newsTickerViewport" HBox.hgrow="ALWAYS" minHeight="56.0" prefHeight="56.0" styleClass="home-news-ticker-viewport" />
+        </HBox>
+    </bottom>
+    </BorderPane>
+</VBox>

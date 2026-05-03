@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane styleClass="admin-root" stylesheets="@../../../styles/app.css,@../../../styles/admin.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.example.controllers.AdminOrdersController">
+    <left>
+        <VBox styleClass="admin-sidebar">
+            <HBox alignment="CENTER_LEFT" spacing="14" styleClass="admin-brand-row">
+                <ImageView fx:id="sidebarLogoView" fitHeight="52" fitWidth="52" pickOnBounds="true" preserveRatio="true" styleClass="admin-sidebar-logo" />
+                <Label styleClass="admin-brand" text="AutiCare Admin" />
+            </HBox>
+            <HBox alignment="CENTER_LEFT" maxWidth="Infinity" onMouseClicked="#onNavDashboard" spacing="12" styleClass="admin-nav-item">
+                <Label styleClass="admin-nav-icon" text="◻" />
+                <Label styleClass="admin-nav-text" text="Tableau de bord" />
+            </HBox>
+            <HBox alignment="CENTER_LEFT" maxWidth="Infinity" onMouseClicked="#onNavUsers" spacing="12" styleClass="admin-nav-item">
+                <Label styleClass="admin-nav-icon" text="👥" />
+                <Label styleClass="admin-nav-text" text="Utilisateurs" />
+            </HBox>
+            <HBox alignment="CENTER_LEFT" maxWidth="Infinity" onMouseClicked="#onNavProducts" spacing="12" styleClass="admin-nav-item">
+                <Label styleClass="admin-nav-icon" text="🏷" />
+                <Label styleClass="admin-nav-text" text="Produits" />
+            </HBox>
+            <HBox alignment="CENTER_LEFT" maxWidth="Infinity" onMouseClicked="#onNavDemandesProduit" spacing="12" styleClass="admin-nav-item">
+                <Label styleClass="admin-nav-icon" text="📋" />
+                <Label styleClass="admin-nav-text" text="Demandes produit" />
+            </HBox>
+            <HBox alignment="CENTER_LEFT" maxWidth="Infinity" onMouseClicked="#onNavStocks" spacing="12" styleClass="admin-nav-item">
+                <Label styleClass="admin-nav-icon" text="💳" />
+                <Label styleClass="admin-nav-text" text="Stocks" />
+            </HBox>
+            <HBox alignment="CENTER_LEFT" maxWidth="Infinity" onMouseClicked="#onNavOrders" spacing="12" styleClass="admin-nav-item admin-nav-item-active">
+                <Label styleClass="admin-nav-icon admin-nav-icon-active" text="👜" />
+                <Label styleClass="admin-nav-text admin-nav-text-active" text="Commandes" />
+            </HBox>
+            <HBox alignment="CENTER_LEFT" maxWidth="Infinity" onMouseClicked="#onNavEvents" spacing="12" styleClass="admin-nav-item">
+                <Label styleClass="admin-nav-icon" text="🗓" />
+                <Label styleClass="admin-nav-text" text="Événements" />
+            </HBox>
+            <HBox alignment="CENTER_LEFT" maxWidth="Infinity" onMouseClicked="#onNavTopics" spacing="12" styleClass="admin-nav-item">
+                <Label styleClass="admin-nav-icon" text="🏷" />
+                <Label styleClass="admin-nav-text" text="Thématiques" />
+            </HBox>
+            <HBox alignment="CENTER_LEFT" maxWidth="Infinity" onMouseClicked="#onNavModules" spacing="12" styleClass="admin-nav-item">
+                <Label styleClass="admin-nav-icon" text="💬" />
+                <Label styleClass="admin-nav-text" text="Modules" />
+            </HBox>
+            <HBox alignment="CENTER_LEFT" maxWidth="Infinity" onMouseClicked="#onNavSettings" spacing="12" styleClass="admin-nav-item">
+                <Label styleClass="admin-nav-icon" text="⚙" />
+                <Label styleClass="admin-nav-text" text="Paramètres" />
+            </HBox>
+            <Region VBox.vgrow="ALWAYS" />
+            <VBox styleClass="admin-nav-footer">
+                <HBox alignment="CENTER_LEFT" maxWidth="Infinity" onMouseClicked="#onNavAdminHome" spacing="12" styleClass="admin-nav-item">
+                    <Label styleClass="admin-nav-icon" text="⌂" />
+                    <Label styleClass="admin-nav-text" text="Accueil admin" />
+                </HBox>
+            </VBox>
+        </VBox>
+    </left>
+    <center>
+        <BorderPane styleClass="admin-main">
+            <top>
+                <HBox alignment="CENTER_LEFT" styleClass="admin-topbar">
+                    <HBox alignment="CENTER_LEFT" spacing="8" HBox.hgrow="ALWAYS">
+                        <Label text="🔍" />
+                        <TextField fx:id="topSearchField" promptText="Rechercher (nom, email, statut…)" styleClass="admin-search" HBox.hgrow="ALWAYS" />
+                    </HBox>
+                    <Region minWidth="16" />
+                    <Label fx:id="notifBellLabel" text="🔔" />
+                    <Region minWidth="12" />
+                    <HBox alignment="CENTER_LEFT" onMouseClicked="#onOpenMyProfile" spacing="10" styleClass="admin-topbar-profile">
+                        <StackPane fx:id="topbarAvatarHost" styleClass="admin-topbar-avatar-host"/>
+                        <VBox styleClass="admin-user-block">
+                            <Label fx:id="userNameLabel" styleClass="admin-user-name" text="—" />
+                            <Label fx:id="userEmailLabel" styleClass="admin-user-email" text="—" />
+                        </VBox>
+                    </HBox>
+                    <Button onAction="#onLogout" styleClass="admin-btn-logout" text="Se déconnecter" />
+                </HBox>
+            </top>
+            <center>
+                <ScrollPane fitToWidth="true" hbarPolicy="NEVER" style="-fx-background: transparent; -fx-background-color: transparent;">
+                    <content>
+                        <StackPane fx:id="ordersHost" style="-fx-padding: 0;" />
+                    </content>
+                </ScrollPane>
+            </center>
+        </BorderPane>
+    </center>
+</BorderPane>
