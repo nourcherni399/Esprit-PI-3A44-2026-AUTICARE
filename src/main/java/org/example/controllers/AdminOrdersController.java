@@ -12,7 +12,6 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
-import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
@@ -82,7 +81,6 @@ public class AdminOrdersController {
 
     /** Ligne tableau (valeurs formatées pour affichage). */
     public static final class CustomerOrderRow {
-        private final String idDisplay;
         private final String dateStr;
         private final String nom;
         private final String email;
@@ -97,7 +95,6 @@ public class AdminOrdersController {
             CustomerOrder o = av.order;
             this.source = o;
             this.legacy = av.legacy;
-            this.idDisplay = av.legacy ? "A" + o.id() : "C" + o.id();
             this.dateStr = o.dateCreation() != null ? DT.format(o.dateCreation()) : "—";
             this.nom = o.nom() != null ? o.nom() : "—";
             this.email = o.email() != null ? o.email() : "—";
@@ -107,8 +104,10 @@ public class AdminOrdersController {
             this.userId = o.userId();
         }
 
-        public String getIdDisplay() {
-            return idDisplay;
+        /** Titre lisible pour les boîtes de dialogue (sans identifiant technique). */
+        public String getDetailTitle() {
+            String n = nom != null && !nom.isBlank() ? nom : "Commande";
+            return n + " — " + dateStr;
         }
 
         public boolean isLegacy() {
@@ -166,9 +165,9 @@ public class AdminOrdersController {
         Label title = new Label("Commandes clients");
         title.setStyle("-fx-font-size: 26px; -fx-font-weight: bold; -fx-text-fill: #2a2a2a;");
         Label desc = new Label(
-            "Chaque ligne correspond à une commande (panier → paiement). "
-                + "Approuver = première validation (en attente → livraison). Annuler = commande refusée (le client est notifié). "
-                + "Étape suivante = avancer jusqu’à livrée (le client est notifié à la validation et à la livraison). Double-clic = détail."
+            "Chaque ligne correspond à une commande client. Tant qu’une commande est « En attente », le stock catalogue n’est pas encore débité. "
+                + "Approuver = validation (passage en livraison + débit du stock) ; le client est notifié. Annuler = refus (le client est notifié). "
+                + "Étape suivante = avancer jusqu’à livrée. Les admins reçoivent une notification (cloche) pour chaque nouvelle commande. Double-clic = détail."
         );
         desc.setWrapText(true);
         desc.setStyle("-fx-text-fill: #6b7280;");
@@ -210,10 +209,6 @@ public class AdminOrdersController {
         table.setPlaceholder(new Label("Aucune commande pour l’instant."));
         table.setPrefHeight(520);
 
-        TableColumn<CustomerOrderRow, String> colId = new TableColumn<>("N°");
-        colId.setCellValueFactory(cd -> new ReadOnlyStringWrapper(cd.getValue().getIdDisplay()));
-        colId.setMaxWidth(70);
-
         TableColumn<CustomerOrderRow, String> colDate = new TableColumn<>("Date");
         colDate.setCellValueFactory(cd -> new ReadOnlyStringWrapper(cd.getValue().getDateStr()));
 
@@ -232,11 +227,13 @@ public class AdminOrdersController {
         TableColumn<CustomerOrderRow, String> colPay = new TableColumn<>("Paiement");
         colPay.setCellValueFactory(cd -> new ReadOnlyStringWrapper(cd.getValue().getModePayment()));
 
-        TableColumn<CustomerOrderRow, Integer> colUser = new TableColumn<>("Compte");
-        colUser.setCellValueFactory(cd -> new ReadOnlyObjectWrapper<>(cd.getValue().getUserId()));
-        colUser.setMaxWidth(80);
+        TableColumn<CustomerOrderRow, String> colCompte = new TableColumn<>("Compte");
+        colCompte.setCellValueFactory(cd -> new ReadOnlyStringWrapper(
+            cd.getValue().getUserId() > 0 ? "Membre connecté" : "Sans compte"
+        ));
+        colCompte.setMaxWidth(130);
 
-        table.getColumns().addAll(colId, colDate, colNom, colEmail, colTotal, colStatut, colPay, colUser);
+        table.getColumns().addAll(colDate, colNom, colEmail, colTotal, colStatut, colPay, colCompte);
 
         table.getSelectionModel().selectedItemProperty().addListener((obs, prev, cur) -> syncOrderActionButtonsState());
 
@@ -364,7 +361,7 @@ public class AdminOrdersController {
                 ? orderService.findLinesForLegacyOrder(o.id())
                 : orderService.findLinesForOrder(o.id());
             StringBuilder sb = new StringBuilder();
-            sb.append("Commande n° ").append(row.getIdDisplay()).append("\n");
+            sb.append(row.getDetailTitle()).append("\n");
             sb.append("Statut : ").append(labelStatutAdmin(o.statut())).append("\n");
             sb.append("Date : ").append(o.dateCreation() != null ? DT.format(o.dateCreation()) : "—").append("\n");
             sb.append("Client : ").append(o.nom() != null ? o.nom() : "—").append("\n");
@@ -382,7 +379,7 @@ public class AdminOrdersController {
             } else {
                 for (CustomerOrderLine line : lines) {
                     sb.append("• ")
-                        .append(line.produitNom() != null ? line.produitNom() : "Produit #" + line.produitId())
+                        .append(line.produitNom() != null ? line.produitNom() : "Article")
                         .append(" × ").append(line.quantite())
                         .append(" — ").append(String.format(Locale.FRENCH, "%.2f DT", line.sousTotal()))
                         .append("\n");
@@ -391,7 +388,7 @@ public class AdminOrdersController {
             sb.append("\nTotal : ").append(String.format(Locale.FRENCH, "%.2f DT", o.total()));
             Alert a = new Alert(Alert.AlertType.INFORMATION);
             a.setTitle("Détail commande");
-            a.setHeaderText("Commande n° " + row.getIdDisplay());
+            a.setHeaderText(row.getDetailTitle());
             a.setContentText(sb.toString());
             a.showAndWait();
         } catch (SQLException ex) {
@@ -433,12 +430,6 @@ public class AdminOrdersController {
 
     private static boolean matchesFilter(AdminOrderView v, String q) {
         CustomerOrder o = v.order;
-        if (("c" + o.id()).contains(q) || ("a" + o.id()).contains(q)) {
-            return true;
-        }
-        if (String.valueOf(o.id()).contains(q)) {
-            return true;
-        }
         if (o.nom() != null && o.nom().toLowerCase(Locale.FRENCH).contains(q)) {
             return true;
         }

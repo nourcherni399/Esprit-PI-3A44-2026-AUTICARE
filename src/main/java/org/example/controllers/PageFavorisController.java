@@ -28,10 +28,14 @@ import org.example.utils.ProductImageLoader;
 
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Liste des favoris (produits enregistrés).
@@ -92,18 +96,112 @@ public class PageFavorisController implements PublicShellAware {
                 favoritesFlow.getChildren().add(empty);
                 return;
             }
+            List<Product> favoriteProducts = new ArrayList<>();
+            Set<Integer> favoriteIds = new HashSet<>(ids);
+            Label favTitle = sectionTitle("Mes produits favoris");
+            favoritesFlow.getChildren().add(favTitle);
             for (int pid : ids) {
                 productService.findById(pid).ifPresent(p -> {
                     if (ProductService.isVisibleOnPublicCatalog(p)) {
+                        favoriteProducts.add(p);
                         favoritesFlow.getChildren().add(buildCard(p, stockNames, u));
                     }
                 });
+            }
+
+            List<Product> suggestions = findSimilarSuggestions(favoriteProducts, favoriteIds);
+            if (!suggestions.isEmpty()) {
+                Label sugTitle = sectionTitle("Suggestions similaires pour vous");
+                favoritesFlow.getChildren().add(sugTitle);
+                for (Product s : suggestions) {
+                    favoritesFlow.getChildren().add(buildCard(s, stockNames, u));
+                }
             }
         } catch (SQLException ex) {
             Label err = new Label("Erreur : " + ex.getMessage());
             err.setWrapText(true);
             favoritesFlow.getChildren().add(err);
         }
+    }
+
+    private static Label sectionTitle(String text) {
+        Label title = new Label(text);
+        title.setWrapText(true);
+        title.setStyle("-fx-font-size: 17px; -fx-font-weight: 700; -fx-text-fill: #1f2937; -fx-padding: 6 0 2 2;");
+        title.setMinWidth(860);
+        return title;
+    }
+
+    private List<Product> findSimilarSuggestions(List<Product> favorites, Set<Integer> favoriteIds) throws SQLException {
+        if (favorites == null || favorites.isEmpty()) {
+            return List.of();
+        }
+        List<Product> all = productService.findPublishedCatalog();
+        if (all.isEmpty()) {
+            return List.of();
+        }
+
+        List<ScoredProduct> scored = new ArrayList<>();
+        for (Product candidate : all) {
+            if (candidate == null || favoriteIds.contains(candidate.getId())) {
+                continue;
+            }
+            double bestScore = 0.0;
+            for (Product fav : favorites) {
+                double score = similarityScore(fav, candidate);
+                if (score > bestScore) {
+                    bestScore = score;
+                }
+            }
+            if (bestScore > 0.15) {
+                scored.add(new ScoredProduct(candidate, bestScore));
+            }
+        }
+
+        scored.sort(Comparator
+            .comparingDouble(ScoredProduct::score).reversed()
+            .thenComparingInt(s -> s.product().getId()).reversed());
+
+        List<Product> out = new ArrayList<>();
+        for (int i = 0; i < Math.min(8, scored.size()); i++) {
+            out.add(scored.get(i).product());
+        }
+        return out;
+    }
+
+    private static double similarityScore(Product base, Product candidate) {
+        double score = 0.0;
+        if (base == null || candidate == null) {
+            return score;
+        }
+        String catA = base.getCategorie() == null ? "" : base.getCategorie().trim().toLowerCase(Locale.ROOT);
+        String catB = candidate.getCategorie() == null ? "" : candidate.getCategorie().trim().toLowerCase(Locale.ROOT);
+        if (!catA.isEmpty() && catA.equals(catB)) {
+            score += 0.65;
+        }
+
+        double pA = Math.max(0.0, base.getPrix());
+        double pB = Math.max(0.0, candidate.getPrix());
+        if (pA > 0.0 && pB > 0.0) {
+            double relDiff = Math.abs(pA - pB) / pA;
+            if (relDiff <= 0.15) {
+                score += 0.30;
+            } else if (relDiff <= 0.30) {
+                score += 0.20;
+            } else if (relDiff <= 0.50) {
+                score += 0.10;
+            }
+        }
+
+        String nameA = base.getNom() == null ? "" : base.getNom().toLowerCase(Locale.ROOT);
+        String nameB = candidate.getNom() == null ? "" : candidate.getNom().toLowerCase(Locale.ROOT);
+        if (!nameA.isBlank() && !nameB.isBlank() && (nameA.contains(nameB) || nameB.contains(nameA))) {
+            score += 0.10;
+        }
+        return score;
+    }
+
+    private record ScoredProduct(Product product, double score) {
     }
 
     private VBox buildCard(Product p, Map<Integer, String> stockNames, User u) {
@@ -150,7 +248,7 @@ public class PageFavorisController implements PublicShellAware {
         Label priceLbl = new Label(String.format(Locale.FRENCH, "%.2f DT", p.getPrix()));
         priceLbl.setStyle("-fx-font-size: 14px; -fx-font-weight: 600; -fx-text-fill: #0f172a;");
         String stockNom = stockNames.get(p.getStockId());
-        String stockLine = stockNom != null && !stockNom.isBlank() ? "Stock : " + stockNom : "Réf. stock #" + p.getStockId();
+        String stockLine = stockNom != null && !stockNom.isBlank() ? "Stock : " + stockNom : "Emplacement catalogue";
         Label stockLbl = new Label(stockLine);
         stockLbl.setStyle("-fx-font-size: 12px; -fx-font-weight: 600; -fx-text-fill: #5c6d4a;");
         Button removeFav = new Button("Retirer des favoris");

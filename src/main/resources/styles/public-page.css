@@ -135,6 +135,20 @@
     -fx-cursor: hand;
 }
 
+.catalog-create-product-btn {
+    -fx-background-color: #90a67f;
+    -fx-text-fill: #ffffff;
+    -fx-background-radius: 8;
+    -fx-font-size: 15px;
+    -fx-font-weight: 600;
+    -fx-padding: 10 18 10 18;
+    -fx-cursor: hand;
+}
+
+.catalog-create-product-btn:hover {
+    -fx-background-color: #7d946f;
+}
+
 .public-product-order-card {
     -fx-background-color: #ffffff;
     -fx-background-radius: 12;
@@ -247,6 +261,45 @@
     -fx-padding: 8 4 16 4;
 }
 
+/* CTA catalogue / favoris / demande produit — évite le bouton Modena gris 3D par défaut */
+.catalog-add-cart-btn {
+    -fx-background-color: linear-gradient(to bottom, #3b82f6 0%, #2563eb 55%, #1d4ed8 100%);
+    -fx-text-fill: #ffffff;
+    -fx-font-size: 15px;
+    -fx-font-weight: 700;
+    -fx-background-radius: 10;
+    -fx-background-insets: 0;
+    -fx-border-color: rgba(15, 23, 42, 0.12);
+    -fx-border-radius: 10;
+    -fx-border-width: 1;
+    -fx-padding: 12 22 12 22;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(37, 99, 235, 0.35), 10, 0.2, 0, 3);
+}
+
+.catalog-add-cart-btn:hover {
+    -fx-background-color: linear-gradient(to bottom, #60a5fa 0%, #3b82f6 50%, #2563eb 100%);
+    -fx-effect: dropshadow(gaussian, rgba(37, 99, 235, 0.45), 14, 0.25, 0, 4);
+}
+
+.catalog-add-cart-btn:pressed {
+    -fx-background-color: #1e40af;
+    -fx-effect: dropshadow(gaussian, rgba(30, 64, 175, 0.3), 6, 0.15, 0, 1);
+}
+
+.catalog-add-cart-btn:focused {
+    -fx-border-color: rgba(59, 130, 246, 0.65);
+    -fx-border-width: 2;
+}
+
+.catalog-add-cart-btn:disabled {
+    -fx-background-color: #e5e7eb;
+    -fx-text-fill: #9ca3af;
+    -fx-border-color: #d1d5db;
+    -fx-effect: null;
+    -fx-cursor: default;
+}
+
 /*
  * Champs alignés sur {@link org.example.ui.product.ProductFormUi#styleInputAddProduct}
  * et carte {@code AdminProductsController.showProductEditor}.
@@ -275,6 +328,7 @@
     -fx-padding: 20 8 40 8;
     -fx-spacing: 22;
     -fx-alignment: top_center;
+    -fx-font-family: "Inter", "Segoe UI Variable", "Segoe UI", "Roboto", sans-serif;
 }
 
 .checkout-shell {
@@ -286,7 +340,7 @@
 }
 
 .checkout-form-scroll {
-    -fx-min-viewport-height: 420;
+    -fx-min-viewport-height: 560;
 }
 
 .checkout-form-scroll > .viewport {
@@ -301,20 +355,37 @@
 }
 
 .checkout-form-inner {
-    -fx-spacing: 22;
+    -fx-spacing: 24;
     -fx-max-width: 640;
+    -fx-padding: 22 22 24 22;
+    -fx-background-color: linear-gradient(to bottom, #ffffff 0%, #f9fbff 100%);
+    -fx-border-color: #dbe6f5;
+    -fx-border-radius: 14;
+    -fx-background-radius: 14;
+}
+
+.checkout-form-title {
+    -fx-font-size: 22px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #0f2748;
+    -fx-padding: 0 0 4 0;
 }
 
 .checkout-section-title {
-    -fx-font-size: 16px;
+    -fx-font-size: 17px;
     -fx-font-weight: 700;
-    -fx-text-fill: #1f2937;
+    -fx-text-fill: #214772;
+    -fx-padding: 4 0 0 0;
 }
 
 .checkout-form-label {
     -fx-font-size: 15px;
-    -fx-font-weight: 500;
-    -fx-text-fill: #1f2937;
+    -fx-font-weight: 600;
+    -fx-text-fill: #334155;
+}
+
+#paymentCombo {
+    -fx-pref-height: 44;
 }
 
 .checkout-field-hint {
@@ -324,16 +395,17 @@
 }
 
 .checkout-section-sep {
-    -fx-padding: 4 0 4 0;
+    -fx-padding: 8 0 8 0;
+    -fx-opacity: 0.85;
 }
 
 .checkout-card-fields {
-    -fx-spacing: 10;
-    -fx-padding: 12 14 14 14;
-    -fx-background-color: #f9fafb;
-    -fx-background-radius: 8;
-    -fx-border-color: #e5e7eb;
-    -fx-border-radius: 8;
+    -fx-spacing: 12;
+    -fx-padding: 14 16 16 16;
+    -fx-background-color: #f4f8ff;
+    -fx-background-radius: 10;
+    -fx-border-color: #cfe0f7;
+    -fx-border-radius: 10;
     -fx-border-width: 1;
 }
 
@@ -422,9 +494,24 @@
 }
 
 .checkout-actions-bar {
-    -fx-padding: 12 4 4 4;
-    -fx-spacing: 10;
+    -fx-padding: 14 6 6 6;
+    -fx-spacing: 12;
     -fx-background-color: rgba(255, 255, 255, 0.98);
+}
+
+.checkout-primary-btn {
+    -fx-background-color: linear-gradient(to right, #2f7fd9 0%, #1f63b8 100%);
+    -fx-text-fill: #ffffff;
+    -fx-background-radius: 10;
+    -fx-font-size: 15px;
+    -fx-font-weight: 700;
+    -fx-padding: 12 18 12 18;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(31, 99, 184, 0.30), 10, 0.22, 0, 3);
+}
+
+.checkout-primary-btn:hover {
+    -fx-background-color: linear-gradient(to right, #3a8ae3 0%, #246ec6 100%);
 }
 
 .cart-outline-btn {

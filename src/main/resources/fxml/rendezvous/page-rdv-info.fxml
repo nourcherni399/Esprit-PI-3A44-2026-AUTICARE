@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.DatePicker?>
+<?import javafx.scene.control.Hyperlink?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+
+<StackPane styleClass="rdv-info-root" stylesheets="@../../styles/public-page.css" xmlns="http://javafx.com/javafx/21"
+           xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.example.controllers.PageRdvInfoController">
+    <Region styleClass="rdv-info-bg"/>
+
+    <VBox maxWidth="1180" spacing="0" styleClass="rdv-type-foreground" StackPane.alignment="TOP_CENTER">
+        <padding>
+            <Insets bottom="10" left="12" right="12" top="6"/>
+        </padding>
+
+        <HBox alignment="CENTER_LEFT" spacing="16" styleClass="rdv-booking-topbar">
+            <Hyperlink onAction="#onBackToList" styleClass="rdv-booking-back" text="← Retour à la liste"/>
+            <Region HBox.hgrow="ALWAYS" minWidth="12"/>
+            <HBox fx:id="infoStepperBox" alignment="CENTER_RIGHT" spacing="4" styleClass="rdv-booking-stepper"/>
+        </HBox>
+
+        <Region prefHeight="4"/>
+
+        <HBox alignment="TOP_LEFT" spacing="14" styleClass="rdv-booking-main" VBox.vgrow="ALWAYS" maxHeight="Infinity">
+            <VBox minWidth="268" prefWidth="300" spacing="8" styleClass="rdv-booking-sidebar">
+                <VBox spacing="8" styleClass="rdv-booking-profile-card">
+                    <StackPane styleClass="rdv-booking-avatar-wrap">
+                        <Label fx:id="infoAvatarInitials" styleClass="rdv-booking-avatar-text" text="DR"/>
+                    </StackPane>
+                    <VBox spacing="4">
+                        <Label fx:id="infoSidebarName" styleClass="rdv-booking-sidebar-name" text="Dr. —" wrapText="true"/>
+                        <Label styleClass="rdv-booking-sidebar-tag" text="Spécialiste"/>
+                    </VBox>
+                    <Label fx:id="infoSidebarBio" styleClass="rdv-booking-sidebar-bio" wrapText="true"
+                           text="Praticien accompagnant les personnes avec TSA."/>
+                    <VBox spacing="6" styleClass="rdv-booking-contact-block">
+                        <Label fx:id="infoSidebarPhone" styleClass="rdv-booking-contact-line" text="📞 —"/>
+                        <Label fx:id="infoSidebarEmail" styleClass="rdv-booking-contact-line" text="✉ —"/>
+                    </VBox>
+                </VBox>
+            </VBox>
+
+            <VBox HBox.hgrow="ALWAYS" minWidth="0" spacing="4" styleClass="rdv-booking-content">
+                <Label styleClass="rdv-booking-main-title" text="Vos informations"/>
+
+                <VBox styleClass="rdv-type-main-card rdv-info-main-card" VBox.vgrow="ALWAYS" maxHeight="Infinity">
+                    <padding>
+                        <Insets bottom="10" left="14" right="14" top="10"/>
+                    </padding>
+                    <ScrollPane fitToWidth="true" hbarPolicy="NEVER" maxHeight="Infinity" styleClass="rdv-info-scroll"
+                                vbarPolicy="AS_NEEDED" VBox.vgrow="ALWAYS">
+                        <VBox spacing="5" styleClass="rdv-info-form-wrap">
+                            <padding>
+                                <Insets bottom="0" right="0" top="0"/>
+                            </padding>
+
+                            <HBox spacing="8" styleClass="rdv-info-row-2">
+                            <VBox spacing="2" styleClass="rdv-info-field" HBox.hgrow="ALWAYS">
+                                <Label styleClass="rdv-info-label" text="Nom *"/>
+                                <TextField fx:id="infoNom" promptText="Votre nom" styleClass="rdv-info-input"/>
+                            </VBox>
+                            <VBox spacing="2" styleClass="rdv-info-field" HBox.hgrow="ALWAYS">
+                                <Label styleClass="rdv-info-label" text="Prénom *"/>
+                                <TextField fx:id="infoPrenom" promptText="Votre prénom" styleClass="rdv-info-input"/>
+                            </VBox>
+                        </HBox>
+
+                        <VBox spacing="2" styleClass="rdv-info-field">
+                            <Label styleClass="rdv-info-label" text="Téléphone *"/>
+                            <TextField fx:id="infoTel" promptText="06 12 34 56 78" styleClass="rdv-info-input"/>
+                        </VBox>
+
+                        <VBox spacing="2" styleClass="rdv-info-field">
+                            <Label styleClass="rdv-info-label" text="Email *"/>
+                            <TextField fx:id="infoEmail" promptText="vous@exemple.fr" styleClass="rdv-info-input"/>
+                            <Label styleClass="rdv-info-field-hint" text="Vous recevrez la réponse du médecin (acceptation ou refus) à cette adresse."
+                                   wrapText="true"/>
+                        </VBox>
+
+                        <VBox spacing="2" styleClass="rdv-info-field">
+                            <Label styleClass="rdv-info-label" text="Adresse *"/>
+                            <TextField fx:id="infoAdresse" promptText="Votre adresse" styleClass="rdv-info-input"/>
+                        </VBox>
+
+                        <VBox spacing="2" styleClass="rdv-info-field">
+                            <Label styleClass="rdv-info-label" text="Date de naissance du patient *"/>
+                            <DatePicker fx:id="infoDob" promptText="jj/mm/aaaa" styleClass="rdv-info-datepicker"/>
+                        </VBox>
+
+                        <VBox spacing="2" styleClass="rdv-info-field">
+                            <Label styleClass="rdv-info-label" text="Notes (optionnel)"/>
+                            <TextArea fx:id="infoNotes" prefRowCount="3" promptText="Informations utiles pour le praticien…"
+                                      styleClass="rdv-info-textarea" wrapText="true"/>
+                        </VBox>
+
+                        <VBox spacing="4" styleClass="rdv-info-recap">
+                            <padding>
+                                <Insets bottom="8" left="10" right="10" top="8"/>
+                            </padding>
+                            <Label styleClass="rdv-info-recap-title" text="Récapitulatif"/>
+                            <Label fx:id="recapCreneau" styleClass="rdv-info-recap-line" text="Créneau : —"
+                                   wrapText="true"/>
+                            <Label fx:id="recapType" styleClass="rdv-info-recap-line" text="Type : —" wrapText="true"/>
+                            <Label fx:id="recapMode" styleClass="rdv-info-recap-line" text="Mode : Au cabinet"/>
+                            <Label fx:id="recapMotif" styleClass="rdv-info-recap-line" text="Motif : —" wrapText="true"/>
+                        </VBox>
+
+                        <HBox alignment="CENTER_LEFT" spacing="8" styleClass="rdv-info-actions">
+                            <padding>
+                                <Insets bottom="0" top="4"/>
+                            </padding>
+                            <Button mnemonicParsing="false" onAction="#onRetourType" styleClass="rdv-type-retour"
+                                    text="&lt; Retour"/>
+                            <Region HBox.hgrow="ALWAYS" minWidth="8"/>
+                            <Button mnemonicParsing="false" onAction="#onEnvoyerDemande" styleClass="rdv-booking-continuer"
+                                    text="Envoyer ma demande"/>
+                        </HBox>
+                        </VBox>
+                    </ScrollPane>
+                </VBox>
+            </VBox>
+        </HBox>
+    </VBox>
+</StackPane>

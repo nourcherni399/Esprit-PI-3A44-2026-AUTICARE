@@ -299,6 +299,7 @@ public class MedecinDashboardController {
             return;
         }
         currentDoctorId = u.getId();
+        setMainView(MainView.HOME);
         // Exposer un objet bridge public dédié (plus fiable avec WebView/JSObject qu'un gros controller FXML).
         dispoJsBridge = new DispoCalendarJsBridge(this);
         applyUser(u);
@@ -312,7 +313,6 @@ public class MedecinDashboardController {
         if (statDispoLabel != null) {
             statDispoLabel.setText("Actif");
         }
-        setMainView(MainView.HOME);
         refreshMedecinPendingDemandesUi();
         if (dispoSlotSearchField != null) {
             dispoSlotSearchField.textProperty().addListener((o, a, b) -> {
@@ -692,6 +692,16 @@ public class MedecinDashboardController {
         } else {
             selectedDispoDate = dispoMonth.atDay(selectedDispoDate.getDayOfMonth());
         }
+        updateMonthTitle();
+        rebuildCalendarGrid();
+        rebuildDispoFullCalendar();
+    }
+
+    @FXML
+    private void onDispoGoToday() {
+        LocalDate now = LocalDate.now();
+        dispoMonth = YearMonth.from(now);
+        selectedDispoDate = now;
         updateMonthTitle();
         rebuildCalendarGrid();
         rebuildDispoFullCalendar();
@@ -1692,7 +1702,7 @@ public class MedecinDashboardController {
 
     private void showAvailabilityEditor(Availability existing) {
         try {
-            URL url = MainApp.class.getResource("/fxml/medecin-disponibilite-dialog.fxml");
+            URL url = MainApp.class.getResource("/fxml/medecin/medecin-disponibilite-dialog.fxml");
             if (url == null) {
                 alert(Alert.AlertType.ERROR, "Erreur", "Formulaire introuvable.");
                 return;
@@ -3686,7 +3696,7 @@ public class MedecinDashboardController {
     @FXML
     private void onViewProfile() {
         try {
-            URL url = MainApp.class.getResource("/fxml/medecin-my-profile.fxml");
+            URL url = MainApp.class.getResource("/fxml/medecin/medecin-my-profile.fxml");
             if (url == null) {
                 alert(Alert.AlertType.ERROR, "Erreur", "Formulaire profil introuvable.");
                 return;

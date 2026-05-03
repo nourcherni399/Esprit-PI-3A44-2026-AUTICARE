@@ -105,7 +105,11 @@ public class RdvPatientEmailService {
         }
         User patient = userService.findById(appt.getPatientId()).orElse(null);
         User medecin = userService.findById(appt.getMedecinId()).orElse(null);
-        if (patient == null || patient.getEmail() == null || patient.getEmail().isBlank()) {
+        String to = firstNonBlank(
+                patient != null ? patient.getEmail() : null,
+                extractEmailFromNotes(appt.getNotes()),
+                "");
+        if (to.isBlank()) {
             throw new MessagingException("E-mail patient introuvable.");
         }
         String prenom = firstNonBlank(appt.getPatientPrenom(), patient.getPrenom(), "Patient");
@@ -129,7 +133,7 @@ public class RdvPatientEmailService {
         String html = htmlConfirmation(escapeHtml(prenom), escapeHtml(dr), escapeHtml(dateStr),
                 escapeHtml(horaires), cabinetRowHtml, lieu, tel);
         transactionalMail.sendTransactionalHtml(
-                patient.getEmail().trim(), "AutiCare — Votre rendez-vous est confirmé", html);
+                to, "AutiCare — Votre rendez-vous est confirmé", html);
     }
 
     private static Optional<String> buildManageUrl(String gestionToken) {
@@ -202,6 +206,33 @@ public class RdvPatientEmailService {
             return b.trim();
         }
         return fallback;
+    }
+
+    /**
+     * Compatibilité : dans certains parcours publics, l’e-mail peut être conservé uniquement dans notes.
+     */
+    private static String extractEmailFromNotes(String notes) {
+        if (notes == null || notes.isBlank()) {
+            return "";
+        }
+        for (String line : notes.split("\\R")) {
+            if (line == null) {
+                continue;
+            }
+            String l = line.trim();
+            if (!l.toLowerCase(Locale.ROOT).startsWith("e-mail")) {
+                continue;
+            }
+            int idx = l.indexOf(':');
+            if (idx < 0 || idx + 1 >= l.length()) {
+                continue;
+            }
+            String candidate = l.substring(idx + 1).trim();
+            if (candidate.contains("@") && candidate.contains(".")) {
+                return candidate;
+            }
+        }
+        return "";
     }
 
     private static String formatHoraires(LocalDateTime debut, LocalDateTime fin) {

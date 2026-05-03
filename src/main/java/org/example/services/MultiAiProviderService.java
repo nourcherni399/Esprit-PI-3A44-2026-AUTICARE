@@ -938,6 +938,26 @@ public final class MultiAiProviderService {
                     break;
                 }
             }
+            // Fallback provider-side: certains modèles ne répondent qu'en mode router/fal-ai.
+            ImageGenResult fal = tryFalRouterTextToImage(key, model, prompt, seedIndex);
+            if (fal.dataUrl() != null && !fal.dataUrl().isBlank()) {
+                return fal;
+            }
+            if (fal.error() != null && !fal.error().isBlank()) {
+                lastError = (lastError == null || lastError.isBlank())
+                        ? "fal-ai: " + fal.error()
+                        : lastError + " | fal-ai: " + fal.error();
+            }
+            // Fallback IA sans clé: utile quand HF retourne 402 (crédits épuisés).
+            ImageGenResult pollinations = tryPollinationsTextToImage(prompt, seedIndex);
+            if (pollinations.dataUrl() != null && !pollinations.dataUrl().isBlank()) {
+                return pollinations;
+            }
+            if (pollinations.error() != null && !pollinations.error().isBlank()) {
+                lastError = (lastError == null || lastError.isBlank())
+                        ? "pollinations: " + pollinations.error()
+                        : lastError + " | pollinations: " + pollinations.error();
+            }
             return new ImageGenResult("", "huggingface/" + model,
                     (lastError.isBlank() ? "timeout/loading persistant" : lastError));
         } catch (Exception e) {
@@ -1102,6 +1122,28 @@ public final class MultiAiProviderService {
             return "data:" + ct + ";base64," + b64;
         } catch (Exception ignored) {
             return null;
+        }
+    }
+
+    /**
+     * Fallback IA image public (sans clé) pour éviter un blocage utilisateur
+     * quand le provider principal est en quota.
+     */
+    private ImageGenResult tryPollinationsTextToImage(String prompt, int seedIndex) {
+        try {
+            String cleanPrompt = prompt == null || prompt.isBlank()
+                    ? "Rorschach inkblot, bilateral symmetry, black ink on white background"
+                    : prompt;
+            String url = "https://image.pollinations.ai/prompt/" + enc(cleanPrompt)
+                    + "?width=768&height=512&nologo=true&seed=" + Math.max(1, seedIndex + 1);
+            String dataUrl = fetchUrlAsImageDataUrl(url);
+            if (dataUrl != null && !dataUrl.isBlank()) {
+                return new ImageGenResult(dataUrl, "pollinations", "");
+            }
+            return new ImageGenResult("", "pollinations", "réponse image vide");
+        } catch (Exception e) {
+            return new ImageGenResult("", "pollinations",
+                    e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName());
         }
     }
 

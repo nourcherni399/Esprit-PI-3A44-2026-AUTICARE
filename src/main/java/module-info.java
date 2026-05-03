@@ -18,6 +18,10 @@ module org.example.pi {
     requires org.apache.poi.poi;
     requires org.apache.poi.ooxml;
     requires openhtmltopdf.pdfbox;
+    requires com.fasterxml.jackson.databind;
+    requires com.google.gson;
+    requires com.stripe;
+    requires com.google.i18n.phonenumbers.libphonenumber;
 
     opens org.example to javafx.graphics;
     opens org.example.controllers to javafx.fxml;

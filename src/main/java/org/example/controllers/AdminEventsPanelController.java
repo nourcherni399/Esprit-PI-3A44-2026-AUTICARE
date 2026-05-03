@@ -931,12 +931,20 @@ public class AdminEventsPanelController {
         }
     }
 
-    private static String displayNameForUser(User u, int fallbackId) {
-        if (u == null) {
-            return "Utilisateur #" + fallbackId;
+    private static String displayNameForUser(User u, int userId) {
+        if (u != null) {
+            String n = ((u.getPrenom() != null ? u.getPrenom() : "") + " " + (u.getNom() != null ? u.getNom() : "")).trim();
+            if (!n.isBlank()) {
+                return n;
+            }
+            if (u.getEmail() != null && !u.getEmail().isBlank()) {
+                return u.getEmail();
+            }
         }
-        String n = ((u.getPrenom() != null ? u.getPrenom() : "") + " " + (u.getNom() != null ? u.getNom() : "")).trim();
-        return n.isBlank() ? ("Utilisateur #" + fallbackId) : n;
+        if (userId > 0) {
+            return "Utilisateur #" + userId;
+        }
+        return "Compte membre";
     }
 
     private void openEditEvent(Event ev) {

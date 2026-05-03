@@ -11,6 +11,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.geometry.Pos;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.geometry.Side;
 import javafx.scene.CacheHint;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
@@ -29,6 +30,7 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.Hyperlink;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
@@ -43,7 +45,11 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.geometry.Side;
 import javafx.util.Duration;
+import javafx.stage.Window;
+import javafx.util.Duration;
+import javafx.util.StringConverter;
 import org.example.MainApp;
+import org.example.models.AppLanguage;
 import org.example.models.Appointment;
 import org.example.models.UserNotificationItem;
 import org.example.services.UserNotificationService;
@@ -54,6 +60,8 @@ import org.example.models.Role;
 import org.example.models.User;
 import org.example.services.AppointmentService;
 import org.example.services.EventService;
+import org.example.services.NotificationService;
+import org.example.services.UserNotificationService;
 import org.example.services.UserService;
 import org.example.utils.AppState;
 import org.example.utils.CombinedPublicNotifications;
@@ -131,6 +139,8 @@ public class PublicShellController {
     @FXML
     private Label userNotifBadgeLabel;
     @FXML
+    private Label clientOrderNotifLabel;
+    @FXML
     private HBox loggedNavActions;
     @FXML
     private StackPane loggedAvatarHost;
@@ -149,6 +159,8 @@ public class PublicShellController {
     @FXML
     private HBox shellNavProduits;
     @FXML
+    private HBox shellNavPanier;
+    @FXML
     private HBox shellNavMesCommandes;
     @FXML
     private HBox shellNavRdv;
@@ -160,6 +172,10 @@ public class PublicShellController {
     private Hyperlink shellConnexionLink;
     @FXML
     private Button shellSignupBtn;
+    @FXML
+    private Button shellAvatarBtn;
+    @FXML
+    private TextField navSearchField;
     @FXML
     private StackPane patientNotifBellHost;
     @FXML
@@ -178,6 +194,7 @@ public class PublicShellController {
     private double newsTickerLastSegmentWidth = -1;
 
     private final UserNotificationService userNotificationService = new UserNotificationService();
+    private final NotificationService shellOrderNotificationService = new NotificationService();
     private final ContextMenu userNotifContextMenu = new ContextMenu();
     private static final DateTimeFormatter USER_NOTIF_TIME_FMT = DateTimeFormatter.ofPattern("dd/MM HH:mm", Locale.FRENCH);
     private static final int PAGE_CACHE_LIMIT = 6;
@@ -469,6 +486,36 @@ public class PublicShellController {
                         UserAvatarGraphic.build(u, 42, UserAvatarGraphic.initialsFor(u), "home-topbar-avatar"));
             }
             refreshUserNotificationBadge();
+            refreshClientOrderNotificationBadge(u);
+        } else if (clientOrderNotifLabel != null) {
+            clientOrderNotifLabel.setVisible(false);
+            clientOrderNotifLabel.setManaged(false);
+        }
+    }
+
+    /** Met à jour badges / libellés du bandeau (ex. après lecture des notifications commande). */
+    public void refreshPublicNavBadges() {
+        refreshTopNavState();
+    }
+
+    private void refreshClientOrderNotificationBadge(User u) {
+        if (clientOrderNotifLabel == null || u == null) {
+            return;
+        }
+        try {
+            int n = shellOrderNotificationService.countUnreadClientOrderNotifications(u.getId());
+            if (n > 0) {
+                clientOrderNotifLabel.setText("🛒 " + (n > 9 ? "9+" : String.valueOf(n)));
+                clientOrderNotifLabel.setVisible(true);
+                clientOrderNotifLabel.setManaged(true);
+            } else {
+                clientOrderNotifLabel.setText("🛒");
+                clientOrderNotifLabel.setVisible(false);
+                clientOrderNotifLabel.setManaged(false);
+            }
+        } catch (Exception ignored) {
+            clientOrderNotifLabel.setVisible(false);
+            clientOrderNotifLabel.setManaged(false);
         }
     }
 
@@ -774,6 +821,7 @@ public class PublicShellController {
         String id = normalizeNavPageKey(currentShellPageKey);
         switch (id) {
             case "produits" -> addNavItemActive(shellNavProduits);
+            case "panier" -> addNavItemActive(shellNavPanier);
             case "mes-commandes" -> addNavItemActive(shellNavMesCommandes);
             case "rdv" -> addNavItemActive(shellNavRdv);
             case "events" -> addNavItemActive(shellNavEvents);
@@ -812,7 +860,8 @@ public class PublicShellController {
             case "connexion", "login" -> "login";
             case "signup", "inscription", "register" -> "signup";
             case "products" -> "produits";
-            case "orders", "commandes", "panier", "cart", "checkout", "mes-commandes" -> "mes-commandes";
+            case "orders", "commandes", "checkout", "mes-commandes" -> "mes-commandes";
+            case "panier", "cart" -> "panier";
             default -> x;
         };
     }
@@ -949,6 +998,7 @@ public class PublicShellController {
             case "login", "connexion" -> "/fxml/pages/page-login.fxml";
             case "signup", "inscription", "register" -> "/fxml/pages/page-signup.fxml";
             case "notifications", "notifs" -> "/fxml/pages/page-notifications.fxml";
+            case "demande-produit", "demande-produits" -> "/fxml/pages/page-demande-produit.fxml";
             default -> "/fxml/pages/page-produits.fxml";
         };
     }
@@ -987,6 +1037,11 @@ public class PublicShellController {
     @FXML
     private void onNavMesCommandes(MouseEvent e) {
         openInShell("mes-commandes");
+    }
+
+    @FXML
+    private void onNavPanier(MouseEvent e) {
+        openInShell("panier");
     }
 
     @FXML
@@ -1036,6 +1091,15 @@ public class PublicShellController {
     @FXML
     private void onRegister() {
         openInShell("signup");
+    }
+
+    @FXML
+    private void onNavAvatar() {
+        if (AppState.getCurrentUser() == null) {
+            openInShell("login");
+            return;
+        }
+        onOpenMyProfile(null);
     }
 
     @FXML

@@ -528,7 +528,162 @@
 .med-dispo-search {
     -fx-background-radius: 10;
     -fx-padding: 10 14 10 14;
-    -fx-max-width: 400;
+    -fx-max-width: Infinity;
+}
+
+/* Carte blanche autour du calendrier (aperçu + WebView) */
+.med-dispo-calendar-card {
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 14;
+    -fx-border-color: rgba(15, 23, 42, 0.08);
+    -fx-border-radius: 14;
+    -fx-border-width: 1;
+    -fx-padding: 16 18 18 18;
+    -fx-spacing: 12;
+    -fx-effect: dropshadow(gaussian, rgba(15, 23, 42, 0.07), 14, 0, 0, 2);
+}
+
+.med-dispo-legend {
+    -fx-spacing: 22;
+    -fx-alignment: center-left;
+    -fx-padding: 0 0 2 0;
+}
+
+.med-dispo-legend-item {
+    -fx-spacing: 8;
+    -fx-alignment: center-left;
+}
+
+.med-dispo-legend-dot {
+    -fx-min-width: 10;
+    -fx-min-height: 10;
+    -fx-max-width: 10;
+    -fx-max-height: 10;
+    -fx-background-radius: 999;
+}
+
+.med-dispo-legend-dot-available {
+    -fx-background-color: #22c55e;
+}
+
+.med-dispo-legend-dot-busy {
+    -fx-background-color: #ef4444;
+}
+
+.med-dispo-legend-label {
+    -fx-font-size: 13px;
+    -fx-text-fill: #374151;
+}
+
+.med-dispo-calendar-hint {
+    -fx-font-size: 12px;
+    -fx-text-fill: #6b7280;
+    -fx-font-style: italic;
+    -fx-wrap-text: true;
+}
+
+/* Barre type bandeau calendrier (aperçu Scene Builder / cadre visuel) */
+.med-dispo-fc-toolbar {
+    -fx-background-color: linear-gradient(to bottom, #1e3a5f, #152a45);
+    -fx-background-radius: 10;
+    -fx-padding: 10 14 10 14;
+    -fx-spacing: 12;
+    -fx-alignment: center-left;
+}
+
+.med-dispo-fc-toolbar-title {
+    -fx-text-fill: #ffffff;
+    -fx-font-size: 16px;
+    -fx-font-weight: 700;
+}
+
+.med-dispo-fc-nav-btn {
+    -fx-min-width: 38;
+    -fx-min-height: 34;
+    -fx-background-radius: 8;
+    -fx-background-color: rgba(255, 255, 255, 0.14);
+    -fx-text-fill: #ffffff;
+    -fx-font-size: 16px;
+    -fx-font-weight: 700;
+    -fx-cursor: hand;
+    -fx-border-width: 0;
+}
+
+.med-dispo-fc-nav-btn:hover {
+    -fx-background-color: rgba(255, 255, 255, 0.24);
+}
+
+.med-dispo-fc-today-btn {
+    -fx-background-color: rgba(255, 255, 255, 0.2);
+    -fx-text-fill: #ffffff;
+    -fx-font-size: 12px;
+    -fx-font-weight: 700;
+    -fx-padding: 8 14 8 14;
+    -fx-background-radius: 8;
+    -fx-cursor: hand;
+    -fx-border-width: 0;
+}
+
+.med-dispo-fc-today-btn:hover {
+    -fx-background-color: rgba(255, 255, 255, 0.32);
+}
+
+.med-dispo-fc-segment-box {
+    -fx-spacing: 0;
+    -fx-alignment: center-right;
+    -fx-padding: 0 0 0 12;
+}
+
+.med-dispo-fc-segment {
+    -fx-background-radius: 8;
+    -fx-padding: 6 14 6 14;
+    -fx-font-size: 12px;
+    -fx-font-weight: 600;
+    -fx-cursor: hand;
+}
+
+.med-dispo-fc-segment-muted {
+    -fx-background-color: rgba(255, 255, 255, 0.12);
+    -fx-text-fill: rgba(255, 255, 255, 0.85);
+}
+
+.med-dispo-fc-segment-active {
+    -fx-background-color: #ffffff;
+    -fx-text-fill: #1e3a5f;
+}
+
+.med-dispo-mock-grid {
+    -fx-padding: 8 0 0 0;
+    -fx-hgap: 8;
+    -fx-vgap: 8;
+}
+
+.med-dispo-mock-cell {
+    -fx-background-color: #faf9f7;
+    -fx-background-radius: 10;
+    -fx-border-color: rgba(0, 0, 0, 0.08);
+    -fx-border-radius: 10;
+    -fx-border-width: 1;
+    -fx-padding: 8 10 10 10;
+    -fx-min-height: 72;
+    -fx-pref-height: 88;
+}
+
+.med-dispo-mock-cell-muted {
+    -fx-background-color: #f3f4f6;
+    -fx-opacity: 0.85;
+}
+
+.med-dispo-mock-slot-available {
+    -fx-text-fill: #15803d;
+    -fx-font-size: 11px;
+    -fx-font-weight: 600;
+}
+
+.med-dispo-mock-slot-busy {
+    -fx-text-fill: #b91c1c;
+    -fx-font-size: 11px;
+    -fx-font-weight: 600;
 }
 
 .med-btn-dispo-primary {

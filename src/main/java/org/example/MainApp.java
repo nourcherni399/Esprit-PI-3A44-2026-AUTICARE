@@ -172,7 +172,7 @@ public class MainApp extends Application {
             showLogin();
             return;
         }
-        Parent root = FXMLLoader.load(MainApp.class.getResource("/fxml/medecin-dashboard.fxml"));
+        Parent root = FXMLLoader.load(MainApp.class.getResource("/fxml/medecin/medecin-dashboard.fxml"));
         applyScenePreservingWindowState(root, 1280, 760, 1024, 640);
     }
 

@@ -713,13 +713,10 @@ public class PageBlogController implements PublicShellAware {
             blogService.add(article);
             showAlert(Alert.AlertType.INFORMATION, "Succès", "L'article a été publié avec succès !");
             resetArticleForm();
-            
-            // Masquer le formulaire après publication
             if (articleFormContainer != null) {
                 articleFormContainer.setVisible(false);
                 articleFormContainer.setManaged(false);
             }
-            
             if (currentModule != null) {
                 loadArticlesForModule(currentModule.getId());
             }
