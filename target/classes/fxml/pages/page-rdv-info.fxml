@@ -2,7 +2,6 @@
 
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
-<?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.DatePicker?>
 <?import javafx.scene.control.Hyperlink?>
 <?import javafx.scene.control.Label?>
@@ -14,7 +13,7 @@
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 
-<StackPane styleClass="rdv-info-root" xmlns="http://javafx.com/javafx/21"
+<StackPane styleClass="rdv-info-root" stylesheets="@../../styles/public-page.css" xmlns="http://javafx.com/javafx/21"
            xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.example.controllers.PageRdvInfoController">
     <Region styleClass="rdv-info-bg"/>
 
@@ -47,13 +46,6 @@
                         <Label fx:id="infoSidebarPhone" styleClass="rdv-booking-contact-line" text="📞 —"/>
                         <Label fx:id="infoSidebarEmail" styleClass="rdv-booking-contact-line" text="✉ —"/>
                     </VBox>
-                </VBox>
-
-                <VBox spacing="8" styleClass="rdv-booking-voice-box">
-                    <Label styleClass="rdv-booking-voice-title" text="Assistant vocal (gratuit)"/>
-                    <ComboBox fx:id="infoVoiceLang" maxWidth="Infinity" styleClass="rdv-booking-voice-combo"/>
-                    <Button mnemonicParsing="false" onAction="#onVoiceAssist" styleClass="rdv-booking-voice-btn"
-                            text="🎤 Parler pour prendre RDV"/>
                 </VBox>
             </VBox>
 
@@ -90,7 +82,7 @@
                         <VBox spacing="2" styleClass="rdv-info-field">
                             <Label styleClass="rdv-info-label" text="Email *"/>
                             <TextField fx:id="infoEmail" promptText="vous@exemple.fr" styleClass="rdv-info-input"/>
-                            <Label styleClass="rdv-info-field-hint" text="Vous recevrez la confirmation de rendez-vous à cette adresse."
+                            <Label styleClass="rdv-info-field-hint" text="Vous recevrez la réponse du médecin (acceptation ou refus) à cette adresse."
                                    wrapText="true"/>
                         </VBox>
 

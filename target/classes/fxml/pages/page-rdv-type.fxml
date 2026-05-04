@@ -10,7 +10,7 @@
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 
-<StackPane styleClass="rdv-type-root" xmlns="http://javafx.com/javafx/21"
+<StackPane styleClass="rdv-type-root" stylesheets="@../../styles/public-page.css" xmlns="http://javafx.com/javafx/21"
            xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.example.controllers.PageRdvTypeController">
     <Region styleClass="rdv-type-bg"/>
 
@@ -44,13 +44,6 @@
                         <Label fx:id="typeSidebarEmail" styleClass="rdv-booking-contact-line" text="✉ —"/>
                     </VBox>
                 </VBox>
-
-                <VBox spacing="8" styleClass="rdv-booking-voice-box">
-                    <Label styleClass="rdv-booking-voice-title" text="Assistant vocal (gratuit)"/>
-                    <ComboBox fx:id="typeVoiceLang" maxWidth="Infinity" styleClass="rdv-booking-voice-combo"/>
-                    <Button mnemonicParsing="false" onAction="#onVoiceAssist" styleClass="rdv-booking-voice-btn"
-                            text="🎤 Parler pour prendre RDV"/>
-                </VBox>
             </VBox>
 
             <VBox HBox.hgrow="ALWAYS" minWidth="0" spacing="4" styleClass="rdv-booking-content">
@@ -68,7 +61,10 @@
                     <Label styleClass="rdv-type-mode-value" text="Au cabinet"/>
 
                     <Label styleClass="rdv-type-block-title" text="Motif de la consultation *"/>
-                    <ComboBox fx:id="typeMotifCombo" maxWidth="Infinity" promptText="Sélectionnez un motif"
+                    <Label styleClass="rdv-type-motif-hint" wrapText="true"
+                           text="Choisissez une suggestion ou écrivez librement ce qui vous amène (quelques mots)."/>
+                    <ComboBox fx:id="typeMotifCombo" editable="true" maxWidth="Infinity"
+                              promptText="Ex. suivi, anxiété, demande de certificat…"
                               styleClass="rdv-type-motif-combo"/>
 
                     <HBox alignment="CENTER_LEFT" spacing="8">

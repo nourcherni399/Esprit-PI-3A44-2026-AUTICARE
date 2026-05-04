@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.FlowPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox fx:id="categoriesView" alignment="TOP_CENTER" spacing="0" maxWidth="Infinity" prefWidth="1200" prefHeight="700"
+      stylesheets="@../../styles/page-blog.css"
+      xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1">
+    <HBox alignment="TOP_CENTER" maxWidth="1060" styleClass="blog-main-row">
+        <VBox alignment="TOP_LEFT" spacing="16" HBox.hgrow="ALWAYS">
+            <Label fx:id="categoriesHeadingLabel" styleClass="blog-cats-heading" text="Catégories"/>
+            <FlowPane fx:id="categoryCardsPane" hgap="18" vgap="18" styleClass="blog-cats-flow"/>
+        </VBox>
+    </HBox>
+</VBox>

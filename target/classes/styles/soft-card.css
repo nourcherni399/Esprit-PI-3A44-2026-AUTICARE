@@ -1,0 +1,115 @@
+/* Soft card + icon buttons — tokens (valeurs littérales pour éviter dépendance à .root) */
+
+/* ===== Carte (optionnel, complète page-blog) ===== */
+.soft-card {
+    -fx-background-color: #F8F3FC;
+    -fx-background-radius: 18;
+    -fx-border-color: #E8DED5;
+    -fx-border-width: 2;
+    -fx-border-radius: 18;
+    -fx-padding: 24;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.06), 12, 0.2, 0, 2);
+}
+
+.soft-card:hover {
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.10), 18, 0.25, 0, 4);
+}
+
+/* Zone actions (icônes article) */
+.soft-actions {
+    -fx-spacing: 6;
+    -fx-alignment: center-right;
+}
+
+/* ===== Typo soft (réutilisable) ===== */
+.soft-title {
+    -fx-text-fill: #4B3D6B;
+    -fx-font-size: 22px;
+    -fx-font-weight: bold;
+    -fx-wrap-text: true;
+}
+
+.soft-meta {
+    -fx-text-fill: #687280;
+    -fx-font-size: 13px;
+}
+
+.soft-body {
+    -fx-text-fill: #4B5563;
+    -fx-font-size: 16px;
+    -fx-line-spacing: 4px;
+    -fx-wrap-text: true;
+}
+
+.soft-badge {
+    -fx-background-color: #D4E5D0;
+    -fx-text-fill: #4B5563;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-padding: 4 10 4 10;
+    -fx-background-radius: 999;
+}
+
+/* ===== Boutons icônes ronds (cartes article) ===== */
+.soft-icon-btn {
+    -fx-min-width: 32;
+    -fx-min-height: 32;
+    -fx-max-width: 32;
+    -fx-max-height: 32;
+    -fx-padding: 0;
+    -fx-background-radius: 999;
+    -fx-border-width: 0;
+    -fx-cursor: hand;
+    -fx-background-insets: 0;
+}
+
+.soft-icon-btn:hover {
+    -fx-scale-x: 1.03;
+    -fx-scale-y: 1.03;
+}
+
+.soft-icon-btn:pressed {
+    -fx-scale-x: 0.98;
+    -fx-scale-y: 0.98;
+}
+
+.soft-icon-btn--green {
+    -fx-background-color: #D4E5D0;
+    -fx-text-fill: #4B5563;
+}
+
+.soft-icon-btn--green:hover {
+    -fx-background-color: #C4DFBF;
+}
+
+.soft-icon-btn--blue {
+    -fx-background-color: #E8F4FC;
+    -fx-text-fill: #1E3A5F;
+}
+
+.soft-icon-btn--blue:hover {
+    -fx-background-color: #D4E8F8;
+}
+
+.soft-icon-btn--red {
+    -fx-background-color: #FEE2E2;
+    -fx-text-fill: #DC2626;
+}
+
+.soft-icon-btn--red:hover {
+    -fx-background-color: #FECACA;
+}
+
+/* TTS lecture en cours (état actif) */
+.soft-icon-btn--playing {
+    -fx-background-color: #FEE2E2;
+    -fx-text-fill: #DC2626;
+}
+
+.soft-icon-btn--playing:hover {
+    -fx-background-color: #FECACA;
+}
+
+.soft-icon-btn:focused {
+    -fx-effect: dropshadow(gaussian, rgba(147, 197, 253, 0.9), 6, 0.4, 0, 0);
+}

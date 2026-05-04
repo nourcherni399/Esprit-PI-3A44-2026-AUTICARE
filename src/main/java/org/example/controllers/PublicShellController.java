@@ -9,17 +9,6 @@ import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Pos;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
-import javafx.scene.CacheHint;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.CustomMenuItem;
-import javafx.scene.control.Hyperlink;
-import javafx.scene.control.Label;
-import javafx.scene.control.ContextMenu;
-import javafx.scene.control.MenuItem;
 import javafx.geometry.Side;
 import javafx.scene.CacheHint;
 import javafx.scene.Node;
@@ -28,10 +17,6 @@ import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
-import javafx.scene.control.Hyperlink;
-import javafx.scene.control.Label;
-import javafx.scene.control.ScrollPane;
-import javafx.scene.control.TextField;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.CustomMenuItem;
 import javafx.scene.control.Hyperlink;
@@ -52,20 +37,6 @@ import javafx.scene.shape.Rectangle;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
-import javafx.geometry.Side;
-import javafx.util.Duration;
-import org.example.MainApp;
-import org.example.models.Appointment;
-import org.example.models.UserNotificationItem;
-import org.example.services.UserNotificationService;
-import javafx.stage.Window;
-import javafx.util.Duration;
-import org.example.MainApp;
-import org.example.models.Role;
-import org.example.models.User;
-import org.example.services.AppointmentService;
-import org.example.services.EventService;
-import org.example.services.NotificationService;
 import javafx.stage.Window;
 import javafx.util.Duration;
 import javafx.util.StringConverter;
@@ -82,22 +53,19 @@ import org.example.services.UserNotificationService;
 import org.example.services.UserService;
 import org.example.utils.AppState;
 import org.example.utils.CombinedPublicNotifications;
-import org.example.utils.UserAvatarGraphic;
 import org.example.utils.HomeHeroTicker;
 import org.example.utils.NewsTickerHeadlines;
+import org.example.utils.UserAvatarGraphic;
 
 import java.io.IOException;
 import java.net.URL;
+import java.sql.SQLException;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
 
 /**
  * Coque publique partagée (même apparence que l’accueil) : nav, fond, hero, ticker, zone de page.
@@ -146,7 +114,7 @@ public class PublicShellController {
     @FXML
     private ImageView heroBgImageB;
     @FXML
-    private ComboBox<String> langCombo;
+    private ComboBox<AppLanguage> langCombo;
     @FXML
     private HBox guestNavActions;
     @FXML
@@ -196,6 +164,7 @@ public class PublicShellController {
 
     /** Dernière page chargée (pour surbrillance nav). */
     private String currentShellPageKey = "produits";
+    private Object currentPageController;
 
     private HBox newsTickerTrack;
     private HBox newsTickerSeg1;
@@ -219,8 +188,59 @@ public class PublicShellController {
     @FXML
     private void initialize() {
         if (langCombo != null) {
-            langCombo.getItems().addAll("FR", "EN");
-            langCombo.getSelectionModel().selectFirst();
+            langCombo.getItems().setAll(AppLanguage.supported());
+            langCombo.setVisibleRowCount(5);
+            langCombo.setConverter(new StringConverter<>() {
+                @Override
+                public String toString(AppLanguage language) {
+                    return language != null ? language.shortLabel() : "FR";
+                }
+
+                @Override
+                public AppLanguage fromString(String string) {
+                    return AppLanguage.fromCode(string);
+                }
+            });
+            langCombo.setCellFactory(cb -> new ListCell<>() {
+                @Override
+                protected void updateItem(AppLanguage item, boolean empty) {
+                    super.updateItem(item, empty);
+                    if (empty || item == null) {
+                        setText(null);
+                    } else {
+                        setText(item.label());
+                    }
+                    setGraphic(null);
+                }
+            });
+            langCombo.setButtonCell(new ListCell<>() {
+                private final Label icon = new Label("🈯");
+
+                {
+                    icon.getStyleClass().add("lang-combo-icon");
+                }
+
+                @Override
+                protected void updateItem(AppLanguage item, boolean empty) {
+                    super.updateItem(item, empty);
+                    if (empty || item == null) {
+                        setText("FR");
+                        setGraphic(icon);
+                    } else {
+                        setText(item.shortLabel());
+                        setGraphic(icon);
+                    }
+                }
+            });
+            AppLanguage current = AppState.getCurrentLanguage();
+            langCombo.getSelectionModel().select(current);
+            langCombo.valueProperty().addListener((obs, oldV, newV) -> {
+                if (newV == null || newV == oldV) {
+                    return;
+                }
+                AppState.setCurrentLanguage(newV);
+                notifyCurrentPageLanguageChanged();
+            });
         }
         Platform.runLater(() -> {
             refreshTopNavState();
@@ -232,7 +252,16 @@ public class PublicShellController {
             try {
                 loadPage(MainApp.consumePendingPublicPage());
             } catch (IOException e) {
-                alert(Alert.AlertType.ERROR, "Page", e.getMessage());
+                Throwable cause = e.getCause() != null ? e.getCause() : e;
+                String detail = e.getMessage();
+                if (detail == null || detail.isBlank()) {
+                    detail = cause.getMessage();
+                }
+                alert(Alert.AlertType.ERROR, "Chargement de page",
+                        "Impossible d’afficher la page publique.\n\n"
+                                + (detail != null && !detail.isBlank() ? detail + "\n\n" : "")
+                                + "Astuce : faites `mvn clean compile` puis relancez ; vérifiez les chemins CSS/FXML sous src/main/resources.");
+                cause.printStackTrace();
             }
             if (shellScrollPane != null) {
                 shellScrollPane.setVvalue(0);
@@ -769,12 +798,14 @@ public class PublicShellController {
         FXMLLoader loader = new FXMLLoader(url);
         Parent page = loader.load();
         Object ctrl = loader.getController();
+        currentPageController = ctrl;
         pageContentHost.getChildren().setAll(page);
         StackPane.setAlignment(page, Pos.TOP_CENTER);
         /* Référence coque + chargement données (liste événements, fiche détail, etc.) une fois la page dans la scène. */
         if (ctrl instanceof PublicShellAware aware) {
             aware.setPublicShell(this);
             aware.onShellReady();
+            aware.onShellLanguageChanged(AppState.getCurrentLanguage());
         }
         if (ctrl instanceof PublicShellAware aware) {
             aware.setPublicShell(this);
@@ -787,6 +818,13 @@ public class PublicShellController {
         if (shellScrollPane != null) {
             shellScrollPane.setVvalue(0);
         }
+    }
+
+    private void notifyCurrentPageLanguageChanged() {
+        if (!(currentPageController instanceof PublicShellAware aware)) {
+            return;
+        }
+        aware.onShellLanguageChanged(AppState.getCurrentLanguage());
     }
 
     private void clearPublicNavHighlight() {

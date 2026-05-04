@@ -162,7 +162,7 @@ public class AdminStocksController {
                         Alert.AlertType.WARNING,
                         "Suppression impossible",
                         "Impossible de supprimer ce stock : " + linked
-                            + " produit(s) y sont liés (stock_id). Modifiez d'abord ces produits."
+                            + " produit(s) du catalogue y sont encore associés (stock_id). Modifiez d'abord ces fiches produit."
                     );
                     return;
                 }
@@ -260,8 +260,8 @@ public class AdminStocksController {
         nameLabel.setWrapText(true);
         nameLabel.setStyle("-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: #111827;");
 
-        Label refLabel = new Label("Réf. #" + stockId);
-        refLabel.setStyle("-fx-font-size: 11px; -fx-text-fill: #6b7280;");
+        Label refLbl = new Label("Réf. #" + stockId);
+        refLbl.setStyle("-fx-font-size: 11px; -fx-text-fill: #6b7280;");
 
         Label qtyVal = new Label(String.valueOf(stock.getQuantite()));
         qtyVal.setStyle("-fx-font-size: 26px; -fx-font-weight: bold; -fx-text-fill: #166534;");
@@ -275,7 +275,7 @@ public class AdminStocksController {
         hint.setMaxHeight(44);
         hint.setStyle("-fx-font-size: 11px; -fx-text-fill: #64748b;");
 
-        body.getChildren().addAll(nameLabel, refLabel, qtyRow, hint);
+        body.getChildren().addAll(nameLabel, refLbl, qtyRow, hint);
         card.getChildren().addAll(header, body);
 
         card.addEventFilter(MouseEvent.MOUSE_CLICKED, e -> {
@@ -641,3 +641,6 @@ public class AdminStocksController {
         }
     }
 }
+
+
+

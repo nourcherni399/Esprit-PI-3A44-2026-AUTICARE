@@ -647,6 +647,39 @@
     -fx-background-color: #1d4ed8;
 }
 
+.admin-ai-box {
+    -fx-background-color: #f5f3ff;
+    -fx-background-radius: 12;
+    -fx-border-color: #d8b4fe;
+    -fx-border-radius: 12;
+    -fx-padding: 18 20 18 20;
+    -fx-spacing: 10;
+    -fx-margin: 0 22 0 22;
+}
+
+.admin-ai-title {
+    -fx-font-size: 18px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #6d28d9;
+}
+
+.admin-ai-subtitle {
+    -fx-font-size: 13px;
+    -fx-text-fill: #4b5563;
+}
+
+.admin-btn-ai-generate {
+    -fx-background-color: #7c3aed;
+    -fx-font-size: 13px;
+    -fx-font-weight: 700;
+    -fx-padding: 10 18 10 18;
+    -fx-background-radius: 10;
+}
+
+.admin-btn-ai-generate:hover {
+    -fx-background-color: #6d28d9;
+}
+
 .admin-btn-secondary {
     -fx-background-color: #ffffff;
     -fx-text-fill: #374151;
@@ -1496,6 +1529,244 @@
 
 .mod-ressources-table-gap {
     -fx-padding: 20 24 24 24;
+}
+
+.mod-youtube-frame-card {
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 12;
+    -fx-border-color: #e5e0d8;
+    -fx-border-width: 1;
+    -fx-border-radius: 12;
+}
+
+.mod-youtube-playlist-count {
+    -fx-font-size: 12px;
+    -fx-text-fill: #6b7280;
+}
+
+.mod-youtube-playlist-box {
+    -fx-padding: 0 24 24 24;
+    -fx-spacing: 12;
+    -fx-border-color: #ece8df;
+    -fx-border-width: 1 0 0 0;
+    -fx-max-height: 460;
+}
+
+.mod-youtube-layout-row {
+    -fx-padding: 6 0 0 0;
+}
+
+.mod-youtube-side-scroll {
+    -fx-background-color: #f8fafc;
+    -fx-border-color: #ece8df;
+    -fx-border-width: 1;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+}
+
+.mod-youtube-side-scroll > .viewport {
+    -fx-background-color: transparent;
+}
+
+.mod-youtube-preview-box {
+    -fx-background-color: #ffffff;
+    -fx-border-color: #ece8df;
+    -fx-border-width: 1;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-padding: 8;
+}
+
+.mod-youtube-preview-image {
+    -fx-background-color: #0f172a;
+    -fx-background-radius: 8;
+}
+
+.mod-youtube-preview-title {
+    -fx-font-size: 13px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #111827;
+}
+
+.mod-youtube-side-list {
+    -fx-padding: 8;
+}
+
+.mod-youtube-list-item {
+    -fx-background-color: #ffffff;
+    -fx-border-color: #ece8df;
+    -fx-border-width: 1;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-padding: 6;
+    -fx-cursor: hand;
+}
+
+.mod-youtube-list-item:hover {
+    -fx-background-color: #f8fafc;
+}
+
+.mod-youtube-list-thumb {
+    -fx-background-radius: 6;
+}
+
+.mod-youtube-list-title {
+    -fx-font-size: 12px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #111827;
+}
+
+.mod-youtube-playlist-hint {
+    -fx-font-size: 14px;
+    -fx-text-fill: #6b7280;
+}
+
+/* Formulaire nouvelle ressource : style de la maquette */
+.res-add-form-card {
+    -fx-max-width: 860;
+    -fx-background-radius: 14;
+    -fx-border-radius: 14;
+    -fx-border-color: #ece8df;
+    -fx-border-width: 1;
+    -fx-effect: none;
+    -fx-padding: 0 0 24 0;
+}
+
+.res-add-form-card .admin-form-card-header {
+    -fx-background-color: #ffffff;
+    -fx-padding: 18 18 8 18;
+}
+
+.res-add-title {
+    -fx-font-size: 20px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #17375e;
+}
+
+.res-add-grid {
+    -fx-padding: 8 18 18 18;
+    -fx-vgap: 12;
+}
+
+.res-add-grid .admin-form-label {
+    -fx-font-size: 13px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #1e293b;
+}
+
+.res-add-input {
+    -fx-background-color: #ffffff;
+    -fx-border-color: #ece8df;
+    -fx-border-width: 1;
+    -fx-border-radius: 10;
+    -fx-background-radius: 10;
+    -fx-padding: 10 14;
+    -fx-font-size: 13px;
+    -fx-text-fill: #1f2937;
+    -fx-prompt-text-fill: #94a3b8;
+}
+
+.res-add-input:focused {
+    -fx-border-color: #17375e;
+    -fx-effect: dropshadow(gaussian, rgba(23, 55, 94, 0.14), 8, 0, 0, 0);
+}
+
+.res-add-combo {
+    -fx-padding: 8 14;
+}
+
+.res-add-combo .list-cell {
+    -fx-font-size: 13px;
+}
+
+.res-add-form-card .admin-btn-outline {
+    -fx-font-size: 13px;
+    -fx-padding: 8 14;
+}
+
+.res-add-form-card .admin-form-hint {
+    -fx-font-size: 12px;
+}
+
+.res-add-form-card .admin-form-checkbox {
+    -fx-font-size: 13px;
+}
+
+.res-add-form-card .admin-btn-save,
+.res-add-form-card .admin-btn-secondary {
+    -fx-font-size: 13px;
+    -fx-font-weight: 700;
+    -fx-padding: 10 26;
+}
+
+.res-add-youtube-box {
+    -fx-background-color: #ffffff;
+    -fx-border-color: #ece8df;
+    -fx-border-width: 1;
+    -fx-border-radius: 10;
+    -fx-background-radius: 10;
+    -fx-padding: 12;
+}
+
+.res-add-youtube-title {
+    -fx-font-size: 14px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #111827;
+}
+
+.res-add-yt-search-btn {
+    -fx-background-color: #93c5fd;
+    -fx-text-fill: #ffffff;
+    -fx-font-size: 13px;
+    -fx-font-weight: 700;
+    -fx-padding: 8 16;
+    -fx-background-radius: 10;
+}
+
+.res-add-yt-search-btn:hover {
+    -fx-background-color: #60a5fa;
+}
+
+.res-yt-card {
+    -fx-background-color: #ffffff;
+    -fx-border-color: #e5e7eb;
+    -fx-border-width: 1;
+    -fx-border-radius: 10;
+    -fx-background-radius: 10;
+    -fx-padding: 8;
+}
+
+.res-yt-thumb {
+    -fx-background-radius: 8;
+}
+
+.res-yt-title {
+    -fx-font-size: 16px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #111827;
+}
+
+.res-yt-channel {
+    -fx-font-size: 13px;
+    -fx-text-fill: #64748b;
+}
+
+.res-yt-open-btn,
+.res-yt-use-btn {
+    -fx-background-radius: 8;
+    -fx-font-size: 13px;
+    -fx-font-weight: 700;
+    -fx-cursor: hand;
+}
+
+.res-yt-open-btn {
+    -fx-background-color: #f3f4f6;
+    -fx-text-fill: #111827;
+}
+
+.res-yt-use-btn {
+    -fx-background-color: #2563eb;
+    -fx-text-fill: #ffffff;
 }
 
 .mod-stats-charts-row {
@@ -2485,4 +2756,74 @@
 
 .admin-root.admin-med-theme .mod-table.mod-table-web-style .column-header .label {
     -fx-text-fill: #5b21b6;
+}
+
+/* ── Pexels (module add / edit) ── */
+.admin-pexels-box {
+    -fx-background-color: #ffffff;
+    -fx-border-color: #d1d5db;
+    -fx-border-radius: 10;
+    -fx-background-radius: 10;
+    -fx-border-width: 1;
+    -fx-padding: 12 14 12 14;
+    -fx-spacing: 10;
+}
+
+.admin-pexels-search-row {
+    -fx-alignment: center-left;
+    -fx-spacing: 10;
+}
+
+.admin-pexels-search-field {
+    -fx-background-color: #ffffff;
+    -fx-border-color: #cbd5e1;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-border-width: 1;
+    -fx-padding: 8 12;
+    -fx-font-size: 13px;
+    -fx-prompt-text-fill: #94a3b8;
+}
+
+.admin-btn-pexels-search {
+    -fx-background-color: #7eb8ea;
+    -fx-text-fill: #ffffff;
+    -fx-font-weight: 700;
+    -fx-font-size: 13px;
+    -fx-padding: 8 18;
+    -fx-background-radius: 8;
+    -fx-border-width: 0;
+    -fx-cursor: hand;
+}
+
+.admin-btn-pexels-search:hover {
+    -fx-background-color: #6aa8df;
+}
+
+.admin-mic-icon-btn {
+    -fx-min-width: 38;
+    -fx-min-height: 38;
+    -fx-max-width: 38;
+    -fx-max-height: 38;
+    -fx-background-color: #f1f5f9;
+    -fx-border-color: #cbd5e1;
+    -fx-border-radius: 10;
+    -fx-background-radius: 10;
+    -fx-border-width: 1;
+    -fx-font-size: 15px;
+    -fx-cursor: hand;
+    -fx-padding: 0;
+}
+
+.admin-mic-icon-btn:hover {
+    -fx-background-color: #e2e8f0;
+}
+
+.admin-pexels-scroll {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+}
+
+.admin-pexels-scroll > .viewport {
+    -fx-background-color: #fafafa;
 }

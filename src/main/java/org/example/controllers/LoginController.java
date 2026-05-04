@@ -13,6 +13,7 @@ import org.example.models.Role;
 import org.example.services.GoogleOAuthService;
 import org.example.services.UserService;
 import org.example.utils.AppState;
+import org.example.utils.MyDatabase;
 import org.example.utils.PasswordRecoveryState;
 import org.example.utils.PasswordUtil;
 
@@ -92,17 +93,17 @@ public class LoginController implements PublicShellAware {
             String pwd = passwordVisible ? passwordVisibleField.getText() : passwordField.getText();
             var account = userService.findByEmail(email);
             if (account.isEmpty()) {
-                show(Alert.AlertType.INFORMATION, "Échec", "Email ou mot de passe invalide.");
+                show(Alert.AlertType.INFORMATION, "Echec", "Email ou mot de passe invalide.");
                 return;
             }
             var cand = account.get();
             if (!cand.isActif()) {
-                show(Alert.AlertType.WARNING, "Compte désactivé",
-                        "Ce compte n'est pas activé (is_active = 0 en base). Activez-le dans MySQL ou utilisez un autre utilisateur.");
+                show(Alert.AlertType.WARNING, "Compte desactive",
+                        "Ce compte n'est pas active (is_active = 0 en base). Activez-le dans MySQL ou utilisez un autre utilisateur.");
                 return;
             }
             if (!PasswordUtil.matches(pwd, cand.getMotDePasseHash())) {
-                show(Alert.AlertType.INFORMATION, "Échec", "Email ou mot de passe invalide.");
+                show(Alert.AlertType.INFORMATION, "Echec", "Email ou mot de passe invalide.");
                 return;
             }
             var u = cand;
@@ -112,14 +113,10 @@ public class LoginController implements PublicShellAware {
             } else if (u.getRole() == Role.MEDECIN) {
                 MainApp.showMedecinDashboard();
             } else {
-                if (AppState.getPendingPublicEventDetailId() > 0) {
-                    MainApp.showPublicPage("event-detail");
-                    return;
-                }
-                MainApp.showHome();
+                handlePostPatientLoginRedirect();
             }
         } catch (Exception e) {
-            show(Alert.AlertType.ERROR, "Erreur", e.getMessage());
+            show(Alert.AlertType.ERROR, "Erreur", humanizeLoginError(e));
         }
     }
 
@@ -147,7 +144,6 @@ public class LoginController implements PublicShellAware {
         }
     }
 
-    /** Affiche le flux « mot de passe oublié » intégré dans la carte de connexion. */
     @FXML
     public void onForgotPassword() {
         PasswordRecoveryState.clear();
@@ -188,18 +184,18 @@ public class LoginController implements PublicShellAware {
                 ? pinCodeField.getText().trim().replaceAll("\\s+", "")
                 : "";
         if (pin.length() != 6 || !pin.chars().allMatch(Character::isDigit)) {
-            show(Alert.AlertType.WARNING, "PIN", "Entrez un code à 6 chiffres.");
+            show(Alert.AlertType.WARNING, "PIN", "Entrez un code a 6 chiffres.");
             return;
         }
-        show(Alert.AlertType.INFORMATION, "Vérification",
-                "Code accepté (démonstration — aucune API réelle).");
+        show(Alert.AlertType.INFORMATION, "Verification",
+                "Code accepte (demonstration - aucune API reelle).");
         PasswordRecoveryState.clear();
         onBackToLogin();
     }
 
     @FXML
     public void onForgotResendPin() {
-        show(Alert.AlertType.INFORMATION, "Code renvoyé", "Un nouveau code a été envoyé (démonstration).");
+        show(Alert.AlertType.INFORMATION, "Code renvoye", "Un nouveau code a ete envoye (demonstration).");
     }
 
     private static void setPaneVisible(VBox pane, boolean visible) {
@@ -209,7 +205,6 @@ public class LoginController implements PublicShellAware {
         }
     }
 
-    /** Retour au formulaire principal de connexion (écrans « mot de passe oublié » intégrés). */
     @FXML
     public void onBackToLogin() {
         PasswordRecoveryState.clear();
@@ -242,7 +237,7 @@ public class LoginController implements PublicShellAware {
             } else if (u.getRole() == Role.MEDECIN) {
                 MainApp.showMedecinDashboard();
             } else {
-                MainApp.showHome();
+                handlePostPatientLoginRedirect();
             }
         } catch (Exception e) {
             show(Alert.AlertType.ERROR, "Google OAuth",
@@ -347,26 +342,26 @@ public class LoginController implements PublicShellAware {
 
     @FXML
     public void onFooterAccessibility() {
-        show(Alert.AlertType.INFORMATION, "Accessibilité",
-                "AutiCare s’engage à améliorer l’accessibilité de cette application.");
+        show(Alert.AlertType.INFORMATION, "Accessibilite",
+                "AutiCare s'engage a ameliorer l'accessibilite de cette application.");
     }
 
     @FXML
     public void onFooterLegal() {
-        show(Alert.AlertType.INFORMATION, "Mentions légales",
-                "Informations légales à compléter selon votre structure.");
+        show(Alert.AlertType.INFORMATION, "Mentions legales",
+                "Informations legales a completer selon votre structure.");
     }
 
     @FXML
     public void onFooterPrivacy() {
-        show(Alert.AlertType.INFORMATION, "Politique de confidentialité",
-                "Traitement des données personnelles : texte à adapter à votre politique.");
+        show(Alert.AlertType.INFORMATION, "Politique de confidentialite",
+                "Traitement des donnees personnelles : texte a adapter a votre politique.");
     }
 
     @FXML
     public void onFooterCgv() {
         show(Alert.AlertType.INFORMATION, "CGV",
-                "Conditions générales de vente : texte à adapter.");
+                "Conditions generales de vente : texte a adapter.");
     }
 
     private void show(Alert.AlertType type, String title, String message) {
@@ -376,4 +371,51 @@ public class LoginController implements PublicShellAware {
         alert.setContentText(message);
         alert.showAndWait();
     }
+
+    private void handlePostPatientLoginRedirect() throws IOException {
+        if (AppState.getPendingPublicEventDetailId() > 0) {
+            MainApp.showPublicPage("event-detail");
+            return;
+        }
+        if (AppState.getPendingPublicRdvDoctorId() > 0 && AppState.getPendingPublicRdvAvailabilityId() > 0) {
+            MainApp.showPublicPage("rdv-type");
+            return;
+        }
+        MainApp.showHome();
+    }
+
+    private String humanizeLoginError(Throwable error) {
+        if (error == null) {
+            return "Erreur inconnue.";
+        }
+        String message = safeLower(error.getMessage());
+        Throwable cursor = error.getCause();
+        while (cursor != null) {
+            message += " " + safeLower(cursor.getMessage());
+            cursor = cursor.getCause();
+        }
+        if (message.contains("communications link failure")
+                || message.contains("connection refused")
+                || message.contains("connect timed out")
+                || message.contains("host is down")) {
+            return "Connexion a MySQL impossible.\n"
+                    + "Verifiez que le serveur MySQL est demarre et accessible.\n"
+                    + "URL actuelle: " + MyDatabase.getJdbcUrl() + "\n"
+                    + "Controlez aussi db.user/db.password dans application.properties.";
+        }
+        if (message.contains("access denied for user")) {
+            return "Identifiants MySQL invalides (db.user / db.password).";
+        }
+        if (message.contains("unknown database")) {
+            return "La base MySQL n'existe pas. Creez la base 'pidb'.";
+        }
+        return error.getMessage() != null && !error.getMessage().isBlank()
+                ? error.getMessage()
+                : error.getClass().getSimpleName();
+    }
+
+    private static String safeLower(String s) {
+        return s == null ? "" : s.toLowerCase();
+    }
 }
+

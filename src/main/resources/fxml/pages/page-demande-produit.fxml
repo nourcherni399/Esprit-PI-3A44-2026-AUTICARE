@@ -8,14 +8,11 @@
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.VBox?>
 
-<VBox alignment="TOP_CENTER" maxWidth="720" spacing="14" styleClass="public-page" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.example.controllers.PageDemandeProduitController">
+<VBox alignment="TOP_CENTER" maxWidth="640" spacing="14" styleClass="public-page" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.example.controllers.PageDemandeProduitController">
     <padding><Insets bottom="24" left="16" right="16" top="16"/></padding>
     <Label styleClass="public-page-kicker" text="CATALOGUE" />
     <Label styleClass="public-page-title" text="Demander un produit" textAlignment="CENTER" wrapText="true" />
     <Label styleClass="public-page-lead" text="Décrivez le matériel souhaité. Une proposition de fiche sera transmise à l’équipe pour validation." textAlignment="CENTER" wrapText="true" />
-
-    <VBox fx:id="assistantBox" alignment="TOP_LEFT" spacing="0" styleClass="public-page-card" />
-
     <VBox alignment="TOP_LEFT" spacing="10" styleClass="public-page-card">
         <Label text="Votre demande *" />
         <TextArea fx:id="demandeArea" prefRowCount="5" wrapText="true" />

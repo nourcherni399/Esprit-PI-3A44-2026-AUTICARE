@@ -21,7 +21,6 @@ import org.example.models.CustomerOrder;
 import org.example.models.CustomerOrderLine;
 import org.example.models.User;
 import org.example.services.CustomerOrderService;
-import org.example.services.NotificationService;
 import org.example.services.OrderReceiptPdfService;
 import org.example.ui.product.ProductFormUi;
 import org.example.ui.product.ProductImagePlaceholder;
@@ -44,7 +43,6 @@ public class PageMesCommandesController implements PublicShellAware {
 
     private PublicShellController shell;
     private final CustomerOrderService orderService = new CustomerOrderService();
-    private final NotificationService notificationService = new NotificationService();
 
     @FXML
     private VBox guestBox;
@@ -81,10 +79,6 @@ public class PageMesCommandesController implements PublicShellAware {
         ordersScroll.setManaged(true);
         ordersVBox.getChildren().clear();
         try {
-            notificationService.markAllClientOrderNotificationsRead(user.getId());
-            if (shell != null) {
-                shell.refreshPublicNavBadges();
-            }
             List<CustomerOrder> list = orderService.findAllForUser(user.getId());
             if (list.isEmpty()) {
                 Label empty = new Label("Vous n'avez pas encore passé de commande.");
@@ -112,7 +106,7 @@ public class PageMesCommandesController implements PublicShellAware {
         HBox top = new HBox(12);
         top.setAlignment(Pos.CENTER_LEFT);
 
-        Label num = new Label("Commande du " + dateStr);
+        Label num = new Label("Commande n° " + o.id());
         num.getStyleClass().add("public-product-order-num");
 
         Label date = new Label(dateStr);
@@ -151,11 +145,6 @@ public class PageMesCommandesController implements PublicShellAware {
         Button pdfBtn = new Button("Télécharger le bon / facture (PDF)");
         pdfBtn.getStyleClass().add("public-product-form-primary-btn");
         pdfBtn.setOnAction(ev -> downloadPdf(userId, o.id()));
-        boolean enAttenteValidation = o.statut() != null && "en_attente".equalsIgnoreCase(o.statut().trim());
-        pdfBtn.setDisable(enAttenteValidation);
-        if (enAttenteValidation) {
-            pdfBtn.setText("PDF disponible après validation par l’équipe");
-        }
 
         card.getChildren().addAll(top, sep, articlesTitle, linesBox, pdfBtn);
         return card;
@@ -215,7 +204,7 @@ public class PageMesCommandesController implements PublicShellAware {
             return "—";
         }
         return switch (raw.trim().toLowerCase(Locale.ROOT)) {
-            case "en_attente" -> "En attente de validation (équipe)";
+            case "en_attente" -> "En attente";
             case "annulée", "annulee" -> "Annulée";
             case "confirmer" -> "Préparation";
             case "livraison" -> "En livraison";
@@ -237,7 +226,7 @@ public class PageMesCommandesController implements PublicShellAware {
             Window owner = ordersVBox.getScene() != null ? ordersVBox.getScene().getWindow() : null;
             FileChooser fc = new FileChooser();
             fc.setTitle("Enregistrer le bon de livraison");
-            fc.setInitialFileName(OrderReceiptPdfService.defaultFileName());
+            fc.setInitialFileName(OrderReceiptPdfService.defaultFileName(commandeId));
             fc.getExtensionFilters().add(new FileChooser.ExtensionFilter("PDF", "*.pdf"));
             java.io.File dest = fc.showSaveDialog(owner);
             if (dest == null) {

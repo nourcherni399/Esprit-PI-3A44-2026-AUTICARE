@@ -14,7 +14,8 @@
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
 
-<VBox fx:id="signupPageRoot" maxWidth="1180" spacing="0" styleClass="public-auth-page" stylesheets="@../styles/login.css,@../styles/signup.css,@../styles/public-page.css"
+<!-- login + public-page via coque ; seules les règles signup.css restent ici -->
+<VBox fx:id="signupPageRoot" maxWidth="1180" spacing="0" styleClass="public-auth-page" stylesheets="@../../styles/signup.css"
       xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.example.controllers.SignupController">
     <VBox alignment="CENTER" maxWidth="Infinity" styleClass="login-center" VBox.vgrow="ALWAYS">
         <HBox alignment="CENTER" maxWidth="920" prefHeight="520" styleClass="login-card">

@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Hyperlink?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.RadioButton?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.ToggleGroup?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.FlowPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Priority?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox fx:id="moduleDetailView" alignment="TOP_CENTER" spacing="0" maxWidth="Infinity" prefWidth="1200" prefHeight="900"
+      visible="false" managed="false"
+      stylesheets="@../../styles/page-blog.css,@../../styles/soft-card.css"
+      xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1">
+    <HBox alignment="CENTER_LEFT" maxWidth="1100" styleClass="blog-detail-topbar">
+        <Button fx:id="backToCatBtn" onAction="#onBackToCategoryFromModule" styleClass="blog-back-btn" text="← Retour au blog"/>
+    </HBox>
+
+    <HBox alignment="TOP_LEFT" maxWidth="1100" spacing="56" styleClass="blog-module-detail-row">
+        <VBox alignment="TOP_LEFT" spacing="16" minWidth="404" prefWidth="404" maxWidth="404" styleClass="blog-module-detail-left">
+            <HBox alignment="TOP_LEFT" spacing="14">
+                <Label fx:id="mdTitle" styleClass="blog-md-title" text="Titre" wrapText="true" HBox.hgrow="ALWAYS"/>
+                <Label fx:id="mdNiveauBadge" styleClass="blog-md-niveau-badge"/>
+            </HBox>
+            <HBox alignment="CENTER_LEFT" spacing="10">
+                <Label fx:id="mdDate" styleClass="blog-md-date"/>
+                <Button fx:id="mdTtsBtn"
+                        styleClass="blog-md-action-btn blog-md-tts-btn"
+                        text="▶"
+                        onAction="#onToggleModuleTts"/>
+                <Button styleClass="blog-md-action-btn" text="⬇"/>
+                <Button fx:id="mdSummaryBtn"
+                        styleClass="blog-md-action-btn blog-md-sparkle-btn"
+                        text="✦"
+                        onAction="#onOpenModuleSummary"/>
+            </HBox>
+            <TextArea fx:id="mdDescription" styleClass="blog-md-desc" editable="false" wrapText="true" prefRowCount="2"/>
+            <HBox alignment="CENTER" maxWidth="Infinity" styleClass="blog-md-image-row">
+                <StackPane fx:id="mdImageWrap" alignment="TOP_CENTER" maxHeight="190" maxWidth="360" minHeight="190" minWidth="360" prefHeight="190" prefWidth="360" styleClass="blog-md-image-wrap">
+                    <ImageView fx:id="mdImage" pickOnBounds="true" preserveRatio="true" smooth="true" styleClass="blog-md-image"/>
+                </StackPane>
+            </HBox>
+            <TextArea fx:id="mdContenu" maxWidth="360" styleClass="blog-md-contenu" editable="false" wrapText="true" prefRowCount="15"/>
+
+            <Label text="Ressources du module" styleClass="blog-md-section-title"/>
+            <VBox fx:id="mdRessourcesContainer" spacing="12" styleClass="blog-md-ressources-container">
+                <Label fx:id="mdRessources" styleClass="blog-md-ressources-text" text="Aucune ressource active pour ce module." wrapText="true"/>
+            </VBox>
+
+            <Button fx:id="mdPassQuizBtn" text="🎓 Passer le quiz" styleClass="blog-md-quiz-btn" onAction="#onPassModuleQuiz"/>
+            <HBox alignment="CENTER_LEFT" spacing="6">
+                <Hyperlink fx:id="wikipediaLink" onAction="#onOpenWikipedia" styleClass="blog-md-link" text="En savoir plus sur ce module  ↗"/>
+            </HBox>
+
+            <HBox fx:id="socialIconsBar" alignment="CENTER_LEFT" spacing="12" styleClass="blog-md-social-bar" visible="false" managed="false">
+                <Label text="♥" styleClass="blog-md-social-icon"/>
+                <Label fx:id="addArticleBtn" text="＋" styleClass="blog-md-social-icon" onMouseClicked="#onToggleArticleForm"/>
+                <Label text="➜" styleClass="blog-md-social-icon"/>
+            </HBox>
+
+            <HBox fx:id="loginPromptBox" alignment="CENTER" spacing="6" styleClass="blog-login-prompt-simple" visible="false" managed="false">
+                <Label text="Pour écrire un article, veuillez vous " styleClass="blog-login-prompt-simple-text"/>
+                <Hyperlink fx:id="loginLink" text="connecter" styleClass="blog-login-prompt-simple-link" onAction="#onShowLogin"/>
+                <Label text="." styleClass="blog-login-prompt-simple-text"/>
+            </HBox>
+        </VBox>
+
+        <VBox alignment="TOP_LEFT" spacing="20" HBox.hgrow="ALWAYS" styleClass="blog-module-detail-right">
+            <Label text="Articles publiés pour ce module" styleClass="blog-art-heading"/>
+            <HBox alignment="CENTER_LEFT" styleClass="blog-art-search-bar">
+                <Label text="🔍" styleClass="blog-art-search-icon"/>
+                <TextField fx:id="articleSearchField" promptText="Tapez un titre d'article..." styleClass="blog-art-search-field" HBox.hgrow="ALWAYS"/>
+            </HBox>
+
+            <VBox fx:id="mdArticlesContainer" alignment="TOP_CENTER" spacing="16" styleClass="blog-art-list">
+                <Label fx:id="mdArticlesPlaceholder" styleClass="blog-md-articles-empty" text="Aucun article publié pour ce module." wrapText="true" textAlignment="CENTER"/>
+                <Label styleClass="blog-md-articles-hint" text="Soyez le premier à écrire un article !" textAlignment="CENTER" wrapText="true"/>
+            </VBox>
+
+            <VBox fx:id="articleFormContainer" alignment="TOP_LEFT" spacing="14" styleClass="blog-article-form-card" visible="false" managed="false">
+                <Label text="Nouvel article" styleClass="blog-form-heading"/>
+
+                <VBox spacing="8" styleClass="blog-ai-section">
+                    <Label text="Générer avec l'IA" styleClass="blog-ai-title"/>
+                    <Label text="Dans un seul texte : ce dont vous parlez (sujet) et le contexte ou la raison (pourquoi). Le texte doit porter sur l'autisme / les TSA ou l'accompagnement d'une personne autiste ; sinon la génération sera refusée." styleClass="blog-ai-desc" wrapText="true"/>
+                    <Label text="Sujet et contexte" styleClass="blog-form-label"/>
+                    <HBox alignment="TOP_LEFT" spacing="8">
+                        <TextArea fx:id="aiPromptField" promptText="Ex. Remercier le Dr X (neuropsychologue TSA) pour son écoute et les pistes concrètes après le diagnostic de mon enfant autiste..." styleClass="blog-form-textarea-small" prefRowCount="4" wrapText="true" HBox.hgrow="ALWAYS"/>
+                        <Button text="🎤" onAction="#onDictateArticlePrompt" styleClass="blog-mic-icon-btn"/>
+                    </HBox>
+                    <Label text="Type d'article" styleClass="blog-form-label"/>
+                    <ComboBox fx:id="aiTypeCombo" promptText="-- Choisir --" maxWidth="Infinity" styleClass="blog-form-combo"/>
+                    <Button text="Générer titre et contenu" onAction="#onGenerateAI" styleClass="blog-ai-generate-btn"/>
+                </VBox>
+
+                <Label text="Titre" styleClass="blog-form-label"/>
+                <HBox alignment="CENTER_LEFT" spacing="8">
+                    <TextField fx:id="articleTitreField" promptText="Titre de l'article" styleClass="blog-form-textfield" HBox.hgrow="ALWAYS"/>
+                    <Button text="✓" onAction="#onSpellCheckArticleTitre" styleClass="blog-art-icon-btn-validate"/>
+                    <Button text="🎤" onAction="#onDictateArticleTitle" styleClass="blog-mic-icon-btn"/>
+                </HBox>
+                <Label text="Type" styleClass="blog-form-label"/>
+                <ComboBox fx:id="articleTypeCombo" promptText="Choisir un type" maxWidth="Infinity" styleClass="blog-form-combo"/>
+                <Label text="Contenu" styleClass="blog-form-label"/>
+                <HBox alignment="TOP_LEFT" spacing="8">
+                    <TextArea fx:id="articleContenuField" promptText="Contenu de l'article..." styleClass="blog-form-textarea" prefRowCount="16" wrapText="true" HBox.hgrow="ALWAYS"/>
+                    <VBox spacing="8" alignment="TOP_CENTER">
+                        <Button text="✓" onAction="#onSpellCheckArticleContenu" styleClass="blog-art-icon-btn-validate"/>
+                        <Button text="🎤" onAction="#onDictateArticleContent" styleClass="blog-mic-icon-btn"/>
+                    </VBox>
+                </HBox>
+
+                <Label text="Image de l'article" styleClass="blog-form-label"/>
+                <HBox spacing="14" alignment="CENTER_LEFT">
+                    <RadioButton fx:id="rbUploadFile" text="Uploader un fichier" selected="true">
+                        <toggleGroup><ToggleGroup fx:id="imageToggle"/></toggleGroup>
+                    </RadioButton>
+                    <RadioButton fx:id="rbPexels" text="Rechercher sur Pexels">
+                        <toggleGroup><fx:reference source="imageToggle"/></toggleGroup>
+                    </RadioButton>
+                </HBox>
+                <VBox fx:id="articleImageUploadPanel" spacing="6">
+                    <HBox spacing="10" alignment="CENTER_LEFT" styleClass="blog-form-file-row">
+                        <Button text="Choisir un fichier" onAction="#onChooseArticleImage" styleClass="blog-form-file-btn"/>
+                        <Label fx:id="articleImageLabel" text="Aucun fichier choisi" styleClass="blog-form-file-label" visible="false" managed="false"/>
+                    </HBox>
+                    <ImageView fx:id="articleImagePreview" fitHeight="150" fitWidth="300" preserveRatio="true" visible="false" managed="false" styleClass="blog-article-image-preview"/>
+                </VBox>
+                <VBox fx:id="articlePexelsPanel" spacing="10" styleClass="blog-pexels-box" visible="false" managed="false">
+                    <HBox spacing="10" alignment="CENTER_LEFT" styleClass="blog-pexels-search-row">
+                        <TextField fx:id="articlePexelsSearchField" promptText="Ex. autisme, éducation, famille..." styleClass="blog-pexels-search-field" HBox.hgrow="ALWAYS"/>
+                        <Button text="🎤" onAction="#onDictateArticlePexelsSearch" styleClass="blog-mic-icon-btn"/>
+                        <Button text="Rechercher" onAction="#onArticlePexelsSearch" styleClass="blog-btn-pexels-search"/>
+                    </HBox>
+                    <FlowPane fx:id="articlePexelsFlow" hgap="8" vgap="8" prefWrapLength="720" prefHeight="200" styleClass="blog-pexels-flow"/>
+                    <Label fx:id="articlePexelsHint" text="Cliquez sur une image pour la télécharger et l'utiliser." styleClass="blog-ai-desc" wrapText="true"/>
+                </VBox>
+
+                <VBox spacing="6" styleClass="blog-hashtag-section">
+                    <Label text="Générer des hashtags" styleClass="blog-hashtag-title"/>
+                    <Label text="Génère des hashtags à partir du titre. Ils seront ajoutés à la fin du contenu." styleClass="blog-hashtag-desc" wrapText="true"/>
+                    <Button text="Générer des hashtags" onAction="#onGenerateHashtags" styleClass="blog-ai-generate-btn"/>
+                </VBox>
+
+                <HBox spacing="20" alignment="CENTER_LEFT">
+                    <CheckBox fx:id="cbPublished" text="Publier l'article"/>
+                    <CheckBox fx:id="cbUrgent" text="Urgent"/>
+                    <CheckBox fx:id="cbVisible" text="Visible" selected="true"/>
+                </HBox>
+                <HBox spacing="12" alignment="CENTER_LEFT">
+                    <Button text="Publier" onAction="#onPublishArticle" styleClass="blog-form-publish-btn"/>
+                    <Button text="Annuler" onAction="#onCancelArticle" styleClass="blog-form-cancel-btn"/>
+                </HBox>
+            </VBox>
+        </VBox>
+    </HBox>
+</VBox>

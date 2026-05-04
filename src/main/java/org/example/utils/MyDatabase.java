@@ -91,6 +91,8 @@ public class MyDatabase {
                 ensureRendezVousMedecinDemandeLueColumn(connection);
                 ensureRendezVousDisponibiliteIdColumn(connection);
                 AppointmentService.clearRendezVousSchemaCache();
+                ensureUserGoogleCalendarRefreshTokenColumn(connection);
+                AppointmentService.clearRendezVousSchemaCache();
                 ensureNoteTable(connection);
                 ensureMedecinRatingTable(connection);
                 ensureMedecinRatingPatientColumnCompat(connection);
@@ -612,6 +614,21 @@ public class MyDatabase {
     }
 
     /** Table {@code note} (alignée Symfony / schéma métier) ; même structure que l’ancienne {@code medecin_patient_note}. */
+    /** Jeton OAuth Calendar persisté (médecin) ; ajout idempotent sur bases anciennes. */
+    private static void ensureUserGoogleCalendarRefreshTokenColumn(Connection c) {
+        try (Statement st = c.createStatement()) {
+            try {
+                st.execute("ALTER TABLE `user` ADD COLUMN google_calendar_refresh_token VARCHAR(2048) NULL DEFAULT NULL");
+            } catch (SQLException e) {
+                if (!isDuplicateColumnError(e)) {
+                    System.err.println("Migration user.google_calendar_refresh_token : " + e.getMessage());
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Migration google_calendar_refresh_token : " + e.getMessage());
+        }
+    }
+
     private static void ensureNoteTable(Connection c) {
         String sql = "CREATE TABLE IF NOT EXISTS `note` ("
                 + "id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,"

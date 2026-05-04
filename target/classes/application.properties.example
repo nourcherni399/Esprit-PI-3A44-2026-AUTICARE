@@ -12,6 +12,23 @@ auticare.smtp.port=587
 auticare.checkin.baseUrl=
 # Optional local desktop listener port (default 8787)
 auticare.checkin.port=8787
+auticare.smtp.useSsl=false
+
+# Page web optionnelle : URL pour le bouton "Gerer mon rendez-vous" (?token=...)
+auticare.rdv.public.manage.baseUrl=
+# E-mail reception demandes annulation/report (mailto) ; vide = e-mail du praticien du creneau
+auticare.rdv.contact.cabinetEmail=
+
+# Google Agenda (médecin) : fuseau des créneaux dans l’URL (ex. Africa/Tunis, Europe/Paris)
+auticare.calendar.timezone=Africa/Tunis
+# Copy this file to application.properties for local development.
+# Do not commit real secrets.
+
+# SMTP config for forgot-password email
+auticare.smtp.user=your-email@gmail.com
+auticare.smtp.appPassword=your-app-password
+auticare.smtp.host=smtp.gmail.com
+auticare.smtp.port=587
 
 # Google OAuth
 oauth.google.clientId=your-google-client-id

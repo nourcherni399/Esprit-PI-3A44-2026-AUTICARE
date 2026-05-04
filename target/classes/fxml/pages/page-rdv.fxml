@@ -4,14 +4,23 @@
 <?import javafx.collections.FXCollections?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.ComboBox?>
+<<<<<<< HEAD
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.TextField?>
+=======
+<?import javafx.scene.control.DatePicker?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.geometry.Insets?>
+>>>>>>> b8ab02cf (integration module blog)
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 
+<<<<<<< HEAD
 <VBox alignment="TOP_CENTER" maxWidth="960" spacing="16" styleClass="rdv-page rdv-page-clean"
       xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="org.example.controllers.PageRdvController">
@@ -51,3 +60,109 @@
         </ScrollPane>
     </VBox>
 </VBox>
+=======
+<StackPane maxWidth="960" stylesheets="@../../styles/public-page.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+           fx:controller="org.example.controllers.PageRdvController">
+    <VBox alignment="TOP_CENTER" maxWidth="960" spacing="16" styleClass="rdv-page rdv-page-clean">
+        <VBox maxWidth="Infinity" spacing="8" styleClass="rdv-header-clean">
+            <Label styleClass="rdv-page-kicker" text="PROPOSITION"/>
+            <Label styleClass="rdv-page-title-clean" text="Proposer un rendez-vous" textAlignment="LEFT" wrapText="true"/>
+            <Label styleClass="rdv-page-sub-clean" text="Choisissez un professionnel et proposez un créneau. Le médecin accepte ou refuse ensuite votre demande."
+                   textAlignment="LEFT" wrapText="true"/>
+        </VBox>
+
+        <VBox maxWidth="Infinity" spacing="0" styleClass="rdv-shell">
+            <HBox alignment="CENTER_LEFT" spacing="16" styleClass="rdv-filters-row">
+                <VBox spacing="4" styleClass="rdv-filter-block">
+                    <Label styleClass="rdv-filter-cap" text="Spécialité"/>
+                    <ComboBox fx:id="rdvSpecialtyFilter" maxWidth="200" promptText="Toutes les spécialités" styleClass="rdv-filter-input"/>
+                </VBox>
+                <VBox spacing="4" HBox.hgrow="ALWAYS" styleClass="rdv-filter-block" maxWidth="Infinity">
+                    <Label styleClass="rdv-filter-cap" text="Lieu"/>
+                    <TextField fx:id="rdvLieuFilter" promptText="Ville ou adresse…" styleClass="rdv-filter-input" maxWidth="Infinity"/>
+                </VBox>
+                <Region minWidth="12"/>
+                <HBox alignment="CENTER_LEFT" spacing="12" styleClass="rdv-count-block">
+                    <Label fx:id="rdvCountNumLabel" styleClass="rdv-count-num" text="0"/>
+                    <Region prefWidth="1" minWidth="1" maxWidth="1" minHeight="32" styleClass="rdv-count-sep"/>
+                    <Label styleClass="rdv-count-cap" text="professionnels" wrapText="true" maxWidth="86"/>
+                </HBox>
+            </HBox>
+
+            <VBox spacing="4" styleClass="rdv-tip">
+                <Label styleClass="rdv-tip-title" text="Comment ça marche ?"/>
+                <Label styleClass="rdv-tip-text" wrapText="true"
+                       text="Choisissez un professionnel, cliquez sur « Proposer un RDV », puis sélectionnez date et créneau à l’étape suivante."/>
+            </VBox>
+
+            <VBox spacing="10" styleClass="rdv-ai-planner">
+                <VBox.margin>
+                    <Insets top="10.0"/>
+                </VBox.margin>
+                <HBox alignment="CENTER_LEFT" spacing="8">
+                    <Label styleClass="rdv-ai-planner-title" text="✨ Smart Planner IA"/>
+                    <Region HBox.hgrow="ALWAYS"/>
+                    <Label styleClass="rdv-ai-planner-badge" text="AutiCare AI"/>
+                </HBox>
+                <Label styleClass="rdv-ai-planner-sub" wrapText="true"
+                       text="Indiquez votre disponibilité : l’IA classe les médecins selon le créneau le plus proche et propose le meilleur plan."/>
+                <HBox spacing="8" alignment="CENTER_LEFT" styleClass="rdv-ai-controls-row">
+                    <DatePicker fx:id="rdvAiDatePicker" promptText="Date souhaitée" styleClass="rdv-ai-input"/>
+                    <ComboBox fx:id="rdvAiTimeCombo" promptText="Heure souhaitée" prefWidth="140" styleClass="rdv-ai-input"/>
+                    <Button text="✨ Générer plan" onAction="#onSuggestByAvailability" styleClass="rdv-ai-generate-btn"/>
+                </HBox>
+                <Label fx:id="rdvAiStatusLabel" styleClass="rdv-ai-status" wrapText="true"
+                       text="Choisissez date/heure, puis cliquez sur Générer plan."/>
+                <VBox fx:id="rdvAiSuggestionsBox" spacing="12" styleClass="rdv-ai-suggestions-wrap"/>
+            </VBox>
+
+            <ScrollPane fitToWidth="true" hbarPolicy="NEVER" minViewportHeight="0" prefViewportHeight="420" styleClass="rdv-scroll-clean" vbarPolicy="AS_NEEDED">
+                <VBox fx:id="rdvDoctorsList" spacing="20" styleClass="rdv-stack"/>
+            </ScrollPane>
+        </VBox>
+    </VBox>
+
+    <VBox fx:id="rdvChatbotPanel" managed="false" visible="false" spacing="10"
+          styleClass="rdv-chatbot-panel" StackPane.alignment="BOTTOM_RIGHT"
+          prefWidth="390" maxWidth="390" prefHeight="500" maxHeight="500">
+        <HBox alignment="CENTER_LEFT" styleClass="rdv-chatbot-header">
+            <Label styleClass="rdv-chatbot-title" text="Assistant AutiCare"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Button fx:id="rdvChatbotExpandBtn" text="⤢" styleClass="rdv-chatbot-icon-btn"
+                    onAction="#onToggleRdvChatbotSize"/>
+            <Button text="🗑" styleClass="rdv-chatbot-icon-btn" onAction="#onClearRdvChatbotHistory"/>
+            <Button text="×" styleClass="rdv-chatbot-icon-btn" onAction="#onToggleRdvChatbot"/>
+        </HBox>
+        <VBox spacing="4" styleClass="rdv-chatbot-intro-card">
+            <Label styleClass="rdv-chatbot-intro-title" text="" wrapText="true" managed="false" visible="false"/>
+            <Label styleClass="rdv-chatbot-subtitle" text="" wrapText="true" managed="false" visible="false"/>
+            <Label styleClass="rdv-chatbot-intro-caption" text="" wrapText="true" managed="false" visible="false"/>
+            <HBox spacing="6" styleClass="rdv-chatbot-chip-wrap">
+                <Button fx:id="rdvQuizQuestionnaireBtn" text="Quiz texte" styleClass="rdv-chatbot-chip rdv-chip-green"
+                        onAction="#onStartAutismQuestionnaireQuiz"/>
+                <Button fx:id="rdvQuizImagesBtn" text="Quiz Rorschach" styleClass="rdv-chatbot-chip rdv-chip-blue"
+                        onAction="#onStartRorschachImageQuiz"/>
+                <Button text="Émotions" styleClass="rdv-chatbot-chip" onAction="#onQuickThemeEmotions"/>
+                <Button text="Sensoriel" styleClass="rdv-chatbot-chip" onAction="#onQuickThemeSensoriel"/>
+            </HBox>
+            <HBox spacing="6" styleClass="rdv-chatbot-chip-wrap">
+                <Button text="Routine" styleClass="rdv-chatbot-chip" onAction="#onQuickThemeRoutine"/>
+                <Button text="Anxiété" styleClass="rdv-chatbot-chip" onAction="#onQuickThemeCalme"/>
+            </HBox>
+        </VBox>
+        <ScrollPane fx:id="rdvChatbotHistoryScroll" fitToWidth="true" hbarPolicy="NEVER" vbarPolicy="AS_NEEDED"
+                    styleClass="rdv-chatbot-history" VBox.vgrow="ALWAYS">
+            <VBox fx:id="rdvChatbotHistory" spacing="8" styleClass="rdv-chatbot-history-box"/>
+        </ScrollPane>
+        <HBox spacing="8" alignment="CENTER_LEFT" styleClass="rdv-chatbot-input-row">
+            <TextField fx:id="rdvChatbotInput" promptText="Écrivez votre message…"
+                       HBox.hgrow="ALWAYS" styleClass="rdv-chatbot-input"
+                       onAction="#onSendRdvChatbotMessage"/>
+            <Button fx:id="rdvChatbotSendBtn" text="Envoyer" styleClass="rdv-chatbot-send-btn" onAction="#onSendRdvChatbotMessage"/>
+        </HBox>
+    </VBox>
+
+    <Button text="💬  Besoin d'aide ?" styleClass="rdv-chatbot-toggle-btn"
+            onAction="#onToggleRdvChatbot" StackPane.alignment="BOTTOM_RIGHT"/>
+</StackPane>
+>>>>>>> b8ab02cf (integration module blog)

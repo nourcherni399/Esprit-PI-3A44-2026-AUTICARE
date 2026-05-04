@@ -14,10 +14,10 @@
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 
-<VBox styleClass="home-root" stylesheets="@../styles/login.css,@../styles/home.css,@../styles/public-page.css,@../styles/page-blog.css" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.example.controllers.PublicShellController">
+<VBox styleClass="home-root" stylesheets="@../styles/login.css,@../styles/home.css,@../styles/public-page.css,@../styles/page-blog.css" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.example.controllers.PublicShellController">
         <HBox alignment="CENTER_LEFT" minHeight="88.0" prefHeight="88.0" style="-fx-min-height: 88px; -fx-pref-height: 88px;" styleClass="top-nav nav-home">
             <HBox alignment="CENTER_LEFT" spacing="14" styleClass="nav-brand-block">
-                <ImageView fitHeight="58" pickOnBounds="true" preserveRatio="true" styleClass="nav-brand-logo-img">
+                <ImageView fitHeight="70" pickOnBounds="true" preserveRatio="true" styleClass="nav-brand-logo-img">
                     <image>
                         <Image url="@../images/brand/auticare-logo-auth.png" />
                     </image>
@@ -27,27 +27,27 @@
             <Region minWidth="8" HBox.hgrow="ALWAYS" />
             <HBox alignment="CENTER" spacing="4" styleClass="nav-center-links">
                 <HBox fx:id="shellNavAccueil" alignment="CENTER_LEFT" onMouseClicked="#onNavAccueil" spacing="10" styleClass="nav-item">
-                    <Label styleClass="nav-item-icon" text="⌂" />
+                    <Label styleClass="nav-item-icon" text="♡" />
                     <Label styleClass="nav-item-label" text="Accueil" />
                 </HBox>
                 <HBox fx:id="shellNavProduits" alignment="CENTER_LEFT" onMouseClicked="#onNavProduits" spacing="10" styleClass="nav-item">
-                    <Label styleClass="nav-item-icon" text="◫" />
+                    <Label styleClass="nav-item-icon" text="🛒" />
                     <Label styleClass="nav-item-label" text="Produits" />
                 </HBox>
                 <HBox fx:id="shellNavMesCommandes" alignment="CENTER_LEFT" onMouseClicked="#onNavMesCommandes" spacing="10" styleClass="nav-item">
-                    <Label styleClass="nav-item-icon" text="▤" />
+                    <Label styleClass="nav-item-icon" text="📦" />
                     <Label styleClass="nav-item-label" text="Mes commandes" />
                 </HBox>
                 <HBox fx:id="shellNavRdv" alignment="CENTER_LEFT" onMouseClicked="#onNavRdv" spacing="10" styleClass="nav-item">
-                    <Label styleClass="nav-item-icon" text="◷" />
+                    <Label styleClass="nav-item-icon" text="🕐" />
                     <Label styleClass="nav-item-label" text="Rendez-vous" />
                 </HBox>
                 <HBox fx:id="shellNavEvents" alignment="CENTER_LEFT" onMouseClicked="#onNavEvents" spacing="10" styleClass="nav-item">
-                    <Label styleClass="nav-item-icon" text="▦" />
+                    <Label styleClass="nav-item-icon" text="📅" />
                     <Label styleClass="nav-item-label" text="Événements" />
                 </HBox>
                 <HBox fx:id="shellNavBlog" alignment="CENTER_LEFT" onMouseClicked="#onNavBlog" spacing="10" styleClass="nav-item">
-                    <Label styleClass="nav-item-icon" text="☰" />
+                    <Label styleClass="nav-item-icon" text="📖" />
                     <Label styleClass="nav-item-label" text="Blog" />
                 </HBox>
             </HBox>
@@ -98,7 +98,7 @@
                 </HBox>
                 <HBox alignment="CENTER_LEFT" spacing="4" styleClass="nav-lang-row">
                     <Label styleClass="nav-icon-symbol" text="🌐" />
-                    <ComboBox fx:id="langCombo" prefWidth="56" styleClass="lang-combo" />
+                    <ComboBox fx:id="langCombo" prefWidth="112" styleClass="lang-combo" />
                     <Label styleClass="nav-lang-chevron" text="▾" />
                 </HBox>
             </HBox>

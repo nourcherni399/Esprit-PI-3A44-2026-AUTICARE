@@ -105,7 +105,21 @@
 }
 
 .nav-home .lang-combo {
+    -fx-background-color: #2f3644;
+    -fx-border-color: #596579;
     -fx-text-fill: #e5e7eb;
+}
+
+.nav-home .lang-combo > .list-cell {
+    -fx-text-fill: #e5e7eb;
+}
+
+.nav-home .lang-combo .arrow {
+    -fx-background-color: #94a3b8;
+}
+
+.nav-home .lang-combo-icon {
+    -fx-text-fill: #cbd5e1;
 }
 
 .nav-home .nav-item:hover {

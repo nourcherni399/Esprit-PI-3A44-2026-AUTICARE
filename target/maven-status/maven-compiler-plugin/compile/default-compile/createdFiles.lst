@@ -1,3 +1,4 @@
+org\example\controllers\PublicShellController$4.class
 org\example\services\LibreTranslateService$TranslationOutcome.class
 org\example\utils\ProductDescriptionSuggest.class
 org\example\services\ModuleAiGenerationService$CategoryKeywordScores.class
@@ -5,6 +6,7 @@ org\example\controllers\AdminUsersController$3.class
 org\example\controllers\MedecinDisponibiliteDialogController$1.class
 org\example\models\Event.class
 org\example\utils\UiResources.class
+org\example\controllers\AdminRessourceAddController$1.class
 org\example\services\PexelsService.class
 org\example\controllers\AdminModulesController$6.class
 org\example\services\MultiAiProviderService$ImageGenResult.class
@@ -45,7 +47,6 @@ org\example\controllers\AdminModulesController$12.class
 org\example\services\RessourceService.class
 org\example\services\EventIdeaSuggestionService$IdeaCluster.class
 org\example\controllers\AdminEventsPanelController$ParsedTicket.class
-org\example\services\OrderCheckoutService$PlaceOrderResult.class
 org\example\controllers\AdminThematiquesPanelController$1.class
 org\example\services\EventReminderEmailService$1.class
 org\example\utils\CombinedPublicNotifications$MergedPreview.class
@@ -82,12 +83,12 @@ org\example\controllers\EventTableHeightUtil.class
 org\example\models\MedecinPatientNote.class
 org\example\services\ExternalParticipantsPdfService$ParticipantPdfRow.class
 org\example\ui\product\ProductAssistantPanel$SuggestedBundle.class
+org\example\services\ModuleService$LevelProgressionValidation.class
 org\example\services\ProductExcelExportService.class
 org\example\stats\ProductStatsCalculator$CategoryCount.class
 org\example\models\User.class
 org\example\services\GoogleCalendarOAuthService.class
 org\example\controllers\ForgotPasswordController.class
-org\example\controllers\PageCheckoutController$PhoneCountryOption.class
 org\example\services\ZoomMeetingLinkService.class
 org\example\controllers\PagePanierController.class
 org\example\utils\LocalAiPropertiesFile.class
@@ -96,7 +97,6 @@ org\example\services\RdvPatientEmailService.class
 org\example\ui\product\ProductEditorPane.class
 org\example\models\Product.class
 org\example\services\WikipediaService.class
-org\example\services\ProductService$ScoredProduct.class
 org\example\services\TwilioSmsService.class
 org\example\services\GroqChatCompletionService.class
 org\example\utils\RdvTarifFormat.class
@@ -112,7 +112,6 @@ org\example\controllers\AdminModulesController$10.class
 org\example\services\LanguageToolService$SpellMatch.class
 org\example\utils\AdminTopbarHelper.class
 org\example\services\GoogleCalendarApiService.class
-org\example\controllers\PageProduitsController$ScoredProduct.class
 org\example\controllers\AdminUsersController.class
 org\example\ui\product\ProductStatsWindow.class
 org\example\controllers\MedecinDashboardController$5.class
@@ -148,7 +147,6 @@ org\example\controllers\PageCheckoutController$PaymentMethodOption.class
 org\example\controllers\AdminEventsPanelController$IdeasGenerationOutcome.class
 org\example\services\IdeaAnalysisService$WorkingCluster.class
 org\example\services\StripeCheckoutService$StripeCheckoutResult.class
-org\example\controllers\PageProduitsController$SortOption.class
 org\example\services\GoogleCustomSearchService.class
 org\example\services\CustomerOrderService.class
 org\example\models\ModuleCategorie.class
@@ -202,6 +200,7 @@ org\example\services\ModuleQuizService$LevelProgressResult.class
 org\example\controllers\MedecinMyProfileController.class
 org\example\services\ThematiqueService.class
 org\example\services\HuggingFaceTextService.class
+org\example\controllers\AdminModulesController$YouTubePlaylistItem.class
 org\example\stats\ProductStatsCalculator.class
 org\example\services\PexelsPhotoSearchService.class
 org\example\services\AdminProductPredictionService$PredictionSnapshot.class
@@ -318,6 +317,7 @@ org\example\models\ModuleContent.class
 org\example\controllers\AdminEventsPanelController$ValidationResult.class
 org\example\utils\ModuleActionHistory.class
 org\example\utils\PasswordRecoveryState.class
+org\example\controllers\PublicShellController$2.class
 org\example\services\LanguageToolService.class
 org\example\services\CommentaireReactionService.class
 org\example\utils\CombinedPublicNotifications.class
@@ -335,7 +335,6 @@ org\example\utils\PublicRdvDoctorSidebarHelper.class
 org\example\GroqConsoleChatbot.class
 org\example\models\BlogArticle.class
 org\example\services\MedecinPatientNoteService.class
-org\example\controllers\PageCheckoutController$LocalCardConfirm.class
 org\example\MainApp.class
 org\example\controllers\AdminProductsController.class
 org\example\services\AdminProductPredictionService$StockRiskPoint.class
@@ -343,6 +342,7 @@ org\example\controllers\PageEventsController.class
 org\example\controllers\MedecinDashboardController$MedRdvKanbanCol.class
 org\example\services\BlogService.class
 org\example\controllers\AdminUserDeleteController.class
+org\example\controllers\PublicShellController$3.class
 org\example\utils\AdminNotificationBellHelper.class
 org\example\elasticsearch\ElasticsearchConfig.class
 org\example\models\Role.class

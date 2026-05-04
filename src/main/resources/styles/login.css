@@ -184,6 +184,11 @@
     -fx-text-fill: #374151;
 }
 
+.lang-combo-icon {
+    -fx-font-size: 14px;
+    -fx-text-fill: #5b667c;
+}
+
 .login-center {
     -fx-padding: 24 32 40 32;
     -fx-background-color: transparent;

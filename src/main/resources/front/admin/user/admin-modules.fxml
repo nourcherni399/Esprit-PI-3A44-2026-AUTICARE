@@ -13,6 +13,7 @@
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.FlowPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.StackPane?>
@@ -103,8 +104,6 @@
                             <HBox alignment="CENTER_LEFT" spacing="12">
                                 <Label styleClass="mod-page-title" text="Gestion des modules"/>
                                 <Region HBox.hgrow="ALWAYS"/>
-                                <Button onAction="#onNavEvents" styleClass="mod-btn-sort" text="🗓 Événements"/>
-                                <Button onAction="#onNavTopics" styleClass="mod-btn-new" text="🏷 Thématiques"/>
                             </HBox>
 
                             <!-- Carte : liste des modules -->
@@ -137,7 +136,7 @@
                             </VBox>
 
                             <!-- Carte : ressources (même cadrage + même style tableau que modules) -->
-                            <VBox maxWidth="Infinity" spacing="0" styleClass="mod-card mod-card-ressources-frame">
+                            <VBox maxWidth="Infinity" spacing="0" styleClass="mod-card mod-card-ressources-frame" style="-fx-background-color: #ffffff; -fx-background-radius: 16; -fx-border-color: #e5e7eb; -fx-border-radius: 16; -fx-border-width: 1; -fx-effect: dropshadow(gaussian, rgba(15,23,42,0.08), 16, 0.12, 0, 4);">
                                 <VBox styleClass="mod-card-head" spacing="4">
                                     <HBox alignment="CENTER_LEFT" spacing="10">
                                         <Label styleClass="mod-card-icon" text="☰"/>
@@ -159,6 +158,37 @@
                                     <VBox styleClass="mod-ressources-table-gap">
                                         <TableView fx:id="resourcesPlaceholderTable" styleClass="mod-table mod-table-in-card mod-table-web-style mod-ressources-table"/>
                                     </VBox>
+                                </VBox>
+                            </VBox>
+
+                            <!-- Carte séparée : playlist YouTube -->
+                            <VBox maxWidth="Infinity" spacing="0" styleClass="mod-card mod-youtube-frame-card">
+                                <VBox styleClass="mod-card-head" spacing="4">
+                                    <HBox alignment="CENTER_LEFT" spacing="10">
+                                        <Label styleClass="mod-card-icon" text="▶"/>
+                                        <VBox spacing="2">
+                                            <Label styleClass="mod-card-title" text="Playlist YouTube des resources"/>
+                                            <Label fx:id="youtubePlaylistCountLabel" styleClass="mod-youtube-playlist-count" text="0 vidéo"/>
+                                        </VBox>
+                                    </HBox>
+                                </VBox>
+                                <VBox spacing="14" styleClass="mod-youtube-playlist-box">
+                                    <HBox alignment="TOP_LEFT" spacing="14" styleClass="mod-youtube-layout-row">
+                                        <VBox spacing="10" styleClass="mod-youtube-preview-box" HBox.hgrow="ALWAYS">
+                                            <ImageView fx:id="youtubePreviewImage" fitWidth="700" fitHeight="360" pickOnBounds="true" preserveRatio="false" styleClass="mod-youtube-preview-image"/>
+                                            <HBox alignment="CENTER_LEFT" spacing="10">
+                                                <Label fx:id="youtubePreviewTitle" styleClass="mod-youtube-preview-title" text="Sélectionnez une vidéo"/>
+                                                <Region HBox.hgrow="ALWAYS"/>
+                                                <Button fx:id="youtubePreviewOpenBtn" onAction="#onOpenSelectedYoutubeVideo" styleClass="mod-btn-new" text="Regarder sur YouTube"/>
+                                            </HBox>
+                                        </VBox>
+                                        <ScrollPane fitToWidth="true" hbarPolicy="NEVER" prefWidth="290" prefHeight="400" styleClass="mod-youtube-side-scroll" vbarPolicy="AS_NEEDED">
+                                            <content>
+                                                <VBox fx:id="youtubePlaylistList" spacing="10" styleClass="mod-youtube-side-list"/>
+                                            </content>
+                                        </ScrollPane>
+                                    </HBox>
+                                    <Label fx:id="youtubePlaylistHint" styleClass="mod-youtube-playlist-hint" text="Aucune vidéo YouTube dans les resources."/>
                                 </VBox>
                             </VBox>
 

@@ -73,7 +73,7 @@
                 <HBox alignment="CENTER_LEFT" styleClass="admin-topbar">
                     <HBox alignment="CENTER_LEFT" spacing="8" HBox.hgrow="ALWAYS">
                         <Label text="🔍" />
-                        <TextField fx:id="topSearchField" promptText="Rechercher (nom, email, statut…)" styleClass="admin-search" HBox.hgrow="ALWAYS" />
+                        <TextField fx:id="topSearchField" promptText="Rechercher (n°, nom, email, statut…)" styleClass="admin-search" HBox.hgrow="ALWAYS" />
                     </HBox>
                     <Region minWidth="16" />
                     <Label fx:id="notifBellLabel" text="🔔" />
