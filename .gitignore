@@ -39,6 +39,8 @@ build/
 ### Secrets / local config ###
 src/main/resources/application.properties
 .ai.local.properties
+# Même contenu sensible ; nom mal orthographié (échappe à .ai.local.properties ci-dessus)
+.ai.local.proprieties
 assistant-local.properties
 .env.local
 
