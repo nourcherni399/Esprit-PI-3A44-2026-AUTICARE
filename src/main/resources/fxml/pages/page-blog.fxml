@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox alignment="TOP_CENTER" maxWidth="Infinity" spacing="0" styleClass="blog-page-root"
+      stylesheets="@../../styles/page-blog.css"
+      xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="org.example.controllers.PageBlogController">
+    <StackPane fx:id="heroBand" maxWidth="Infinity" styleClass="blog-hero-band"/>
+    <Label fx:id="translationStatusLabel" managed="false" visible="false" styleClass="blog-translation-status"/>
+    <StackPane fx:id="blogContentHost" maxWidth="Infinity" VBox.vgrow="ALWAYS"/>
+</VBox>

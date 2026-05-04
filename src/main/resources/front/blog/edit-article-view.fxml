@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.RadioButton?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.ToggleGroup?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.FlowPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox fx:id="editArticleView" alignment="TOP_CENTER" spacing="0" maxWidth="Infinity" prefWidth="1200" prefHeight="900"
+      visible="false" managed="false"
+      stylesheets="@../../styles/page-blog.css"
+      xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1">
+    <HBox alignment="CENTER_LEFT" maxWidth="1060" styleClass="blog-detail-topbar">
+        <Button onAction="#onBackFromEdit" styleClass="blog-back-btn" text="← Retour au module"/>
+    </HBox>
+
+    <VBox alignment="TOP_CENTER" maxWidth="700" styleClass="blog-edit-form-wrapper">
+        <Label text="Modifier l'article" styleClass="blog-form-heading"/>
+
+        <VBox spacing="8" styleClass="blog-ai-section">
+            <Label text="Générer avec l'IA" styleClass="blog-ai-title"/>
+            <Label text="Dans un seul texte : ce dont vous parlez (sujet) et le contexte ou la raison (pourquoi). Le texte doit porter sur l'autisme / les TSA ou l'accompagnement d'une personne autiste ; sinon la génération sera refusée." styleClass="blog-ai-desc" wrapText="true"/>
+            <Label text="Sujet et contexte" styleClass="blog-form-label"/>
+            <HBox alignment="TOP_LEFT" spacing="8">
+                <TextArea fx:id="editAiPromptField" promptText="Ex. Remercier le Dr X (neuropsychologue TSA) pour son écoute et les pistes concrètes après le diagnostic de mon enfant autiste..." styleClass="blog-form-textarea-small" prefRowCount="4" wrapText="true" HBox.hgrow="ALWAYS"/>
+                <Button text="🎤" onAction="#onDictateEditArticlePrompt" styleClass="blog-mic-icon-btn"/>
+            </HBox>
+            <Label text="Type d'article" styleClass="blog-form-label"/>
+            <ComboBox fx:id="editAiTypeCombo" promptText="-- Choisir --" maxWidth="Infinity" styleClass="blog-form-combo"/>
+            <Button text="Générer titre et contenu" onAction="#onEditGenerateAI" styleClass="blog-ai-generate-btn"/>
+        </VBox>
+
+        <Label text="Titre" styleClass="blog-form-label"/>
+        <HBox alignment="CENTER_LEFT" spacing="8">
+            <TextField fx:id="editTitreField" promptText="Titre de l'article" styleClass="blog-form-textfield" HBox.hgrow="ALWAYS"/>
+            <Button text="🎤" onAction="#onDictateEditArticleTitle" styleClass="blog-mic-icon-btn"/>
+        </HBox>
+        <Label text="Type" styleClass="blog-form-label"/>
+        <ComboBox fx:id="editTypeCombo" promptText="Choisir un type" maxWidth="Infinity" styleClass="blog-form-combo"/>
+        <Label text="Contenu" styleClass="blog-form-label"/>
+        <HBox alignment="TOP_LEFT" spacing="8">
+            <TextArea fx:id="editContenuField" promptText="Contenu de l'article..." styleClass="blog-form-textarea" prefRowCount="16" wrapText="true" HBox.hgrow="ALWAYS"/>
+            <Button text="🎤" onAction="#onDictateEditArticleContent" styleClass="blog-mic-icon-btn"/>
+        </HBox>
+
+        <Label text="Image de l'article" styleClass="blog-form-label"/>
+        <HBox spacing="14" alignment="CENTER_LEFT">
+            <RadioButton fx:id="editRbUploadFile" text="Uploader un fichier" selected="true">
+                <toggleGroup><ToggleGroup fx:id="editImageToggle"/></toggleGroup>
+            </RadioButton>
+            <RadioButton fx:id="editRbPexels" text="Rechercher sur Pexels">
+                <toggleGroup><fx:reference source="editImageToggle"/></toggleGroup>
+            </RadioButton>
+        </HBox>
+        <VBox fx:id="editArticleImageUploadPanel" spacing="6">
+            <HBox spacing="10" alignment="CENTER_LEFT" styleClass="blog-form-file-row">
+                <Button text="Choisir un fichier" onAction="#onChooseEditImage" styleClass="blog-form-file-btn"/>
+                <Label fx:id="editImageLabel" text="Aucun fichier choisi" styleClass="blog-form-file-label" visible="false" managed="false"/>
+            </HBox>
+            <ImageView fx:id="editArticleImagePreview" fitHeight="150" fitWidth="300" preserveRatio="true" visible="false" managed="false" styleClass="blog-article-image-preview"/>
+        </VBox>
+        <VBox fx:id="editArticlePexelsPanel" spacing="10" styleClass="blog-pexels-box" visible="false" managed="false">
+            <HBox spacing="10" alignment="CENTER_LEFT" styleClass="blog-pexels-search-row">
+                <TextField fx:id="editArticlePexelsSearchField" promptText="Ex. autisme, éducation, famille..." styleClass="blog-pexels-search-field" HBox.hgrow="ALWAYS"/>
+                <Button text="🎤" onAction="#onDictateEditArticlePexelsSearch" styleClass="blog-mic-icon-btn"/>
+                <Button text="Rechercher" onAction="#onEditArticlePexelsSearch" styleClass="blog-btn-pexels-search"/>
+            </HBox>
+            <FlowPane fx:id="editArticlePexelsFlow" hgap="8" vgap="8" prefWrapLength="720" prefHeight="200" styleClass="blog-pexels-flow"/>
+            <Label fx:id="editArticlePexelsHint" text="Cliquez sur une image pour la télécharger et l'utiliser." styleClass="blog-ai-desc" wrapText="true"/>
+        </VBox>
+
+        <VBox spacing="6" styleClass="blog-hashtag-section">
+            <Label text="Générer des hashtags" styleClass="blog-hashtag-title"/>
+            <Label text="Génère des hashtags à partir du titre. Ils seront ajoutés à la fin du contenu." styleClass="blog-hashtag-desc" wrapText="true"/>
+            <Button text="Générer des hashtags" onAction="#onEditGenerateHashtags" styleClass="blog-ai-generate-btn"/>
+        </VBox>
+
+        <HBox spacing="20" alignment="CENTER_LEFT">
+            <CheckBox fx:id="editCbPublished" text="Publier l'article"/>
+            <CheckBox fx:id="editCbUrgent" text="Urgent"/>
+            <CheckBox fx:id="editCbVisible" text="Visible" selected="true"/>
+        </HBox>
+
+        <HBox spacing="12" alignment="CENTER_LEFT">
+            <Button text="Enregistrer" onAction="#onSaveEditArticle" styleClass="blog-form-publish-btn"/>
+            <Button text="Annuler" onAction="#onBackFromEdit" styleClass="blog-form-cancel-btn"/>
+        </HBox>
+    </VBox>
+</VBox>

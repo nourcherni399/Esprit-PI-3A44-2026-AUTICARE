@@ -1,0 +1,956 @@
+/* Espace médecin — tableau de bord */
+
+.med-root {
+    -fx-font-family: "Inter", "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
+    -fx-background-color: #f4f6f9;
+}
+
+.med-sidebar {
+    -fx-background-color: #ffffff;
+    -fx-padding: 20 16 20 16;
+    -fx-spacing: 8;
+    -fx-border-color: #e8eaed;
+    -fx-border-width: 0 1 0 0;
+    -fx-min-width: 220;
+    -fx-pref-width: 240;
+    -fx-max-width: 260;
+}
+
+.med-brand {
+    -fx-font-size: 17px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #2f3138;
+    -fx-padding: 0 0 16 0;
+}
+
+.med-nav-item {
+    -fx-alignment: center-left;
+    -fx-padding: 12 14 12 14;
+    -fx-background-radius: 10;
+    -fx-cursor: hand;
+    -fx-font-size: 14px;
+    -fx-text-fill: #5c5c5c;
+}
+
+/* Boutons de menu : même rendu qu’un libellé */
+.button.med-nav-item {
+    -fx-background-color: transparent;
+    -fx-border-width: 0;
+    -fx-background-insets: 0;
+}
+
+.med-nav-item:hover {
+    -fx-background-color: rgba(168, 187, 163, 0.2);
+}
+
+.med-nav-item-active {
+    -fx-background-color: rgba(168, 187, 163, 0.35);
+    -fx-text-fill: #2d4a28;
+    -fx-font-weight: 600;
+}
+
+.med-sidebar-footer {
+    -fx-padding: 12 0 0 0;
+    -fx-spacing: 6;
+}
+
+.med-link-subtle {
+    -fx-font-size: 12px;
+    -fx-text-fill: #7b8494;
+    -fx-border-color: transparent;
+    -fx-padding: 2 0;
+}
+
+.med-link-subtle:hover {
+    -fx-text-fill: #a8bba3;
+}
+
+.med-topbar {
+    -fx-background-color: #ffffff;
+    -fx-padding: 14 24 14 24;
+    -fx-spacing: 16;
+    -fx-border-color: #e8eaed;
+    -fx-border-width: 0 0 1 0;
+    -fx-alignment: center-left;
+}
+
+.med-search {
+    -fx-background-radius: 999;
+    -fx-padding: 10 18 10 18;
+    -fx-pref-width: 320;
+    -fx-max-width: 420;
+}
+
+.med-user-name {
+    -fx-font-size: 14px;
+    -fx-font-weight: 600;
+    -fx-text-fill: #2f3138;
+}
+
+.med-user-email {
+    -fx-font-size: 11px;
+    -fx-text-fill: #6b7280;
+}
+
+.med-content {
+    -fx-padding: 24 28 32 28;
+    -fx-spacing: 20;
+}
+
+.med-welcome-card {
+    -fx-background-color: linear-gradient(to right, rgba(205, 180, 219, 0.35), rgba(168, 187, 163, 0.3));
+    -fx-background-radius: 16;
+    -fx-padding: 22 26 22 26;
+    -fx-spacing: 6;
+}
+
+.med-welcome-title {
+    -fx-font-size: 22px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #2f3138;
+}
+
+.med-welcome-sub {
+    -fx-font-size: 14px;
+    -fx-text-fill: #5c5c5c;
+}
+
+.med-stat-card {
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 14;
+    -fx-padding: 16 18 16 18;
+    -fx-spacing: 6;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.06), 12, 0, 0, 2);
+    -fx-border-color: rgba(0, 0, 0, 0.05);
+    -fx-border-radius: 14;
+    -fx-border-width: 1;
+    -fx-min-width: 140;
+    -fx-pref-width: 160;
+}
+
+.med-stat-label {
+    -fx-font-size: 12px;
+    -fx-text-fill: #6b7280;
+}
+
+.med-stat-value {
+    -fx-font-size: 24px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #2f3138;
+}
+
+.med-stat-hint {
+    -fx-font-size: 11px;
+    -fx-text-fill: #9ca3af;
+}
+
+.med-panel {
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 14;
+    -fx-padding: 18 20 20 20;
+    -fx-spacing: 12;
+    -fx-border-color: rgba(0, 0, 0, 0.06);
+    -fx-border-radius: 14;
+    -fx-border-width: 1;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.05), 10, 0, 0, 1);
+}
+
+.med-panel-title {
+    -fx-font-size: 15px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #2f3138;
+}
+
+.med-panel-body {
+    -fx-font-size: 13px;
+    -fx-text-fill: #6b7280;
+}
+
+.med-btn-primary {
+    -fx-background-color: #a8bba3;
+    -fx-text-fill: #ffffff;
+    -fx-font-weight: 600;
+    -fx-padding: 8 16 8 16;
+    -fx-background-radius: 10;
+    -fx-cursor: hand;
+}
+
+.med-btn-primary:hover {
+    -fx-background-color: #96ad91;
+}
+
+.med-btn-ghost {
+    -fx-background-color: transparent;
+    -fx-text-fill: #5c5c5c;
+    -fx-border-color: #e5e7eb;
+    -fx-border-radius: 10;
+    -fx-border-width: 1;
+    -fx-padding: 8 14 8 14;
+    -fx-cursor: hand;
+}
+
+.med-quick-card {
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 12;
+    -fx-padding: 16 18 16 18;
+    -fx-spacing: 6;
+    -fx-border-color: rgba(0, 0, 0, 0.06);
+    -fx-border-radius: 12;
+    -fx-border-width: 1;
+    -fx-cursor: hand;
+}
+
+.med-quick-card:hover {
+    -fx-background-color: #fafbfc;
+}
+
+.med-quick-title {
+    -fx-font-size: 14px;
+    -fx-font-weight: 600;
+    -fx-text-fill: #2f3138;
+}
+
+.med-quick-sub {
+    -fx-font-size: 12px;
+    -fx-text-fill: #8b9199;
+}
+
+.med-calendar-box {
+    -fx-background-color: rgba(205, 180, 219, 0.2);
+    -fx-background-radius: 12;
+    -fx-padding: 14 16 14 16;
+    -fx-spacing: 4;
+    -fx-alignment: center;
+}
+
+.med-calendar-day {
+    -fx-font-size: 20px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #4a3d58;
+}
+
+/* ---------- Page Disponibilités ---------- */
+
+.med-nav-item-active-dispo {
+    -fx-background-color: rgba(52, 152, 219, 0.22);
+    -fx-text-fill: #1e5a8a;
+    -fx-font-weight: 600;
+}
+
+.button.med-nav-item-active-dispo {
+    -fx-background-color: rgba(52, 152, 219, 0.22);
+}
+
+.med-dispo-wrap {
+    -fx-padding: 24 28 40 28;
+    -fx-spacing: 20;
+    -fx-max-width: 1100;
+}
+
+.med-dispo-main-title {
+    -fx-font-size: 26px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #2f3138;
+}
+
+.med-dispo-toolbar {
+    -fx-alignment: center-left;
+    -fx-spacing: 14;
+}
+
+.med-dispo-search {
+    -fx-background-radius: 10;
+    -fx-padding: 10 14 10 14;
+    -fx-max-width: 400;
+}
+
+.med-btn-dispo-primary {
+    -fx-background-color: #3498db;
+    -fx-text-fill: #ffffff;
+    -fx-font-weight: 600;
+    -fx-padding: 10 18 10 18;
+    -fx-background-radius: 10;
+    -fx-cursor: hand;
+}
+
+.med-btn-dispo-primary:hover {
+    -fx-background-color: #2980b9;
+}
+
+.med-cal-nav {
+    -fx-padding: 8 0 4 0;
+}
+
+.med-cal-nav-btn {
+    -fx-min-width: 40;
+    -fx-min-height: 36;
+    -fx-background-radius: 8;
+    -fx-background-color: #ffffff;
+    -fx-border-color: #e5e7eb;
+    -fx-border-radius: 8;
+    -fx-border-width: 1;
+    -fx-font-size: 18px;
+    -fx-cursor: hand;
+}
+
+.med-cal-nav-btn:hover {
+    -fx-background-color: #f3f4f6;
+}
+
+.med-cal-month-label {
+    -fx-font-size: 18px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #2f3138;
+    -fx-min-width: 200;
+    -fx-alignment: center;
+}
+
+.med-cal-grid {
+    -fx-padding: 4 0 0 0;
+}
+
+.med-cal-dow {
+    -fx-font-size: 11px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #6b7280;
+    -fx-padding: 0 0 4 0;
+}
+
+.med-cal-cell {
+    -fx-background-color: #faf9f7;
+    -fx-background-radius: 10;
+    -fx-border-color: rgba(0, 0, 0, 0.08);
+    -fx-border-radius: 10;
+    -fx-border-width: 1;
+    -fx-padding: 8;
+    -fx-min-height: 0;
+}
+
+/* Liste des créneaux : défilement dans la case pour éviter le débordement sur les jours du dessous */
+.med-cal-slots-scroll,
+.med-cal-slots-scroll .viewport {
+    -fx-background-color: transparent;
+}
+
+.med-cal-cell-muted {
+    -fx-background-color: #f3f4f6;
+    -fx-opacity: 0.65;
+}
+
+.med-cal-day-num {
+    -fx-font-size: 13px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #374151;
+    -fx-padding: 0 0 6 0;
+}
+
+.med-cal-day-selected {
+    -fx-background-color: #3498db;
+    -fx-background-radius: 999;
+    -fx-text-fill: #ffffff;
+    -fx-padding: 4 8 4 8;
+    -fx-min-width: 28;
+    -fx-alignment: center;
+}
+
+.med-slot-card {
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 8;
+    -fx-padding: 8 10 8 10;
+    -fx-spacing: 6;
+    -fx-border-color: rgba(52, 152, 219, 0.25);
+    -fx-border-radius: 8;
+    -fx-border-width: 1;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.05), 4, 0, 0, 1);
+}
+
+.med-slot-time {
+    -fx-font-size: 12px;
+    -fx-font-weight: 600;
+    -fx-text-fill: #2f3138;
+}
+
+.med-slot-dur {
+    -fx-background-color: rgba(52, 152, 219, 0.18);
+    -fx-text-fill: #1e5a8a;
+    -fx-font-size: 10px;
+    -fx-font-weight: 700;
+    -fx-padding: 2 8 2 8;
+    -fx-background-radius: 999;
+}
+
+.med-slot-actions {
+    -fx-spacing: 6;
+    -fx-alignment: center-left;
+}
+
+.med-slot-icon-btn {
+    -fx-background-color: transparent;
+    -fx-border-width: 0;
+    -fx-padding: 2 6 2 6;
+    -fx-cursor: hand;
+    -fx-font-size: 14px;
+}
+
+.med-slot-del {
+    -fx-text-fill: #e74c3c;
+}
+
+/* ---------- Page Notes patients ---------- */
+
+.med-notes-wrap {
+    -fx-padding: 24 28 40 28;
+    -fx-spacing: 20;
+    -fx-max-width: 1100;
+}
+
+.med-notes-banner {
+    -fx-background-color: rgba(52, 152, 219, 0.14);
+    -fx-background-radius: 14;
+    -fx-border-color: rgba(52, 152, 219, 0.25);
+    -fx-border-radius: 14;
+    -fx-border-width: 1;
+    -fx-padding: 22 24 22 24;
+}
+
+.med-notes-banner-title {
+    -fx-font-size: 24px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #1e3a5f;
+}
+
+.med-notes-banner-sub {
+    -fx-font-size: 14px;
+    -fx-text-fill: #4b5563;
+}
+
+.med-notes-banner-statbox {
+    -fx-background-color: rgba(255, 255, 255, 0.95);
+    -fx-background-radius: 12;
+    -fx-padding: 16 28 16 28;
+    -fx-border-color: rgba(255, 255, 255, 0.8);
+    -fx-border-radius: 12;
+    -fx-border-width: 1;
+    -fx-min-width: 120;
+}
+
+.med-notes-banner-count {
+    -fx-font-size: 36px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #2f3138;
+}
+
+.med-notes-banner-stat-label {
+    -fx-font-size: 12px;
+    -fx-text-fill: #6b7280;
+}
+
+.med-notes-card {
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 14;
+    -fx-border-color: rgba(0, 0, 0, 0.07);
+    -fx-border-radius: 14;
+    -fx-border-width: 1;
+    -fx-padding: 20 22 22 22;
+    -fx-spacing: 14;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.05), 12, 0, 0, 2);
+}
+
+.med-notes-card-header {
+    -fx-spacing: 6;
+}
+
+.med-notes-card-title {
+    -fx-font-size: 17px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #2f3138;
+}
+
+.med-notes-card-sub {
+    -fx-font-size: 13px;
+    -fx-text-fill: #6b7280;
+}
+
+.med-notes-sep {
+    -fx-padding: 4 0 4 0;
+}
+
+.med-notes-placeholder {
+    -fx-font-size: 14px;
+    -fx-text-fill: #6b7280;
+    -fx-wrap-text: true;
+    -fx-padding: 8 0 0 0;
+}
+
+.med-notes-section-title {
+    -fx-font-size: 17px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #2f3138;
+}
+
+.med-notes-btn-export {
+    -fx-background-color: #e74c3c;
+    -fx-text-fill: #ffffff;
+    -fx-font-weight: 600;
+    -fx-padding: 10 16 10 16;
+    -fx-background-radius: 10;
+    -fx-cursor: hand;
+}
+
+.med-notes-btn-export:hover {
+    -fx-background-color: #c0392b;
+}
+
+.med-notes-table {
+    -fx-background-radius: 10;
+    -fx-border-color: rgba(0, 0, 0, 0.08);
+    -fx-border-radius: 10;
+    -fx-border-width: 1;
+}
+
+.med-notes-table .column-header-background {
+    -fx-background-color: #f5f0e8;
+}
+
+.med-notes-table .column-header .label {
+    -fx-font-weight: 700;
+    -fx-text-fill: #4b5563;
+    -fx-font-size: 12px;
+}
+
+.med-notes-table .table-cell {
+    -fx-wrap-text: true;
+    -fx-font-size: 13px;
+}
+
+.med-notes-table .table-row-cell:empty {
+    -fx-background-color: transparent;
+}
+
+.med-notes-table .placeholder .label {
+    -fx-text-fill: #9ca3af;
+    -fx-font-size: 14px;
+}
+
+.med-notes-mini-btn {
+    -fx-background-color: rgba(52, 152, 219, 0.15);
+    -fx-text-fill: #1e5a8a;
+    -fx-font-size: 11px;
+    -fx-font-weight: 600;
+    -fx-padding: 4 10 4 10;
+    -fx-background-radius: 8;
+    -fx-border-width: 0;
+    -fx-cursor: hand;
+}
+
+.med-notes-mini-btn:hover {
+    -fx-background-color: rgba(52, 152, 219, 0.28);
+}
+
+/* ---------- Page Rendez-vous médecin ---------- */
+
+.med-rdv-wrap {
+    -fx-padding: 24 28 40 28;
+    -fx-spacing: 20;
+    -fx-max-width: 1100;
+}
+
+.med-rdv-banner {
+    -fx-background-color: rgba(52, 152, 219, 0.14);
+    -fx-background-radius: 14;
+    -fx-border-color: rgba(52, 152, 219, 0.28);
+    -fx-border-radius: 14;
+    -fx-border-width: 1;
+    -fx-padding: 20 22 20 22;
+    -fx-alignment: center-left;
+}
+
+.med-rdv-banner-emoji {
+    -fx-font-size: 36px;
+}
+
+.med-rdv-banner-title {
+    -fx-font-size: 24px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #1e3a5f;
+}
+
+.med-rdv-banner-sub {
+    -fx-font-size: 14px;
+    -fx-text-fill: #4b5563;
+}
+
+.med-rdv-banner-statbox {
+    -fx-background-color: rgba(255, 255, 255, 0.92);
+    -fx-background-radius: 12;
+    -fx-padding: 14 22 14 22;
+    -fx-border-color: rgba(255, 255, 255, 0.85);
+    -fx-border-radius: 12;
+    -fx-border-width: 1;
+}
+
+.med-rdv-banner-count {
+    -fx-font-size: 32px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #2f3138;
+}
+
+.med-rdv-banner-stat-label {
+    -fx-font-size: 12px;
+    -fx-text-fill: #6b7280;
+}
+
+.med-rdv-stats-row {
+    -fx-spacing: 14;
+}
+
+.med-rdv-stat-card {
+    -fx-background-radius: 12;
+    -fx-padding: 14 16 14 16;
+    -fx-border-radius: 12;
+    -fx-border-width: 1;
+    -fx-alignment: top-left;
+}
+
+.med-rdv-stat-value {
+    -fx-font-size: 26px;
+    -fx-font-weight: 800;
+}
+
+.med-rdv-stat-caption {
+    -fx-font-size: 12px;
+    -fx-font-weight: 600;
+}
+
+.med-rdv-stat-ok {
+    -fx-background-color: rgba(46, 204, 113, 0.18);
+    -fx-border-color: rgba(39, 174, 96, 0.35);
+}
+
+.med-rdv-stat-ok .med-rdv-stat-value {
+    -fx-text-fill: #1e7a45;
+}
+
+.med-rdv-stat-ok .med-rdv-stat-caption {
+    -fx-text-fill: #2d6a4f;
+}
+
+.med-rdv-stat-wait {
+    -fx-background-color: rgba(241, 196, 15, 0.2);
+    -fx-border-color: rgba(230, 126, 34, 0.35);
+}
+
+.med-rdv-stat-wait .med-rdv-stat-value {
+    -fx-text-fill: #b7791f;
+}
+
+.med-rdv-stat-wait .med-rdv-stat-caption {
+    -fx-text-fill: #9a6b1a;
+}
+
+.med-rdv-stat-cancel {
+    -fx-background-color: rgba(231, 76, 60, 0.15);
+    -fx-border-color: rgba(192, 57, 43, 0.35);
+}
+
+.med-rdv-stat-cancel .med-rdv-stat-value {
+    -fx-text-fill: #c0392b;
+}
+
+.med-rdv-stat-cancel .med-rdv-stat-caption {
+    -fx-text-fill: #a93226;
+}
+
+.med-rdv-stat-today {
+    -fx-background-color: rgba(52, 152, 219, 0.16);
+    -fx-border-color: rgba(41, 128, 185, 0.35);
+}
+
+.med-rdv-stat-today .med-rdv-stat-value {
+    -fx-text-fill: #1e5a8a;
+}
+
+.med-rdv-stat-today .med-rdv-stat-caption {
+    -fx-text-fill: #2874a6;
+}
+
+.med-rdv-toolbar {
+    -fx-spacing: 14;
+    -fx-alignment: center-left;
+}
+
+.med-rdv-sort-combo {
+    -fx-background-radius: 10;
+}
+
+.med-rdv-list-host {
+    -fx-min-height: 280;
+}
+
+.med-rdv-empty {
+    -fx-padding: 48 24 48 24;
+}
+
+.med-rdv-empty-icon {
+    -fx-font-size: 56px;
+    -fx-opacity: 0.35;
+}
+
+.med-rdv-empty-title {
+    -fx-font-size: 18px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #4b5563;
+}
+
+.med-rdv-empty-sub {
+    -fx-font-size: 14px;
+    -fx-text-fill: #9ca3af;
+    -fx-text-alignment: center;
+    -fx-max-width: 400;
+}
+
+.med-rdv-list-inner {
+    -fx-padding: 4 0 12 0;
+}
+
+.med-rdv-item-card {
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 12;
+    -fx-padding: 16 18 16 18;
+    -fx-spacing: 8;
+    -fx-border-color: rgba(0, 0, 0, 0.07);
+    -fx-border-radius: 12;
+    -fx-border-width: 1;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.05), 10, 0, 0, 2);
+}
+
+.med-rdv-item-patient {
+    -fx-font-size: 15px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #2f3138;
+}
+
+.med-rdv-item-date {
+    -fx-font-size: 13px;
+    -fx-text-fill: #3498db;
+    -fx-font-weight: 600;
+}
+
+.med-rdv-item-motif {
+    -fx-font-size: 13px;
+    -fx-text-fill: #6b7280;
+}
+
+.med-rdv-badge {
+    -fx-padding: 4 10 4 10;
+    -fx-background-radius: 999;
+    -fx-font-size: 11px;
+    -fx-font-weight: 700;
+}
+
+.med-rdv-badge-ok {
+    -fx-background-color: rgba(46, 204, 113, 0.25);
+    -fx-text-fill: #1e7a45;
+}
+
+.med-rdv-badge-wait {
+    -fx-background-color: rgba(241, 196, 15, 0.35);
+    -fx-text-fill: #9a6b1a;
+}
+
+.med-rdv-badge-cancel {
+    -fx-background-color: rgba(231, 76, 60, 0.22);
+    -fx-text-fill: #c0392b;
+}
+
+/* ---------- Page Notifications médecin ---------- */
+
+.med-notif-wrap {
+    -fx-padding: 24 28 40 28;
+    -fx-spacing: 20;
+    -fx-max-width: 1100;
+}
+
+.med-notif-banner {
+    -fx-background-color: rgba(52, 152, 219, 0.14);
+    -fx-background-radius: 14;
+    -fx-border-color: rgba(52, 152, 219, 0.28);
+    -fx-border-radius: 14;
+    -fx-border-width: 1;
+    -fx-padding: 20 22 20 22;
+}
+
+.med-notif-banner-title {
+    -fx-font-size: 24px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #1e3a5f;
+}
+
+.med-notif-banner-sub {
+    -fx-font-size: 14px;
+    -fx-text-fill: #4b5563;
+}
+
+.med-notif-banner-statbox {
+    -fx-background-color: rgba(255, 255, 255, 0.92);
+    -fx-background-radius: 12;
+    -fx-padding: 14 22 14 22;
+    -fx-border-color: rgba(255, 255, 255, 0.85);
+    -fx-border-radius: 12;
+    -fx-border-width: 1;
+}
+
+.med-notif-banner-count {
+    -fx-font-size: 32px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #2f3138;
+}
+
+.med-notif-banner-stat-label {
+    -fx-font-size: 12px;
+    -fx-text-fill: #6b7280;
+}
+
+.med-notif-stats-row {
+    -fx-spacing: 14;
+}
+
+.med-notif-stat-card {
+    -fx-background-radius: 12;
+    -fx-padding: 14 16 14 16;
+    -fx-border-radius: 12;
+    -fx-border-width: 1;
+}
+
+.med-notif-stat-value {
+    -fx-font-size: 26px;
+    -fx-font-weight: 800;
+}
+
+.med-notif-stat-caption {
+    -fx-font-size: 12px;
+    -fx-font-weight: 600;
+    -fx-wrap-text: true;
+}
+
+.med-notif-stat-unread {
+    -fx-background-color: rgba(231, 76, 60, 0.14);
+    -fx-border-color: rgba(192, 57, 43, 0.35);
+}
+
+.med-notif-stat-unread .med-notif-stat-value {
+    -fx-text-fill: #c0392b;
+}
+
+.med-notif-stat-unread .med-notif-stat-caption {
+    -fx-text-fill: #a93226;
+}
+
+.med-notif-stat-pending {
+    -fx-background-color: rgba(241, 196, 15, 0.2);
+    -fx-border-color: rgba(230, 126, 34, 0.35);
+}
+
+.med-notif-stat-pending .med-notif-stat-value {
+    -fx-text-fill: #b7791f;
+}
+
+.med-notif-stat-pending .med-notif-stat-caption {
+    -fx-text-fill: #9a6b1a;
+}
+
+.med-notif-stat-today {
+    -fx-background-color: rgba(52, 152, 219, 0.16);
+    -fx-border-color: rgba(41, 128, 185, 0.35);
+}
+
+.med-notif-stat-today .med-notif-stat-value {
+    -fx-text-fill: #1e5a8a;
+}
+
+.med-notif-stat-today .med-notif-stat-caption {
+    -fx-text-fill: #2874a6;
+}
+
+.med-notif-stat-week {
+    -fx-background-color: rgba(46, 204, 113, 0.16);
+    -fx-border-color: rgba(39, 174, 96, 0.35);
+}
+
+.med-notif-stat-week .med-notif-stat-value {
+    -fx-text-fill: #1e7a45;
+}
+
+.med-notif-stat-week .med-notif-stat-caption {
+    -fx-text-fill: #2d6a4f;
+}
+
+.med-notif-history-card {
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 14;
+    -fx-border-color: rgba(0, 0, 0, 0.07);
+    -fx-border-radius: 14;
+    -fx-border-width: 1;
+    -fx-padding: 20 22 22 22;
+    -fx-spacing: 12;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.05), 12, 0, 0, 2);
+}
+
+.med-notif-history-header {
+    -fx-padding: 0 0 2 0;
+}
+
+.med-notif-history-title {
+    -fx-font-size: 17px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #2f3138;
+}
+
+.med-notif-history-count {
+    -fx-font-size: 13px;
+    -fx-text-fill: #6b7280;
+}
+
+.med-notif-sep {
+    -fx-padding: 2 0 4 0;
+}
+
+.med-notif-history-body {
+    -fx-alignment: center;
+}
+
+.med-notif-empty {
+    -fx-font-size: 14px;
+    -fx-text-fill: #9ca3af;
+}
+
+.med-notif-list-inner {
+    -fx-padding: 4 0 8 0;
+}
+
+.med-notif-item {
+    -fx-background-color: #fafafa;
+    -fx-background-radius: 10;
+    -fx-padding: 12 14 12 14;
+    -fx-border-color: rgba(0, 0, 0, 0.06);
+    -fx-border-radius: 10;
+    -fx-border-width: 1;
+    -fx-spacing: 4;
+}
+
+.med-notif-item-title {
+    -fx-font-size: 14px;
+    -fx-font-weight: 600;
+    -fx-text-fill: #2f3138;
+}
+
+.med-notif-item-meta {
+    -fx-font-size: 12px;
+    -fx-text-fill: #6b7280;
+}
+
+.med-notif-item-body {
+    -fx-font-size: 13px;
+    -fx-text-fill: #4b5563;
+    -fx-wrap-text: true;
+}

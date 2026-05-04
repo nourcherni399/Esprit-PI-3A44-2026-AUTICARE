@@ -1,0 +1,126 @@
+/* Formulaire Nouvelle / Modifier disponibilité */
+
+.med-dispo-form-root {
+    -fx-font-family: "Segoe UI", "Segoe UI Variable", "Segoe UI Variable Text", "Roboto", "Open Sans", system-ui, sans-serif;
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 14;
+    -fx-border-color: #e5e7eb;
+    -fx-border-radius: 14;
+    -fx-border-width: 1;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.12), 24, 0.2, 0, 6);
+    -fx-min-width: 520;
+    -fx-max-width: 640;
+}
+
+.med-dispo-form-title {
+    -fx-font-size: 20px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #2f3138;
+}
+
+.med-dispo-form-subtitle {
+    -fx-font-size: 13px;
+    -fx-text-fill: #6b7280;
+    -fx-wrap-text: true;
+}
+
+.med-dispo-field-label {
+    -fx-font-size: 12px;
+    -fx-font-weight: 600;
+    -fx-text-fill: #374151;
+}
+
+.med-dispo-input-wrap {
+    -fx-alignment: center-left;
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 10;
+    -fx-border-color: #d1d5db;
+    -fx-border-radius: 10;
+    -fx-border-width: 1;
+    -fx-padding: 0 10 0 4;
+}
+
+.med-dispo-input-wrap:hover {
+    -fx-border-color: #9ca3af;
+}
+
+.med-dispo-date-picker,
+.med-dispo-time-combo {
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+    -fx-padding: 8 4 8 8;
+}
+
+.med-dispo-date-picker > .text-field {
+    -fx-background-color: transparent;
+}
+
+.med-dispo-time-combo > .list-cell {
+    -fx-text-fill: #2f3138;
+}
+
+.med-dispo-input-icon {
+    -fx-font-size: 14px;
+    -fx-padding: 0 4 0 0;
+    -fx-text-fill: #6b7280;
+}
+
+.med-dispo-spinner {
+    -fx-background-radius: 10;
+    -fx-border-color: #d1d5db;
+    -fx-border-radius: 10;
+    -fx-border-width: 1;
+}
+
+.med-dispo-spinner:focused {
+    -fx-border-color: #3498db;
+}
+
+.med-dispo-check {
+    -fx-font-size: 14px;
+    -fx-text-fill: #374151;
+}
+
+.med-dispo-check .box {
+    -fx-background-radius: 4;
+    -fx-border-radius: 4;
+    -fx-border-color: #d1d5db;
+}
+
+.med-dispo-check:selected .mark {
+    -fx-background-color: #3498db;
+}
+
+.med-dispo-check:selected .box {
+    -fx-background-color: #3498db;
+    -fx-border-color: #2980b9;
+}
+
+.med-dispo-btn-save {
+    -fx-background-color: #3498db;
+    -fx-text-fill: #ffffff;
+    -fx-font-weight: 600;
+    -fx-padding: 10 20 10 20;
+    -fx-background-radius: 10;
+    -fx-cursor: hand;
+}
+
+.med-dispo-btn-save:hover {
+    -fx-background-color: #2980b9;
+}
+
+.med-dispo-btn-cancel {
+    -fx-background-color: #ffffff;
+    -fx-text-fill: #374151;
+    -fx-font-weight: 600;
+    -fx-padding: 10 20 10 20;
+    -fx-background-radius: 10;
+    -fx-border-color: #d1d5db;
+    -fx-border-radius: 10;
+    -fx-border-width: 1;
+    -fx-cursor: hand;
+}
+
+.med-dispo-btn-cancel:hover {
+    -fx-background-color: #f9fafb;
+}

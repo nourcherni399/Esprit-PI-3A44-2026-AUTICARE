@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.DatePicker?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.PasswordField?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane styleClass="admin-root" stylesheets="@../../../styles/app.css,@../../../styles/admin.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.example.controllers.AdminUserEditController">
+    <left>
+        <VBox styleClass="admin-sidebar">
+            <HBox alignment="CENTER_LEFT" spacing="10" styleClass="admin-brand-row">
+                <ImageView fitHeight="38" fitWidth="38" pickOnBounds="true" preserveRatio="true" styleClass="admin-sidebar-logo">
+                    <image>
+                        <Image url="file:///C:/Users/comme/Desktop/PI/public/images/logo.png"/>
+                    </image>
+                </ImageView>
+                <Label styleClass="admin-brand" text="AutiCare Admin"/>
+            </HBox>
+            <Label alignment="CENTER_LEFT" maxWidth="Infinity" onMouseClicked="#onNavDashboard" styleClass="admin-nav-item" text="Tableau de bord"/>
+            <Label alignment="CENTER_LEFT" maxWidth="Infinity" onMouseClicked="#onNavUsers" styleClass="admin-nav-item admin-nav-item-active" text="Utilisateurs"/>
+            <Label alignment="CENTER_LEFT" maxWidth="Infinity" onMouseClicked="#onNavProducts" styleClass="admin-nav-item" text="Produits"/>
+            <Label alignment="CENTER_LEFT" maxWidth="Infinity" onMouseClicked="#onNavStocks" styleClass="admin-nav-item" text="Stocks"/>
+            <Label alignment="CENTER_LEFT" maxWidth="Infinity" onMouseClicked="#onNavOrders" styleClass="admin-nav-item" text="Commandes"/>
+            <Label alignment="CENTER_LEFT" maxWidth="Infinity" onMouseClicked="#onNavEvents" styleClass="admin-nav-item" text="Événements"/>
+            <Label alignment="CENTER_LEFT" maxWidth="Infinity" onMouseClicked="#onNavTopics" styleClass="admin-nav-item" text="Thématiques"/>
+            <Label alignment="CENTER_LEFT" maxWidth="Infinity" onMouseClicked="#onNavModules" styleClass="admin-nav-item" text="Modules"/>
+            <Label alignment="CENTER_LEFT" maxWidth="Infinity" onMouseClicked="#onNavSettings" styleClass="admin-nav-item" text="Paramètres"/>
+            <Region VBox.vgrow="ALWAYS"/>
+            <VBox styleClass="admin-nav-footer">
+                <Label alignment="CENTER_LEFT" maxWidth="Infinity" onMouseClicked="#onNavAdminHome" styleClass="admin-nav-item" text="Accueil admin"/>
+            </VBox>
+        </VBox>
+    </left>
+    <center>
+        <BorderPane styleClass="admin-main">
+            <top>
+                <HBox alignment="CENTER_LEFT" styleClass="admin-topbar">
+                    <HBox alignment="CENTER_LEFT" spacing="8" HBox.hgrow="ALWAYS">
+                        <Label text="🔍"/>
+                        <TextField fx:id="topSearchField" promptText="Rechercher" styleClass="admin-search" HBox.hgrow="ALWAYS"/>
+                    </HBox>
+                    <Region minWidth="16"/>
+                    <Region minWidth="12"/>
+                    <HBox alignment="CENTER_LEFT" onMouseClicked="#onOpenMyProfile" spacing="10" styleClass="admin-topbar-profile">
+                        <StackPane fx:id="topbarAvatarHost" styleClass="admin-topbar-avatar-host"/>
+                        <VBox styleClass="admin-user-block">
+                            <Label fx:id="userNameLabel" styleClass="admin-user-name" text="—"/>
+                            <Label fx:id="userEmailLabel" styleClass="admin-user-email" text="—"/>
+                        </VBox>
+                    </HBox>
+                    <Button onAction="#onLogout" styleClass="admin-btn-logout" text="Se déconnecter"/>
+                </HBox>
+            </top>
+            <center>
+                <ScrollPane fitToWidth="true" hbarPolicy="NEVER" style="-fx-background: transparent; -fx-background-color: transparent;">
+                    <content>
+                        <VBox styleClass="admin-content">
+                            <Label fx:id="backLinkLabel" onMouseClicked="#onBack" styleClass="admin-form-back" text="← Retour à la fiche"/>
+                            <VBox styleClass="admin-form-card">
+                                <VBox styleClass="admin-form-card-header">
+                                    <Label styleClass="admin-form-card-title" text="Modifier l'utilisateur"/>
+                                    <Label fx:id="headerSubtitleLabel" styleClass="admin-form-card-subtitle" text=""/>
+                                </VBox>
+                                <GridPane hgap="14" styleClass="admin-form-grid" vgap="12">
+                                    <columnConstraints>
+                                        <ColumnConstraints hgrow="SOMETIMES" minWidth="120" prefWidth="200"/>
+                                        <ColumnConstraints hgrow="SOMETIMES" minWidth="120" prefWidth="200"/>
+                                    </columnConstraints>
+                                    <Label styleClass="admin-form-label" text="Nom *" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+                                    <TextField fx:id="nomField" promptText="Nom" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+                                    <Label styleClass="admin-form-label" text="Prénom *" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+                                    <TextField fx:id="prenomField" promptText="Prénom" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+                                    <Label styleClass="admin-form-label" text="Email *" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="2"/>
+                                    <TextField fx:id="emailField" promptText="email@exemple.fr" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="3"/>
+                                    <Label fx:id="telephoneLabel" styleClass="admin-form-label" text="Téléphone *" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="4"/>
+                                    <TextField fx:id="telephoneField" promptText="06 12 34 56 78" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="5"/>
+                                    <Label styleClass="admin-form-label" text="Photo de profil" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="6"/>
+                                    <HBox alignment="CENTER_LEFT" spacing="10" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="7">
+                                        <Button onAction="#onChoosePhoto" styleClass="admin-btn-outline" text="Choisir un fichier"/>
+                                        <Label fx:id="photoPathLabel" styleClass="admin-form-hint" text="Aucun fichier choisi"/>
+                                    </HBox>
+                                    <Label styleClass="admin-form-label" text="Nouveau mot de passe" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="8"/>
+                                    <PasswordField fx:id="passwordField" promptText="Laisser vide pour ne pas changer" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="9"/>
+                                    <Label styleClass="admin-form-label" text="Confirmer" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="10"/>
+                                    <PasswordField fx:id="confirmPasswordField" promptText="Confirmer" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="11"/>
+                                    <HBox styleClass="admin-form-actif-bar" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="12">
+                                        <CheckBox fx:id="actifCheckBox" mnemonicParsing="false" selected="true" styleClass="admin-form-checkbox" text="Compte actif"/>
+                                    </HBox>
+                                    <Label styleClass="admin-form-label" text="Rôle *" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="13"/>
+                                    <ComboBox fx:id="roleCombo" prefWidth="Infinity" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="14"/>
+                                </GridPane>
+                                <VBox fx:id="parentAttrsBox" managed="false" spacing="10" styleClass="admin-form-parent-block" visible="false">
+                                    <Label styleClass="admin-form-parent-title" text="👨‍👩‍👧 Attributs Parent"/>
+                                    <GridPane hgap="14" styleClass="admin-form-grid" vgap="8">
+                                        <columnConstraints>
+                                            <ColumnConstraints hgrow="NEVER" minWidth="160" prefWidth="200"/>
+                                            <ColumnConstraints hgrow="ALWAYS" minWidth="200"/>
+                                        </columnConstraints>
+                                        <Label styleClass="admin-form-label" text="Relation avec le patient" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+                                        <TextField fx:id="relationField" promptText="Ex. Père, Mère, Tuteur…" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+                                    </GridPane>
+                                </VBox>
+                                <VBox fx:id="patientAttrsBox" managed="false" spacing="10" styleClass="admin-form-patient-block" visible="false">
+                                    <Label styleClass="admin-form-patient-title" text="🧑 Attributs Patient"/>
+                                    <GridPane hgap="14" styleClass="admin-form-grid" vgap="10">
+                                        <columnConstraints>
+                                            <ColumnConstraints hgrow="SOMETIMES" minWidth="120" prefWidth="200"/>
+                                            <ColumnConstraints hgrow="SOMETIMES" minWidth="120" prefWidth="200"/>
+                                        </columnConstraints>
+                                        <Label styleClass="admin-form-label" text="Date de naissance" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+                                        <DatePicker fx:id="dateNaissancePicker" promptText="jj/mm/aaaa" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+                                        <Label styleClass="admin-form-label" text="Sexe" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+                                        <ComboBox fx:id="sexeCombo" prefWidth="Infinity" promptText="Choisir" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+                                        <Label styleClass="admin-form-label" text="Adresse" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="2"/>
+                                        <TextField fx:id="patientAdresseField" promptText="Adresse" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="3"/>
+                                    </GridPane>
+                                </VBox>
+                                <VBox fx:id="medecinAttrsBox" managed="false" spacing="10" styleClass="admin-form-medecin-block" visible="false">
+                                    <Label styleClass="admin-form-medecin-title" text="🩺 Attributs Médecin"/>
+                                    <GridPane hgap="14" styleClass="admin-form-grid" vgap="10">
+                                        <columnConstraints>
+                                            <ColumnConstraints hgrow="SOMETIMES" minWidth="120" prefWidth="200"/>
+                                            <ColumnConstraints hgrow="SOMETIMES" minWidth="120" prefWidth="200"/>
+                                        </columnConstraints>
+                                        <Label styleClass="admin-form-label" text="Spécialité" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+                                        <TextField fx:id="specialiteField" promptText="Ex. Pédopsychiatrie" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+                                        <Label styleClass="admin-form-label" text="Nom du cabinet" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+                                        <TextField fx:id="cabinetNameField" promptText="Nom du cabinet" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+                                        <Label styleClass="admin-form-label" text="Adresse du cabinet" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="2"/>
+                                        <TextField fx:id="cabinetAdresseField" promptText="Adresse" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="3"/>
+                                        <Label styleClass="admin-form-label" text="Téléphone du cabinet" GridPane.columnIndex="0" GridPane.rowIndex="4"/>
+                                        <TextField fx:id="cabinetTelField" promptText="01 23 45 67 89" GridPane.columnIndex="0" GridPane.rowIndex="5"/>
+                                        <Label styleClass="admin-form-label" text="Tarif consultation (DT)" GridPane.columnIndex="1" GridPane.rowIndex="4"/>
+                                        <TextField fx:id="tarifField" promptText="0" GridPane.columnIndex="1" GridPane.rowIndex="5"/>
+                                    </GridPane>
+                                </VBox>
+                                <HBox alignment="CENTER_LEFT" spacing="12" styleClass="admin-form-actions">
+                                    <Button onAction="#onSave" styleClass="admin-btn-save" text="✓  Enregistrer"/>
+                                    <Button onAction="#onCancel" styleClass="admin-btn-secondary" text="Annuler"/>
+                                </HBox>
+                            </VBox>
+                        </VBox>
+                    </content>
+                </ScrollPane>
+            </center>
+        </BorderPane>
+    </center>
+</BorderPane>

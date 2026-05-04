@@ -1,0 +1,439 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Hyperlink?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.FlowPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.shape.Rectangle?>
+
+<VBox styleClass="home-root" stylesheets="@../styles/login.css,@../styles/home.css" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.example.controllers.HomeController">
+        <!-- VBox racine : la nav n'est plus dans BorderPane.top (évite qu'elle soit écrasée par le centre / le ticker) -->
+        <HBox alignment="CENTER_LEFT" minHeight="88.0" prefHeight="88.0" style="-fx-min-height: 88px; -fx-pref-height: 88px;" styleClass="top-nav nav-home">
+            <HBox alignment="CENTER_LEFT" spacing="14" styleClass="nav-brand-block">
+                <ImageView fitHeight="70" pickOnBounds="true" preserveRatio="true" styleClass="nav-brand-logo-img">
+                    <image>
+                        <Image url="@../images/brand/auticare-logo-auth.png" />
+                    </image>
+                </ImageView>
+                <Region styleClass="nav-vsep" />
+            </HBox>
+            <Region minWidth="8" HBox.hgrow="ALWAYS" />
+            <HBox alignment="CENTER" spacing="4" styleClass="nav-center-links">
+                <HBox alignment="CENTER_LEFT" onMouseClicked="#onNavAccueil" spacing="10" styleClass="nav-item">
+                    <Label styleClass="nav-item-icon" text="♡" />
+                    <Label styleClass="nav-item-label" text="Accueil" />
+                </HBox>
+                <HBox alignment="CENTER_LEFT" onMouseClicked="#onNavProduits" spacing="10" styleClass="nav-item">
+                    <Label styleClass="nav-item-icon" text="🛒" />
+                    <Label styleClass="nav-item-label" text="Produits" />
+                </HBox>
+                <HBox alignment="CENTER_LEFT" onMouseClicked="#onNavRdv" spacing="10" styleClass="nav-item">
+                    <Label styleClass="nav-item-icon" text="🕐" />
+                    <Label styleClass="nav-item-label" text="Rendez-vous" />
+                </HBox>
+                <HBox alignment="CENTER_LEFT" onMouseClicked="#onNavEvents" spacing="10" styleClass="nav-item">
+                    <Label styleClass="nav-item-icon" text="📅" />
+                    <Label styleClass="nav-item-label" text="Événements" />
+                </HBox>
+                <HBox alignment="CENTER_LEFT" onMouseClicked="#onNavBlog" spacing="10" styleClass="nav-item">
+                    <Label styleClass="nav-item-icon" text="📖" />
+                    <Label styleClass="nav-item-label" text="Blog" />
+                </HBox>
+            </HBox>
+            <Region minWidth="8" HBox.hgrow="ALWAYS" />
+            <Region styleClass="nav-vsep" />
+            <HBox alignment="CENTER_RIGHT" spacing="18" styleClass="nav-trailing">
+                <Button focusTraversable="false" onAction="#onToggleTheme" styleClass="icon-btn" text="🌙" />
+                <HBox fx:id="loggedShortcutIcons" alignment="CENTER" managed="false" spacing="10" styleClass="nav-logged-shortcuts" visible="false">
+                    <Button focusTraversable="false" onAction="#onUserShortcutBookFromHome" styleClass="icon-btn nav-logged-icon-btn" text="📖" />
+                    <Button focusTraversable="false" onAction="#onUserShortcutBagFromHome" styleClass="icon-btn nav-logged-icon-btn" text="🛒" />
+                    <Button fx:id="homeNotifMenuButton" focusTraversable="false" mnemonicParsing="false" styleClass="icon-btn nav-logged-icon-btn public-notif-menu public-notif-bell-btn">
+                        <graphic>
+                            <StackPane styleClass="public-notif-icon-wrap">
+                                <Label styleClass="public-notif-bell-glyph" text="🔔"/>
+                                <Label fx:id="homeNotifBadgeLabel" managed="false" styleClass="public-notif-badge" text="0" visible="false"/>
+                            </StackPane>
+                        </graphic>
+                    </Button>
+                </HBox>
+                <StackPane fx:id="patientNotifBellHost" alignment="CENTER" managed="false" minHeight="40" minWidth="40" onMouseClicked="#onPatientNotifBell" styleClass="nav-patient-bell-host" visible="false">
+                    <Label styleClass="nav-patient-bell-icon" text="🔔" />
+                    <Label fx:id="patientNotifBadge" alignment="CENTER" managed="false" styleClass="nav-patient-bell-badge" text="0" visible="false" StackPane.alignment="TOP_RIGHT" />
+                </StackPane>
+                <HBox fx:id="guestNavActions" alignment="CENTER_RIGHT" spacing="16">
+                    <Hyperlink onAction="#onNavConnexion" styleClass="nav-link" text="Connexion" />
+                    <Button contentDisplay="LEFT" graphicTextGap="10" onAction="#onRegister" styleClass="signup-btn" text="S'inscrire">
+                        <graphic>
+                            <Label styleClass="signup-btn-icon" text="👤" />
+                        </graphic>
+                    </Button>
+                </HBox>
+                <HBox fx:id="loggedNavActions" alignment="CENTER_RIGHT" managed="false" onMouseClicked="#onOpenMyProfile" spacing="8" styleClass="home-topbar-profile" visible="false">
+                    <StackPane fx:id="loggedAvatarHost" minHeight="42" minWidth="42" prefHeight="42" prefWidth="42" />
+                    <VBox alignment="CENTER_LEFT" spacing="1">
+                        <HBox alignment="CENTER_LEFT" spacing="4">
+                            <Label fx:id="loggedUserNameLabel" styleClass="home-topbar-name" text="Utilisateur" />
+                            <Label fx:id="loggedUserCodeLabel" styleClass="home-topbar-code" text="0000" />
+                        </HBox>
+                        <Hyperlink onAction="#onLogout" onMouseClicked="#onLogoutLinkClick" styleClass="home-topbar-logout" text="Se déconnecter" />
+                    </VBox>
+                </HBox>
+                <HBox alignment="CENTER_LEFT" spacing="4" styleClass="nav-lang-row">
+                    <Label styleClass="nav-icon-symbol" text="🌐" />
+                    <ComboBox fx:id="langCombo" prefWidth="56" styleClass="lang-combo" />
+                    <Label styleClass="nav-lang-chevron" text="▾" />
+                </HBox>
+            </HBox>
+        </HBox>
+    <BorderPane VBox.vgrow="ALWAYS">
+    <center>
+        <StackPane styleClass="home-page-stack">
+            <StackPane styleClass="home-global-bg-clip">
+                <ImageView fx:id="globalBgA" preserveRatio="false" styleClass="home-global-bg-img" />
+                <ImageView fx:id="globalBgB" preserveRatio="false" styleClass="home-global-bg-img" />
+                <Region styleClass="home-global-veil" />
+            </StackPane>
+            <!-- Photo hero : fixe dans la fenêtre (ne défile pas) ; les clics passent au ScrollPane dessus -->
+            <StackPane mouseTransparent="true" pickOnBounds="false" styleClass="home-fixed-hero-layer">
+                <HBox styleClass="home-hero-bg">
+                    <StackPane styleClass="home-hero-photo-wrap" HBox.hgrow="ALWAYS">
+                        <ImageView fx:id="heroBgImageA" preserveRatio="false" styleClass="home-hero-bg-img" />
+                        <ImageView fx:id="heroBgImageB" preserveRatio="false" styleClass="home-hero-bg-img" />
+                        <Region styleClass="home-hero-left-fallback" />
+                        <Region mouseTransparent="true" styleClass="home-hero-left-toning" />
+                    </StackPane>
+                </HBox>
+                <Region mouseTransparent="true" styleClass="home-hero-vignette" />
+                <Region mouseTransparent="true" styleClass="home-fullpage-scrim" />
+            </StackPane>
+            <ScrollPane fx:id="scrollPane" fitToWidth="true" hbarPolicy="NEVER" styleClass="home-scroll" vbarPolicy="AS_NEEDED">
+            <VBox fx:id="scrollContent" styleClass="home-scroll-content">
+                <VBox spacing="0" styleClass="home-fullpage-foreground">
+                        <StackPane minHeight="460" styleClass="home-hero-content-layer">
+                            <VBox alignment="CENTER" maxWidth="920" prefHeight="442.0" prefWidth="920.0" styleClass="home-hero-center">
+                                <HBox alignment="CENTER" styleClass="home-hero-badge-row">
+                                    <HBox alignment="CENTER" spacing="6" styleClass="home-hero-badge-pill">
+                                        <Label styleClass="home-hero-badge-icon" text="✦" />
+                                        <Label styleClass="home-hero-badge" text="Bienvenue sur AutiCare" />
+                                    </HBox>
+                                </HBox>
+                                <Label styleClass="home-hero-title" text="Accompagnement bienveillant pour les personnes autistes" textAlignment="CENTER" wrapText="true" />
+                                <Label styleClass="home-hero-sub" text="Une plateforme dédiée aux personnes autistes et à leurs familles. Produits adaptés, événements et une communauté à vos côtés." textAlignment="CENTER" wrapText="true" />
+                                <HBox alignment="CENTER" styleClass="home-hero-actions">
+                                    <Button fx:id="heroBtnProducts" contentDisplay="RIGHT" defaultButton="false" graphicTextGap="12" minHeight="48" minWidth="300"
+                                            onAction="#onHeroProducts" prefHeight="48" prefWidth="300"
+                                            style="-fx-font-family: 'Montserrat', 'Inter', 'Segoe UI', sans-serif; -fx-font-size: 15px; -fx-font-weight: 600; -fx-text-fill: #2c2c2c; -fx-background-color: #ffffff; -fx-background-insets: 0; -fx-border-insets: 0; -fx-background-radius: 14; -fx-border-radius: 14; -fx-border-width: 1; -fx-border-color: rgba(255,255,255,0.72); -fx-padding: 14 28 14 28; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.20), 18, 0.18, 0, 6);"
+                                            styleClass="home-hero-cta-primary home-cta-lift" text="Découvrir nos produits">
+                                        <graphic>
+                                            <Label styleClass="home-hero-cta-arrow" text="→" />
+                                        </graphic>
+                                    </Button>
+                                    <Button fx:id="heroBtnEvents" defaultButton="false" minHeight="48" minWidth="220"
+                                            onAction="#onHeroEvents" prefHeight="48" prefWidth="220"
+                                            style="-fx-font-family: 'Montserrat', 'Inter', 'Segoe UI', sans-serif; -fx-font-size: 15px; -fx-font-weight: 600; -fx-text-fill: #2c2c2c; -fx-background-color: rgba(255,255,255,0.92); -fx-background-insets: 0; -fx-border-insets: 0; -fx-background-radius: 14; -fx-border-radius: 14; -fx-border-width: 1; -fx-border-color: rgba(255,255,255,0.55); -fx-padding: 14 28 14 28; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.20), 18, 0.18, 0, 6);"
+                                            styleClass="home-hero-cta-secondary home-cta-lift" text="Voir les événements" />
+                                </HBox>
+                            </VBox>
+                        </StackPane>
+                        <StackPane minHeight="420" styleClass="home-mission-content-layer">
+                            <VBox fx:id="sectionAnchorMission" alignment="CENTER" styleClass="home-mission-section">
+                                <HBox alignment="CENTER" maxWidth="Infinity" styleClass="home-mission-grid">
+                                    <StackPane styleClass="home-mission-img-wrap">
+                                        <ImageView fx:id="missionImageView" fitHeight="250" fitWidth="430" preserveRatio="false" styleClass="home-mission-img">
+                                            <image>
+                                                <Image url="file:/C:/Users/Administrator/.cursor/projects/c-Users-Administrator-Desktop-eya-rendez-vous-Validation-java-Jeudi/assets/c__Users_Administrator_AppData_Roaming_Cursor_User_workspaceStorage_3937bc5d49a2c57ca8078ee8dc26d5b4_images_Capture-7ea25389-66ae-4c26-b033-85b4d7e0d85f.png" />
+                                            </image>
+                                        </ImageView>
+                                    </StackPane>
+                                    <VBox alignment="CENTER_LEFT" maxWidth="620" spacing="12" styleClass="home-mission-text">
+                                        <Label styleClass="home-mission-tag" text="NOTRE MISSION" />
+                                        <Label styleClass="home-mission-title" text="Écouter, aider, accompagner" textAlignment="LEFT" wrapText="true" />
+                                        <Label styleClass="home-mission-body" text="AutiCare propose un accompagnement adapté aux personnes autistes et à leurs proches : produits spécialisés, ateliers, événements et un espace d'échange bienveillant." textAlignment="LEFT" wrapText="true" />
+                                        <Button contentDisplay="RIGHT" graphicTextGap="10" minHeight="44" minWidth="190" onAction="#onJoinSignup" prefHeight="44" prefWidth="190" style="-fx-background-color: #cdb4db; -fx-text-fill: white; -fx-font-size: 15px; -fx-font-weight: 700; -fx-background-radius: 999; -fx-border-width: 0; -fx-padding: 10 18 10 18;" styleClass="home-btn-cta-lavender home-btn-soft home-cta-lift" text="En savoir plus">
+                                            <graphic>
+                                                <Label styleClass="home-join-cta-arrow" text="→" />
+                                            </graphic>
+                                        </Button>
+                                    </VBox>
+                                </HBox>
+                            </VBox>
+                        </StackPane>
+
+                <!-- Statistiques -->
+                <VBox translateY="8.0" styleClass="home-stats-only-wrap home-stats-overlay-band">
+                    <HBox styleClass="home-stats-row">
+                        <VBox alignment="CENTER" minHeight="198" minWidth="258" prefHeight="198" prefWidth="258" style="-fx-background-color: #d4e5d0; -fx-border-color: rgba(168, 187, 163, 0.5); -fx-border-width: 2; -fx-background-radius: 20; -fx-border-radius: 20; -fx-padding: 22 24 20 24;" styleClass="home-stat-card home-hover-lift">
+                            <StackPane alignment="CENTER" minHeight="62" minWidth="62" prefHeight="62" prefWidth="62" style="-fx-background-color: #a8bba3; -fx-background-radius: 14;">
+                                <Label style="-fx-font-size: 22px; -fx-text-fill: white;" text="♡" />
+                            </StackPane>
+                            <Label styleClass="home-stat-num" text="500+" />
+                            <Label styleClass="home-stat-label" text="Familles accompagnées" textAlignment="CENTER" wrapText="true" />
+                        </VBox>
+                        <VBox alignment="CENTER" minHeight="198" minWidth="258" prefHeight="198" prefWidth="258" style="-fx-background-color: #dfeef5; -fx-border-color: rgba(181, 212, 232, 0.5); -fx-border-width: 2; -fx-background-radius: 20; -fx-border-radius: 20; -fx-padding: 22 24 20 24;" styleClass="home-stat-card home-hover-lift">
+                            <StackPane alignment="CENTER" minHeight="62" minWidth="62" prefHeight="62" prefWidth="62" style="-fx-background-color: #b5d4e8; -fx-background-radius: 14;">
+                                <Label style="-fx-font-size: 22px; -fx-text-fill: white;" text="🗓" />
+                            </StackPane>
+                            <Label styleClass="home-stat-num" text="50+" />
+                            <Label styleClass="home-stat-label" text="Événements par an" textAlignment="CENTER" wrapText="true" />
+                        </VBox>
+                        <VBox alignment="CENTER" minHeight="198" minWidth="258" prefHeight="198" prefWidth="258" style="-fx-background-color: #faede8; -fx-border-color: rgba(240, 213, 200, 0.5); -fx-border-width: 2; -fx-background-radius: 20; -fx-border-radius: 20; -fx-padding: 22 24 20 24;" styleClass="home-stat-card home-hover-lift">
+                            <StackPane alignment="CENTER" minHeight="62" minWidth="62" prefHeight="62" prefWidth="62" style="-fx-background-color: #f0d5c8; -fx-background-radius: 14;">
+                                <Label style="-fx-font-size: 22px; -fx-text-fill: #5c5c5c;" text="✧" />
+                            </StackPane>
+                            <Label styleClass="home-stat-num" text="100+" />
+                            <Label styleClass="home-stat-label" text="Produits adaptés" textAlignment="CENTER" wrapText="true" />
+                        </VBox>
+                    </HBox>
+                </VBox>
+
+                <!-- Bandeau « Tout ce dont vous avez besoin » -->
+                <StackPane styleClass="home-need-stack">
+                    <VBox.margin>
+                        <Insets top="28.0" />
+                    </VBox.margin>
+                    <VBox alignment="CENTER" styleClass="home-need-content">
+                        <Label styleClass="home-need-title" text="Tout ce dont vous avez besoin" />
+                        <Label styleClass="home-need-sub" text="AutiCare propose un ensemble complet de services pour accompagner les personnes autistes et leurs proches au quotidien." textAlignment="CENTER" wrapText="true" />
+                    </VBox>
+                </StackPane>
+
+                <!-- 4 cartes services -->
+                <VBox styleClass="home-features-wrap">
+                    <HBox alignment="TOP_CENTER" styleClass="home-features-row">
+                        <VBox fx:id="sectionAnchorProduits" maxWidth="264" minWidth="236" prefWidth="242" spacing="0" style="-fx-background-color: #ffffff; -fx-background-radius: 24; -fx-border-color: #5d8f58; -fx-border-width: 2; -fx-border-radius: 24; -fx-effect: dropshadow(gaussian, rgba(60,55,80,0.20), 16, 0.2, 0, 5);" styleClass="home-feature-card home-feature-border-green home-hover-lift">
+                            <clip>
+                                <Rectangle arcHeight="24.0" arcWidth="24.0" height="360.0" width="242.0" />
+                            </clip>
+                            <StackPane styleClass="home-feature-img-frame home-feature-img-frame-products">
+                                <ImageView fitHeight="96.0" fitWidth="242.0" preserveRatio="false" style="-fx-background-radius: 22 22 0 0;">
+                                    <clip>
+                                        <Rectangle arcHeight="22.0" arcWidth="22.0" height="96.0" width="242.0" />
+                                    </clip>
+                                    <image>
+                                        <Image backgroundLoading="true" url="file:/C:/Users/Administrator/.cursor/projects/c-Users-Administrator-Desktop-eya-rendez-vous-Validation-java-Jeudi/assets/c__Users_Administrator_AppData_Roaming_Cursor_User_workspaceStorage_3937bc5d49a2c57ca8078ee8dc26d5b4_images_Sensory-Toys-for-Kids-4f9ebe80-369f-43ee-83b7-8aa35882c408.png" />
+                                    </image>
+                                </ImageView>
+                            </StackPane>
+                            <VBox styleClass="home-feature-body">
+                                <Label styleClass="home-feature-title" text="Produits spécialisés" />
+                                <Label styleClass="home-feature-desc" text="Stimulation sensorielle, concentration et apaisement au quotidien." wrapText="true" />
+                                <Hyperlink onAction="#onFeatureProducts" styleClass="home-feature-link home-feature-link-green" text="Découvrir →" />
+                            </VBox>
+                        </VBox>
+                        <VBox fx:id="sectionAnchorEvents" maxWidth="264" minWidth="236" prefWidth="242" spacing="0" style="-fx-background-color: #ffffff; -fx-background-radius: 24; -fx-border-color: #b89acb; -fx-border-width: 2; -fx-border-radius: 24; -fx-effect: dropshadow(gaussian, rgba(60,55,80,0.20), 16, 0.2, 0, 5);" styleClass="home-feature-card home-feature-border-lavender home-hover-lift">
+                            <clip>
+                                <Rectangle arcHeight="24.0" arcWidth="24.0" height="360.0" width="242.0" />
+                            </clip>
+                            <StackPane styleClass="home-feature-img-frame home-feature-img-frame-events">
+                                <ImageView fitHeight="96.0" fitWidth="242.0" preserveRatio="false" style="-fx-background-radius: 22 22 0 0;">
+                                    <clip>
+                                        <Rectangle arcHeight="22.0" arcWidth="22.0" height="96.0" width="242.0" />
+                                    </clip>
+                                    <image>
+                                        <Image backgroundLoading="true" url="file:/C:/Users/Administrator/.cursor/projects/c-Users-Administrator-Desktop-eya-rendez-vous-Validation-java-Jeudi/assets/c__Users_Administrator_AppData_Roaming_Cursor_User_workspaceStorage_3937bc5d49a2c57ca8078ee8dc26d5b4_images_adobestock_458125187-caab7eca-78d4-4e3d-8b0a-34668b609aa3.png" />
+                                    </image>
+                                </ImageView>
+                            </StackPane>
+                            <VBox styleClass="home-feature-body">
+                                <Label styleClass="home-feature-title" text="Événements &amp; ateliers" />
+                                <Label styleClass="home-feature-desc" text="Ateliers, rencontres et sensibilisation adaptés à vos besoins." wrapText="true" />
+                                <Hyperlink onAction="#onFeatureEvents" styleClass="home-feature-link home-feature-link-lavender" text="Voir le programme →" />
+                            </VBox>
+                        </VBox>
+                        <VBox fx:id="sectionAnchorBlog" maxWidth="264" minWidth="236" prefWidth="242" spacing="0" style="-fx-background-color: #ffffff; -fx-background-radius: 24; -fx-border-color: #6eb0d0; -fx-border-width: 2; -fx-border-radius: 24; -fx-effect: dropshadow(gaussian, rgba(60,55,80,0.20), 16, 0.2, 0, 5);" styleClass="home-feature-card home-feature-border-sky home-hover-lift">
+                            <clip>
+                                <Rectangle arcHeight="24.0" arcWidth="24.0" height="360.0" width="242.0" />
+                            </clip>
+                            <StackPane styleClass="home-feature-img-frame home-feature-img-frame-blog">
+                                <ImageView fitHeight="96.0" fitWidth="242.0" preserveRatio="false" style="-fx-background-radius: 22 22 0 0;">
+                                    <clip>
+                                        <Rectangle arcHeight="22.0" arcWidth="22.0" height="96.0" width="242.0" />
+                                    </clip>
+                                    <image>
+                                        <Image backgroundLoading="true" url="file:/C:/Users/Administrator/.cursor/projects/c-Users-Administrator-Desktop-eya-rendez-vous-Validation-java-Jeudi/assets/c__Users_Administrator_AppData_Roaming_Cursor_User_workspaceStorage_3937bc5d49a2c57ca8078ee8dc26d5b4_images_1000_F_236510112_PUaOF57nAEyTkWeRiSDxF3uzcFcijrry-7669e569-588e-4e91-9ca8-681985b594d9.png" />
+                                    </image>
+                                </ImageView>
+                            </StackPane>
+                            <VBox styleClass="home-feature-body">
+                                <Label styleClass="home-feature-title" text="Blog &amp; ressources" />
+                                <Label styleClass="home-feature-desc" text="Expériences, conseils et articles pour les familles." wrapText="true" />
+                                <Hyperlink onAction="#onFeatureBlog" styleClass="home-feature-link home-feature-link-sky" text="Lire le blog →" />
+                            </VBox>
+                        </VBox>
+                        <VBox maxWidth="264" minWidth="236" prefWidth="242" spacing="0" style="-fx-background-color: #ffffff; -fx-background-radius: 24; -fx-border-color: #d9a090; -fx-border-width: 2; -fx-border-radius: 24; -fx-effect: dropshadow(gaussian, rgba(60,55,80,0.20), 16, 0.2, 0, 5);" styleClass="home-feature-card home-feature-border-coral home-hover-lift">
+                            <clip>
+                                <Rectangle arcHeight="24.0" arcWidth="24.0" height="360.0" width="242.0" />
+                            </clip>
+                            <StackPane styleClass="home-feature-img-frame home-feature-img-frame-community">
+                                <ImageView fitHeight="96.0" fitWidth="242.0" preserveRatio="false" style="-fx-background-radius: 22 22 0 0;">
+                                    <clip>
+                                        <Rectangle arcHeight="22.0" arcWidth="22.0" height="96.0" width="242.0" />
+                                    </clip>
+                                    <image>
+                                        <Image backgroundLoading="true" url="file:/C:/Users/Administrator/.cursor/projects/c-Users-Administrator-Desktop-eya-rendez-vous-Validation-java-Jeudi/assets/c__Users_Administrator_AppData_Roaming_Cursor_User_workspaceStorage_3937bc5d49a2c57ca8078ee8dc26d5b4_images_atelier-pour-enfant-paris-600x450-1-b779a3a5-ca5f-405b-8a28-cc4f48aeb7a2.png" />
+                                    </image>
+                                </ImageView>
+                            </StackPane>
+                            <VBox styleClass="home-feature-body">
+                                <Label styleClass="home-feature-title" text="Communauté bienveillante" />
+                                <Label styleClass="home-feature-desc" text="Un espace d'échange où chacun est accueilli avec respect." wrapText="true" />
+                                <Hyperlink onAction="#onFeatureCommunity" styleClass="home-feature-link home-feature-link-coral-strong" text="Rejoindre →" />
+                            </VBox>
+                        </VBox>
+                    </HBox>
+                </VBox>
+
+                <!-- Témoignages -->
+                <StackPane styleClass="home-testi-stack">
+                    <VBox styleClass="home-testi-wrap">
+                        <Label styleClass="home-testi-title" text="Ce que dit notre communauté" />
+                        <Label styleClass="home-testi-sub" text="Des familles et des personnes qui nous font confiance." />
+                        <HBox styleClass="home-testi-row">
+                            <VBox style="-fx-background-color: #ffffff; -fx-background-radius: 28; -fx-border-color: #d8c5ea; -fx-border-width: 2; -fx-border-radius: 28; -fx-padding: 28 26 24 26; -fx-effect: dropshadow(gaussian, rgba(28,22,45,0.12), 20, 0, 0, 6);" styleClass="home-testi-card home-testi-border-lavender home-hover-lift">
+                                <Label styleClass="home-testi-quote home-testi-quote-lavender" text="❝" />
+                                <Label maxWidth="268.0" styleClass="home-testi-text" text="AutiCare nous a accompagnés avec une bienveillance rare. Les produits recommandés ont vraiment aidé notre fils au quotidien." wrapText="true" />
+                                <HBox alignment="CENTER_LEFT" spacing="12" styleClass="home-testi-author-row">
+                                    <ImageView fitHeight="48" fitWidth="48" preserveRatio="true" styleClass="home-testi-avatar-img">
+                                        <image>
+                                            <Image backgroundLoading="true" url="file:/C:/Users/Administrator/.cursor/projects/c-Users-Administrator-Desktop-eya-rendez-vous-Validation-java-Jeudi/assets/c__Users_Administrator_AppData_Roaming_Cursor_User_workspaceStorage_3937bc5d49a2c57ca8078ee8dc26d5b4_images_image-bd235e4b-cc10-4d70-a200-66d296452ef2.png" />
+                                        </image>
+                                    </ImageView>
+                                    <VBox spacing="2">
+                                        <Label styleClass="home-testi-name" text="Marie L." />
+                                        <Label styleClass="home-testi-role" text="Maman d'un enfant autiste" />
+                                    </VBox>
+                                </HBox>
+                            </VBox>
+                            <VBox style="-fx-background-color: #ffffff; -fx-background-radius: 28; -fx-border-color: #d8c5ea; -fx-border-width: 2; -fx-border-radius: 28; -fx-padding: 28 26 24 26; -fx-effect: dropshadow(gaussian, rgba(28,22,45,0.12), 20, 0, 0, 6);" styleClass="home-testi-card home-testi-border-mint home-hover-lift">
+                                <Label styleClass="home-testi-quote home-testi-quote-mint" text="❝" />
+                                <Label maxWidth="268.0" styleClass="home-testi-text" text="Enfin une plateforme qui me comprend. Les événements en ligne m'ont permis de rencontrer d'autres personnes comme moi." wrapText="true" />
+                                <HBox alignment="CENTER_LEFT" spacing="12" styleClass="home-testi-author-row">
+                                    <ImageView fitHeight="48" fitWidth="48" preserveRatio="true" styleClass="home-testi-avatar-img">
+                                        <image>
+                                            <Image backgroundLoading="true" url="file:/C:/Users/Administrator/.cursor/projects/c-Users-Administrator-Desktop-eya-rendez-vous-Validation-java-Jeudi/assets/c__Users_Administrator_AppData_Roaming_Cursor_User_workspaceStorage_3937bc5d49a2c57ca8078ee8dc26d5b4_images_photo-1588953936179-d2a4734c5490-9b8dcf17-ef25-4884-8ff5-32a5524a918b.png" />
+                                        </image>
+                                    </ImageView>
+                                    <VBox spacing="2">
+                                        <Label styleClass="home-testi-name" text="Thomas D." />
+                                        <Label styleClass="home-testi-role" text="Personne autiste" textAlignment="CENTER" />
+                                    </VBox>
+                                </HBox>
+                            </VBox>
+                            <VBox style="-fx-background-color: #ffffff; -fx-background-radius: 28; -fx-border-color: #d8c5ea; -fx-border-width: 2; -fx-border-radius: 28; -fx-padding: 28 26 24 26; -fx-effect: dropshadow(gaussian, rgba(28,22,45,0.12), 20, 0, 0, 6);" styleClass="home-testi-card home-testi-border-sky home-hover-lift">
+                                <Label styleClass="home-testi-quote home-testi-quote-sky" text="❝" />
+                                <Label maxWidth="268.0" styleClass="home-testi-text" text="En tant qu'éducatrice, j'oriente les familles vers AutiCare. Les ressources et le blog sont d'une grande qualité." wrapText="true" />
+                                <HBox alignment="CENTER_LEFT" spacing="12" styleClass="home-testi-author-row">
+                                    <ImageView fitHeight="48" fitWidth="48" preserveRatio="true" styleClass="home-testi-avatar-img">
+                                        <image>
+                                            <Image backgroundLoading="true" url="file:/C:/Users/Administrator/.cursor/projects/c-Users-Administrator-Desktop-eya-rendez-vous-Validation-java-Jeudi/assets/c__Users_Administrator_AppData_Roaming_Cursor_User_workspaceStorage_3937bc5d49a2c57ca8078ee8dc26d5b4_images_image-a042a0fd-5ace-46b5-b499-c5827c356b0d.png" />
+                                        </image>
+                                    </ImageView>
+                                    <VBox spacing="2">
+                                        <Label styleClass="home-testi-name" text="Sophie R." />
+                                        <Label styleClass="home-testi-role" text="Éducatrice spécialisée" />
+                                    </VBox>
+                                </HBox>
+                            </VBox>
+                        </HBox>
+                    </VBox>
+                </StackPane>
+
+                <!-- CTA final : invité vs connecté -->
+                <StackPane styleClass="home-join-outer">
+                    <VBox fx:id="sectionAnchorCommunity" styleClass="home-join">
+                        <ImageView fitHeight="96" fitWidth="96" preserveRatio="true" styleClass="home-join-logo">
+                            <image>
+                                <Image url="file:/C:/Users/Administrator/.cursor/projects/c-Users-Administrator-Desktop-eya-rendez-vous-Validation-java-Jeudi/assets/c__Users_Administrator_AppData_Roaming_Cursor_User_workspaceStorage_3937bc5d49a2c57ca8078ee8dc26d5b4_images_LOGO_AUTICARE-3bea9a28-c39c-4b9f-bdbc-a8584c3e41cb.png" />
+                            </image>
+                        </ImageView>
+                        <VBox fx:id="ctaGuest" spacing="14" styleClass="home-cta-block">
+                            <Label prefHeight="75.0" prefWidth="773.0" style="-fx-font-size: 50px; -fx-font-weight: 800; -fx-text-fill: #2d2d2d;" styleClass="home-join-title" text="Rejoignez notre communauté" />
+                            <Label style="-fx-font-size: 17px; -fx-text-fill: #666666; -fx-font-weight: 500;" styleClass="home-join-sub" text="Créez votre compte et accédez aux produits adaptés, événements et à un espace d'échange bienveillant." textAlignment="CENTER" wrapText="true" />
+                            <HBox styleClass="home-join-actions">
+                                <Button minHeight="46" minWidth="220" onAction="#onJoinSignup" prefHeight="46" prefWidth="220" style="-fx-font-size: 16px; -fx-font-weight: 700; -fx-background-color: #a5bfa1; -fx-text-fill: white; -fx-background-radius: 14;" styleClass="home-btn-cta-sage home-btn-soft home-cta-lift" text="Créer mon compte  →" />
+                                <Button minHeight="46" minWidth="170" onAction="#onJoinLogin" prefHeight="46" prefWidth="170" style="-fx-font-size: 16px; -fx-font-weight: 700; -fx-background-color: white; -fx-text-fill: #2d2d2d; -fx-background-radius: 14; -fx-border-radius: 14; -fx-border-width: 1; -fx-border-color: rgba(0,0,0,0.12);" styleClass="home-btn-secondary home-btn-soft home-cta-lift" text="Se connecter" />
+                                <Button minHeight="46" minWidth="170" onAction="#onJoinContact" prefHeight="46" prefWidth="170" style="-fx-font-size: 16px; -fx-font-weight: 700; -fx-background-color: white; -fx-text-fill: #2d2d2d; -fx-background-radius: 14; -fx-border-radius: 14; -fx-border-width: 1; -fx-border-color: rgba(0,0,0,0.12);" styleClass="home-btn-secondary home-btn-soft home-cta-lift" text="Nous contacter" />
+                            </HBox>
+                        </VBox>
+                        <VBox fx:id="ctaLoggedIn" managed="false" spacing="14" styleClass="home-cta-block" visible="false">
+                            <Label styleClass="home-join-title" text="Vous faites partie de la communauté" />
+                            <Label styleClass="home-join-sub" text="Accédez à vos services : produits, événements et votre espace personnel." textAlignment="CENTER" wrapText="true" />
+                            <HBox styleClass="home-join-actions">
+                                <Button onAction="#onCtaProfile" styleClass="home-btn-cta-sage home-btn-soft home-cta-lift" text="Mon profil →" />
+                                <Button onAction="#onCtaBrowseProducts" styleClass="home-btn-secondary home-btn-soft home-cta-lift" text="Découvrir les produits" />
+                                <Button onAction="#onCtaBrowseEvents" styleClass="home-btn-secondary home-btn-soft home-cta-lift" text="Voir les événements" />
+                            </HBox>
+                        </VBox>
+                    </VBox>
+                </StackPane>
+
+                <!-- Footer : même esprit que les cartes services (voile + carte semi-transparente) -->
+                <VBox styleClass="home-footer-feature-wrap">
+                    <StackPane styleClass="home-footer-feature-center">
+                        <VBox fx:id="homeFooterSection" maxWidth="1100" spacing="14" styleClass="home-footer-service-card">
+                            <HBox alignment="TOP_LEFT" spacing="40" styleClass="home-footer-columns">
+                                <VBox prefWidth="300" spacing="10" styleClass="login-footer-column">
+                                    <ImageView fitWidth="180" preserveRatio="true">
+                                        <image>
+                                            <Image url="file:/C:/Users/Administrator/.cursor/projects/c-Users-Administrator-Desktop-eya-rendez-vous-Validation-java-Jeudi/assets/c__Users_Administrator_AppData_Roaming_Cursor_User_workspaceStorage_3937bc5d49a2c57ca8078ee8dc26d5b4_images_LOGO_AUTICARE-3bea9a28-c39c-4b9f-bdbc-a8584c3e41cb.png" />
+                                        </image>
+                                    </ImageView>
+                                    <Label maxWidth="280" styleClass="home-feature-desc" text="Accompagner les personnes autistes et leurs familles avec bienveillance et expertise." wrapText="true" />
+                                    <VBox spacing="4" styleClass="home-footer-contact-block">
+                                        <Label styleClass="home-feature-desc home-footer-contact-line" text="contact@auticare.fr · 23 19 88 13" />
+                                        <Label styleClass="home-feature-desc home-footer-contact-line" text="El Ghazela, Tunis" />
+                                    </VBox>
+                                </VBox>
+                                <VBox prefWidth="160" spacing="8" styleClass="login-footer-column">
+                                    <Label styleClass="home-feature-title" text="Navigation" />
+                                    <Hyperlink onAction="#onFooterNavAccueil" styleClass="home-feature-link" text="Accueil" />
+                                    <Hyperlink onAction="#onFooterNavProduits" styleClass="home-feature-link" text="Produits" />
+                                    <Hyperlink onAction="#onFooterNavRdv" styleClass="home-feature-link" text="Rendez-vous" />
+                                    <Hyperlink onAction="#onFooterNavEvents" styleClass="home-feature-link" text="Événements" />
+                                    <Hyperlink onAction="#onFooterNavBlog" styleClass="home-feature-link" text="Blog" />
+                                </VBox>
+                                <VBox prefWidth="154" spacing="8" styleClass="login-footer-column">
+                                    <Label styleClass="home-feature-title" text="Support" />
+                                    <Hyperlink onAction="#onFooterFaq" styleClass="home-feature-link" text="FAQ" />
+                                    <Hyperlink onAction="#onFooterContact" styleClass="home-feature-link" text="Contact" />
+                                    <Hyperlink onAction="#onFooterAccessibility" styleClass="home-feature-link" text="Accessibilité" />
+                                </VBox>
+                                <VBox prefWidth="180" spacing="8" styleClass="login-footer-column">
+                                    <Label styleClass="home-feature-title" text="Informations" />
+                                    <Hyperlink onAction="#onFooterLegal" styleClass="home-feature-link" text="Mentions légales" />
+                                    <Hyperlink onAction="#onFooterPrivacy" styleClass="home-feature-link" text="Politique de confidentialité" />
+                                    <Hyperlink onAction="#onFooterCgv" styleClass="home-feature-link" text="CGV" />
+                                </VBox>
+                            </HBox>
+                            <Separator styleClass="home-footer-in-card-sep" />
+                            <Label alignment="CENTER" maxWidth="Infinity" styleClass="home-footer-copy-feature" text="© 2026 AutiCare — Écouter · Aider · Accompagner" />
+                        </VBox>
+                    </StackPane>
+                </VBox>
+
+            </VBox>
+            </VBox>
+            </ScrollPane>
+        </StackPane>
+    </center>
+    <bottom>
+        <HBox alignment="CENTER_LEFT" minHeight="56.0" prefHeight="56.0" styleClass="home-news-ticker">
+            <HBox alignment="CENTER" styleClass="home-news-ticker-brand">
+                <Label styleClass="home-news-ticker-brand-text" text="Actualités" />
+            </HBox>
+            <StackPane fx:id="newsTickerViewport" HBox.hgrow="ALWAYS" minHeight="56.0" prefHeight="56.0" styleClass="home-news-ticker-viewport" />
+        </HBox>
+    </bottom>
+    </BorderPane>
+</VBox>

@@ -1,0 +1,13 @@
+# Copy this file to application.properties for local development.
+# Do not commit real secrets.
+
+# SMTP config for forgot-password email
+auticare.smtp.user=your-email@gmail.com
+auticare.smtp.appPassword=your-app-password
+auticare.smtp.host=smtp.gmail.com
+auticare.smtp.port=587
+
+# Google OAuth
+oauth.google.clientId=your-google-client-id
+oauth.google.clientSecret=your-google-client-secret
+oauth.google.redirectUri=http://127.0.0.1:8888/oauth/callback/

@@ -1,0 +1,176 @@
+/*
+ * Curseur « main » (équivalent CSS cursor: pointer) sur les éléments interactifs.
+ * Chargée sur chaque Scene dans MainApp.applyThemeToScene.
+ */
+
+.button,
+.menu-button,
+.split-menu-button {
+    -fx-cursor: hand;
+}
+
+.button:disabled,
+.menu-button:disabled,
+.split-menu-button:disabled {
+    -fx-cursor: default;
+}
+
+.toggle-button {
+    -fx-cursor: hand;
+}
+
+.toggle-button:disabled {
+    -fx-cursor: default;
+}
+
+.hyperlink {
+    -fx-cursor: hand;
+}
+
+.hyperlink:disabled {
+    -fx-cursor: default;
+}
+
+.combo-box-base,
+.combo-box {
+    -fx-cursor: hand;
+}
+
+.combo-box-base:disabled {
+    -fx-cursor: default;
+}
+
+.choice-box {
+    -fx-cursor: hand;
+}
+
+.choice-box:disabled {
+    -fx-cursor: default;
+}
+
+.date-picker {
+    -fx-cursor: hand;
+}
+
+.date-picker:disabled {
+    -fx-cursor: default;
+}
+
+.spinner {
+    -fx-cursor: hand;
+}
+
+.spinner:disabled {
+    -fx-cursor: default;
+}
+
+.radio-button {
+    -fx-cursor: hand;
+}
+
+.radio-button:disabled {
+    -fx-cursor: default;
+}
+
+.check-box {
+    -fx-cursor: hand;
+}
+
+.check-box:disabled {
+    -fx-cursor: default;
+}
+
+.color-picker {
+    -fx-cursor: hand;
+}
+
+.color-picker:disabled {
+    -fx-cursor: default;
+}
+
+.tab-pane > .tab-header-area > .headers-region > .tab {
+    -fx-cursor: hand;
+}
+
+.tab-pane > .tab-header-area > .tab-down-button,
+.tab-pane > .tab-header-area > .tab-up-button,
+.tab-pane > .control-buttons-tab .tab-down-button,
+.tab-pane > .control-buttons-tab .tab-up-button {
+    -fx-cursor: hand;
+}
+
+.list-view .list-cell {
+    -fx-cursor: hand;
+}
+
+.tree-view .tree-cell {
+    -fx-cursor: hand;
+}
+
+.table-view .table-row-cell {
+    -fx-cursor: hand;
+}
+
+.table-view .column-header,
+.table-view .column-header-background .column-header {
+    -fx-cursor: hand;
+}
+
+.scroll-bar .thumb,
+.scroll-bar .increment-button,
+.scroll-bar .decrement-button,
+.scroll-bar .increment-arrow,
+.scroll-bar .decrement-arrow {
+    -fx-cursor: hand;
+}
+
+.slider .thumb {
+    -fx-cursor: hand;
+}
+
+.pagination .pagination-control .bullet-button,
+.pagination .pagination-control .number-button {
+    -fx-cursor: hand;
+}
+
+.menu-bar .menu {
+    -fx-cursor: hand;
+}
+
+.context-menu .menu-item,
+.context-menu .radio-menu-item,
+.context-menu .check-menu-item {
+    -fx-cursor: hand;
+}
+
+.titled-pane > .title {
+    -fx-cursor: hand;
+}
+
+.dialog-pane .button,
+.button-bar .button {
+    -fx-cursor: hand;
+}
+
+/* Zones de saisie : curseur texte (évite la « main » héritée d’un parent) */
+.text-field,
+.text-area,
+.password-field {
+    -fx-cursor: text;
+}
+
+/* Navigation et barres profil (clic sur toute la zone) */
+.nav-item {
+    -fx-cursor: hand;
+}
+
+.nav-patient-bell-host {
+    -fx-cursor: hand;
+}
+
+/* À ajouter sur Label / VBox / HBox cliquables en code ou FXML */
+.clickable,
+.cursor-hand,
+.cursor-pointer {
+    -fx-cursor: hand;
+}

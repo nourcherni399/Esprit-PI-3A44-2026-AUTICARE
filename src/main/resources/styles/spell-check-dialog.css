@@ -1,0 +1,190 @@
+/* ── Spell Check Dialog ── */
+
+.spell-dialog-root {
+    -fx-background-color: white;
+    -fx-background-radius: 16;
+    -fx-border-radius: 16;
+    -fx-border-color: rgba(203, 213, 225, 0.8);
+    -fx-border-width: 1;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.18), 24, 0, 0, 8);
+}
+
+.spell-dialog-header {
+    -fx-padding: 18 20 14 20;
+    -fx-border-color: transparent transparent #e2e8f0 transparent;
+    -fx-border-width: 0 0 1 0;
+}
+
+.spell-dialog-title {
+    -fx-font-size: 16px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #d97706;
+}
+
+.spell-dialog-close-btn {
+    -fx-background-color: transparent;
+    -fx-text-fill: #64748b;
+    -fx-font-size: 13px;
+    -fx-font-weight: 600;
+    -fx-cursor: hand;
+    -fx-border-width: 0;
+    -fx-padding: 4 8 4 8;
+}
+
+.spell-dialog-close-btn:hover {
+    -fx-text-fill: #1e293b;
+}
+
+.spell-dialog-center {
+    -fx-padding: 14 20 0 20;
+    -fx-spacing: 10;
+}
+
+.spell-dialog-bottom {
+    -fx-padding: 12 20 16 20;
+}
+
+.spell-dialog-status {
+    -fx-font-size: 13px;
+    -fx-text-fill: #64748b;
+    -fx-padding: 6 10 6 10;
+    -fx-background-color: #f1f5f9;
+    -fx-background-radius: 8;
+}
+
+.spell-dialog-section-title {
+    -fx-font-size: 14px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #d97706;
+}
+
+.spell-dialog-scroll {
+    -fx-background-color: transparent;
+    -fx-border-color: #e2e8f0;
+    -fx-border-radius: 10;
+    -fx-background-radius: 10;
+    -fx-border-width: 1;
+    -fx-pref-height: Infinity;
+    -fx-max-height: Infinity;
+}
+
+.spell-dialog-scroll .viewport {
+    -fx-background-color: transparent;
+}
+
+.spell-dialog-corrections-list {
+    -fx-padding: 8 10 8 10;
+    -fx-background-color: transparent;
+}
+
+/* Individual correction row */
+.spell-correction-row {
+    -fx-padding: 6 8 6 8;
+    -fx-background-color: transparent;
+    -fx-border-radius: 6;
+    -fx-background-radius: 6;
+}
+
+.spell-correction-row:hover {
+    -fx-background-color: #fef9f0;
+}
+
+.spell-correction-original {
+    -fx-font-size: 13px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #dc2626;
+}
+
+.spell-correction-arrow {
+    -fx-font-size: 13px;
+    -fx-text-fill: #94a3b8;
+    -fx-padding: 0 6 0 6;
+}
+
+.spell-correction-suggestion {
+    -fx-font-size: 13px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #16a34a;
+}
+
+.spell-correction-message {
+    -fx-font-size: 11px;
+    -fx-text-fill: #94a3b8;
+    -fx-padding: 2 0 0 0;
+}
+
+/* ── Context snippet ── */
+
+.spell-context-snippet {
+    -fx-background-color: #f8fafc;
+    -fx-background-radius: 6;
+    -fx-border-color: #e2e8f0;
+    -fx-border-radius: 6;
+    -fx-border-width: 1;
+    -fx-padding: 4 8 4 8;
+}
+
+.spell-context-text {
+    -fx-font-size: 12px;
+    -fx-text-fill: #64748b;
+    -fx-font-style: italic;
+}
+
+.spell-context-word {
+    -fx-font-size: 12px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #dc2626;
+    -fx-underline: true;
+}
+
+/* ── Suggestion chips ── */
+
+.spell-chip {
+    -fx-background-color: #f1f5f9;
+    -fx-text-fill: #334155;
+    -fx-font-size: 12px;
+    -fx-font-weight: 600;
+    -fx-padding: 3 10 3 10;
+    -fx-background-radius: 999;
+    -fx-border-radius: 999;
+    -fx-border-color: #cbd5e1;
+    -fx-border-width: 1;
+    -fx-cursor: hand;
+}
+
+.spell-chip:hover {
+    -fx-background-color: #e2e8f0;
+    -fx-border-color: #94a3b8;
+}
+
+.spell-chip-selected {
+    -fx-background-color: #dcfce7;
+    -fx-text-fill: #16a34a;
+    -fx-border-color: #86efac;
+}
+
+.spell-chip-selected:hover {
+    -fx-background-color: #bbf7d0;
+}
+
+.spell-dialog-no-errors {
+    -fx-font-size: 14px;
+    -fx-text-fill: #16a34a;
+    -fx-font-weight: 700;
+    -fx-padding: 10 0 4 0;
+}
+
+.spell-dialog-apply-btn {
+    -fx-background-color: #16a34a;
+    -fx-text-fill: white;
+    -fx-font-size: 14px;
+    -fx-font-weight: 700;
+    -fx-padding: 12 20 12 20;
+    -fx-background-radius: 8;
+    -fx-border-width: 0;
+    -fx-cursor: hand;
+}
+
+.spell-dialog-apply-btn:hover {
+    -fx-background-color: #15803d;
+}
