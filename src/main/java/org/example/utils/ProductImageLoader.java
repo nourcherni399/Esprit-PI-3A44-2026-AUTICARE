@@ -31,20 +31,9 @@ public final class ProductImageLoader {
         if (pathOrUrl == null || pathOrUrl.isBlank()) {
             return null;
         }
-        String n = firstImagePath(pathOrUrl);
-        if (n == null || n.isBlank()) {
-            return null;
-        }
+        String n = pathOrUrl.trim();
         int rw = Math.min(1600, Math.max(1, displayW * 2));
         int rh = Math.min(1600, Math.max(1, displayH * 2));
-        if (n.toLowerCase().startsWith("data:image/")) {
-            try {
-                Image img = new Image(n, rw, rh, true, true, true);
-                return img.isError() ? null : img;
-            } catch (Exception ignored) {
-                return null;
-            }
-        }
         if (n.startsWith("http://") || n.startsWith("https://")) {
             Image img = new Image(n, rw, rh, true, true, true);
             return img.isError() ? null : img;
@@ -120,26 +109,5 @@ public final class ProductImageLoader {
             g.dispose();
         }
         return out;
-    }
-
-    /** Accepte un champ multi-images (séparateurs ; , \n |) et renvoie la première image. */
-    private static String firstImagePath(String raw) {
-        if (raw == null || raw.isBlank()) {
-            return null;
-        }
-        String trimmed = raw.trim();
-        if (trimmed.toLowerCase().startsWith("data:image/")) {
-            return trimmed;
-        }
-        String[] parts = trimmed.split("[;|\\n]");
-        for (String p : parts) {
-            if (p != null) {
-                String x = p.trim();
-                if (!x.isBlank()) {
-                    return x;
-                }
-            }
-        }
-        return trimmed;
     }
 }

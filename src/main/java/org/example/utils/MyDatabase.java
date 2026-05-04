@@ -96,6 +96,7 @@ public class MyDatabase {
                 ensureRendezVousDateHeureDatetimeColumn(connection);
                 AppointmentService.clearRendezVousSchemaCache();
                 ensureUserGoogleCalendarRefreshTokenColumn(connection);
+                AppointmentService.clearRendezVousSchemaCache();
                 ensureNoteTable(connection);
                 ensureMedecinRatingTable(connection);
                 ensureMedecinRatingPatientColumnCompat(connection);
@@ -124,6 +125,7 @@ public class MyDatabase {
         return getInstance().url;
     }
 
+    /**
     /**
      * Crée les tables attendues par les services si elles manquent sur MySQL {@code pidb}
      * (le {@code schema.sql} du dépôt est SQLite).

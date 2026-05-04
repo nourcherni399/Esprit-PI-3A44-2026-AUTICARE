@@ -3323,7 +3323,6 @@ public class MedecinDashboardController {
         };
     }
 
-
     private static String badgeStyleForStatus(AppointmentStatus s) {
         if (s == null) {
             return "med-rdv-badge-wait";

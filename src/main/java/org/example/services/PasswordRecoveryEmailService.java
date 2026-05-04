@@ -1,34 +1,32 @@
 package org.example.services;
 
+import jakarta.mail.Authenticator;
+import jakarta.mail.Message;
 import jakarta.mail.MessagingException;
+import jakarta.mail.PasswordAuthentication;
+import jakarta.mail.Session;
+import jakarta.mail.Transport;
+import jakarta.mail.internet.InternetAddress;
+import jakarta.mail.internet.MimeMessage;
+
+import java.io.InputStream;
+import java.util.Properties;
 
 /**
- * Service d’envoi des e-mails transactionnels AutiCare (PIN mot de passe oublié, RDV patient, etc.).
- * <p>
- * Tous les envois passent par la même pile SMTP que {@link SmtpMailUtil} : même
- * {@code auticare.smtp.user} (expéditeur From) et même {@code auticare.smtp.appPassword}.
- * </p>
- * <p>Configuration : {@code AUTICARE_SMTP_USER} / {@code auticare.smtp.user},
- * {@code AUTICARE_SMTP_APP_PASSWORD} / {@code auticare.smtp.appPassword}.</p>
+ * Service d'envoi du code PIN de réinitialisation via SMTP Gmail.
+ *
+ * <p>Configuration attendue (variables d'environnement ou propriétés système) :</p>
+ * <ul>
+ *   <li>AUTICARE_SMTP_USER (ou -Dauticare.smtp.user)</li>
+ *   <li>AUTICARE_SMTP_APP_PASSWORD (ou -Dauticare.smtp.appPassword)</li>
+ * </ul>
  */
 public class PasswordRecoveryEmailService {
 
-    /**
-     * Même transport et même adresse d’expéditeur que le PIN : à utiliser pour tout e-mail « métier »
-     * (rendez-vous, notifications, etc.).
-     */
-    public void sendTransactionalHtml(String recipientEmail, String subject, String htmlBody) throws MessagingException {
-        if (recipientEmail == null || recipientEmail.isBlank()) {
-            throw new MessagingException("Destinataire email manquant.");
-        }
-        if (subject == null || subject.isBlank()) {
-            throw new MessagingException("Sujet email manquant.");
-        }
-        if (htmlBody == null || htmlBody.isBlank()) {
-            throw new MessagingException("Corps HTML manquant.");
-        }
-        SmtpMailUtil.sendHtml(recipientEmail.trim(), subject.trim(), htmlBody);
-    }
+    private static final String DEFAULT_FROM = "amarahedil8@gmail.com";
+    private static final String DEFAULT_HOST = "smtp.gmail.com";
+    private static final String DEFAULT_PORT = "587";
+    private static final Properties FILE_CONFIG = loadFileConfig();
 
     public void sendPinEmail(String recipientEmail, String pinCode) throws MessagingException {
         if (recipientEmail == null || recipientEmail.isBlank()) {
@@ -37,10 +35,87 @@ public class PasswordRecoveryEmailService {
         if (pinCode == null || pinCode.isBlank()) {
             throw new MessagingException("PIN manquant.");
         }
-        sendTransactionalHtml(
-                recipientEmail.trim(),
-                "AutiCare - Reinitialisation du mot de passe",
-                buildHtmlTemplate(recipientEmail.trim(), pinCode));
+
+        String smtpUser = readConfig("auticare.smtp.user", "AUTICARE_SMTP_USER", DEFAULT_FROM);
+        String smtpPasswordRaw = readConfig("auticare.smtp.appPassword", "AUTICARE_SMTP_APP_PASSWORD", "");
+        // Google affiche souvent le mot de passe d'application groupe par blocs.
+        // On accepte les variantes avec espaces en retirant tout whitespace.
+        final String smtpPassword = smtpPasswordRaw.replaceAll("\\s+", "");
+        if (smtpPassword.isBlank()) {
+            throw new MessagingException(
+                    "Configuration SMTP manquante: AUTICARE_SMTP_APP_PASSWORD (mot de passe d'application Gmail).");
+        }
+
+        String smtpHost = readConfig("auticare.smtp.host", "AUTICARE_SMTP_HOST", DEFAULT_HOST);
+        String smtpPort = readConfig("auticare.smtp.port", "AUTICARE_SMTP_PORT", DEFAULT_PORT);
+
+        Properties props = new Properties();
+        props.put("mail.smtp.auth", "true");
+        props.put("mail.smtp.starttls.enable", "true");
+        props.put("mail.smtp.starttls.required", "true");
+        props.put("mail.smtp.host", smtpHost);
+        props.put("mail.smtp.port", smtpPort);
+        props.put("mail.smtp.ssl.trust", smtpHost);
+        props.put("mail.smtp.ssl.protocols", "TLSv1.2");
+        props.put("mail.smtp.auth.mechanisms", "LOGIN");
+        props.put("mail.smtp.connectiontimeout", "10000");
+        props.put("mail.smtp.timeout", "10000");
+        props.put("mail.smtp.writetimeout", "10000");
+
+        Session session = Session.getInstance(props, new Authenticator() {
+            @Override
+            protected PasswordAuthentication getPasswordAuthentication() {
+                return new PasswordAuthentication(smtpUser, smtpPassword);
+            }
+        });
+        String debug = readConfig("auticare.smtp.debug", "AUTICARE_SMTP_DEBUG", "false");
+        if ("true".equalsIgnoreCase(debug)) {
+            session.setDebug(true);
+        }
+
+        Message message = new MimeMessage(session);
+        message.setFrom(new InternetAddress(smtpUser));
+        message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(recipientEmail.trim(), false));
+        message.setSubject("AutiCare - Reinitialisation du mot de passe");
+        message.setContent(buildHtmlTemplate(recipientEmail.trim(), pinCode), "text/html; charset=UTF-8");
+        Transport.send(message);
+    }
+
+    /**
+     * E-mail HTML transactionnel (même compte SMTP que le PIN « mot de passe oublié »),
+     * via {@link SmtpMailUtil#sendHtml} (fichiers locaux + classpath).
+     */
+    public void sendTransactionalHtml(String recipientEmail, String subject, String htmlBody) throws MessagingException {
+        SmtpMailUtil.sendHtml(recipientEmail, subject, htmlBody);
+    }
+
+    private static String readConfig(String propKey, String envKey, String fallback) {
+        String fromProp = System.getProperty(propKey);
+        if (fromProp != null && !fromProp.isBlank()) {
+            return fromProp.trim();
+        }
+        String fromEnv = System.getenv(envKey);
+        if (fromEnv != null && !fromEnv.isBlank()) {
+            return fromEnv.trim();
+        }
+        String fromFile = FILE_CONFIG.getProperty(propKey);
+        if (fromFile != null && !fromFile.isBlank()) {
+            return fromFile.trim();
+        }
+        return fallback;
+    }
+
+    private static Properties loadFileConfig() {
+        Properties p = new Properties();
+        try (InputStream in = PasswordRecoveryEmailService.class.getClassLoader()
+                .getResourceAsStream("application.properties")) {
+            if (in != null) {
+                p.load(in);
+            }
+        } catch (Exception ignored) {
+            // fallback env/system/default
+        }
+        return p;
     }
 
     private static String buildHtmlTemplate(String email, String pinCode) {

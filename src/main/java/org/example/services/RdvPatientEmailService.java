@@ -112,7 +112,7 @@ public class RdvPatientEmailService {
         if (to.isBlank()) {
             throw new MessagingException("E-mail patient introuvable.");
         }
-        String prenom = firstNonBlank(appt.getPatientPrenom(), patient.getPrenom(), "Patient");
+        String prenom = firstNonBlank(appt.getPatientPrenom(), patient != null ? patient.getPrenom() : null, "Patient");
         String dr = formatPraticienName(medecin);
         LocalDateTime debut = appt.getDateHeure();
         LocalDateTime fin = slotEnd != null ? slotEnd : (debut != null ? debut.plusMinutes(30) : null);

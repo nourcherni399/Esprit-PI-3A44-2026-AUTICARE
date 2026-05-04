@@ -1,6 +1,7 @@
 package org.example.services;
 
 import org.example.models.ModuleContent;
+import org.example.models.ModuleCategorie;
 import org.example.models.ModuleNiveau;
 import org.example.utils.AppState;
 import org.example.utils.MyDatabase;
@@ -116,6 +117,60 @@ public class ModuleService implements IService<ModuleContent> {
         }
     }
 
+    /**
+     * Règle de progression des niveaux par catégorie:
+     * - moyen autorisé seulement s'il existe au moins un module facile dans la même catégorie
+     * - difficile autorisé seulement s'il existe au moins un module moyen dans la même catégorie
+     */
+    public LevelProgressionValidation validateNiveauProgression(ModuleCategorie categorie,
+                                                                ModuleNiveau targetNiveau,
+                                                                Integer excludeModuleId) throws SQLException {
+        if (categorie == null) {
+            return new LevelProgressionValidation(false, "Choisissez une catégorie.");
+        }
+        if (targetNiveau == null) {
+            return new LevelProgressionValidation(false, "Choisissez un niveau.");
+        }
+        if (targetNiveau == ModuleNiveau.facile) {
+            return new LevelProgressionValidation(true, "");
+        }
+
+        ModuleNiveau required = targetNiveau == ModuleNiveau.moyen
+                ? ModuleNiveau.facile
+                : ModuleNiveau.moyen;
+        int existing = countByCategorieAndNiveau(categorie, required, excludeModuleId);
+        if (existing > 0) {
+            return new LevelProgressionValidation(true, "");
+        }
+
+        String requiredLabel = required == ModuleNiveau.facile ? "facile" : "moyen";
+        String targetLabel = targetNiveau == ModuleNiveau.moyen ? "moyen" : "difficile";
+        String msg = "Vous ne pouvez pas créer un module niveau " + targetLabel
+                + " dans la catégorie \"" + categorie.getLibelle()
+                + "\" tant qu'aucun module niveau " + requiredLabel + " n'existe dans cette catégorie.";
+        return new LevelProgressionValidation(false, msg);
+    }
+
+    private int countByCategorieAndNiveau(ModuleCategorie categorie,
+                                          ModuleNiveau niveau,
+                                          Integer excludeModuleId) throws SQLException {
+        String sql = excludeModuleId == null
+                ? "SELECT COUNT(*) FROM `module` WHERE categorie=? AND niveau=?"
+                : "SELECT COUNT(*) FROM `module` WHERE categorie=? AND niveau=? AND id<>?";
+        try (PreparedStatement ps = MyDatabase.getConnection().prepareStatement(sql)) {
+            ps.setString(1, categorie.name());
+            ps.setString(2, niveau.name());
+            if (excludeModuleId != null) {
+                ps.setInt(3, excludeModuleId);
+            }
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+            return 0;
+        }
+    }
+
     private ModuleContent map(ResultSet rs) throws SQLException {
         ModuleContent m = new ModuleContent();
         m.setId(rs.getInt("id"));
@@ -154,4 +209,6 @@ public class ModuleService implements IService<ModuleContent> {
         }
         return s.substring(0, max);
     }
+
+    public record LevelProgressionValidation(boolean allowed, String message) {}
 }

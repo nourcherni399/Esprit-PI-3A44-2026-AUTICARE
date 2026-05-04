@@ -228,46 +228,43 @@ public class PagePanierController implements PublicShellAware {
         Label nom = new Label(p.getNom() != null ? p.getNom() : "—");
         nom.getStyleClass().add("cart-line-name");
         nom.setWrapText(true);
-        Label pu = new Label(String.format(Locale.FRENCH, "%.2f DT", line.unitPrice()));
+        Label pu = new Label(String.format(Locale.FRENCH, "%.2f DT / u.", line.unitPrice()));
         pu.getStyleClass().add("cart-line-pu");
 
         int maxStock = Math.max(1, cartService.getAvailableQuantityForCart(p));
-        int initialQty = Math.min(line.quantity(), maxStock);
         Spinner<Integer> sp = new Spinner<>();
-        sp.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(1, maxStock, initialQty));
+        sp.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(1, maxStock, Math.min(line.quantity(), maxStock)));
         sp.setEditable(true);
-        sp.setPrefWidth(96);
-        sp.setMaxWidth(96);
-        sp.setMinWidth(96);
-        Runnable applySpinnerQty = () -> {
+        sp.setPrefWidth(72);
+        Button qtyOk = new Button("OK");
+        qtyOk.getStyleClass().add("cart-qty-ok-btn");
+        qtyOk.setOnAction(e -> {
             try {
                 sp.commitValue();
             } catch (IllegalArgumentException ignored) {
                 // —
             }
             Integer n = sp.getValue();
-            if (n != null && n >= 1 && n != initialQty) {
+            if (n != null && n >= 1) {
                 applyQtyChange(p.getId(), n);
             }
-        };
-        sp.getEditor().setOnAction(e -> applySpinnerQty.run());
-        sp.focusedProperty().addListener((obs, wasFocused, isFocused) -> {
-            if (!isFocused) {
-                applySpinnerQty.run();
-            }
         });
-        HBox qtyRow = new HBox(6, sp);
+        HBox qtyRow = new HBox(6, sp, qtyOk);
         qtyRow.setAlignment(Pos.CENTER_LEFT);
 
         Label lineTot = new Label(String.format(Locale.FRENCH, "%.2f DT", line.lineTotal()));
         lineTot.getStyleClass().add("cart-line-total");
+
+        Button remove = new Button("Supprimer");
+        remove.getStyleClass().add("cart-remove-btn");
+        remove.setOnAction(e -> onRemoveLine(p.getId()));
 
         Label qtyCaption = new Label("Qté");
         qtyCaption.getStyleClass().add("rdv-filter-label");
         VBox qtyCol = new VBox(4, qtyCaption, qtyRow);
         qtyCol.setAlignment(Pos.CENTER_LEFT);
 
-        row.getChildren().addAll(thumb, info, qtyCol, lineTot);
+        row.getChildren().addAll(thumb, info, qtyCol, lineTot, remove);
         info.getChildren().addAll(nom, pu);
         return row;
     }

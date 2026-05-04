@@ -81,12 +81,12 @@ public class AppState {
             return imagePath;
         }
     }
-
     private AppState() {
     }
 
     private static AppLanguage resolveDefaultLanguage() {
-        return AppLanguage.FR;
+        String configured = LocalAiPropertiesFile.readProperty("app.default.language");
+        return AppLanguage.fromCode(configured);
     }
 
     public static AppLanguage getCurrentLanguage() {
@@ -94,9 +94,7 @@ public class AppState {
     }
 
     public static void setCurrentLanguage(AppLanguage language) {
-        if (language != null) {
-            currentLanguage = language;
-        }
+        currentLanguage = language != null ? language : AppLanguage.FR;
     }
 
     public static User getCurrentUser() {
@@ -109,6 +107,7 @@ public class AppState {
 
     public static void clear() {
         currentUser = null;
+        currentLanguage = AppLanguage.FR;
         adminDetailUser = null;
         clearAdminEditContext();
         clearAdminDeleteContext();

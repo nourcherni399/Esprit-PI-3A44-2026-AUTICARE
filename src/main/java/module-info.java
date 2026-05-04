@@ -4,6 +4,7 @@ module org.example.pi {
     requires javafx.fxml;
     requires javafx.swing;
     requires javafx.web;
+    requires jdk.jsobject;
     requires java.sql;
     requires mysql.connector.j;
 
@@ -13,7 +14,6 @@ module org.example.pi {
     requires java.net.http;
     requires java.desktop;
     requires java.prefs;
-    requires jdk.jsobject;
     requires org.apache.pdfbox;
     requires org.apache.poi.poi;
     requires org.apache.poi.ooxml;

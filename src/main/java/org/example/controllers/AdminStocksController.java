@@ -163,6 +163,7 @@ public class AdminStocksController {
                         "Suppression impossible",
                         "Impossible de supprimer ce stock : " + linked
                             + " produit(s) du catalogue y sont encore associés. Modifiez d'abord ces fiches produit."
+                            + " produit(s) y sont liés (stock_id). Modifiez d'abord ces produits."
                     );
                     return;
                 }
@@ -256,6 +257,8 @@ public class AdminStocksController {
         nomLbl.setWrapText(true);
         nomLbl.setStyle("-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: #111827;");
 
+        Label refLbl = new Label("Réf. #" + s.getId());
+        refLbl.setStyle("-fx-font-size: 11px; -fx-text-fill: #6b7280;");
 
         Label qtyVal = new Label(String.valueOf(s.getQuantite()));
         qtyVal.setStyle("-fx-font-size: 26px; -fx-font-weight: bold; -fx-text-fill: #166534;");
@@ -270,6 +273,7 @@ public class AdminStocksController {
         hint.setStyle("-fx-font-size: 11px; -fx-text-fill: #64748b;");
 
         body.getChildren().addAll(nomLbl, qtyRow, hint);
+        body.getChildren().addAll(nomLbl, refLbl, qtyRow, hint);
         card.getChildren().addAll(header, body);
 
         card.addEventFilter(MouseEvent.MOUSE_CLICKED, e -> {
@@ -304,6 +308,7 @@ public class AdminStocksController {
     private HBox buildStockSearchRow() {
         innerSearchField = new TextField();
         innerSearchField.setPromptText("Rechercher un stock (nom ou quantité)");
+        innerSearchField.setPromptText("Rechercher un stock (id, nom ou quantité)");
         innerSearchField.setText(stocksSearchText);
         innerSearchField.setMaxWidth(Double.MAX_VALUE);
         HBox.setHgrow(innerSearchField, Priority.ALWAYS);
@@ -499,6 +504,12 @@ public class AdminStocksController {
         form.add(nomField, 1, 0);
         form.add(new Label("Quantité *"), 0, 1);
         form.add(quantiteSpinner, 1, 1);
+        form.add(new Label("ID"), 0, 0);
+        form.add(new Label(String.valueOf(stock.getId())), 1, 0);
+        form.add(new Label("Nom du stock *"), 0, 1);
+        form.add(nomField, 1, 1);
+        form.add(new Label("Quantité *"), 0, 2);
+        form.add(quantiteSpinner, 1, 2);
 
         Label title = new Label("Modifier le stock");
         title.setStyle("-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #2a2a2a;");
@@ -633,3 +644,6 @@ public class AdminStocksController {
         }
     }
 }
+
+
+
