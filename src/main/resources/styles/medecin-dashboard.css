@@ -23,9 +23,9 @@
 
 /* Motif discret bas de barre (étoiles / points) */
 .med-sidebar-deco {
-    -fx-background-color: radial-gradient(center 50% 100%, radius 90%, rgba(167, 139, 250, 0.18) 0%, transparent 62%),
-        radial-gradient(center 10% 80%, radius 35%, rgba(196, 181, 253, 0.2) 0%, transparent 55%),
-        radial-gradient(center 92% 70%, radius 28%, rgba(233, 213, 255, 0.35) 0%, transparent 50%);
+    -fx-background-color: radial-gradient(center 50% 100%, radius 90%, rgba(167, 139, 250, 0.18) 0%, rgba(255, 255, 255, 0) 62%),
+        radial-gradient(center 10% 80%, radius 35%, rgba(196, 181, 253, 0.2) 0%, rgba(255, 255, 255, 0) 55%),
+        radial-gradient(center 92% 70%, radius 28%, rgba(233, 213, 255, 0.35) 0%, rgba(255, 255, 255, 0) 50%);
     -fx-background-radius: 0 0 0 0;
 }
 
@@ -142,7 +142,7 @@
 }
 
 .med-welcome-card {
-    -fx-background-color: linear-gradient(120deg, rgba(237, 233, 254, 0.95) 0%, rgba(250, 232, 255, 0.88) 45%, rgba(224, 231, 255, 0.75) 100%);
+    -fx-background-color: linear-gradient(to bottom right, rgba(237, 233, 254, 0.95) 0%, rgba(250, 232, 255, 0.88) 45%, rgba(224, 231, 255, 0.75) 100%);
     -fx-background-radius: 20;
     -fx-padding: 24 28 24 28;
     -fx-spacing: 8;
@@ -295,7 +295,7 @@
 
 /* Bloc profil : même principe que la carte « Aujourd’hui » (encart lavande à l’intérieur) */
 .med-profile-inner {
-    -fx-background-color: linear-gradient(135deg, rgba(237, 233, 254, 0.92) 0%, rgba(250, 232, 255, 0.78) 100%);
+    -fx-background-color: linear-gradient(to bottom right, rgba(237, 233, 254, 0.92) 0%, rgba(250, 232, 255, 0.78) 100%);
     -fx-background-radius: 14;
     -fx-padding: 16 18 16 18;
     -fx-spacing: 6;
@@ -470,7 +470,7 @@
 }
 
 .med-calendar-box {
-    -fx-background-color: linear-gradient(135deg, rgba(237, 233, 254, 0.92) 0%, rgba(250, 232, 255, 0.78) 100%);
+    -fx-background-color: linear-gradient(to bottom right, rgba(237, 233, 254, 0.92) 0%, rgba(250, 232, 255, 0.78) 100%);
     -fx-background-radius: 14;
     -fx-padding: 16 18 16 18;
     -fx-spacing: 6;
@@ -1081,6 +1081,38 @@
     -fx-background-radius: 12;
 }
 
+.med-rdv-priority-wrap {
+    -fx-padding: 0 0 0 2;
+}
+
+.button.med-rdv-priority-btn {
+    -fx-background-color: linear-gradient(to bottom, #6366f1 0%, #4f46e5 100%);
+    -fx-text-fill: #ffffff;
+    -fx-font-weight: 700;
+    -fx-background-radius: 999;
+    -fx-border-radius: 999;
+    -fx-border-color: rgba(79, 70, 229, 0.35);
+    -fx-padding: 8 14 8 14;
+    -fx-cursor: hand;
+}
+
+.button.med-rdv-priority-btn:hover {
+    -fx-background-color: linear-gradient(to bottom, #5b5ff0 0%, #4338ca 100%);
+}
+
+.button.med-rdv-priority-btn:disabled {
+    -fx-opacity: 0.85;
+}
+
+.label.med-rdv-priority-status {
+    -fx-font-size: 11px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #475569;
+    -fx-background-color: #f1f5f9;
+    -fx-background-radius: 999;
+    -fx-padding: 5 10 5 10;
+}
+
 .med-rdv-list-host {
     -fx-min-height: 320;
 }
@@ -1424,6 +1456,16 @@
 .med-rdv-badge-attente {
     -fx-background-color: #d4a017;
     -fx-text-fill: #ffffff;
+}
+
+.med-rdv-badge-priority-urgent {
+    -fx-background-color: #fee2e2;
+    -fx-text-fill: #991b1b;
+}
+
+.med-rdv-badge-priority-normal {
+    -fx-background-color: #e2e8f0;
+    -fx-text-fill: #334155;
 }
 
 /* Sections statut (liste RDV) */
@@ -1774,6 +1816,24 @@
 .med-notif-history-count {
     -fx-font-size: 13px;
     -fx-text-fill: #6b7280;
+}
+
+.button.med-notif-clear-btn {
+    -fx-background-color: #ffffff;
+    -fx-text-fill: #ef4444;
+    -fx-font-size: 14px;
+    -fx-font-weight: 700;
+    -fx-padding: 4 10 4 10;
+    -fx-background-radius: 10;
+    -fx-border-radius: 10;
+    -fx-border-color: #fecaca;
+    -fx-border-width: 1.2;
+    -fx-cursor: hand;
+}
+
+.button.med-notif-clear-btn:hover {
+    -fx-background-color: #fff1f2;
+    -fx-border-color: #fda4af;
 }
 
 .med-notif-sep {

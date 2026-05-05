@@ -61,7 +61,10 @@
                     <Label styleClass="rdv-type-mode-value" text="Au cabinet"/>
 
                     <Label styleClass="rdv-type-block-title" text="Motif de la consultation *"/>
-                    <ComboBox fx:id="typeMotifCombo" maxWidth="Infinity" promptText="Sélectionnez un motif"
+                    <Label styleClass="rdv-type-motif-hint" wrapText="true"
+                           text="Choisissez une suggestion ou écrivez librement ce qui vous amène (quelques mots)."/>
+                    <ComboBox fx:id="typeMotifCombo" editable="true" maxWidth="Infinity"
+                              promptText="Ex. suivi, anxiété, demande de certificat…"
                               styleClass="rdv-type-motif-combo"/>
 
                     <HBox alignment="CENTER_LEFT" spacing="8">

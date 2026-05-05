@@ -166,6 +166,26 @@ public class AppointmentService implements IService<Appointment> {
         }
     }
 
+    /**
+     * Mise à jour légère pour l'écran médecin (statut/motif), robuste même sur des lignes héritées incomplètes.
+     */
+    public void updateStatusAndMotifById(int rdvId, int medecinId, AppointmentStatus status, String motif) throws SQLException {
+        if (rdvId <= 0) {
+            throw new SQLException("Identifiant rendez-vous invalide.");
+        }
+        String sql = "UPDATE rendez_vous SET medecin_id=?, motif=?, statut=? WHERE id=?";
+        try (PreparedStatement ps = MyDatabase.getConnection().prepareStatement(sql)) {
+            ps.setInt(1, medecinId);
+            ps.setString(2, motif != null ? motif : "");
+            ps.setString(3, status == null ? AppointmentStatus.PLANIFIE.name() : status.name());
+            ps.setInt(4, rdvId);
+            int n = ps.executeUpdate();
+            if (n <= 0) {
+                throw new SQLException("Aucune ligne modifiée (rendez-vous introuvable).");
+            }
+        }
+    }
+
     @Override
     public void delete(int id) throws SQLException {
         try (PreparedStatement ps = MyDatabase.getConnection().prepareStatement("DELETE FROM rendez_vous WHERE id=?")) {

@@ -184,8 +184,8 @@
                             <Label text="Gestion des disponibilités" styleClass="med-dispo-main-title"/>
                             <HBox alignment="CENTER_LEFT" spacing="14" styleClass="med-dispo-toolbar">
                                 <TextField fx:id="dispoSlotSearchField"
-                                              promptText="Créneau, heure, jour (ex. lundi) ou date (jj/mm/aaaa)…"
-                                              styleClass="med-dispo-search" HBox.hgrow="ALWAYS"/>
+                                           promptText="Créneau, heure, jour (ex. lundi) ou date (jj/mm/aaaa)…"
+                                           styleClass="med-dispo-search" HBox.hgrow="ALWAYS"/>
                                 <Region HBox.hgrow="ALWAYS"/>
                                 <Button text="Nouvelle disponibilité" styleClass="med-btn-dispo-primary" onAction="#onNouvelleDisponibilite"/>
                             </HBox>
@@ -322,7 +322,7 @@
                             <HBox alignment="CENTER_LEFT" spacing="12" styleClass="med-rdv-toolbar med-rdv-toolbar-actions">
                                 <Region HBox.hgrow="ALWAYS" minWidth="8"/>
                                 <HBox spacing="8" alignment="CENTER_LEFT" styleClass="med-rdv-toolbar-search-wrap"
-                                       minWidth="260" prefWidth="360" maxWidth="520" HBox.hgrow="NEVER">
+                                      minWidth="260" prefWidth="360" maxWidth="520" HBox.hgrow="NEVER">
                                     <Label text="🔍" styleClass="med-rdv-toolbar-icon"/>
                                     <TextField fx:id="rdvSearchField" promptText="Rechercher…"
                                                styleClass="med-rdv-toolbar-search" onAction="#onRdvSearchAction"
@@ -442,7 +442,12 @@
                             </HBox>
                             <VBox spacing="0" styleClass="med-notif-history-card" VBox.vgrow="ALWAYS">
                                 <VBox spacing="6" styleClass="med-notif-history-header">
-                                    <Label text="Historique des notifications" styleClass="med-notif-history-title"/>
+                                    <HBox alignment="CENTER_LEFT" spacing="10">
+                                        <Label text="Historique des notifications" styleClass="med-notif-history-title" HBox.hgrow="ALWAYS"/>
+                                        <Region HBox.hgrow="ALWAYS"/>
+                                        <Button mnemonicParsing="false" onAction="#onClearAllNotifications"
+                                                styleClass="med-notif-clear-btn" text="🗑"/>
+                                    </HBox>
                                     <Label fx:id="medNotifHistoryCountLabel" text="0 notifications" styleClass="med-notif-history-count"/>
                                 </VBox>
                                 <Separator styleClass="med-notif-sep"/>

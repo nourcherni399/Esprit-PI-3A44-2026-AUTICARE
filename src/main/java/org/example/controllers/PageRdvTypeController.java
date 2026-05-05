@@ -14,10 +14,14 @@ import org.example.utils.AppState;
 import org.example.utils.PublicRdvDoctorSidebarHelper;
 import org.example.utils.RdvPublicBookingStepper;
 
+import java.util.List;
+
 /**
  * Étape « Type de consultation » après le choix du créneau.
  */
 public class PageRdvTypeController implements PublicShellAware {
+
+    private static final int MOTIF_MAX_LEN = 255;
 
     private PublicShellController shell;
 
@@ -58,13 +62,95 @@ public class PageRdvTypeController implements PublicShellAware {
                 typeSidebarEmail);
         buildConsultTypeOptions();
         if (typeMotifCombo != null) {
-            typeMotifCombo.getItems().setAll(
-                    "Diagnostic TSA",
+            typeMotifCombo.setEditable(true);
+            refreshMotifSuggestionsForSelection();
+        }
+    }
+
+    /** Texte saisi ou choisi (ComboBox éditable : l'éditeur prime). */
+    private static String resolveMotifText(ComboBox<String> combo) {
+        if (combo == null) {
+            return "";
+        }
+        if (combo.getEditor() != null && combo.getEditor().getText() != null) {
+            String t = combo.getEditor().getText().trim();
+            if (!t.isEmpty()) {
+                return t;
+            }
+        }
+        String v = combo.getValue();
+        return v != null ? v.trim() : "";
+    }
+
+    private static String resolveConsultTypeLabel(Toggle selectedToggle) {
+        if (!(selectedToggle instanceof RadioButton rb)) {
+            return "";
+        }
+        if (!(rb.getParent() instanceof HBox h) || h.getChildren().size() <= 1) {
+            return "";
+        }
+        if (!(h.getChildren().get(1) instanceof VBox col) || col.getChildren().isEmpty()) {
+            return "";
+        }
+        if (!(col.getChildren().get(0) instanceof Label l)) {
+            return "";
+        }
+        return l.getText() != null ? l.getText().trim() : "";
+    }
+
+    private static List<String> suggestionsForConsultType(String typeLabel) {
+        return switch (typeLabel) {
+            case "Première consultation" -> List.of(
+                    "Premier rendez-vous",
                     "Évaluation initiale",
-                    "Bilan / orientation",
+                    "Comprendre les symptômes",
+                    "Orientation / avis médical",
+                    "Bilan de départ");
+            case "Bilan complet" -> List.of(
+                    "Bilan complet",
+                    "Bilan neuro-développemental",
+                    "Bilan comportemental",
+                    "Réévaluation de la situation",
+                    "Synthèse et orientation");
+            case "Consultation de suivi" -> List.of(
                     "Suivi thérapeutique",
-                    "Urgence / besoin immédiat",
-                    "Autre");
+                    "Ajustement du traitement",
+                    "Suivi post-consultation",
+                    "Suivi scolaire / familial",
+                    "Renouvellement document médical");
+            case "Consultation urgente" -> List.of(
+                    "Situation urgente",
+                    "Crise ou aggravation",
+                    "Soutien immédiat",
+                    "Besoin de consultation rapide",
+                    "Autre urgence");
+            default -> List.of(
+                    "Premier rendez-vous",
+                    "Suivi ou contrôle",
+                    "Bilan / orientation",
+                    "Question ponctuelle",
+                    "Document médical");
+        };
+    }
+
+    private void refreshMotifSuggestionsForSelection() {
+        if (typeMotifCombo == null) {
+            return;
+        }
+        String currentText = resolveMotifText(typeMotifCombo);
+        String selectedType = resolveConsultTypeLabel(consultTypeGroup != null ? consultTypeGroup.getSelectedToggle() : null);
+        List<String> suggestions = suggestionsForConsultType(selectedType);
+        typeMotifCombo.getItems().setAll(suggestions);
+        if (currentText.isBlank()) {
+            typeMotifCombo.setValue(null);
+            if (typeMotifCombo.getEditor() != null) {
+                typeMotifCombo.getEditor().clear();
+            }
+            return;
+        }
+        if (typeMotifCombo.getEditor() != null) {
+            typeMotifCombo.getEditor().setText(currentText);
+            typeMotifCombo.getEditor().positionCaret(currentText.length());
         }
     }
 
@@ -111,6 +197,7 @@ public class PageRdvTypeController implements PublicShellAware {
             if (newT instanceof RadioButton rb && rb.getParent() instanceof HBox h) {
                 h.getStyleClass().add("rdv-type-option-selected");
             }
+            refreshMotifSuggestionsForSelection();
         });
         if (!typeOptionsBox.getChildren().isEmpty()
                 && typeOptionsBox.getChildren().get(0) instanceof HBox first
@@ -150,23 +237,26 @@ public class PageRdvTypeController implements PublicShellAware {
         if (sel == null) {
             return;
         }
-        if (typeMotifCombo == null || typeMotifCombo.getSelectionModel().getSelectedItem() == null) {
+        String motif = resolveMotifText(typeMotifCombo);
+        if (motif.isBlank()) {
             Alert a = new Alert(Alert.AlertType.WARNING);
             a.setTitle("Motif");
             a.setHeaderText(null);
-            a.setContentText("Veuillez sélectionner un motif de consultation.");
+            a.setContentText("Indiquez en quelques mots le motif de votre consultation (vous pouvez "
+                    + "choisir une suggestion ou écrire librement).");
             a.showAndWait();
             return;
         }
-        RadioButton rb = (RadioButton) sel;
-        String typeLabel = "";
-        if (rb.getParent() instanceof HBox h && h.getChildren().size() > 1
-                && h.getChildren().get(1) instanceof VBox col
-                && !col.getChildren().isEmpty()
-                && col.getChildren().get(0) instanceof Label l) {
-            typeLabel = l.getText();
+        if (motif.length() > MOTIF_MAX_LEN) {
+            Alert a = new Alert(Alert.AlertType.WARNING);
+            a.setTitle("Motif");
+            a.setHeaderText(null);
+            a.setContentText("Le motif est trop long (" + motif.length() + " caractères). "
+                    + "Réduisez à " + MOTIF_MAX_LEN + " caractères maximum.");
+            a.showAndWait();
+            return;
         }
-        String motif = typeMotifCombo.getSelectionModel().getSelectedItem();
+        String typeLabel = resolveConsultTypeLabel(sel);
         AppState.setPendingPublicRdvConsultTypeLabel(typeLabel);
         AppState.setPendingPublicRdvMotif(motif);
         if (shell == null) {
