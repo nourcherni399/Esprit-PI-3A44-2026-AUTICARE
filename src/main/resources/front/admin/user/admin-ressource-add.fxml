@@ -10,6 +10,7 @@
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.FlowPane?>
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Region?>
@@ -67,40 +68,52 @@
                     <content>
                         <VBox styleClass="admin-content">
                             <Label onMouseClicked="#onBackToModules" styleClass="admin-form-back" text="← Retour à la liste des modules"/>
-                            <VBox styleClass="admin-form-card">
+                            <VBox styleClass="admin-form-card res-add-form-card">
                                 <VBox styleClass="admin-form-card-header">
-                                    <Label styleClass="admin-form-card-title" text="Nouvelle ressource"/>
+                                    <Label styleClass="admin-form-card-title res-add-title" text="Nouvelle ressource"/>
                                 </VBox>
-                                <GridPane hgap="14" styleClass="admin-form-grid" vgap="12">
+                                <GridPane hgap="14" styleClass="admin-form-grid res-add-grid" vgap="12">
                                     <columnConstraints>
                                         <ColumnConstraints hgrow="SOMETIMES" minWidth="120" prefWidth="200"/>
                                         <ColumnConstraints hgrow="SOMETIMES" minWidth="120" prefWidth="200"/>
                                     </columnConstraints>
 
                                     <Label styleClass="admin-form-label" text="Titre *" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="0"/>
-                                    <TextField fx:id="titreField" promptText="Ex. Vidéo sur la communication" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="1"/>
+                                    <TextField fx:id="titreField" promptText="Ex. Video sur la communication" styleClass="res-add-input" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="1"/>
 
                                     <Label styleClass="admin-form-label" text="Type de ressource *" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="2"/>
-                                    <ComboBox fx:id="typeCombo" prefWidth="Infinity" promptText="Choisir un type" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="3"/>
+                                    <ComboBox fx:id="typeCombo" prefWidth="Infinity" promptText="Choisir un type" styleClass="res-add-input res-add-combo" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="3"/>
 
-                                    <Label styleClass="admin-form-label" text="Contenu (URL ou chemin média)" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="4"/>
-                                    <TextField fx:id="contenuField" promptText="https://..." GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="5"/>
+                                    <VBox fx:id="youtubeBox" spacing="10" styleClass="res-add-youtube-box" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="4" visible="false" managed="false">
+                                        <HBox alignment="CENTER_LEFT" spacing="8">
+                                            <Label styleClass="res-add-youtube-title" text="▶ YouTube"/>
+                                        </HBox>
+                                        <HBox alignment="CENTER_LEFT" spacing="8">
+                                            <TextField fx:id="youtubeSearchField" promptText="Ex. communication autisme (tapez Entrée pour rechercher)" styleClass="res-add-input" HBox.hgrow="ALWAYS" onAction="#onSearchYoutubeVideos"/>
+                                            <Button text="Rechercher" onAction="#onSearchYoutubeVideos" styleClass="res-add-yt-search-btn"/>
+                                        </HBox>
+                                        <FlowPane fx:id="youtubeResultsFlow" hgap="10" vgap="10" prefWrapLength="720"/>
+                                        <Label fx:id="youtubeHint" styleClass="admin-form-hint" text="Recherchez une vidéo puis cliquez sur &quot;Utiliser&quot;." wrapText="true"/>
+                                    </VBox>
 
-                                    <Label styleClass="admin-form-label" text="Fichier vidéo/audio (optionnel)" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="6"/>
-                                    <HBox alignment="CENTER_LEFT" spacing="10" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="7">
+                                    <Label styleClass="admin-form-label" text="Contenu (URL ou chemin média)" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="6"/>
+                                    <TextField fx:id="contenuField" promptText="https://..." styleClass="res-add-input" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="7"/>
+
+                                    <Label styleClass="admin-form-label" text="Fichier vidéo/audio (optionnel)" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="8"/>
+                                    <HBox alignment="CENTER_LEFT" spacing="10" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="9">
                                         <Button onAction="#onChooseFile" styleClass="admin-btn-outline" text="Choisir un fichier"/>
                                         <Label fx:id="fileLabel" text="Aucun fichier choisi" styleClass="admin-form-hint"/>
                                     </HBox>
 
-                                    <Label styleClass="admin-form-label" text="Module associé *" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="8"/>
-                                    <ComboBox fx:id="moduleCombo" prefWidth="Infinity" promptText="Choisir un module" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="9"/>
+                                    <Label styleClass="admin-form-label" text="Module associé *" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="10"/>
+                                    <ComboBox fx:id="moduleCombo" prefWidth="Infinity" promptText="Choisir un module" styleClass="res-add-input res-add-combo" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="11"/>
 
-                                    <Label styleClass="admin-form-label" text="Ordre d'affichage" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="10"/>
-                                    <TextField fx:id="ordreField" promptText="Ex. 1" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="11"/>
+                                    <Label styleClass="admin-form-label" text="Ordre d'affichage" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="12"/>
+                                    <TextField fx:id="ordreField" promptText="Ex. 1" styleClass="res-add-input" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="13"/>
 
-                                    <CheckBox fx:id="activeCheck" mnemonicParsing="false" selected="true" styleClass="admin-form-checkbox" text="Actif" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="12"/>
+                                    <CheckBox fx:id="activeCheck" mnemonicParsing="false" selected="true" styleClass="admin-form-checkbox" text="Actif" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="14"/>
 
-                                    <HBox alignment="CENTER_LEFT" spacing="12" styleClass="admin-form-actions" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="13">
+                                    <HBox alignment="CENTER_LEFT" spacing="12" styleClass="admin-form-actions" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="15">
                                         <Button onAction="#onSaveRessource" styleClass="admin-btn-save" text="Créer la ressource"/>
                                         <Button onAction="#onCancel" styleClass="admin-btn-secondary" text="Annuler"/>
                                     </HBox>

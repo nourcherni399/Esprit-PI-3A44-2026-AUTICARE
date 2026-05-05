@@ -1,11 +1,18 @@
 package org.example.controllers;
 
 import javafx.fxml.FXML;
+import javafx.geometry.Pos;
+import javafx.scene.Cursor;
 import javafx.scene.control.Alert;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.FlowPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 import javafx.scene.layout.StackPane;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
@@ -14,11 +21,14 @@ import org.example.models.ModuleContent;
 import org.example.models.Ressource;
 import org.example.services.ModuleService;
 import org.example.services.RessourceService;
+import org.example.services.YouTubeService;
 import org.example.utils.AdminTopbarHelper;
 import org.example.utils.AppState;
 
+import java.awt.Desktop;
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.sql.SQLException;
 import java.util.List;
 
@@ -38,14 +48,35 @@ public class AdminRessourceAddController {
     @FXML private ComboBox<ModuleContent> moduleCombo;
     @FXML private TextField ordreField;
     @FXML private CheckBox activeCheck;
+    @FXML private VBox youtubeBox;
+    @FXML private TextField youtubeSearchField;
+    @FXML private FlowPane youtubeResultsFlow;
+    @FXML private Label youtubeHint;
 
     private final RessourceService ressourceService = new RessourceService();
     private final ModuleService moduleService = new ModuleService();
+    private final YouTubeService youTubeService = new YouTubeService();
 
     @FXML
     public void initialize() {
         AdminTopbarHelper.applyToTopbar(topbarAvatarHost, userNameLabel, userEmailLabel);
         typeCombo.getItems().addAll(TYPES);
+        typeCombo.setConverter(new javafx.util.StringConverter<>() {
+            @Override
+            public String toString(String value) {
+                if (value == null || value.isBlank()) {
+                    return "";
+                }
+                return Character.toUpperCase(value.charAt(0)) + value.substring(1).toLowerCase();
+            }
+
+            @Override
+            public String fromString(String string) {
+                return string;
+            }
+        });
+        typeCombo.valueProperty().addListener((obs, old, val) -> updateVideoBoxVisibility());
+        updateVideoBoxVisibility();
         loadModules();
     }
 
@@ -71,6 +102,39 @@ public class AdminRessourceAddController {
             contenuField.setText(f.getAbsolutePath());
             fileLabel.setText(f.getName());
         }
+    }
+
+    @FXML
+    public void onSearchYoutubeVideos() {
+        String q = youtubeSearchField != null && youtubeSearchField.getText() != null
+                ? youtubeSearchField.getText().trim()
+                : "";
+        if (q.isBlank()) {
+            alert(Alert.AlertType.WARNING, "YouTube", "Saisissez des mots-clés pour rechercher une vidéo.");
+            return;
+        }
+        if (youtubeHint != null) {
+            youtubeHint.setText("Recherche YouTube en cours...");
+        }
+        if (youtubeResultsFlow != null) {
+            youtubeResultsFlow.getChildren().clear();
+        }
+        Thread worker = new Thread(() -> {
+            try {
+                List<YouTubeService.YouTubeVideo> videos = youTubeService.searchVideos(q, 8);
+                javafx.application.Platform.runLater(() -> fillYoutubeResults(videos));
+            } catch (Exception e) {
+                javafx.application.Platform.runLater(() -> {
+                    if (youtubeHint != null) {
+                        youtubeHint.setText("Erreur de recherche YouTube.");
+                    }
+                    alert(Alert.AlertType.ERROR, "YouTube",
+                            e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName());
+                });
+            }
+        }, "youtube-search-resource-add");
+        worker.setDaemon(true);
+        worker.start();
     }
 
     @FXML
@@ -106,6 +170,10 @@ public class AdminRessourceAddController {
             return;
         }
         String contenu = contenuField.getText() != null ? contenuField.getText().trim() : null;
+        if ("video".equalsIgnoreCase(type) && (contenu == null || contenu.isBlank())) {
+            alert(Alert.AlertType.WARNING, "Vidéo requise", "Choisissez une vidéo YouTube ou renseignez une URL vidéo.");
+            return;
+        }
 
         Integer ordre = null;
         String ordreText = trim(ordreField);
@@ -157,6 +225,102 @@ public class AdminRessourceAddController {
     private static String trim(TextField f) {
         if (f == null || f.getText() == null) return "";
         return f.getText().trim();
+    }
+
+    private void updateVideoBoxVisibility() {
+        boolean show = typeCombo != null && "video".equalsIgnoreCase(typeCombo.getValue());
+        if (youtubeBox != null) {
+            youtubeBox.setManaged(show);
+            youtubeBox.setVisible(show);
+        }
+    }
+
+    private void fillYoutubeResults(List<YouTubeService.YouTubeVideo> videos) {
+        if (youtubeResultsFlow == null) {
+            return;
+        }
+        youtubeResultsFlow.getChildren().clear();
+        if (videos == null || videos.isEmpty()) {
+            if (youtubeHint != null) {
+                youtubeHint.setText("Aucune vidéo trouvée. Essayez d'autres mots-clés.");
+            }
+            return;
+        }
+        for (YouTubeService.YouTubeVideo v : videos) {
+            youtubeResultsFlow.getChildren().add(buildYouTubeCard(v));
+        }
+        if (youtubeHint != null) {
+            youtubeHint.setText("Cliquez sur \"Utiliser\" pour ajouter la vidéo comme ressource.");
+        }
+    }
+
+    private VBox buildYouTubeCard(YouTubeService.YouTubeVideo v) {
+        ImageView thumb = new ImageView();
+        if (v.thumbnailUrl() != null && !v.thumbnailUrl().isBlank()) {
+            thumb.setImage(new Image(v.thumbnailUrl(), 220, 124, true, true, true));
+        }
+        thumb.setFitWidth(220);
+        thumb.setFitHeight(124);
+        thumb.getStyleClass().add("res-yt-thumb");
+
+        Label title = new Label(v.title() != null ? v.title() : "Vidéo YouTube");
+        title.setWrapText(true);
+        title.getStyleClass().add("res-yt-title");
+        title.setMaxWidth(220);
+
+        Label channel = new Label(v.channel() != null ? v.channel() : "");
+        channel.getStyleClass().add("res-yt-channel");
+        channel.setMaxWidth(220);
+
+        javafx.scene.control.Button openBtn = new javafx.scene.control.Button("Ouvrir");
+        openBtn.getStyleClass().add("res-yt-open-btn");
+        openBtn.setOnAction(e -> openBrowser(v.watchUrl()));
+
+        javafx.scene.control.Button useBtn = new javafx.scene.control.Button("Utiliser");
+        useBtn.getStyleClass().add("res-yt-use-btn");
+        useBtn.setOnAction(e -> selectYouTubeVideo(v));
+
+        HBox actions = new HBox(8, openBtn, useBtn);
+        actions.setAlignment(Pos.CENTER_LEFT);
+
+        VBox card = new VBox(8, thumb, title, channel, actions);
+        card.getStyleClass().add("res-yt-card");
+        card.setCursor(Cursor.HAND);
+        card.setOnMouseClicked(e -> {
+            if (e.getClickCount() >= 2) {
+                selectYouTubeVideo(v);
+            }
+        });
+        return card;
+    }
+
+    private void selectYouTubeVideo(YouTubeService.YouTubeVideo v) {
+        if (v == null) {
+            return;
+        }
+        if (contenuField != null) {
+            contenuField.setText(v.watchUrl());
+        }
+        if ((titreField == null || titreField.getText() == null || titreField.getText().trim().isBlank())
+                && v.title() != null && !v.title().isBlank()) {
+            titreField.setText(v.title());
+        }
+        if (youtubeHint != null) {
+            youtubeHint.setText("Vidéo sélectionnée: " + (v.title() != null ? v.title() : "YouTube"));
+        }
+    }
+
+    private void openBrowser(String url) {
+        if (url == null || url.isBlank()) {
+            return;
+        }
+        try {
+            if (Desktop.isDesktopSupported()) {
+                Desktop.getDesktop().browse(URI.create(url));
+            }
+        } catch (Exception ignored) {
+            // no-op
+        }
     }
 
     @FXML public void onOpenMyProfile() {

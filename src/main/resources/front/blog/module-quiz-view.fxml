@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Priority?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox fx:id="moduleQuizView" alignment="TOP_CENTER" spacing="0" maxWidth="Infinity" prefWidth="1200" prefHeight="900"
+      visible="false" managed="false"
+      stylesheets="@../../styles/page-blog.css"
+      xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1">
+    <HBox alignment="CENTER_LEFT" maxWidth="1100" styleClass="blog-detail-topbar">
+        <Button onAction="#onBackFromQuizToModule" styleClass="blog-back-btn" text="← Retour au module"/>
+    </HBox>
+
+    <VBox maxWidth="1100" spacing="14" styleClass="blog-quiz-page-card">
+        <Label text="Quiz de validation" styleClass="blog-quiz-page-title"/>
+        <Label fx:id="quizModuleTitleLabel" styleClass="blog-quiz-page-subtitle" text="Module : —"/>
+        <Label text="Répondez à toutes les questions. Vous devez obtenir plus de 80% pour valider ce module." styleClass="blog-quiz-page-desc" wrapText="true"/>
+
+        <ScrollPane fitToWidth="true" hbarPolicy="NEVER" prefViewportHeight="520" styleClass="blog-quiz-scroll" vbarPolicy="AS_NEEDED">
+            <content>
+                <VBox fx:id="quizQuestionsContainer" spacing="12" styleClass="blog-quiz-questions-wrap"/>
+            </content>
+        </ScrollPane>
+
+        <HBox alignment="CENTER_LEFT" spacing="14">
+            <Button fx:id="quizSubmitBtn" onAction="#onSubmitQuizFromPage" styleClass="blog-md-quiz-btn" text="Valider le quiz"/>
+            <Button onAction="#onBackFromQuizToModule" styleClass="blog-form-cancel-btn" text="Annuler"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Label fx:id="quizStatusLabel" styleClass="blog-quiz-page-status" text=""/>
+        </HBox>
+    </VBox>
+</VBox>
+

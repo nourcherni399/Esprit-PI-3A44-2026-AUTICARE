@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+
+<StackPane maxWidth="Infinity" prefWidth="1200" prefHeight="320" styleClass="blog-hero-band"
+           stylesheets="@../../styles/page-blog.css"
+           xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1">
+    <Region maxHeight="Infinity" maxWidth="Infinity" styleClass="blog-hero-bg-layer"/>
+    <HBox alignment="CENTER" maxWidth="Infinity" styleClass="blog-hero-inner">
+        <StackPane maxWidth="1060" HBox.hgrow="ALWAYS" styleClass="blog-hero-card-shell">
+            <Region maxHeight="Infinity" maxWidth="Infinity" styleClass="blog-hero-card-bg"/>
+            <StackPane styleClass="blog-hero-card-stack">
+                <VBox alignment="CENTER" spacing="16" styleClass="blog-hero-text-col" StackPane.alignment="CENTER">
+                    <StackPane alignment="CENTER" styleClass="blog-hero-icon-ring">
+                        <ImageView fitHeight="80" fitWidth="80" pickOnBounds="true" preserveRatio="true">
+                            <image><Image url="@../../images/blog/hero-icon.png"/></image>
+                        </ImageView>
+                    </StackPane>
+                    <Label fx:id="heroTitleLabel" styleClass="blog-hero-title" text="Modules &amp; Témoignages" textAlignment="CENTER" wrapText="true"/>
+                    <Label fx:id="heroSubtitleLabel" styleClass="blog-hero-subtitle" text="Explorez nos modules d'apprentissage par catégorie. Partagez vos expériences, découvrez des conseils pratiques et rejoignez notre communauté." textAlignment="CENTER" wrapText="true"/>
+                </VBox>
+                <ImageView fitWidth="240" pickOnBounds="false" preserveRatio="true" styleClass="blog-hero-illustration" StackPane.alignment="TOP_RIGHT">
+                    <image><Image url="@../../images/blog/hero-enfants.png"/></image>
+                </ImageView>
+            </StackPane>
+        </StackPane>
+    </HBox>
+</StackPane>

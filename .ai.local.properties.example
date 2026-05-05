@@ -1,0 +1,11 @@
+# Copy this file to .ai.local.properties and set your real keys.
+groq.api.key=YOUR_GROQ_API_KEY_HERE
+# Clé API Pexels (https://www.pexels.com/api/) — recherche d'images dans les formulaires.
+pexels.api.key=YOUR_PEXELS_API_KEY_HERE
+youtube.api.key=YOUR_YOUTUBE_API_KEY_HERE
+libretranslate.url=https://libretranslate.com/translate
+libretranslate.api.key=YOUR_LIBRETRANSLATE_API_KEY_IF_REQUIRED
+app.default.language=fr
+# LanguageTool API (https://api.languagetool.org/v2/check) — vérification orthographique gratuite sans clé.
+languagetool.url=https://api.languagetool.org/v2/check
+languagetool.api.key=

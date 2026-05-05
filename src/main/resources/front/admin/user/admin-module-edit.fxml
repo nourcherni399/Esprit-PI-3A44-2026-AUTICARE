@@ -4,13 +4,16 @@
 <?import javafx.scene.control.CheckBox?>
 <?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.RadioButton?>
 <?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.ToggleGroup?>
 <?import javafx.scene.control.TextArea?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.FlowPane?>
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Region?>
@@ -79,20 +82,59 @@
                                         <ColumnConstraints hgrow="SOMETIMES" minWidth="120" prefWidth="200"/>
                                     </columnConstraints>
                                     <Label styleClass="admin-form-label" text="Titre *" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="0"/>
-                                    <TextField fx:id="titreField" promptText="Titre du module" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="1"/>
+                                    <HBox alignment="CENTER_LEFT" spacing="8" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="1">
+                                        <TextField fx:id="titreField" promptText="Titre du module" HBox.hgrow="ALWAYS"/>
+                                        <Button text="🎤" onAction="#onDictateModuleTitre" styleClass="admin-mic-icon-btn"/>
+                                    </HBox>
                                     <Label styleClass="admin-form-label" text="Description * (min 10, max 255 car.)" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="2"/>
-                                    <TextArea fx:id="descriptionField" prefRowCount="2" promptText="Résumé court" wrapText="true" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="3"/>
+                                    <HBox alignment="TOP_LEFT" spacing="8" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="3">
+                                        <TextArea fx:id="descriptionField" prefRowCount="2" promptText="Résumé court" wrapText="true" HBox.hgrow="ALWAYS"/>
+                                        <Button text="🎤" onAction="#onDictateModuleDescription" styleClass="admin-mic-icon-btn"/>
+                                    </HBox>
                                     <Label styleClass="admin-form-label" text="Contenu * (min 20 car.)" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="4"/>
-                                    <TextArea fx:id="contenuField" prefRowCount="5" promptText="Texte détaillé du module (obligatoire)" wrapText="true" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="5"/>
+                                    <HBox alignment="TOP_LEFT" spacing="8" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="5">
+                                        <TextArea fx:id="contenuField" prefRowCount="5" promptText="Texte détaillé du module (obligatoire)" wrapText="true" HBox.hgrow="ALWAYS"/>
+                                        <Button text="🎤" onAction="#onDictateModuleContenu" styleClass="admin-mic-icon-btn"/>
+                                    </HBox>
                                     <Label styleClass="admin-form-label" text="Niveau *" GridPane.columnIndex="0" GridPane.rowIndex="6"/>
                                     <Label styleClass="admin-form-label" text="Catégorie *" GridPane.columnIndex="1" GridPane.rowIndex="6"/>
                                     <ComboBox fx:id="niveauCombo" prefWidth="Infinity" promptText="Choisir" GridPane.columnIndex="0" GridPane.rowIndex="7"/>
                                     <ComboBox fx:id="categorieCombo" prefWidth="Infinity" promptText="Choisir" GridPane.columnIndex="1" GridPane.rowIndex="7"/>
-                                    <Label styleClass="admin-form-label" text="Image * (URL ou fichier)" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="8"/>
-                                    <HBox alignment="CENTER_LEFT" spacing="10" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="9">
-                                        <TextField fx:id="imageField" promptText="https://… ou chemin local" HBox.hgrow="ALWAYS"/>
-                                        <Button onAction="#onChooseImageFile" styleClass="admin-btn-outline" text="Choisir un fichier"/>
-                                    </HBox>
+                                    <Label styleClass="admin-form-label" text="Image du module *" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="8"/>
+                                    <VBox spacing="10" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="9">
+                                        <HBox alignment="CENTER_LEFT" spacing="14">
+                                            <RadioButton fx:id="moduleRbUpload" text="Uploader un fichier" selected="true">
+                                                <toggleGroup><ToggleGroup fx:id="moduleImageToggle"/></toggleGroup>
+                                            </RadioButton>
+                                            <RadioButton fx:id="moduleRbPexels" text="Rechercher sur Pexels">
+                                                <toggleGroup><fx:reference source="moduleImageToggle"/></toggleGroup>
+                                            </RadioButton>
+                                        </HBox>
+                                        <VBox fx:id="moduleUploadImagePanel" spacing="8">
+                                            <HBox alignment="CENTER_LEFT" spacing="10">
+                                                <Button onAction="#onChooseImageFile" styleClass="admin-btn-outline" text="Choisir un fichier"/>
+                                                <Label fx:id="moduleImageFileLabel" styleClass="admin-form-hint" text="Aucun fichier choisi" visible="false" managed="false"/>
+                                            </HBox>
+                                            <ImageView fx:id="moduleImagePreview" fitHeight="150" fitWidth="300" preserveRatio="true" visible="false" managed="false" styleClass="blog-article-image-preview"/>
+                                            <HBox alignment="CENTER_LEFT" spacing="8">
+                                                <TextField fx:id="imageField" promptText="Ou collez une URL https://… (optionnel si fichier choisi)" prefColumnCount="40" HBox.hgrow="ALWAYS"/>
+                                                <Button text="🎤" onAction="#onDictateModuleImageField" styleClass="admin-mic-icon-btn"/>
+                                            </HBox>
+                                        </VBox>
+                                        <VBox fx:id="modulePexelsPanel" spacing="10" styleClass="admin-pexels-box" visible="false" managed="false">
+                                            <HBox alignment="CENTER_LEFT" spacing="10" styleClass="admin-pexels-search-row">
+                                                <TextField fx:id="modulePexelsSearchField" promptText="Ex. autisme, éducation, famille..." styleClass="admin-pexels-search-field" HBox.hgrow="ALWAYS"/>
+                                                <Button text="🎤" onAction="#onDictateModulePexelsSearch" styleClass="admin-mic-icon-btn"/>
+                                                <Button onAction="#onModulePexelsSearch" styleClass="admin-btn-pexels-search" text="Rechercher"/>
+                                            </HBox>
+                                            <ScrollPane fitToWidth="true" maxHeight="220" hbarPolicy="NEVER" styleClass="admin-pexels-scroll" vbarPolicy="AS_NEEDED">
+                                                <content>
+                                                    <FlowPane fx:id="modulePexelsFlow" hgap="8" vgap="8" prefWrapLength="640"/>
+                                                </content>
+                                            </ScrollPane>
+                                            <Label fx:id="modulePexelsHint" styleClass="admin-form-hint" text="Cliquez sur une image pour la télécharger et remplir le champ image." wrapText="true"/>
+                                        </VBox>
+                                    </VBox>
                                     <Label styleClass="admin-form-hint" text="La base attend une chaîne (chemin ou URL), max 255 caractères." GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="10"/>
                                     <CheckBox fx:id="publishedCheck" mnemonicParsing="false" selected="true" styleClass="admin-form-checkbox" text="Publié" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="11"/>
                                     <HBox alignment="CENTER_LEFT" spacing="12" styleClass="admin-form-actions" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="12">

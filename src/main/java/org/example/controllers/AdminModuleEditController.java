@@ -1,13 +1,20 @@
 package org.example.controllers;
 
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
+import javafx.scene.control.RadioButton;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
+import javafx.scene.control.TextInputControl;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import org.example.MainApp;
@@ -15,6 +22,8 @@ import org.example.models.ModuleCategorie;
 import org.example.models.ModuleContent;
 import org.example.models.ModuleNiveau;
 import org.example.services.ModuleService;
+import org.example.services.PexelsService;
+import org.example.utils.PexelsThumbGrid;
 import org.example.utils.AdminTopbarHelper;
 import org.example.utils.AppState;
 import org.example.utils.ModuleActionHistory;
@@ -22,7 +31,10 @@ import org.example.utils.ModuleCategorieStringConverter;
 
 import java.io.File;
 import java.io.IOException;
+import java.awt.Robot;
+import java.awt.event.KeyEvent;
 import java.sql.SQLException;
+import java.util.List;
 
 public class AdminModuleEditController {
 
@@ -52,9 +64,28 @@ public class AdminModuleEditController {
     @FXML
     private TextField imageField;
     @FXML
+    private RadioButton moduleRbUpload;
+    @FXML
+    private RadioButton moduleRbPexels;
+    @FXML
+    private VBox moduleUploadImagePanel;
+    @FXML
+    private VBox modulePexelsPanel;
+    @FXML
+    private TextField modulePexelsSearchField;
+    @FXML
+    private FlowPane modulePexelsFlow;
+    @FXML
+    private Label modulePexelsHint;
+    @FXML
+    private Label moduleImageFileLabel;
+    @FXML
+    private ImageView moduleImagePreview;
+    @FXML
     private CheckBox publishedCheck;
 
     private final ModuleService moduleService = new ModuleService();
+    private final PexelsService pexelsService = new PexelsService();
     private ModuleContent editingModule;
     private Integer editingAdminId;
 
@@ -90,8 +121,219 @@ public class AdminModuleEditController {
                 editingModule.getNiveau() != null ? editingModule.getNiveau() : ModuleNiveau.moyen);
         categorieCombo.getSelectionModel().select(editingModule.getCategorieEnum());
         imageField.setText(editingModule.getImage());
+        if (moduleImageFileLabel != null && editingModule.getImage() != null && !editingModule.getImage().isBlank()) {
+            String name = editingModule.getImage();
+            int sep = Math.max(name.lastIndexOf('/'), name.lastIndexOf('\\'));
+            if (sep >= 0) {
+                name = name.substring(sep + 1);
+            }
+            if (name.length() > 80) {
+                name = name.substring(0, 77) + "…";
+            }
+            moduleImageFileLabel.setText(name);
+            
+            // Preview de l'image existante
+            if (moduleImagePreview != null) {
+                try {
+                    String imgUrl = editingModule.getImage();
+                    if (!imgUrl.startsWith("http") && !imgUrl.startsWith("file")) {
+                        imgUrl = new File(imgUrl).toURI().toString();
+                    }
+                    moduleImagePreview.setImage(new Image(imgUrl, true));
+                    moduleImagePreview.setVisible(true);
+                    moduleImagePreview.setManaged(true);
+                    moduleImageFileLabel.setVisible(false);
+                    moduleImageFileLabel.setManaged(false);
+                } catch (Exception e) {
+                    moduleImagePreview.setVisible(false);
+                    moduleImagePreview.setManaged(false);
+                    moduleImageFileLabel.setVisible(true);
+                    moduleImageFileLabel.setManaged(true);
+                }
+            }
+        } else if (moduleImageFileLabel != null) {
+            moduleImageFileLabel.setText("Aucun fichier choisi");
+            moduleImageFileLabel.setVisible(true);
+            moduleImageFileLabel.setManaged(true);
+            if (moduleImagePreview != null) {
+                moduleImagePreview.setImage(null);
+                moduleImagePreview.setVisible(false);
+                moduleImagePreview.setManaged(false);
+            }
+        }
         publishedCheck.setSelected(editingModule.isPublished());
         editingAdminId = editingModule.getAdminId();
+        setupModuleImagePanels();
+    }
+
+    private void setupModuleImagePanels() {
+        if (moduleRbUpload == null || moduleRbUpload.getToggleGroup() == null) {
+            return;
+        }
+        moduleRbUpload.getToggleGroup().selectedToggleProperty().addListener((obs, o, n) -> updateModuleImagePanels());
+        updateModuleImagePanels();
+    }
+
+    private void updateModuleImagePanels() {
+        if (moduleUploadImagePanel == null || modulePexelsPanel == null) {
+            return;
+        }
+        boolean upload = moduleRbUpload == null || moduleRbUpload.isSelected();
+        moduleUploadImagePanel.setVisible(upload);
+        moduleUploadImagePanel.setManaged(upload);
+        modulePexelsPanel.setVisible(!upload);
+        modulePexelsPanel.setManaged(!upload);
+    }
+
+    @FXML
+    public void onDictateModuleTitre() {
+        startWindowsDictation(titreField);
+    }
+
+    @FXML
+    public void onDictateModuleDescription() {
+        startWindowsDictation(descriptionField);
+    }
+
+    @FXML
+    public void onDictateModuleContenu() {
+        startWindowsDictation(contenuField);
+    }
+
+    @FXML
+    public void onDictateModuleImageField() {
+        startWindowsDictation(imageField);
+    }
+
+    @FXML
+    public void onDictateModulePexelsSearch() {
+        startWindowsDictation(modulePexelsSearchField);
+    }
+
+    private void startWindowsDictation(TextInputControl target) {
+        if (target == null) return;
+        String os = System.getProperty("os.name", "").toLowerCase();
+        if (!os.contains("win")) {
+            alert(Alert.AlertType.INFORMATION, "Dictée",
+                    "Fonction prévue pour Windows. Cliquez dans le champ puis utilisez le raccourci système de dictée.");
+            return;
+        }
+        target.requestFocus();
+        target.positionCaret(target.getLength());
+        Thread worker = new Thread(() -> {
+            try {
+                Thread.sleep(120);
+                Robot robot = new Robot();
+                robot.keyPress(KeyEvent.VK_WINDOWS);
+                robot.keyPress(KeyEvent.VK_H);
+                robot.keyRelease(KeyEvent.VK_H);
+                robot.keyRelease(KeyEvent.VK_WINDOWS);
+            } catch (Exception e) {
+                Platform.runLater(() -> alert(Alert.AlertType.WARNING, "Dictée",
+                        "Impossible d'ouvrir la dictée automatiquement. Utilisez Win + H."));
+            }
+        }, "windows-dictation-admin-edit");
+        worker.setDaemon(true);
+        worker.start();
+    }
+
+    @FXML
+    public void onModulePexelsSearch() {
+        String q = modulePexelsSearchField != null ? modulePexelsSearchField.getText().trim() : "";
+        if (q.isBlank()) {
+            alert(Alert.AlertType.WARNING, "Pexels", "Saisissez des mots-clés (ex. autisme, famille…).");
+            return;
+        }
+        if (modulePexelsFlow != null) {
+            modulePexelsFlow.getChildren().clear();
+        }
+        Thread worker = new Thread(() -> {
+            try {
+                List<PexelsService.PexelsPhoto> list = pexelsService.search(q, 18);
+                Platform.runLater(() -> {
+                    if (modulePexelsFlow != null) {
+                        PexelsThumbGrid.fill(modulePexelsFlow, list, this::runModulePexelsPick);
+                    }
+                    if (modulePexelsHint != null) {
+                        modulePexelsHint.setText(list.isEmpty()
+                                ? "Aucun résultat. Essayez d'autres mots-clés."
+                                : "Cliquez sur une image pour la télécharger et remplir le champ image.");
+                    }
+                });
+            } catch (Exception e) {
+                Platform.runLater(() -> alert(Alert.AlertType.ERROR, "Pexels",
+                        e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName()));
+            }
+        }, "admin-module-edit-pexels-search");
+        worker.setDaemon(true);
+        worker.start();
+    }
+
+    private void runModulePexelsPick(PexelsService.PexelsPhoto photo) {
+        Thread worker = new Thread(() -> {
+            try {
+                String path;
+                boolean usedFallbackUrl = false;
+                try {
+                    path = pexelsService.downloadToLocalFile(photo.downloadUrl(), photo.id());
+                } catch (Exception ex) {
+                    String fallback = photo.downloadUrl();
+                    if (fallback == null || fallback.isBlank() || fallback.length() > MAX_IMAGE) {
+                        throw ex;
+                    }
+                    path = fallback;
+                    usedFallbackUrl = true;
+                }
+                if (path.length() > MAX_IMAGE) {
+                    String fallback = photo.downloadUrl();
+                    if (fallback == null || fallback.isBlank() || fallback.length() > MAX_IMAGE) {
+                        Platform.runLater(() -> alert(Alert.AlertType.WARNING, "Image",
+                                "Chemin/URL trop long (max " + MAX_IMAGE + " caractères)."));
+                        return;
+                    }
+                    path = fallback;
+                    usedFallbackUrl = true;
+                }
+                final String selectedPath = path;
+                final boolean fallbackUsed = usedFallbackUrl;
+                Platform.runLater(() -> {
+                    if (imageField != null) {
+                        imageField.setText(selectedPath);
+                    }
+                    if (moduleImageFileLabel != null) {
+                        String name = selectedPath;
+                        int sep = Math.max(name.lastIndexOf('/'), name.lastIndexOf('\\'));
+                        if (sep >= 0) {
+                            name = name.substring(sep + 1);
+                        }
+                        moduleImageFileLabel.setText(fallbackUsed ? "Pexels (URL) — " + name : "Pexels — " + name);
+                    }
+                    if (moduleImagePreview != null) {
+                        try {
+                            String imgUrl = selectedPath;
+                            if (!imgUrl.startsWith("http") && !imgUrl.startsWith("file")) {
+                                imgUrl = new File(imgUrl).toURI().toString();
+                            }
+                            moduleImagePreview.setImage(new Image(imgUrl, true));
+                            moduleImagePreview.setVisible(true);
+                            moduleImagePreview.setManaged(true);
+                            if (moduleImageFileLabel != null) {
+                                moduleImageFileLabel.setVisible(false);
+                                moduleImageFileLabel.setManaged(false);
+                            }
+                        } catch (Exception e) {
+                            moduleImagePreview.setVisible(false);
+                            moduleImagePreview.setManaged(false);
+                        }
+                    }
+                });
+            } catch (Exception e) {
+                Platform.runLater(() -> alert(Alert.AlertType.ERROR, "Pexels",
+                        e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName()));
+            }
+        }, "admin-module-edit-pexels-download");
+        worker.setDaemon(true);
+        worker.start();
     }
 
     private void navigateToModulesList() {
@@ -122,6 +364,28 @@ public class AdminModuleEditController {
                 return;
             }
             imageField.setText(path);
+            if (moduleImageFileLabel != null) {
+                moduleImageFileLabel.setText(file.getName());
+            }
+            if (moduleImagePreview != null) {
+                try {
+                    Image img = new Image(file.toURI().toString());
+                    moduleImagePreview.setImage(img);
+                    moduleImagePreview.setVisible(true);
+                    moduleImagePreview.setManaged(true);
+                    if (moduleImageFileLabel != null) {
+                        moduleImageFileLabel.setVisible(false);
+                        moduleImageFileLabel.setManaged(false);
+                    }
+                } catch (Exception e) {
+                    moduleImagePreview.setVisible(false);
+                    moduleImagePreview.setManaged(false);
+                }
+            }
+            if (moduleRbUpload != null) {
+                moduleRbUpload.setSelected(true);
+            }
+            updateModuleImagePanels();
             System.out.println("Image sélectionnée : " + file.getAbsolutePath());
         }
     }
@@ -190,6 +454,17 @@ public class AdminModuleEditController {
         ModuleCategorie cat = categorieCombo.getSelectionModel().getSelectedItem();
         if (cat == null) {
             alert(Alert.AlertType.WARNING, "Catégorie", "Choisissez une catégorie.");
+            return;
+        }
+        try {
+            ModuleService.LevelProgressionValidation progression =
+                    moduleService.validateNiveauProgression(cat, niv, editingModule != null ? editingModule.getId() : null);
+            if (!progression.allowed()) {
+                alert(Alert.AlertType.WARNING, "Progression des niveaux", progression.message());
+                return;
+            }
+        } catch (SQLException e) {
+            alert(Alert.AlertType.ERROR, "Erreur", "Impossible de vérifier la progression des niveaux : " + e.getMessage());
             return;
         }
         String img = trim(imageField);

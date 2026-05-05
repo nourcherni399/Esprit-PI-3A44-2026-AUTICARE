@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.shape.Rectangle?>
+
+<VBox xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:id="libraryView"
+      spacing="25"
+      styleClass="blog-library-view"
+      visible="false" managed="false">
+
+    <padding>
+        <Insets top="20" right="30" bottom="30" left="30"/>
+    </padding>
+
+    <!-- Hero Banner for Library -->
+    <StackPane fx:id="libraryHeroBanner" styleClass="blog-library-hero">
+        <HBox alignment="CENTER" spacing="40" styleClass="blog-library-hero-content">
+            <padding>
+                <Insets top="30" right="40" bottom="30" left="40"/>
+            </padding>
+            
+            <VBox alignment="CENTER" spacing="15" HBox.hgrow="ALWAYS">
+                <StackPane maxWidth="80" maxHeight="80">
+                    <ImageView fx:id="libraryIconImg" fitWidth="80" fitHeight="80" preserveRatio="true"/>
+                </StackPane>
+                
+                <Label text="Plus d'informations sur notre blog" styleClass="blog-library-hero-title"/>
+                <Label text="Suivez les nouveaux modules et articles, retrouvez vos favoris enregistrés." 
+                       styleClass="blog-library-hero-subtitle" wrapText="true" textAlignment="CENTER"/>
+            </VBox>
+            
+            <ImageView fx:id="libraryGirlImg" fitWidth="220" fitHeight="220" preserveRatio="true"/>
+        </HBox>
+    </StackPane>
+
+    <!-- Filter Buttons -->
+    <HBox spacing="12" alignment="CENTER_LEFT">
+        <Button text="Tous" fx:id="libFilterTous" styleClass="blog-lib-filter-btn, blog-lib-filter-active" onAction="#onLibraryFilterTous"/>
+        <Button text="Enregistré" fx:id="libFilterSaved" styleClass="blog-lib-filter-btn" onAction="#onLibraryFilterSaved"/>
+        <Button text="Favoris" fx:id="libFilterFavs" styleClass="blog-lib-filter-btn" onAction="#onLibraryFilterFavs"/>
+        <Button text="Bibliothèque" fx:id="libFilterLib" styleClass="blog-lib-filter-btn" onAction="#onLibraryFilterLib"/>
+    </HBox>
+
+    <!-- Content Area (Modules/Articles list) -->
+    <VBox spacing="20">
+        <Label fx:id="librarySectionTitle" text="Tous les contenus" styleClass="blog-lib-section-title"/>
+        <FlowPane fx:id="libraryContentPane" hgap="20" vgap="25" alignment="TOP_LEFT"/>
+    </VBox>
+
+</VBox>

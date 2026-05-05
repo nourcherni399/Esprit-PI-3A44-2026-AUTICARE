@@ -31,6 +31,7 @@ import javafx.scene.text.FontWeight;
 import javafx.scene.text.TextAlignment;
 import javafx.geometry.Pos;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
@@ -51,6 +52,7 @@ import org.example.utils.AppState;
 import org.example.utils.ModuleActionHistory;
 import org.example.utils.ModulesPdfExporter;
 
+import java.awt.Desktop;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
@@ -97,6 +99,18 @@ public class AdminModulesController {
     @FXML
     private TableView<Ressource> resourcesPlaceholderTable;
     @FXML
+    private VBox youtubePlaylistList;
+    @FXML
+    private Label youtubePlaylistHint;
+    @FXML
+    private Label youtubePlaylistCountLabel;
+    @FXML
+    private ImageView youtubePreviewImage;
+    @FXML
+    private Label youtubePreviewTitle;
+    @FXML
+    private Button youtubePreviewOpenBtn;
+    @FXML
     private StackPane categoryChartPane;
     @FXML
     private StackPane levelChartPane;
@@ -138,6 +152,7 @@ public class AdminModulesController {
     private final Map<Integer, String> moduleTitleById = new HashMap<>();
     private final ObservableList<Ressource> resourceMasterList = FXCollections.observableArrayList();
     private FilteredList<Ressource> filteredResourceList;
+    private String selectedYoutubeUrl;
 
     @FXML
     public void initialize() {
@@ -586,6 +601,7 @@ public class AdminModulesController {
             filteredResourceList.setPredicate(r -> sel.equals(moduleTitleById.get(r.getModuleId())));
         }
         applyTableHeight(resourcesPlaceholderTable);
+        refreshYouTubePlaylist();
     }
 
     private void reloadResources() {
@@ -603,10 +619,137 @@ public class AdminModulesController {
             resourcesPlaceholderTable.refresh();
             modulesTable.refresh();
             applyTableHeight(resourcesPlaceholderTable);
+            refreshYouTubePlaylist();
         } catch (SQLException e) {
             alert(Alert.AlertType.ERROR, "Erreur", "Impossible de charger les ressources : " + e.getMessage());
         }
     }
+
+    private void refreshYouTubePlaylist() {
+        if (youtubePlaylistList == null) {
+            return;
+        }
+        youtubePlaylistList.getChildren().clear();
+        List<Ressource> source = filteredResourceList != null ? new ArrayList<>(filteredResourceList) : new ArrayList<>(resourceMasterList);
+        List<YouTubePlaylistItem> items = new ArrayList<>();
+        for (Ressource r : source) {
+            String videoId = extractYouTubeVideoId(r.getContenu());
+            if (videoId == null || videoId.isBlank()) {
+                continue;
+            }
+            items.add(new YouTubePlaylistItem(r, videoId));
+        }
+        for (YouTubePlaylistItem item : items) {
+            youtubePlaylistList.getChildren().add(buildYouTubePlaylistListItem(item));
+        }
+
+        int added = items.size();
+        if (youtubePlaylistCountLabel != null) {
+            youtubePlaylistCountLabel.setText(added + (added > 1 ? " vidéos" : " vidéo"));
+        }
+
+        if (youtubePlaylistHint != null) {
+            youtubePlaylistHint.setVisible(added == 0);
+            youtubePlaylistHint.setManaged(added == 0);
+            youtubePlaylistHint.setText("Aucune vidéo YouTube dans les resources.");
+        }
+        if (added > 0) {
+            selectYouTubeItem(items.get(0));
+        } else {
+            clearYouTubePreview();
+        }
+    }
+
+    private HBox buildYouTubePlaylistListItem(YouTubePlaylistItem item) {
+        Ressource ressource = item.ressource();
+        String thumbUrl = "https://img.youtube.com/vi/" + item.videoId() + "/mqdefault.jpg";
+
+        ImageView imageView = new ImageView(new Image(thumbUrl, 118, 66, true, true, true));
+        imageView.setFitWidth(118);
+        imageView.setFitHeight(66);
+        imageView.getStyleClass().add("mod-youtube-list-thumb");
+
+        Label title = new Label(ressource.getTitre() != null && !ressource.getTitre().isBlank() ? ressource.getTitre() : "Vidéo YouTube");
+        title.setWrapText(true);
+        title.setMaxWidth(150);
+        title.getStyleClass().add("mod-youtube-list-title");
+
+        HBox row = new HBox(8, imageView, title);
+        row.getStyleClass().add("mod-youtube-list-item");
+        row.setOnMouseClicked(e -> selectYouTubeItem(item));
+        return row;
+    }
+
+    private static String extractYouTubeVideoId(String raw) {
+        if (raw == null || raw.isBlank()) {
+            return null;
+        }
+        String t = raw.trim();
+        java.util.regex.Matcher m1 = java.util.regex.Pattern.compile("(?i)(?:v=)([A-Za-z0-9_-]{11})").matcher(t);
+        if (m1.find()) return m1.group(1);
+        java.util.regex.Matcher m2 = java.util.regex.Pattern.compile("(?i)youtu\\.be/([A-Za-z0-9_-]{11})").matcher(t);
+        if (m2.find()) return m2.group(1);
+        java.util.regex.Matcher m3 = java.util.regex.Pattern.compile("(?i)/embed/([A-Za-z0-9_-]{11})").matcher(t);
+        if (m3.find()) return m3.group(1);
+        return null;
+    }
+
+    private void openExternalUrl(String url) {
+        if (url == null || url.isBlank()) {
+            return;
+        }
+        try {
+            if (Desktop.isDesktopSupported()) {
+                Desktop.getDesktop().browse(URI.create(url));
+            }
+        } catch (Exception ignored) {
+            // no-op
+        }
+    }
+
+    private void selectYouTubeItem(YouTubePlaylistItem item) {
+        if (item == null) {
+            clearYouTubePreview();
+            return;
+        }
+        String thumbUrl = "https://img.youtube.com/vi/" + item.videoId() + "/maxresdefault.jpg";
+        if (youtubePreviewImage != null) {
+            youtubePreviewImage.setImage(new Image(thumbUrl, 700, 360, false, true, true));
+        }
+        if (youtubePreviewTitle != null) {
+            String title = item.ressource().getTitre() != null && !item.ressource().getTitre().isBlank()
+                    ? item.ressource().getTitre()
+                    : "Vidéo YouTube";
+            youtubePreviewTitle.setText(title);
+        }
+        selectedYoutubeUrl = "https://www.youtube.com/watch?v=" + item.videoId();
+        if (youtubePreviewOpenBtn != null) {
+            youtubePreviewOpenBtn.setDisable(false);
+        }
+    }
+
+    private void clearYouTubePreview() {
+        if (youtubePreviewImage != null) {
+            youtubePreviewImage.setImage(null);
+        }
+        if (youtubePreviewTitle != null) {
+            youtubePreviewTitle.setText("Sélectionnez une vidéo");
+        }
+        selectedYoutubeUrl = null;
+        if (youtubePreviewOpenBtn != null) {
+            youtubePreviewOpenBtn.setDisable(true);
+        }
+    }
+
+    @FXML
+    public void onOpenSelectedYoutubeVideo() {
+        if (selectedYoutubeUrl == null || selectedYoutubeUrl.isBlank()) {
+            return;
+        }
+        openExternalUrl(selectedYoutubeUrl);
+    }
+
+    private record YouTubePlaylistItem(Ressource ressource, String videoId) {}
 
     private void openEditRessource(Ressource r) {
         try {
