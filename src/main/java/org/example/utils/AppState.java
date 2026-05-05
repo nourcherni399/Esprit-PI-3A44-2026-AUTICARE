@@ -3,6 +3,7 @@ package org.example.utils;
 import org.example.models.ModuleContent;
 import org.example.models.Ressource;
 import org.example.models.User;
+import org.example.models.AppLanguage;
 
 
 import java.util.ArrayList;
@@ -11,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 
 public class AppState {
+    private static AppLanguage currentLanguage = resolveDefaultLanguage();
     private static User currentUser;
     /** Utilisateur affiché sur l’écran admin « détail » (œil dans la liste). */
     private static User adminDetailUser;
@@ -93,6 +95,7 @@ public class AppState {
 
     public static void clear() {
         currentUser = null;
+        currentLanguage = AppLanguage.FR;
         adminDetailUser = null;
         clearAdminEditContext();
         clearAdminDeleteContext();
@@ -133,6 +136,19 @@ public class AppState {
 
     public static void clearPendingOpenAdminProductEditor() {
         pendingOpenAdminProductEditor = false;
+    }
+
+    public static AppLanguage getCurrentLanguage() {
+        return currentLanguage != null ? currentLanguage : AppLanguage.FR;
+    }
+
+    public static void setCurrentLanguage(AppLanguage language) {
+        currentLanguage = language != null ? language : AppLanguage.FR;
+    }
+
+    private static AppLanguage resolveDefaultLanguage() {
+        String configured = LocalAiPropertiesFile.readProperty("app.default.language");
+        return AppLanguage.fromCode(configured);
     }
 
     public static User getAdminDetailUser() {

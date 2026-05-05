@@ -345,14 +345,7 @@ public class PublicShellController {
         newsTickerTrack = new HBox(0);
         newsTickerTrack.setAlignment(Pos.CENTER_LEFT);
         newsTickerTrack.getStyleClass().add("home-news-ticker-track");
-        Integer currentUserId = AppState.getCurrentUser() != null ? AppState.getCurrentUser().getId() : null;
-        List<String> headlines = NewsTickerHeadlines.loadFromDatabase(
-                shellEventService,
-                shellProductService,
-                shellRegistrationService,
-                shellOrderService,
-                shellAiRecommendationService,
-                currentUserId);
+        List<String> headlines = NewsTickerHeadlines.loadFromDatabase(shellEventService);
         newsTickerSeg1 = buildNewsTickerSegment(headlines);
         HBox seg2 = buildNewsTickerSegment(headlines);
         newsTickerTrack.getChildren().setAll(newsTickerSeg1, seg2);
