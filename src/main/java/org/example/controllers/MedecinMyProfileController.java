@@ -4,12 +4,14 @@ import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.StackPane;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import org.example.models.User;
+import org.example.services.GoogleCalendarOAuthService;
 import org.example.services.UserService;
 import org.example.utils.AppState;
 import org.example.utils.UserAvatarGraphic;
@@ -58,6 +60,12 @@ public class MedecinMyProfileController {
     private Button saveButton;
     @FXML
     private Button modifyButton;
+    @FXML
+    private Button gcalLinkButton;
+    @FXML
+    private Button gcalUnlinkButton;
+    @FXML
+    private Label gcalHintLabel;
 
     private final UserService userService = new UserService();
     private Stage dialogStage;
@@ -97,6 +105,7 @@ public class MedecinMyProfileController {
             }
             editingUser = fresh.get();
             bindForm(editingUser);
+            refreshGoogleCalendarSection();
             enterViewMode();
         } catch (SQLException e) {
             alert(Alert.AlertType.ERROR, "Erreur", e.getMessage());
@@ -331,6 +340,88 @@ public class MedecinMyProfileController {
             return "";
         }
         return f.getText().trim();
+    }
+
+    private void refreshGoogleCalendarSection() {
+        if (gcalLinkButton == null || gcalUnlinkButton == null) {
+            return;
+        }
+        boolean linked = editingUser != null
+                && editingUser.getGoogleCalendarRefreshToken() != null
+                && !editingUser.getGoogleCalendarRefreshToken().isBlank();
+        gcalLinkButton.setDisable(linked);
+        gcalUnlinkButton.setDisable(!linked);
+        if (gcalHintLabel != null) {
+            gcalHintLabel.setText(linked
+                    ? "Google Agenda est connecté : les rendez-vous confirmés sont ajoutés automatiquement à votre agenda principal."
+                    : "Connectez votre compte Google pour créer automatiquement les événements lors de la confirmation d’un rendez-vous. "
+                    + "Sans connexion, une page Google Agenda préremplie s’ouvre dans le navigateur.");
+        }
+    }
+
+    @FXML
+    private void onLinkGoogleCalendar() {
+        if (editingUser == null) {
+            return;
+        }
+        new Thread(() -> {
+            try {
+                Optional<String> rt = GoogleCalendarOAuthService.authorizeInteractive();
+                Platform.runLater(() -> {
+                    if (rt.isEmpty()) {
+                        alert(Alert.AlertType.WARNING, "Google Agenda", "Connexion annulée ou non finalisée.");
+                        return;
+                    }
+                    try {
+                        userService.updateGoogleCalendarRefreshToken(editingUser.getId(), rt.get());
+                        Optional<User> again = userService.findById(editingUser.getId());
+                        if (again.isPresent()) {
+                            editingUser = again.get();
+                            AppState.setCurrentUser(editingUser);
+                            refreshGoogleCalendarSection();
+                        }
+                        alert(Alert.AlertType.INFORMATION, "Google Agenda",
+                                "Connexion enregistrée. Les prochains rendez-vous confirmés seront ajoutés à votre agenda.");
+                    } catch (SQLException e) {
+                        alert(Alert.AlertType.ERROR, "Google Agenda",
+                                e.getMessage() != null ? e.getMessage() : "Erreur base de données.");
+                    }
+                });
+            } catch (Exception e) {
+                Platform.runLater(() -> alert(Alert.AlertType.ERROR, "Google Agenda",
+                        e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName()));
+            }
+        }, "gcal-oauth").start();
+    }
+
+    @FXML
+    private void onUnlinkGoogleCalendar() {
+        if (editingUser == null) {
+            return;
+        }
+        Alert c = new Alert(Alert.AlertType.CONFIRMATION);
+        c.setTitle("Google Agenda");
+        c.setHeaderText(null);
+        c.setContentText("Déconnecter Google Agenda ? Les prochains rendez-vous ouvriront à nouveau le navigateur (page préremplie).");
+        if (dialogStage != null) {
+            c.initOwner(dialogStage);
+        }
+        Optional<ButtonType> r = c.showAndWait();
+        if (r.isEmpty() || r.get() != ButtonType.OK) {
+            return;
+        }
+        try {
+            userService.updateGoogleCalendarRefreshToken(editingUser.getId(), null);
+            Optional<User> again = userService.findById(editingUser.getId());
+            if (again.isPresent()) {
+                editingUser = again.get();
+                AppState.setCurrentUser(editingUser);
+                refreshGoogleCalendarSection();
+            }
+            alert(Alert.AlertType.INFORMATION, "Google Agenda", "Déconnexion effectuée.");
+        } catch (SQLException e) {
+            alert(Alert.AlertType.ERROR, "Google Agenda", e.getMessage());
+        }
     }
 
     private void alert(Alert.AlertType type, String title, String msg) {

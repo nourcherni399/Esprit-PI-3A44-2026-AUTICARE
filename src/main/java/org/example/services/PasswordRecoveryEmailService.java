@@ -35,6 +35,23 @@ public class PasswordRecoveryEmailService {
         if (pinCode == null || pinCode.isBlank()) {
             throw new MessagingException("PIN manquant.");
         }
+        sendTransactionalHtml(
+                recipientEmail.trim(),
+                "AutiCare - Reinitialisation du mot de passe",
+                buildHtmlTemplate(recipientEmail.trim(), pinCode)
+        );
+    }
+
+    public void sendTransactionalHtml(String recipientEmail, String subject, String htmlBody) throws MessagingException {
+        if (recipientEmail == null || recipientEmail.isBlank()) {
+            throw new MessagingException("Destinataire email manquant.");
+        }
+        if (subject == null || subject.isBlank()) {
+            throw new MessagingException("Sujet email manquant.");
+        }
+        if (htmlBody == null || htmlBody.isBlank()) {
+            throw new MessagingException("Contenu HTML email manquant.");
+        }
 
         String smtpUser = readConfig("auticare.smtp.user", "AUTICARE_SMTP_USER", DEFAULT_FROM);
         String smtpPasswordRaw = readConfig("auticare.smtp.appPassword", "AUTICARE_SMTP_APP_PASSWORD", "");
@@ -76,8 +93,8 @@ public class PasswordRecoveryEmailService {
         Message message = new MimeMessage(session);
         message.setFrom(new InternetAddress(smtpUser));
         message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(recipientEmail.trim(), false));
-        message.setSubject("AutiCare - Reinitialisation du mot de passe");
-        message.setContent(buildHtmlTemplate(recipientEmail.trim(), pinCode), "text/html; charset=UTF-8");
+        message.setSubject(subject.trim());
+        message.setContent(htmlBody, "text/html; charset=UTF-8");
         Transport.send(message);
     }
 

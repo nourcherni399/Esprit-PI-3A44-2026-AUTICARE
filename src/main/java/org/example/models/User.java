@@ -26,6 +26,8 @@ public class User {
     private String image;
     /** Données biométriques / template Face API (colonne MySQL {@code data_face_api}). */
     private String dataFaceApi;
+    /** Refresh token OAuth Google Calendar (offline access). */
+    private String googleCalendarRefreshToken;
 
     public User() {
     }
@@ -68,6 +70,8 @@ public class User {
     public void setImage(String image) { this.image = image; }
     public String getDataFaceApi() { return dataFaceApi; }
     public void setDataFaceApi(String dataFaceApi) { this.dataFaceApi = dataFaceApi; }
+    public String getGoogleCalendarRefreshToken() { return googleCalendarRefreshToken; }
+    public void setGoogleCalendarRefreshToken(String googleCalendarRefreshToken) { this.googleCalendarRefreshToken = googleCalendarRefreshToken; }
 
     @Override
     public String toString() {

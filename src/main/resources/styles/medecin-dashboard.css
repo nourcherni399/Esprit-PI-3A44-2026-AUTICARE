@@ -1322,6 +1322,18 @@
     -fx-text-fill: #991b1b;
 }
 
+.button.med-rdv-kanban-icon-btn.med-rdv-kanban-icon-sms {
+    -fx-background-color: #ccfbf1;
+    -fx-border-color: rgba(13, 148, 136, 0.45);
+    -fx-text-fill: #0f766e;
+}
+
+.button.med-rdv-kanban-icon-btn.med-rdv-kanban-icon-sms:hover {
+    -fx-background-color: #99f6e4;
+    -fx-border-color: #0d9488;
+    -fx-text-fill: #115e59;
+}
+
 .med-rdv-empty {
     -fx-padding: 48 24 48 24;
 }
@@ -1764,24 +1776,6 @@
     -fx-text-fill: #6b7280;
 }
 
-.button.med-notif-clear-btn {
-    -fx-background-color: #ffffff;
-    -fx-text-fill: #ef4444;
-    -fx-font-size: 14px;
-    -fx-font-weight: 700;
-    -fx-padding: 4 10 4 10;
-    -fx-background-radius: 10;
-    -fx-border-radius: 10;
-    -fx-border-color: #fecaca;
-    -fx-border-width: 1.2;
-    -fx-cursor: hand;
-}
-
-.button.med-notif-clear-btn:hover {
-    -fx-background-color: #fff1f2;
-    -fx-border-color: #fda4af;
-}
-
 .med-notif-sep {
     -fx-padding: 2 0 4 0;
 }
@@ -2077,6 +2071,100 @@
 
 .med-note-detail-btn-back:hover {
     -fx-background-color: #f9fafb;
+}
+
+/* Détail RDV depuis disponibilité */
+.dialog-pane.med-slot-rdv-detail-pane {
+    -fx-background-color: #eef2f7;
+    -fx-padding: 0;
+}
+
+.med-slot-rdv-detail-root {
+    -fx-background-color: #f8fafd;
+    -fx-background-radius: 12;
+    -fx-border-color: rgba(148, 163, 184, 0.35);
+    -fx-border-radius: 12;
+    -fx-border-width: 1;
+}
+
+.med-slot-rdv-detail-header {
+    -fx-background-color: linear-gradient(to right, #dbeafe 0%, #e0f2fe 100%);
+    -fx-padding: 16 18 14 18;
+    -fx-background-radius: 12 12 0 0;
+    -fx-border-color: rgba(59, 130, 246, 0.22);
+    -fx-border-width: 0 0 1 0;
+}
+
+.med-slot-rdv-detail-title {
+    -fx-font-size: 20px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #1e3a8a;
+}
+
+.med-slot-rdv-detail-sub {
+    -fx-font-size: 12px;
+    -fx-text-fill: #475569;
+}
+
+.med-slot-rdv-detail-scroll,
+.med-slot-rdv-detail-scroll .viewport {
+    -fx-background-color: #f8fafd;
+}
+
+.med-slot-rdv-detail-body {
+    -fx-background-color: #f8fafd;
+}
+
+.med-slot-rdv-detail-grid {
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 10;
+    -fx-border-color: rgba(148, 163, 184, 0.28);
+    -fx-border-radius: 10;
+    -fx-border-width: 1;
+    -fx-padding: 12 14 12 14;
+}
+
+.med-slot-rdv-detail-caption {
+    -fx-font-size: 11px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #64748b;
+}
+
+.med-slot-rdv-detail-value {
+    -fx-font-size: 14px;
+    -fx-font-weight: 600;
+    -fx-text-fill: #0f172a;
+}
+
+.med-slot-rdv-detail-notes-box {
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 10;
+    -fx-border-color: rgba(148, 163, 184, 0.28);
+    -fx-border-radius: 10;
+    -fx-border-width: 1;
+    -fx-padding: 10 12 10 12;
+}
+
+.med-slot-rdv-detail-notes {
+    -fx-font-size: 13px;
+    -fx-text-fill: #334155;
+}
+
+.med-slot-rdv-detail-actions {
+    -fx-background-color: #f8fafd;
+}
+
+.button.med-slot-rdv-detail-close-btn {
+    -fx-background-color: #2563eb;
+    -fx-text-fill: #ffffff;
+    -fx-font-weight: 700;
+    -fx-padding: 9 18 9 18;
+    -fx-background-radius: 8;
+    -fx-cursor: hand;
+}
+
+.button.med-slot-rdv-detail-close-btn:hover {
+    -fx-background-color: #1d4ed8;
 }
 
 /* Titres kanban RDV : spécificité maximale (si un parent impose du blanc) */

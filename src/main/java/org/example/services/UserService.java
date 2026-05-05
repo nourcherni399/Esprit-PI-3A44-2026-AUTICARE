@@ -90,6 +90,30 @@ public class UserService implements IService<User> {
         }
     }
 
+    /**
+     * Persiste (ou supprime si null/vide) le refresh token Google Calendar du médecin.
+     */
+    public void updateGoogleCalendarRefreshToken(int userId, String refreshToken) throws SQLException {
+        String sql = "UPDATE `user` SET google_calendar_refresh_token=?, updated_at=? WHERE id=?";
+        try (PreparedStatement ps = MyDatabase.getConnection().prepareStatement(sql)) {
+            if (refreshToken == null || refreshToken.isBlank()) {
+                ps.setNull(1, Types.VARCHAR);
+            } else {
+                ps.setString(1, refreshToken.trim());
+            }
+            ps.setTimestamp(2, new Timestamp(System.currentTimeMillis()));
+            ps.setInt(3, userId);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            // Schéma non migré: ne pas bloquer le profil si la colonne n'existe pas.
+            String msg = e.getMessage() != null ? e.getMessage().toLowerCase() : "";
+            if (msg.contains("unknown column") || msg.contains("colonne inconnue")) {
+                return;
+            }
+            throw e;
+        }
+    }
+
     @Override
     public List<User> findAll() throws SQLException {
         List<User> users = new ArrayList<>();
@@ -428,6 +452,12 @@ public class UserService implements IService<User> {
             u.setDataFaceApi(rs.wasNull() ? null : dfa);
         } catch (SQLException ignored) {
             /* colonne absente sur très anciennes bases */
+        }
+        try {
+            String rt = rs.getString("google_calendar_refresh_token");
+            u.setGoogleCalendarRefreshToken(rs.wasNull() ? null : rt);
+        } catch (SQLException ignored) {
+            /* colonne absente sur anciennes bases */
         }
         return u;
     }

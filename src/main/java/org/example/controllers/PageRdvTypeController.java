@@ -34,8 +34,6 @@ public class PageRdvTypeController implements PublicShellAware {
     @FXML
     private Label typeSidebarEmail;
     @FXML
-    private ComboBox<String> typeVoiceLang;
-    @FXML
     private VBox typeOptionsBox;
     @FXML
     private ComboBox<String> typeMotifCombo;
@@ -50,10 +48,6 @@ public class PageRdvTypeController implements PublicShellAware {
     @FXML
     private void initialize() {
         buildStepper();
-        if (typeVoiceLang != null) {
-            typeVoiceLang.getItems().setAll("Français", "English");
-            typeVoiceLang.getSelectionModel().selectFirst();
-        }
         PublicRdvDoctorSidebarHelper.populate(
                 AppState.getPendingPublicRdvDoctorId(),
                 AppState.getPendingPublicRdvDoctorName(),
@@ -125,15 +119,6 @@ public class PageRdvTypeController implements PublicShellAware {
             rb.setSelected(true);
             first.getStyleClass().add("rdv-type-option-selected");
         }
-    }
-
-    @FXML
-    private void onVoiceAssist() {
-        Alert a = new Alert(Alert.AlertType.INFORMATION);
-        a.setTitle("Assistant vocal");
-        a.setHeaderText(null);
-        a.setContentText("Fonction « Parler pour prendre RDV » : branchement à prévoir (reconnaissance vocale / API).");
-        a.showAndWait();
     }
 
     @FXML

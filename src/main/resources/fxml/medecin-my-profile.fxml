@@ -100,6 +100,19 @@
                 </VBox>
             </GridPane>
 
+            <Region prefHeight="20"/>
+            <Label styleClass="med-profile-section-title" text="Google Agenda"/>
+            <Region prefHeight="10"/>
+            <Label fx:id="gcalHintLabel" styleClass="med-profile-hint" wrapText="true"
+                   text="Connectez votre compte Google pour créer automatiquement les événements lors de la confirmation d’un rendez-vous. Sans connexion, une page Google Agenda préremplie s’ouvre dans le navigateur."/>
+            <Region prefHeight="10"/>
+            <HBox spacing="12" alignment="CENTER_LEFT">
+                <Button fx:id="gcalLinkButton" mnemonicParsing="false" onAction="#onLinkGoogleCalendar"
+                        styleClass="med-profile-btn-outline" text="Connecter Google Agenda"/>
+                <Button fx:id="gcalUnlinkButton" mnemonicParsing="false" onAction="#onUnlinkGoogleCalendar"
+                        styleClass="med-profile-btn-outline" text="Déconnecter"/>
+            </HBox>
+
             <Region prefHeight="8"/>
             <HBox styleClass="med-profile-footer">
                 <Button fx:id="saveButton" mnemonicParsing="false" onAction="#onSave" text="Enregistrer"

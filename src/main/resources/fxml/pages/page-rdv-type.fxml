@@ -44,13 +44,6 @@
                         <Label fx:id="typeSidebarEmail" styleClass="rdv-booking-contact-line" text="✉ —"/>
                     </VBox>
                 </VBox>
-
-                <VBox spacing="8" styleClass="rdv-booking-voice-box">
-                    <Label styleClass="rdv-booking-voice-title" text="Assistant vocal (gratuit)"/>
-                    <ComboBox fx:id="typeVoiceLang" maxWidth="Infinity" styleClass="rdv-booking-voice-combo"/>
-                    <Button mnemonicParsing="false" onAction="#onVoiceAssist" styleClass="rdv-booking-voice-btn"
-                            text="🎤 Parler pour prendre RDV"/>
-                </VBox>
             </VBox>
 
             <VBox HBox.hgrow="ALWAYS" minWidth="0" spacing="4" styleClass="rdv-booking-content">

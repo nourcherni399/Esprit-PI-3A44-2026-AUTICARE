@@ -8,6 +8,7 @@
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.web.HTMLEditor?>
+<?import javafx.scene.web.WebView?>
 
 <BorderPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="org.example.controllers.MedecinDashboardController"
@@ -193,7 +194,9 @@
                                 <Label fx:id="dispoMonthLabel" styleClass="med-cal-month-label"/>
                                 <Button mnemonicParsing="false" onAction="#onDispoNextMonth" styleClass="med-cal-nav-btn" text="›"/>
                             </HBox>
-                            <GridPane fx:id="dispoCalendarGrid" styleClass="med-cal-grid" hgap="8" vgap="8"/>
+                            <WebView fx:id="dispoFullCalendarView" minHeight="520.0" prefHeight="640.0" maxHeight="640.0"/>
+                            <GridPane fx:id="dispoCalendarGrid" styleClass="med-cal-grid" hgap="8" vgap="8"
+                                      visible="false" managed="false"/>
                         </VBox>
                     </ScrollPane>
                     <ScrollPane fx:id="medNotesScroll" fitToWidth="true" maxHeight="Infinity" visible="false" managed="false"
@@ -439,12 +442,7 @@
                             </HBox>
                             <VBox spacing="0" styleClass="med-notif-history-card" VBox.vgrow="ALWAYS">
                                 <VBox spacing="6" styleClass="med-notif-history-header">
-                                    <HBox alignment="CENTER_LEFT" spacing="10">
-                                        <Label text="Historique des notifications" styleClass="med-notif-history-title" HBox.hgrow="ALWAYS"/>
-                                        <Region HBox.hgrow="ALWAYS"/>
-                                        <Button mnemonicParsing="false" onAction="#onClearAllNotifications"
-                                                styleClass="med-notif-clear-btn" text="🗑"/>
-                                    </HBox>
+                                    <Label text="Historique des notifications" styleClass="med-notif-history-title"/>
                                     <Label fx:id="medNotifHistoryCountLabel" text="0 notifications" styleClass="med-notif-history-count"/>
                                 </VBox>
                                 <Separator styleClass="med-notif-sep"/>

@@ -3,14 +3,19 @@ package org.example.controllers;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.geometry.VPos;
+import javafx.animation.PauseTransition;
+import javafx.concurrent.Worker;
+import javafx.util.Duration;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonBar;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.ComboBox;
@@ -21,6 +26,7 @@ import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
+import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.Hyperlink;
 import javafx.scene.control.Labeled;
@@ -50,6 +56,7 @@ import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.Window;
+import netscape.javascript.JSObject;
 import org.example.MainApp;
 import org.example.models.Appointment;
 import org.example.models.AppointmentStatus;
@@ -59,7 +66,10 @@ import org.example.models.MedecinPatientNote;
 import org.example.models.User;
 import org.example.services.AppointmentService;
 import org.example.services.AvailabilityService;
+import org.example.services.GoogleCalendarApiService;
+import org.example.services.GoogleCalendarTemplateLinks;
 import org.example.services.MedecinPatientNoteService;
+import org.example.services.TwilioSmsService;
 import org.example.services.UserService;
 import org.example.utils.AppState;
 import org.example.utils.NoteHtmlUtil;
@@ -77,6 +87,7 @@ import java.nio.file.Files;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
@@ -103,6 +114,12 @@ public class MedecinDashboardController {
     private static final DateTimeFormatter DISPO_SEARCH_DAY_FR = DateTimeFormatter.ofPattern("EEEE", Locale.FRENCH);
     private static final DateTimeFormatter DISPO_SEARCH_DATE_LONG_FR =
             DateTimeFormatter.ofPattern("d MMMM yyyy", Locale.FRENCH);
+    private static final DateTimeFormatter DISPO_JS_ISO = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
+    private static final String FULLCALENDAR_VERSION = "6.1.15";
+    private static final String FULLCALENDAR_CSS_CDN =
+            "https://cdn.jsdelivr.net/npm/fullcalendar@" + FULLCALENDAR_VERSION + "/index.global.min.css";
+    private static final String FULLCALENDAR_JS_CDN =
+            "https://cdn.jsdelivr.net/npm/fullcalendar@" + FULLCALENDAR_VERSION + "/index.global.min.js";
     private static final DateTimeFormatter[] DISPO_SEARCH_DATE_PATTERNS = {
             DateTimeFormatter.ofPattern("d/M/yyyy", Locale.FRENCH),
             DateTimeFormatter.ofPattern("dd/MM/yyyy", Locale.FRENCH),
@@ -242,6 +259,8 @@ public class MedecinDashboardController {
     @FXML
     private GridPane dispoCalendarGrid;
     @FXML
+    private WebView dispoFullCalendarView;
+    @FXML
     private LineChart<String, Number> medActivityChart;
 
     private final AvailabilityService availabilityService = new AvailabilityService();
@@ -252,13 +271,13 @@ public class MedecinDashboardController {
     private YearMonth dispoMonth = YearMonth.from(LocalDate.now());
     private LocalDate selectedDispoDate = LocalDate.now();
     private List<Availability> cachedAvailabilities = new ArrayList<>();
+    private Object dispoJsBridge;
+    private boolean dispoCalendarBridgeInstalled;
     private final ObservableList<NoteRow> notesMasterList = FXCollections.observableArrayList();
     private FilteredList<NoteRow> notesFilteredList;
     /** Créneaux dont la suppression est interdite (RDV non annulé lié). */
     private Set<Integer> disponibiliteIdsWithBlockingRdv = Set.of();
     private final List<Appointment> rdvAppointments = new ArrayList<>();
-    /** Notifications de demande masquées manuellement par le médecin (session courante). */
-    private final Set<Integer> dismissedNotificationAppointmentIds = new HashSet<>();
     private MainView mainView = MainView.HOME;
     /** Entrées du menu latéral filtrées par {@link #searchField}. */
     private final List<SidebarSearchTarget> sidebarSearchTargets = new ArrayList<>();
@@ -275,6 +294,8 @@ public class MedecinDashboardController {
             return;
         }
         currentDoctorId = u.getId();
+        // Exposer un objet bridge public dédié (plus fiable avec WebView/JSObject qu'un gros controller FXML).
+        dispoJsBridge = new DispoCalendarJsBridge(this);
         applyUser(u);
         if (medTodayDateLabel != null) {
             medTodayDateLabel.setText(LocalDate.now().format(
@@ -292,6 +313,7 @@ public class MedecinDashboardController {
             dispoSlotSearchField.textProperty().addListener((o, a, b) -> {
                 if (mainView == MainView.DISPO) {
                     rebuildCalendarGrid();
+                    rebuildDispoFullCalendar();
                 }
             });
         }
@@ -562,6 +584,7 @@ public class MedecinDashboardController {
             refreshDispoFromDb();
             updateMonthTitle();
             rebuildCalendarGrid();
+            rebuildDispoFullCalendar();
         }
         if (notes) {
             refreshNotesFromDb();
@@ -616,6 +639,7 @@ public class MedecinDashboardController {
                     "Impossible de charger les créneaux : " + e.getMessage());
         }
         reloadDisponibiliteDeleteBlockSet();
+        rebuildDispoFullCalendar();
     }
 
     private void reloadDisponibiliteDeleteBlockSet() {
@@ -652,6 +676,7 @@ public class MedecinDashboardController {
         }
         updateMonthTitle();
         rebuildCalendarGrid();
+        rebuildDispoFullCalendar();
     }
 
     @FXML
@@ -664,6 +689,7 @@ public class MedecinDashboardController {
         }
         updateMonthTitle();
         rebuildCalendarGrid();
+        rebuildDispoFullCalendar();
     }
 
     @FXML
@@ -736,6 +762,469 @@ public class MedecinDashboardController {
                 dispoCalendarGrid.add(cell, c, row);
                 dayNum++;
             }
+        }
+    }
+
+    /**
+     * Vue calendrier moderne (FullCalendar via WebView) pour les disponibilités médecin.
+     * La grille JavaFX reste disponible en secours visuel.
+     */
+    private void rebuildDispoFullCalendar() {
+        if (dispoFullCalendarView == null) {
+            return;
+        }
+        ensureDispoCalendarBridgeInstalled();
+        String eventsJson = buildDisponibiliteEventsJson();
+        String initialDate = dispoMonth.atDay(1).toString();
+        String cssUrl = resolveFullCalendarCssUrl();
+        String jsUrl = resolveFullCalendarJsUrl();
+        String html = """
+                <!doctype html>
+                <html lang="fr">
+                <head>
+                  <meta charset="UTF-8"/>
+                  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+                  <link href="%s" rel="stylesheet"/>
+                  <style>
+                    html, body { margin:0; padding:0; background:#f4f7ff; font-family: "Segoe UI", Arial, sans-serif; }
+                    .dispo-cal-legend {
+                      display:flex; flex-wrap:wrap; align-items:center; gap:18px;
+                      padding:10px 12px; margin:0 8px 8px 8px; border-radius:10px;
+                      background:#fff; border:1px solid #dbe4f3; font-size:13px; color:#1e3558;
+                      box-shadow:0 1px 3px rgba(30,53,88,.08);
+                    }
+                    .dispo-cal-legend span { display:inline-flex; align-items:center; gap:8px; font-weight:600; }
+                    .dispo-cal-legend .dot { width:11px; height:11px; border-radius:50%%; display:inline-block; }
+                    .dispo-cal-legend .dot-free { background:#16a34a; box-shadow:0 0 0 2px rgba(22,163,74,.25); }
+                    .dispo-cal-legend .dot-busy { background:#ef4444; box-shadow:0 0 0 2px rgba(239,68,68,.25); }
+                    #cal { max-width: 100%%; margin: 0; padding: 8px; }
+                    .fc .fc-toolbar-title { font-size: 1.05rem; font-weight: 700; color:#1e3558; }
+                    .fc .fc-button { background:#213a63; border-color:#213a63; }
+                    .fc .fc-button:hover { background:#172846; border-color:#172846; }
+                    .fc .fc-daygrid-event { border-radius: 8px; border: 0; padding: 2px 6px; }
+                    .fc-event-main { font-weight: 600; }
+                  </style>
+                </head>
+                <body>
+                  <div class="dispo-cal-legend" aria-label="Légende">
+                    <span><span class="dot dot-free"></span>Disponible</span>
+                    <span><span class="dot dot-busy"></span>Pris par RDV</span>
+                  </div>
+                  <div id="cal"></div>
+                  <script src="%s"></script>
+                  <script>
+                    function resolveAvailabilityId(eventObj) {
+                      if (!eventObj) return null;
+                      if (eventObj.id !== undefined && eventObj.id !== null && String(eventObj.id).trim() !== '') {
+                        return String(eventObj.id);
+                      }
+                      const ext = eventObj.extendedProps || {};
+                      if (ext.availabilityId !== undefined && ext.availabilityId !== null && String(ext.availabilityId).trim() !== '') {
+                        return String(ext.availabilityId);
+                      }
+                      return null;
+                    }
+                    function callJavaDispo(methodName, args, retryCount) {
+                      const triesLeft = (retryCount === undefined || retryCount === null) ? 4 : retryCount;
+                      const bridge = window.javaDispo;
+                      const fn = bridge && bridge[methodName];
+                      if (typeof fn === 'function') {
+                        fn.apply(bridge, args || []);
+                        return;
+                      }
+                      if (triesLeft > 0) {
+                        setTimeout(function() { callJavaDispo(methodName, args, triesLeft - 1); }, 120);
+                      }
+                    }
+                    const calendar = new FullCalendar.Calendar(document.getElementById('cal'), {
+                      locale: 'fr',
+                      initialView: 'dayGridMonth',
+                      initialDate: '%s',
+                      headerToolbar: { left: 'prev,next today', center: 'title', right: 'dayGridMonth,timeGridWeek,timeGridDay' },
+                      buttonText: { today: "Aujourd'hui", month: 'Mois', week: 'Semaine', day: 'Jour' },
+                      height: 'auto',
+                      editable: true,
+                      nowIndicator: true,
+                      displayEventTime: false,
+                      eventTimeFormat: { hour: '2-digit', minute: '2-digit', hour12: false },
+                      events: %s,
+                      dateClick: function(info) {
+                        info.jsEvent.preventDefault();
+                        callJavaDispo('onDateClick', [info.dateStr]);
+                      },
+                      eventClick: function(info) {
+                        info.jsEvent.preventDefault();
+                        const id = resolveAvailabilityId(info.event);
+                        const linked = !!info.event.extendedProps.hasLinkedRdv;
+                        if (id != null) {
+                          callJavaDispo('onEventClick', [id, linked ? "1" : "0"]);
+                        }
+                      },
+                      eventDidMount: function(info) {
+                        info.el.addEventListener('contextmenu', function(ev) {
+                          ev.preventDefault();
+                          const id = resolveAvailabilityId(info.event);
+                          if (id != null) {
+                            callJavaDispo('onEventContextMenu', [id]);
+                          }
+                        });
+                        info.el.addEventListener('dblclick', function(ev) {
+                          ev.preventDefault();
+                          const id = resolveAvailabilityId(info.event);
+                          const linked = !!info.event.extendedProps.hasLinkedRdv;
+                          if (id != null) {
+                            callJavaDispo('onEventClick', [id, linked ? "1" : "0"]);
+                          }
+                        });
+                      },
+                      eventDrop: function(info) {
+                        const id = resolveAvailabilityId(info.event);
+                        if (id != null) {
+                          callJavaDispo('onEventMove', [id, info.event.startStr, info.event.endStr || ""]);
+                        }
+                      },
+                      eventResize: function(info) {
+                        const id = resolveAvailabilityId(info.event);
+                        if (id != null) {
+                          callJavaDispo('onEventMove', [id, info.event.startStr, info.event.endStr || ""]);
+                        }
+                      }
+                    });
+                    calendar.render();
+                  </script>
+                </body>
+                </html>
+                """.formatted(cssUrl, jsUrl, initialDate, eventsJson);
+        Platform.runLater(() -> {
+            dispoFullCalendarView.getEngine().loadContent(html);
+            PauseTransition pause = new PauseTransition(Duration.millis(280));
+            pause.setOnFinished(ev -> tryInjectDispoCalendarBridge());
+            pause.play();
+        });
+    }
+
+    private void tryInjectDispoCalendarBridge() {
+        if (dispoCalendarViewUnavailable() || dispoJsBridge == null) {
+            return;
+        }
+        try {
+            JSObject window = (JSObject) dispoFullCalendarView.getEngine().executeScript("window");
+            window.setMember("javaDispo", dispoJsBridge);
+        } catch (Exception ex) {
+            System.err.println("[AutiCare] Pont WebView FullCalendar (javaDispo) : " + ex.getMessage());
+        }
+    }
+
+    // Méthodes publiques exposées directement à window.javaDispo (WebView JS bridge)
+    public void onDateClick(String dateIso) {
+        Platform.runLater(() -> dispCalBridgeDateClick(dateIso));
+    }
+
+    public void onEventClick(String availabilityId, String hasLinkedFlag) {
+        Platform.runLater(() -> dispCalBridgeEventClick(availabilityId, hasLinkedFlag));
+    }
+
+    public void onEventMove(String availabilityId, String startIso, String endIso) {
+        Platform.runLater(() -> dispCalBridgeEventMove(availabilityId, startIso, endIso));
+    }
+
+    public void onEventContextMenu(String availabilityId) {
+        Platform.runLater(() -> dispCalBridgeContextMenu(availabilityId));
+    }
+
+    private void ensureDispoCalendarBridgeInstalled() {
+        if (dispoCalendarViewUnavailable()) {
+            return;
+        }
+        if (dispoCalendarBridgeInstalled) {
+            return;
+        }
+        dispoCalendarBridgeInstalled = true;
+        dispoFullCalendarView.getEngine().getLoadWorker().stateProperty().addListener((obs, oldState, newState) -> {
+            if (newState == Worker.State.SUCCEEDED) {
+                Platform.runLater(this::tryInjectDispoCalendarBridge);
+                PauseTransition pause = new PauseTransition(Duration.millis(120));
+                pause.setOnFinished(ev -> tryInjectDispoCalendarBridge());
+                pause.play();
+            }
+        });
+    }
+
+    private boolean dispoCalendarViewUnavailable() {
+        return dispoFullCalendarView == null || dispoFullCalendarView.getEngine() == null;
+    }
+
+    private String resolveFullCalendarCssUrl() {
+        URL bundled = MainApp.class.getResource("/vendor/fullcalendar/index.global.min.css");
+        if (bundled != null) {
+            return bundled.toExternalForm();
+        }
+        URL webjar = MainApp.class.getResource(
+                "/META-INF/resources/webjars/fullcalendar/" + FULLCALENDAR_VERSION + "/index.global.min.css");
+        return webjar != null ? webjar.toExternalForm() : FULLCALENDAR_CSS_CDN;
+    }
+
+    private String resolveFullCalendarJsUrl() {
+        URL bundled = MainApp.class.getResource("/vendor/fullcalendar/index.global.min.js");
+        if (bundled != null) {
+            return bundled.toExternalForm();
+        }
+        URL webjar = MainApp.class.getResource(
+                "/META-INF/resources/webjars/fullcalendar/" + FULLCALENDAR_VERSION + "/index.global.min.js");
+        return webjar != null ? webjar.toExternalForm() : FULLCALENDAR_JS_CDN;
+    }
+
+    private String buildDisponibiliteEventsJson() {
+        StringBuilder sb = new StringBuilder("[");
+        boolean first = true;
+        for (Availability a : cachedAvailabilities) {
+            if (a == null || a.getDebut() == null || a.getFin() == null) {
+                continue;
+            }
+            if (!matchesSlotSearch(a)) {
+                continue;
+            }
+            String title = a.getDebut().format(TIME_FMT) + " - " + a.getFin().format(TIME_FMT);
+            String start = a.getDebut().format(DISPO_JS_ISO);
+            String end = a.getFin().format(DISPO_JS_ISO);
+            boolean linked = disponibiliteIdsWithBlockingRdv.contains(a.getId());
+            String color = linked ? "#ef4444" : "#16a34a";
+            if (!first) {
+                sb.append(',');
+            }
+            first = false;
+            sb.append("{\"id\":\"").append(a.getId())
+                    .append("\",\"title\":\"").append(jsonEscape(title))
+                    .append("\",\"start\":\"").append(start)
+                    .append("\",\"end\":\"").append(end)
+                    .append("\",\"availabilityId\":").append(a.getId())
+                    .append(",\"hasLinkedRdv\":").append(linked)
+                    .append(",\"backgroundColor\":\"").append(color)
+                    .append("\",\"borderColor\":\"").append(color)
+                    .append("\"}");
+        }
+        sb.append(']');
+        return sb.toString();
+    }
+
+    private static String jsonEscape(String s) {
+        if (s == null) {
+            return "";
+        }
+        return s.replace("\\", "\\\\").replace("\"", "\\\"");
+    }
+
+    /** Appelé depuis {@link DispoCalendarJsBridge} (méthode publique exposée au JS). */
+    void dispCalBridgeDateClick(String dateIso) {
+        LocalDate d = parseJsDate(dateIso);
+        if (d == null) {
+            return;
+        }
+        selectedDispoDate = d;
+        dispoMonth = YearMonth.from(d);
+        updateMonthTitle();
+        showAvailabilityEditor(null);
+    }
+
+    void dispCalBridgeEventClick(String availabilityId, String hasLinkedFlag) {
+        Integer id = parseAvailabilityId(availabilityId);
+        if (id == null) {
+            return;
+        }
+        Availability a = findCachedAvailability(id);
+        if (a != null) {
+            boolean linked = "1".equals(hasLinkedFlag) || disponibiliteIdsWithBlockingRdv.contains(a.getId());
+            if (linked) {
+                showLinkedRdvDetails(a);
+            } else {
+                showAvailabilityQuickActions(a);
+            }
+        }
+    }
+
+    void dispCalBridgeEventMove(String availabilityId, String startIso, String endIso) {
+        Integer id = parseAvailabilityId(availabilityId);
+        if (id == null) {
+            return;
+        }
+        Availability existing = findCachedAvailability(id);
+        if (existing == null) {
+            refreshDispoFromDb();
+            existing = findCachedAvailability(id);
+        }
+        if (existing == null) {
+            return;
+        }
+        if (disponibiliteIdsWithBlockingRdv.contains(existing.getId())) {
+            alert(Alert.AlertType.WARNING, "Déplacement impossible",
+                    "Ce créneau est lié à un rendez-vous confirmé.");
+            rebuildDispoFullCalendar();
+            return;
+        }
+        LocalDateTime newStart = parseJsDateTime(startIso);
+        LocalDateTime newEnd = parseJsDateTime(endIso);
+        if (newStart == null || newEnd == null) {
+            rebuildDispoFullCalendar();
+            return;
+        }
+        try {
+            validateAvailabilityCandidate(existing, newStart, newEnd);
+            existing.setDebut(newStart);
+            existing.setFin(newEnd);
+            availabilityService.update(existing);
+            selectedDispoDate = newStart.toLocalDate();
+            dispoMonth = YearMonth.from(selectedDispoDate);
+            updateMonthTitle();
+            refreshDispoFromDb();
+            rebuildCalendarGrid();
+            rebuildDispoFullCalendar();
+        } catch (Exception ex) {
+            alert(Alert.AlertType.ERROR, "Disponibilité",
+                    ex.getMessage() != null ? ex.getMessage() : "Mise à jour impossible.");
+            rebuildDispoFullCalendar();
+        }
+    }
+
+    void dispCalBridgeContextMenu(String availabilityId) {
+        Integer id = parseAvailabilityId(availabilityId);
+        if (id == null) {
+            return;
+        }
+        Availability a = findCachedAvailability(id);
+        if (a == null) {
+            refreshDispoFromDb();
+            a = findCachedAvailability(id);
+        }
+        if (a == null) {
+            return;
+        }
+        if (disponibiliteIdsWithBlockingRdv.contains(a.getId())) {
+            showLinkedRdvDetails(a);
+            return;
+        }
+        showDispoActionsDialog(a, "Action rapide", "Créneau disponible");
+    }
+
+    private void showAvailabilityQuickActions(Availability a) {
+        showDispoActionsDialog(a, "Disponibilité", "Créneau disponible");
+    }
+
+    /**
+     * Boîte d’actions avec icônes Windows (Segoe MDL2 Assets) : plus fiable que les emojis dans les Alert.
+     */
+    private void showDispoActionsDialog(Availability a, String windowTitle, String headerText) {
+        if (a == null) {
+            return;
+        }
+        Dialog<Void> d = new Dialog<>();
+        d.setTitle(windowTitle);
+        d.initModality(Modality.APPLICATION_MODAL);
+        Stage owner = resolveMedecinDashboardStage();
+        if (owner != null) {
+            d.initOwner(owner);
+        }
+        d.getDialogPane().getButtonTypes().clear();
+        d.getDialogPane().setMinWidth(420);
+        VBox root = new VBox(14);
+        root.setPadding(new Insets(18));
+        root.setMinWidth(380);
+        Label head = new Label(headerText);
+        head.setWrapText(true);
+        head.setStyle("-fx-font-weight:700;-fx-font-size:15px;-fx-text-fill:#1e3558;");
+        Label msg = new Label("Modifier ou supprimer ce créneau.");
+        msg.setWrapText(true);
+        msg.setStyle("-fx-text-fill:#475569;");
+        HBox row = new HBox(16);
+        row.setAlignment(Pos.CENTER);
+        Button btnEdit = buildDispoGlyphButton("Modifier", '\uE70F', "#16a34a");
+        Button btnDel = buildDispoGlyphButton("Supprimer", '\uE74D', "#dc2626");
+        btnEdit.setOnAction(ev -> {
+            d.close();
+            showAvailabilityEditor(a);
+        });
+        btnDel.setOnAction(ev -> {
+            d.close();
+            confirmDelete(a);
+        });
+        HBox foot = new HBox();
+        foot.setAlignment(Pos.CENTER_RIGHT);
+        Button btnClose = new Button("Fermer");
+        btnClose.setOnAction(ev -> d.close());
+        row.getChildren().addAll(btnEdit, btnDel);
+        foot.getChildren().add(btnClose);
+        root.getChildren().addAll(head, msg, row, foot);
+        d.getDialogPane().setContent(root);
+        d.showAndWait();
+    }
+
+    private static Button buildDispoGlyphButton(String caption, char mdl2Glyph, String accentColor) {
+        Button b = new Button(caption);
+        Label g = new Label(String.valueOf(mdl2Glyph));
+        g.setStyle("-fx-font-family:'Segoe MDL2 Assets','Segoe UI Symbol';-fx-font-size:26px;-fx-text-fill:"
+                + accentColor + ";");
+        b.setGraphic(g);
+        b.setContentDisplay(ContentDisplay.TOP);
+        b.setPrefWidth(120);
+        b.setMinHeight(86);
+        b.setStyle("-fx-background-radius:12;-fx-border-radius:12;-fx-border-color:#e2e8f0;-fx-border-width:1;"
+                + "-fx-background-color:#ffffff;-fx-cursor:hand;");
+        return b;
+    }
+
+    private Stage resolveMedecinDashboardStage() {
+        if (medDispoScroll != null && medDispoScroll.getScene() != null
+                && medDispoScroll.getScene().getWindow() instanceof Stage st1) {
+            return st1;
+        }
+        if (searchField != null && searchField.getScene() != null
+                && searchField.getScene().getWindow() instanceof Stage st2) {
+            return st2;
+        }
+        return null;
+    }
+
+    private Availability findCachedAvailability(int id) {
+        for (Availability a : cachedAvailabilities) {
+            if (a != null && a.getId() == id) {
+                return a;
+            }
+        }
+        return null;
+    }
+
+    private static Integer parseAvailabilityId(String raw) {
+        try {
+            return raw == null ? null : Integer.parseInt(raw.trim());
+        } catch (Exception ignored) {
+            return null;
+        }
+    }
+
+    private static LocalDate parseJsDate(String raw) {
+        try {
+            return raw == null || raw.isBlank() ? null : LocalDate.parse(raw.trim());
+        } catch (Exception ignored) {
+            return null;
+        }
+    }
+
+    private static LocalDateTime parseJsDateTime(String raw) {
+        if (raw == null || raw.isBlank()) {
+            return null;
+        }
+        String v = raw.trim();
+        try {
+            return LocalDateTime.parse(v);
+        } catch (Exception ignored) {
+        }
+        try {
+            return OffsetDateTime.parse(v).toLocalDateTime();
+        } catch (Exception ignored) {
+        }
+        try {
+            return LocalDate.parse(v).atStartOfDay();
+        } catch (Exception ignored) {
+            return null;
         }
     }
 
@@ -859,7 +1348,16 @@ public class MedecinDashboardController {
     private VBox buildSlotCard(Availability a) {
         VBox card = new VBox(4);
         card.getStyleClass().add("med-slot-card");
-        card.setOnMouseClicked(MouseEvent::consume);
+        boolean hasLinkedRdv = disponibiliteIdsWithBlockingRdv.contains(a.getId());
+        card.setOnMouseClicked(ev -> {
+            ev.consume();
+            if (ev.getButton() != MouseButton.PRIMARY || !ev.isStillSincePress()) {
+                return;
+            }
+            if (hasLinkedRdv) {
+                showLinkedRdvDetails(a);
+            }
+        });
 
         String timeText = a.getDebut().format(TIME_FMT) + " – " + a.getFin().format(TIME_FMT);
         Label time = new Label(timeText);
@@ -879,11 +1377,11 @@ public class MedecinDashboardController {
         });
         Button del = new Button("🗑");
         del.getStyleClass().addAll("med-slot-icon-btn", "med-slot-del");
-        boolean blockDelete = disponibiliteIdsWithBlockingRdv.contains(a.getId());
+        boolean blockDelete = hasLinkedRdv;
         del.setDisable(blockDelete);
         if (blockDelete) {
             del.setTooltip(new Tooltip(
-                    "Suppression impossible : un rendez-vous non annulé est lié à ce créneau. Traitez le RDV avant."));
+                    "Suppression impossible : un rendez-vous confirmé est lié à ce créneau."));
         }
         del.setOnAction(ev -> {
             ev.consume();
@@ -895,11 +1393,208 @@ public class MedecinDashboardController {
         return card;
     }
 
+    private void showLinkedRdvDetails(Availability availability) {
+        if (availability == null || availability.getId() <= 0) {
+            return;
+        }
+        Optional<Appointment> linkedOpt = findLinkedAppointmentForAvailability(availability);
+        if (linkedOpt.isEmpty()) {
+            alert(Alert.AlertType.INFORMATION, "Rendez-vous",
+                    "Aucun rendez-vous trouvé pour ce créneau.\n"
+                            + "Vérifiez que le rendez-vous est bien lié (disponibilite_id) ou qu’il tombe dans l’horaire du créneau.");
+            return;
+        }
+        Appointment linked = linkedOpt.get();
+        String patient = resolvePatientLabel(linked.getPatientId());
+        Optional<User> patientUser = resolvePatientUser(linked.getPatientId());
+        String tel = dashIfBlank(patientUser.map(User::getTelephone).orElse(null));
+        String email = dashIfBlank(patientUser.map(User::getEmail).orElse(null));
+        String adresse = dashIfBlank(patientUser.map(User::getAdresse).orElse(null));
+        String when = formatRdvDateTimeRange(linked, availability);
+        String status = statusShortLabelFr(linked.getStatus());
+        String motif = dashIfBlank(linked.getMotif());
+        String notesValue = extractPatientFreeNoteFromRdvNotes(linked.getNotes());
+        Dialog<Void> dialog = new Dialog<>();
+        dialog.setTitle("Rendez-vous lié");
+        dialog.getDialogPane().getButtonTypes().clear();
+        dialog.getDialogPane().getStyleClass().add("med-slot-rdv-detail-pane");
+        dialog.setResizable(true);
+
+        URL medCss = getClass().getResource("/styles/medecin-dashboard.css");
+        if (medCss != null) {
+            dialog.getDialogPane().getStylesheets().add(medCss.toExternalForm());
+        }
+        URL appCss = getClass().getResource("/styles/app.css");
+        if (appCss != null) {
+            dialog.getDialogPane().getStylesheets().add(appCss.toExternalForm());
+        }
+
+        Window owner = resolveMedecinDashboardWindow();
+        if (owner != null) {
+            dialog.initOwner(owner);
+        }
+        dialog.initModality(Modality.WINDOW_MODAL);
+
+        Label title = new Label("Détails du rendez-vous");
+        title.getStyleClass().add("med-slot-rdv-detail-title");
+        Label sub = new Label("Créneau " + availability.getDebut().format(TIME_FMT) + " – " + availability.getFin().format(TIME_FMT));
+        sub.getStyleClass().add("med-slot-rdv-detail-sub");
+
+        VBox header = new VBox(4, title, sub);
+        header.getStyleClass().add("med-slot-rdv-detail-header");
+
+        VBox grid = new VBox(10);
+        grid.getStyleClass().add("med-slot-rdv-detail-grid");
+        grid.getChildren().addAll(
+                buildSlotRdvInfoItem("Patient", patient),
+                buildSlotRdvInfoItem("Statut", status),
+                buildSlotRdvInfoItem("Date et heure", when),
+                buildSlotRdvInfoItem("Motif", motif),
+                buildSlotRdvInfoItem("Téléphone", tel),
+                buildSlotRdvInfoItem("Email", email),
+                buildSlotRdvInfoItem("Adresse", adresse));
+
+        Label notesCap = new Label("Notes");
+        notesCap.getStyleClass().add("med-slot-rdv-detail-caption");
+        Label notesLbl = new Label(notesValue);
+        notesLbl.setWrapText(true);
+        notesLbl.getStyleClass().add("med-slot-rdv-detail-notes");
+
+        VBox notesBox = new VBox(6, notesCap, notesLbl);
+        notesBox.getStyleClass().add("med-slot-rdv-detail-notes-box");
+
+        VBox body = new VBox(12, grid, new Separator(), notesBox);
+        body.setPadding(new Insets(16, 18, 16, 18));
+        body.getStyleClass().add("med-slot-rdv-detail-body");
+
+        ScrollPane scroll = new ScrollPane(body);
+        scroll.setFitToWidth(true);
+        scroll.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+        scroll.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
+        scroll.setPrefViewportHeight(430);
+        scroll.getStyleClass().add("med-slot-rdv-detail-scroll");
+
+        Button btnEditRdv = new Button("Modifier le rendez-vous");
+        btnEditRdv.getStyleClass().add("med-btn-primary");
+        btnEditRdv.setOnAction(ev -> {
+            dialog.close();
+            openRdvEditDialog(linked);
+        });
+        Button close = new Button("Fermer");
+        close.getStyleClass().add("med-slot-rdv-detail-close-btn");
+        close.setOnAction(ev -> dialog.close());
+        HBox actions = new HBox(12, btnEditRdv, close);
+        actions.setAlignment(Pos.CENTER_RIGHT);
+        actions.setPadding(new Insets(12, 16, 14, 16));
+        actions.getStyleClass().add("med-slot-rdv-detail-actions");
+
+        VBox root = new VBox(header, scroll, actions);
+        root.getStyleClass().add("med-slot-rdv-detail-root");
+
+        dialog.getDialogPane().setContent(root);
+        dialog.showAndWait();
+    }
+
+    private static VBox buildSlotRdvInfoItem(String label, String value) {
+        Label cap = new Label(label);
+        cap.getStyleClass().add("med-slot-rdv-detail-caption");
+        Label val = new Label(dashIfBlank(value));
+        val.setWrapText(true);
+        val.getStyleClass().add("med-slot-rdv-detail-value");
+        return new VBox(2, cap, val);
+    }
+
+    private static String extractPatientFreeNoteFromRdvNotes(String fullNotes) {
+        String patientBloc = RdvNotesFormat.extractPatientBloc(fullNotes != null ? fullNotes : "");
+        if (patientBloc.isBlank()) {
+            return "—";
+        }
+        String[] lines = patientBloc.split("\\R");
+        for (int i = 0; i < lines.length; i++) {
+            String line = lines[i] != null ? lines[i].trim() : "";
+            if (!line.regionMatches(true, 0, "Notes", 0, "Notes".length())) {
+                continue;
+            }
+            int colon = line.indexOf(':');
+            String first = colon >= 0 ? line.substring(colon + 1).trim() : "";
+            StringBuilder out = new StringBuilder(first);
+            for (int j = i + 1; j < lines.length; j++) {
+                String next = lines[j] != null ? lines[j].trim() : "";
+                if (next.isEmpty()) {
+                    continue;
+                }
+                if (out.length() > 0) {
+                    out.append('\n');
+                }
+                out.append(next);
+            }
+            String note = out.toString().trim();
+            return note.isEmpty() ? "—" : note;
+        }
+        return "—";
+    }
+
+    private Optional<Appointment> findLinkedNonCancelledAppointment(int disponibiliteId) {
+        if (disponibiliteId <= 0 || currentDoctorId <= 0) {
+            return Optional.empty();
+        }
+        try {
+            return appointmentService.findByMedecin(currentDoctorId).stream()
+                    .filter(a -> a.getDisponibiliteId() == disponibiliteId)
+                    .filter(a -> a.getStatus() != AppointmentStatus.ANNULE)
+                    .sorted(Comparator
+                            .comparing(Appointment::getDateHeure, Comparator.nullsLast(Comparator.naturalOrder()))
+                            .reversed()
+                            .thenComparing(Appointment::getId, Comparator.reverseOrder()))
+                    .findFirst();
+        } catch (SQLException e) {
+            alert(Alert.AlertType.ERROR, "Rendez-vous",
+                    "Impossible de charger les détails du rendez-vous : " + e.getMessage());
+            return Optional.empty();
+        }
+    }
+
+    /**
+     * RDV lié au créneau : d’abord par {@code disponibilite_id}, sinon par chevauchement d’horaire (données héritées).
+     */
+    private Optional<Appointment> findLinkedAppointmentForAvailability(Availability availability) {
+        if (availability == null || availability.getId() <= 0) {
+            return Optional.empty();
+        }
+        Optional<Appointment> byId = findLinkedNonCancelledAppointment(availability.getId());
+        if (byId.isPresent()) {
+            return byId;
+        }
+        if (availability.getDebut() == null || availability.getFin() == null || currentDoctorId <= 0) {
+            return Optional.empty();
+        }
+        try {
+            return appointmentService.findByMedecin(currentDoctorId).stream()
+                    .filter(a -> a.getStatus() != AppointmentStatus.ANNULE)
+                    .filter(a -> appointmentStartsInsideAvailability(a, availability))
+                    .max(Comparator
+                            .comparing(Appointment::getDateHeure, Comparator.nullsLast(Comparator.naturalOrder()))
+                            .thenComparing(Appointment::getId, Comparator.reverseOrder()));
+        } catch (SQLException e) {
+            alert(Alert.AlertType.ERROR, "Rendez-vous",
+                    "Impossible de charger les rendez-vous : " + e.getMessage());
+            return Optional.empty();
+        }
+    }
+
+    private static boolean appointmentStartsInsideAvailability(Appointment appt, Availability slot) {
+        if (appt.getDateHeure() == null || slot.getDebut() == null || slot.getFin() == null) {
+            return false;
+        }
+        LocalDateTime t = appt.getDateHeure();
+        return !t.isBefore(slot.getDebut()) && t.isBefore(slot.getFin());
+    }
+
     private void confirmDelete(Availability a) {
         try {
             if (appointmentService.disponibiliteHasBlockingRdv(a.getId())) {
                 alert(Alert.AlertType.WARNING, "Suppression impossible",
-                        "Ce créneau est lié à un rendez-vous non annulé. Annulez ou supprimez le rendez-vous avant de supprimer la disponibilité.");
+                        "Ce créneau est lié à un rendez-vous confirmé. Annulez ou supprimez le rendez-vous avant de supprimer la disponibilité.");
                 return;
             }
         } catch (SQLException ex) {
@@ -918,6 +1613,7 @@ public class MedecinDashboardController {
             availabilityService.delete(a.getId());
             refreshDispoFromDb();
             rebuildCalendarGrid();
+            rebuildDispoFullCalendar();
         } catch (SQLException e) {
             alert(Alert.AlertType.ERROR, "Suppression", e.getMessage());
         }
@@ -972,6 +1668,7 @@ public class MedecinDashboardController {
             st.showAndWait();
             refreshDispoFromDb();
             rebuildCalendarGrid();
+            rebuildDispoFullCalendar();
         } catch (Exception e) {
             alert(Alert.AlertType.ERROR, "Erreur",
                     e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName());
@@ -1679,7 +2376,8 @@ public class MedecinDashboardController {
         btnPdf.setOnAction(ev -> {
             FileChooser fc = new FileChooser();
             fc.setTitle("Enregistrer le PDF");
-            fc.setInitialFileName("note-detail.pdf");
+            String datePart = LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE);
+            fc.setInitialFileName("note-detail-" + datePart + ".pdf");
             fc.getExtensionFilters().add(new FileChooser.ExtensionFilter("Document PDF", "*.pdf"));
             Window w = d.getDialogPane().getScene() != null ? d.getDialogPane().getScene().getWindow() : owner;
             File dest = w != null ? fc.showSaveDialog(w) : null;
@@ -1761,6 +2459,100 @@ public class MedecinDashboardController {
     private static void releaseNoteBodyEditor(TextArea ta) {
         if (ta != null) {
             ta.prefWidthProperty().unbind();
+        }
+    }
+
+    private void sendTestSmsForAppointment(Appointment appt) {
+        if (appt == null || appt.getPatientId() <= 0) {
+            alert(Alert.AlertType.WARNING, "SMS test", "Patient introuvable pour ce rendez-vous.");
+            return;
+        }
+        if (!TwilioSmsService.isConfigured()) {
+            alert(Alert.AlertType.WARNING, "SMS test",
+                    "Twilio non configuré. Vérifiez twilio.enabled, accountSid, authToken et fromPhone.");
+            return;
+        }
+        try {
+            Optional<User> patientOpt = userService.findById(appt.getPatientId());
+            if (patientOpt.isEmpty()) {
+                alert(Alert.AlertType.WARNING, "SMS test", "Patient introuvable en base.");
+                return;
+            }
+            User patient = patientOpt.get();
+            String to = TwilioSmsService.toE164(patient.getTelephone(), TwilioSmsService.defaultCallingCodeDigits());
+            if (to == null || to.length() < 8) {
+                alert(Alert.AlertType.WARNING, "SMS test",
+                        "Numéro patient invalide. Format attendu: +216XXXXXXXX (E.164).");
+                return;
+            }
+            String medName = Optional.ofNullable(AppState.getCurrentUser())
+                    .map(u -> (u.getPrenom() != null ? u.getPrenom().trim() : ""))
+                    .filter(s -> !s.isBlank())
+                    .orElse("votre médecin");
+            String when = appt.getDateHeure() != null
+                    ? appt.getDateHeure().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"))
+                    : "—";
+            String msg = "AutiCare | Test SMS\n"
+                    + "Bonjour, ceci est un test de rappel.\n"
+                    + "RDV: " + when + "\n"
+                    + "Praticien: " + medName + ".";
+            boolean ok = TwilioSmsService.sendSms(to, msg);
+            if (ok) {
+                alert(Alert.AlertType.INFORMATION, "SMS test", "SMS test envoyé avec succès vers " + to + ".");
+            } else {
+                String detail = TwilioSmsService.getLastErrorDetail();
+                alert(Alert.AlertType.ERROR, "SMS test",
+                        "Échec d'envoi Twilio.\n" + (detail == null || detail.isBlank() ? "Cause inconnue." : detail));
+            }
+        } catch (Exception ex) {
+            alert(Alert.AlertType.ERROR, "SMS test", ex.getMessage() != null ? ex.getMessage() : "Erreur SMS test.");
+        }
+    }
+
+    /**
+     * Compatibilité avec d'anciens appels (détail note) pour éviter les erreurs de compilation
+     * si l'IDE garde encore une ancienne référence pendant l'indexation.
+     */
+    private void sendTestSmsForNoteRow(NoteRow row) {
+        if (row == null || row.getPatientId() <= 0) {
+            alert(Alert.AlertType.WARNING, "SMS test", "Patient introuvable pour ce rendez-vous.");
+            return;
+        }
+        if (!TwilioSmsService.isConfigured()) {
+            alert(Alert.AlertType.WARNING, "SMS test",
+                    "Twilio non configuré. Vérifiez twilio.enabled, accountSid, authToken et fromPhone.");
+            return;
+        }
+        try {
+            Optional<User> patientOpt = userService.findById(row.getPatientId());
+            if (patientOpt.isEmpty()) {
+                alert(Alert.AlertType.WARNING, "SMS test", "Patient introuvable en base.");
+                return;
+            }
+            User patient = patientOpt.get();
+            String to = TwilioSmsService.toE164(patient.getTelephone(), TwilioSmsService.defaultCallingCodeDigits());
+            if (to == null || to.length() < 8) {
+                alert(Alert.AlertType.WARNING, "SMS test",
+                        "Numéro patient invalide. Format attendu: +216XXXXXXXX (E.164).");
+                return;
+            }
+            String medName = Optional.ofNullable(AppState.getCurrentUser())
+                    .map(u -> (u.getPrenom() != null ? u.getPrenom().trim() : ""))
+                    .filter(s -> !s.isBlank())
+                    .orElse("votre médecin");
+            String msg = "AutiCare | Test SMS\n"
+                    + "Bonjour, ceci est un test de rappel.\n"
+                    + "Praticien: " + medName + ".";
+            boolean ok = TwilioSmsService.sendSms(to, msg);
+            if (ok) {
+                alert(Alert.AlertType.INFORMATION, "SMS test", "SMS test envoyé avec succès vers " + to + ".");
+            } else {
+                String detail = TwilioSmsService.getLastErrorDetail();
+                alert(Alert.AlertType.ERROR, "SMS test",
+                        "Échec d'envoi Twilio.\n" + (detail == null || detail.isBlank() ? "Cause inconnue." : detail));
+            }
+        } catch (Exception ex) {
+            alert(Alert.AlertType.ERROR, "SMS test", ex.getMessage() != null ? ex.getMessage() : "Erreur SMS test.");
         }
     }
 
@@ -1937,7 +2729,7 @@ public class MedecinDashboardController {
             return true;
         }
         String patient = normalizeSidebarSearchText(resolvePatientLabel(a.getPatientId()));
-        String when = normalizeSidebarSearchText(formatRdvDateTimeRange(a));
+        String when = normalizeSidebarSearchText(formatRdvDateTimeRangeForUi(a));
         String statut = normalizeSidebarSearchText(statusShortLabelFr(a.getStatus()));
         Optional<User> pu = resolvePatientUser(a.getPatientId());
         String tel = normalizeSidebarSearchText(pu.map(User::getTelephone).orElse(""));
@@ -1993,7 +2785,7 @@ public class MedecinDashboardController {
 
         Label capWhen = new Label("DATE & HEURE");
         capWhen.getStyleClass().add("med-rdv-kanban-caption");
-        Label whenLbl = new Label(formatRdvDateTimeRange(a));
+        Label whenLbl = new Label(formatRdvDateTimeRangeForUi(a));
         whenLbl.getStyleClass().add("med-rdv-kanban-value");
         whenLbl.setWrapText(true);
         VBox whenCol = new VBox(2);
@@ -2028,10 +2820,19 @@ public class MedecinDashboardController {
         del.setTooltip(new Tooltip("Supprimer"));
         del.setOnAction(ev -> confirmDeleteRdv(a, patientLabel));
 
+        Button sms = new Button("SMS test");
+        sms.getStyleClass().addAll("med-rdv-kanban-icon-btn", "med-rdv-kanban-icon-sms");
+        sms.setTooltip(new Tooltip("Tester SMS maintenant"));
+        sms.setOnAction(ev -> sendTestSmsForAppointment(a));
+
         HBox actions = new HBox(6);
         actions.setAlignment(Pos.CENTER_LEFT);
         actions.getStyleClass().add("med-rdv-kanban-actions");
-        actions.getChildren().addAll(btnVoirNote, edit, del);
+        if (col == MedRdvKanbanCol.CONFIRME) {
+            actions.getChildren().addAll(btnVoirNote, sms, edit, del);
+        } else {
+            actions.getChildren().addAll(btnVoirNote, edit, del);
+        }
 
         VBox card = new VBox(8);
         card.getStyleClass().addAll("med-rdv-kanban-card", switch (col) {
@@ -2082,13 +2883,38 @@ public class MedecinDashboardController {
         }
     }
 
-    private static String formatRdvDateTimeRange(Appointment a) {
+    /**
+     * Affiche date/heure du RDV ; si un créneau {@link Availability} est connu (même id que {@code disponibilite_id}),
+     * utilise son début/fin (corrige les bases où seule la colonne DATE {@code date_rdv} était remplie → minuit).
+     */
+    private static String formatRdvDateTimeRange(Appointment a, Availability slot) {
+        if (slot != null && slot.getId() > 0
+                && a.getDisponibiliteId() == slot.getId()
+                && slot.getDebut() != null && slot.getFin() != null) {
+            LocalDateTime start = slot.getDebut();
+            LocalDateTime end = slot.getFin();
+            return start.format(NOTE_DATE) + " - " + end.format(TIME_FMT);
+        }
         if (a.getDateHeure() == null) {
             return "—";
         }
         LocalDateTime start = a.getDateHeure();
         LocalDateTime end = start.plusMinutes(30);
         return start.format(NOTE_DATE) + " - " + end.format(TIME_FMT);
+    }
+
+    private String formatRdvDateTimeRangeForUi(Appointment a) {
+        try {
+            if (a.getDisponibiliteId() > 0) {
+                Optional<Availability> av = availabilityService.findById(a.getDisponibiliteId());
+                if (av.isPresent()) {
+                    return formatRdvDateTimeRange(a, av.get());
+                }
+            }
+        } catch (SQLException ignored) {
+            // affichage : retomber sur date_heure du RDV
+        }
+        return formatRdvDateTimeRange(a, null);
     }
 
     private Window resolveMedecinDashboardWindow() {
@@ -2138,7 +2964,7 @@ public class MedecinDashboardController {
         Optional<User> pu = resolvePatientUser(snapshot.getPatientId());
         String tel = dashIfBlank(pu.map(User::getTelephone).orElse(null));
         String adresse = dashIfBlank(pu.map(User::getAdresse).orElse(null));
-        String dateLigne = formatRdvDateTimeRangeEdit(snapshot);
+        String dateLigne = formatRdvDateTimeRangeEditForUi(snapshot);
 
         Button btnRetour = new Button("← Retour aux rendez-vous");
         btnRetour.getStyleClass().add("med-rdv-edit-back");
@@ -2241,11 +3067,25 @@ public class MedecinDashboardController {
                 }
                 upd.setStatus(newStat);
                 upd.setMotif(motif);
+                boolean becamePlanifie = snapshot.getStatus() == AppointmentStatus.EN_ATTENTE
+                        && newStat == AppointmentStatus.PLANIFIE;
                 appointmentService.update(upd);
                 appointmentService.notifyPatientAfterDoctorRdvEdit(snapshot, upd);
+                MedecinGcalSync gcal = MedecinGcalSync.SKIPPED;
+                if (becamePlanifie) {
+                    gcal = tryOpenMedecinGoogleCalendarForAccepted(upd);
+                }
                 hideNoteDetailWindow(d);
                 refreshRdvFromDb();
-                alert(Alert.AlertType.INFORMATION, "Rendez-vous", "Modifications enregistrées.");
+                String msgSaved = "Modifications enregistrées.";
+                if (becamePlanifie) {
+                    if (gcal == MedecinGcalSync.API_CREATED) {
+                        msgSaved += " L’événement a été ajouté à votre Google Agenda.";
+                    } else if (gcal == MedecinGcalSync.TEMPLATE_BROWSER) {
+                        msgSaved += " Si une page Google Agenda s’est ouverte, enregistrez l’événement pour le conserver.";
+                    }
+                }
+                alert(Alert.AlertType.INFORMATION, "Rendez-vous", msgSaved);
             } catch (SQLException ex) {
                 alert(Alert.AlertType.ERROR, "Rendez-vous",
                         ex.getMessage() != null ? ex.getMessage() : "Enregistrement impossible.");
@@ -2278,6 +3118,21 @@ public class MedecinDashboardController {
         LocalDateTime start = a.getDateHeure();
         LocalDateTime end = start.plusMinutes(30);
         return start.format(RDV_EDIT_DATE_LINE) + " – " + end.format(TIME_FMT);
+    }
+
+    private String formatRdvDateTimeRangeEditForUi(Appointment a) {
+        try {
+            if (a.getDisponibiliteId() > 0) {
+                Optional<Availability> av = availabilityService.findById(a.getDisponibiliteId());
+                if (av.isPresent() && av.get().getDebut() != null && av.get().getFin() != null) {
+                    LocalDateTime s = av.get().getDebut();
+                    LocalDateTime e = av.get().getFin();
+                    return s.format(RDV_EDIT_DATE_LINE) + " – " + e.format(TIME_FMT);
+                }
+            }
+        } catch (SQLException ignored) {
+        }
+        return formatRdvDateTimeRangeEdit(a);
     }
 
     private static VBox buildRdvEditField(String label, String value) {
@@ -2398,14 +3253,6 @@ public class MedecinDashboardController {
         } catch (SQLException e) {
             alert(Alert.AlertType.ERROR, "Notifications", e.getMessage());
         }
-        if (!dismissedNotificationAppointmentIds.isEmpty()) {
-            pending = pending.stream()
-                    .filter(a -> a != null && !dismissedNotificationAppointmentIds.contains(a.getId()))
-                    .collect(Collectors.toList());
-            history = history.stream()
-                    .filter(a -> a != null && !dismissedNotificationAppointmentIds.contains(a.getId()))
-                    .collect(Collectors.toList());
-        }
         if (notifListContainer != null) {
             notifListContainer.getChildren().clear();
             Label titlePending = new Label("Demandes en attente");
@@ -2495,38 +3342,6 @@ public class MedecinDashboardController {
         refreshMedecinPendingDemandesUi();
     }
 
-    @FXML
-    private void onClearAllNotifications() {
-        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
-        confirm.setTitle("Notifications");
-        confirm.setHeaderText("Supprimer toutes les notifications affichées ?");
-        confirm.setContentText("Cette action vide la liste des notifications côté interface "
-                + "et marque les demandes en attente comme lues.");
-        Optional<ButtonType> choice = confirm.showAndWait();
-        if (choice.isEmpty() || choice.get() != ButtonType.OK) {
-            return;
-        }
-        try {
-            List<Appointment> pending = appointmentService.findEnAttenteByMedecin(currentDoctorId);
-            List<Appointment> history = appointmentService.findMedecinDecisionHistory(currentDoctorId, 120);
-            for (Appointment a : pending) {
-                if (a != null && a.getId() > 0) {
-                    dismissedNotificationAppointmentIds.add(a.getId());
-                }
-            }
-            for (Appointment a : history) {
-                if (a != null && a.getId() > 0) {
-                    dismissedNotificationAppointmentIds.add(a.getId());
-                }
-            }
-            appointmentService.markAllEnAttenteDemandesLuesForMedecin(currentDoctorId);
-            refreshNotifications();
-        } catch (SQLException ex) {
-            alert(Alert.AlertType.ERROR, "Notifications",
-                    ex.getMessage() != null ? ex.getMessage() : "Suppression impossible.");
-        }
-    }
-
     private VBox buildPendingDemandeNotifCard(Appointment a) {
         VBox card = new VBox(12);
         card.getStyleClass().add("med-notif-demand-card");
@@ -2607,17 +3422,73 @@ public class MedecinDashboardController {
     private void onMedecinRdvDecision(int apptId, boolean accept) {
         try {
             appointmentService.medecinRepondreDemande(apptId, currentDoctorId, accept);
+            MedecinGcalSync gcal = MedecinGcalSync.SKIPPED;
+            if (accept) {
+                Optional<Appointment> fresh = appointmentService.findById(apptId);
+                if (fresh.isPresent()) {
+                    gcal = tryOpenMedecinGoogleCalendarForAccepted(fresh.get());
+                }
+            }
             refreshRdvFromDb();
             if (mainView == MainView.NOTIFS) {
                 refreshNotifications();
             } else {
                 refreshMedecinPendingDemandesUi();
             }
+            String acceptMsg = "Le rendez-vous est confirmé et le patient est notifié.";
+            if (accept) {
+                if (gcal == MedecinGcalSync.API_CREATED) {
+                    acceptMsg += " L’événement a été ajouté à votre Google Agenda.";
+                } else if (gcal == MedecinGcalSync.TEMPLATE_BROWSER) {
+                    acceptMsg += " Si une page Google Agenda s’est ouverte, enregistrez l’événement pour le conserver.";
+                }
+            }
             alert(Alert.AlertType.INFORMATION, "Rendez-vous",
-                    accept ? "Le rendez-vous est confirmé. Le patient sera notifié." : "La demande a été refusée. Le patient sera notifié.");
+                    accept ? acceptMsg : "La demande a été refusée. Le patient sera notifié.");
         } catch (SQLException ex) {
             alert(Alert.AlertType.ERROR, "Rendez-vous",
                     ex.getMessage() != null ? ex.getMessage() : "Action impossible.");
+        }
+    }
+
+    private enum MedecinGcalSync {
+        SKIPPED,
+        /** Lien template ouvert dans le navigateur. */
+        TEMPLATE_BROWSER,
+        /** Événement créé via l’API (jeton connecté au profil). */
+        API_CREATED
+    }
+
+    /**
+     * Si le médecin a connecté Google Agenda (refresh token), crée l’événement via l’API ;
+     * sinon ouvre le lien template dans le navigateur.
+     */
+    private MedecinGcalSync tryOpenMedecinGoogleCalendarForAccepted(Appointment appt) {
+        if (appt == null || appt.getDateHeure() == null) {
+            return MedecinGcalSync.SKIPPED;
+        }
+        try {
+            LocalDateTime slotEnd = null;
+            if (appt.getDisponibiliteId() > 0) {
+                Optional<Availability> av = availabilityService.findById(appt.getDisponibiliteId());
+                if (av.isPresent()) {
+                    slotEnd = av.get().getFin();
+                }
+            }
+            User med = userService.findById(currentDoctorId).orElse(null);
+            String patientLabel = resolvePatientLabel(appt.getPatientId());
+            String rt = med != null && med.getGoogleCalendarRefreshToken() != null
+                    ? med.getGoogleCalendarRefreshToken().trim()
+                    : "";
+            if (!rt.isEmpty()) {
+                if (GoogleCalendarApiService.tryCreateMedecinRdvEvent(rt, appt, slotEnd, med, patientLabel)) {
+                    return MedecinGcalSync.API_CREATED;
+                }
+            }
+            GoogleCalendarTemplateLinks.browseMedecinAddAfterAccept(appt, slotEnd, med, patientLabel);
+            return MedecinGcalSync.TEMPLATE_BROWSER;
+        } catch (Exception ignored) {
+            return MedecinGcalSync.SKIPPED;
         }
     }
 

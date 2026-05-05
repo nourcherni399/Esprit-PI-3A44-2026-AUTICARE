@@ -2,6 +2,7 @@ package org.example.services;
 
 import org.example.models.Appointment;
 import org.example.models.AppointmentStatus;
+import org.example.models.Availability;
 import org.example.utils.MyDatabase;
 
 import java.sql.Connection;
@@ -12,15 +13,20 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
 import java.sql.Types;
+import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.HexFormat;
 import java.util.List;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.Set;
 
 public class AppointmentService implements IService<Appointment> {
+
+    private static final SecureRandom GESTION_TOKEN_RANDOM = new SecureRandom();
 
     private static final String[] DATE_TIME_COLUMN_CANDIDATES = {
             "date_heure", "date_rdv", "datetime_rdv", "date_heure_rdv",
@@ -54,6 +60,7 @@ public class AppointmentService implements IService<Appointment> {
         boolean hasDisponibiliteId = hasRdvColumn("disponibilite_id");
         boolean hasPatientReponseLue = hasRdvColumn("patient_reponse_lue");
         boolean hasMedecinDemandeLue = hasRdvColumn("medecin_demande_lue");
+        boolean hasGestionToken = hasRdvColumn("gestion_token");
 
         StringBuilder cols = new StringBuilder("medecin_id,patient_id,`").append(col).append("`,motif,statut,notes");
         StringBuilder vals = new StringBuilder("?,?,?,?,?,?");
@@ -77,8 +84,15 @@ public class AppointmentService implements IService<Appointment> {
             cols.append(",medecin_demande_lue");
             vals.append(",?");
         }
+        if (hasGestionToken) {
+            if (a.getGestionToken() == null || a.getGestionToken().isBlank()) {
+                a.setGestionToken(newGestionTokenHex());
+            }
+            cols.append(",gestion_token");
+            vals.append(",?");
+        }
         String sql = "INSERT INTO rendez_vous(" + cols + ") VALUES(" + vals + ")";
-        try (PreparedStatement ps = MyDatabase.getConnection().prepareStatement(sql)) {
+        try (PreparedStatement ps = MyDatabase.getConnection().prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             int i = 1;
             ps.setInt(i++, a.getMedecinId());
             ps.setInt(i++, a.getPatientId());
@@ -107,8 +121,33 @@ public class AppointmentService implements IService<Appointment> {
             if (hasMedecinDemandeLue) {
                 ps.setInt(i++, a.isMedecinDemandeLue() ? 1 : 0);
             }
+            if (hasGestionToken) {
+                ps.setString(i++, a.getGestionToken());
+            }
             ps.executeUpdate();
+            try (ResultSet gk = ps.getGeneratedKeys()) {
+                if (gk.next()) {
+                    a.setId(gk.getInt(1));
+                }
+            }
+            if (a.getId() <= 0) {
+                try (Statement st = MyDatabase.getConnection().createStatement();
+                     ResultSet rs = st.executeQuery("SELECT LAST_INSERT_ID()")) {
+                    if (rs.next()) {
+                        int lid = rs.getInt(1);
+                        if (lid > 0) {
+                            a.setId(lid);
+                        }
+                    }
+                }
+            }
         }
+    }
+
+    private static String newGestionTokenHex() {
+        byte[] buf = new byte[32];
+        GESTION_TOKEN_RANDOM.nextBytes(buf);
+        return HexFormat.of().formatHex(buf);
     }
 
     @Override
@@ -306,6 +345,21 @@ public class AppointmentService implements IService<Appointment> {
         } catch (SQLException ignored) {
             /* Le RDV reste enregistré même si la notification échoue. */
         }
+        if (accepted) {
+            LocalDateTime slotEnd = null;
+            try {
+                if (a.getDisponibiliteId() > 0) {
+                    Optional<Availability> av = new AvailabilityService().findById(a.getDisponibiliteId());
+                    if (av.isPresent()) {
+                        slotEnd = av.get().getFin();
+                    }
+                }
+            } catch (SQLException ignored) {
+                /* fin de créneau optionnelle pour l’e-mail */
+            }
+            new RdvPatientEmailService().trySendConfirmation(a, slotEnd).ifPresent(msg ->
+                    System.err.println("[AutiCare] E-mail confirmation RDV : " + msg));
+        }
         try {
             if (hasRdvColumn("patient_reponse_lue")) {
                 markPatientDecisionRead(a.getId(), a.getPatientId());
@@ -435,7 +489,7 @@ public class AppointmentService implements IService<Appointment> {
         if (disponibiliteId <= 0 || !hasRdvColumn("disponibilite_id")) {
             return false;
         }
-        String sql = "SELECT COUNT(*) FROM rendez_vous WHERE disponibilite_id=? AND statut<>'ANNULE'";
+        String sql = "SELECT COUNT(*) FROM rendez_vous WHERE disponibilite_id=? AND statut IN ('PLANIFIE','TERMINE')";
         try (PreparedStatement ps = MyDatabase.getConnection().prepareStatement(sql)) {
             ps.setInt(1, disponibiliteId);
             try (ResultSet rs = ps.executeQuery()) {
@@ -450,7 +504,9 @@ public class AppointmentService implements IService<Appointment> {
             return Set.of();
         }
         HashSet<Integer> out = new HashSet<>();
-        String sql = "SELECT DISTINCT disponibilite_id FROM rendez_vous WHERE medecin_id=? AND disponibilite_id IS NOT NULL AND disponibilite_id<>0 AND statut<>'ANNULE'";
+        String sql = "SELECT DISTINCT disponibilite_id FROM rendez_vous WHERE medecin_id=? "
+                + "AND disponibilite_id IS NOT NULL AND disponibilite_id<>0 "
+                + "AND statut IN ('PLANIFIE','TERMINE')";
         try (PreparedStatement ps = MyDatabase.getConnection().prepareStatement(sql)) {
             ps.setInt(1, medecinId);
             try (ResultSet rs = ps.executeQuery()) {
@@ -486,6 +542,46 @@ public class AppointmentService implements IService<Appointment> {
                 rs.next();
                 return rs.getInt(1);
             }
+        }
+    }
+
+    /**
+     * Mode test: sélectionne les RDV PLANIFIE entre +1 h et +48 h pour accélérer la validation
+     * du rappel automatique sans attendre la veille exacte.
+     */
+    public List<Appointment> findPlanifiesForSmsReminderWindow(LocalDateTime now) throws SQLException {
+        if (!hasRdvColumn("sms_rappel_24h_envoye_at")) {
+            return List.of();
+        }
+        String col = dateTimeColumn();
+        LocalDateTime winStart = now.plusHours(1);
+        LocalDateTime winEnd = now.plusHours(48);
+        String sql = "SELECT * FROM rendez_vous WHERE statut='PLANIFIE' AND `" + col + "` > ? AND `" + col + "` >= ? AND `"
+                + col + "` <= ? AND sms_rappel_24h_envoye_at IS NULL";
+        List<Appointment> list = new ArrayList<>();
+        try (PreparedStatement ps = MyDatabase.getConnection().prepareStatement(sql)) {
+            ps.setTimestamp(1, Timestamp.valueOf(now));
+            ps.setTimestamp(2, Timestamp.valueOf(winStart));
+            ps.setTimestamp(3, Timestamp.valueOf(winEnd));
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    list.add(map(rs));
+                }
+            }
+        }
+        return list;
+    }
+
+    /** Marque le rappel SMS comme envoyé (évite les doublons). */
+    public void markSmsRappel24hEnvoye(int appointmentId) throws SQLException {
+        if (!hasRdvColumn("sms_rappel_24h_envoye_at")) {
+            return;
+        }
+        String sql = "UPDATE rendez_vous SET sms_rappel_24h_envoye_at=? WHERE id=?";
+        try (PreparedStatement ps = MyDatabase.getConnection().prepareStatement(sql)) {
+            ps.setTimestamp(1, Timestamp.valueOf(LocalDateTime.now()));
+            ps.setInt(2, appointmentId);
+            ps.executeUpdate();
         }
     }
 
@@ -545,6 +641,18 @@ public class AppointmentService implements IService<Appointment> {
         }
         if (hasRdvColumn("medecin_demande_lue")) {
             a.setMedecinDemandeLue(rs.getInt("medecin_demande_lue") != 0);
+        }
+        if (hasRdvColumn("gestion_token")) {
+            String tok = rs.getString("gestion_token");
+            if (tok != null && !tok.isBlank()) {
+                a.setGestionToken(tok);
+            }
+        }
+        if (hasRdvColumn("sms_rappel_24h_envoye_at")) {
+            Timestamp smsAt = rs.getTimestamp("sms_rappel_24h_envoye_at");
+            if (smsAt != null) {
+                a.setSmsRappel24hEnvoyeAt(smsAt.toLocalDateTime());
+            }
         }
         return a;
     }

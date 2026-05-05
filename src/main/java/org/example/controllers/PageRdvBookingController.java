@@ -3,9 +3,7 @@ package org.example.controllers;
 import javafx.fxml.FXML;
 import javafx.scene.Cursor;
 import javafx.scene.Node;
-import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
-import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
@@ -18,6 +16,7 @@ import org.example.utils.PublicRdvDoctorSidebarHelper;
 import org.example.utils.RdvPublicBookingStepper;
 
 import java.sql.SQLException;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
@@ -52,8 +51,6 @@ public class PageRdvBookingController implements PublicShellAware {
     private FlowPane bookingSlotsFlow;
     @FXML
     private Button bookingContinuerBtn;
-    @FXML
-    private ComboBox<String> bookingVoiceLang;
 
     @Override
     public void setPublicShell(PublicShellController shell) {
@@ -63,10 +60,6 @@ public class PageRdvBookingController implements PublicShellAware {
     @FXML
     private void initialize() {
         buildStepper();
-        if (bookingVoiceLang != null) {
-            bookingVoiceLang.getItems().setAll("Français", "English");
-            bookingVoiceLang.getSelectionModel().selectFirst();
-        }
         loadDoctorSidebar();
         loadSlotsFromDb();
     }
@@ -107,8 +100,13 @@ public class PageRdvBookingController implements PublicShellAware {
             List<Availability> list = new AvailabilityService().findByDoctor(doctorId);
             AppointmentService apptSvc = new AppointmentService();
             List<Availability> valides = new ArrayList<>();
+            LocalDateTime now = LocalDateTime.now();
             for (Availability a : list) {
                 if (a.getDebut() == null || a.getFin() == null) {
+                    continue;
+                }
+                // Ne pas afficher les créneaux déjà passés côté front.
+                if (!a.getFin().isAfter(now)) {
                     continue;
                 }
                 valides.add(a);
@@ -215,15 +213,6 @@ public class PageRdvBookingController implements PublicShellAware {
         if (bookingContinuerBtn != null) {
             bookingContinuerBtn.setDisable(false);
         }
-    }
-
-    @FXML
-    private void onVoiceAssist() {
-        Alert a = new Alert(Alert.AlertType.INFORMATION);
-        a.setTitle("Assistant vocal");
-        a.setHeaderText(null);
-        a.setContentText("Fonction « Parler pour prendre RDV » : branchement à prévoir (reconnaissance vocale / API).");
-        a.showAndWait();
     }
 
     @FXML

@@ -13,6 +13,7 @@ module org.example.pi {
     requires java.net.http;
     requires java.desktop;
     requires java.prefs;
+    requires jdk.jsobject;
     requires com.fasterxml.jackson.databind;
     requires org.apache.pdfbox;
     requires org.apache.poi.poi;

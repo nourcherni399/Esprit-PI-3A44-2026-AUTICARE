@@ -3,7 +3,6 @@ package org.example.controllers;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
-import javafx.scene.control.ComboBox;
 import javafx.scene.control.DateCell;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
@@ -18,6 +17,7 @@ import org.example.models.Role;
 import org.example.models.User;
 import org.example.services.AppointmentService;
 import org.example.services.AvailabilityService;
+import org.example.services.RdvPatientEmailService;
 import org.example.services.UserService;
 import org.example.utils.AppState;
 import org.example.utils.PublicRdvDoctorSidebarHelper;
@@ -47,6 +47,8 @@ public class PageRdvInfoController implements PublicShellAware {
     /** Format e-mail raisonnable (local@domaine.tld). */
     private static final Pattern EMAIL_PATTERN = Pattern.compile(
             "^[a-zA-Z0-9_+&.-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$");
+    /** Lettres (avec accents) + séparateurs usuels dans les noms. */
+    private static final Pattern NAME_PATTERN = Pattern.compile("^[\\p{L}][\\p{L}\\s'-]*$");
 
     private PublicShellController shell;
 
@@ -62,8 +64,6 @@ public class PageRdvInfoController implements PublicShellAware {
     private Label infoSidebarPhone;
     @FXML
     private Label infoSidebarEmail;
-    @FXML
-    private ComboBox<String> infoVoiceLang;
     @FXML
     private TextField infoNom;
     @FXML
@@ -95,10 +95,6 @@ public class PageRdvInfoController implements PublicShellAware {
     @FXML
     private void initialize() {
         RdvPublicBookingStepper.fill(infoStepperBox, 2);
-        if (infoVoiceLang != null) {
-            infoVoiceLang.getItems().setAll("Français", "English");
-            infoVoiceLang.getSelectionModel().selectFirst();
-        }
         PublicRdvDoctorSidebarHelper.populate(
                 AppState.getPendingPublicRdvDoctorId(),
                 AppState.getPendingPublicRdvDoctorName(),
@@ -113,6 +109,13 @@ public class PageRdvInfoController implements PublicShellAware {
         }
         if (infoNom != null && session != null && session.getNom() != null) {
             infoNom.setText(session.getNom().trim());
+        }
+        if (infoNom != null) {
+            UnaryOperator<TextFormatter.Change> lettersOnly = c -> {
+                String t = c.getControlNewText();
+                return t.isEmpty() || t.matches("[\\p{L}\\s'-]*") ? c : null;
+            };
+            infoNom.setTextFormatter(new TextFormatter<>(lettersOnly));
         }
         if (infoPrenom != null && session != null && session.getPrenom() != null) {
             infoPrenom.setText(session.getPrenom().trim());
@@ -190,15 +193,6 @@ public class PageRdvInfoController implements PublicShellAware {
     }
 
     @FXML
-    private void onVoiceAssist() {
-        Alert a = new Alert(Alert.AlertType.INFORMATION);
-        a.setTitle("Assistant vocal");
-        a.setHeaderText(null);
-        a.setContentText("Fonction « Parler pour prendre RDV » : branchement à prévoir (reconnaissance vocale / API).");
-        a.showAndWait();
-    }
-
-    @FXML
     private void onBackToList() {
         AppState.clearPendingPublicRdvBooking();
         if (shell == null) {
@@ -247,11 +241,13 @@ public class PageRdvInfoController implements PublicShellAware {
                         "Ce créneau a été confirmé entre-temps par le médecin. Revenez à l’étape précédente pour en choisir un autre.");
                 return;
             }
-            int patientId = resolvePatientId();
+            String email = infoEmail.getText().trim();
+            int patientId = resolvePatientId(email);
             if (patientId <= 0) {
                 alertWarn(
                         "Compte requis",
-                        "Vous devez être connecté avec un compte patient ou parent pour envoyer une demande de rendez-vous.");
+                        "Aucun compte patient ou parent n’est associé à cet e-mail, ou le compte n’a pas le bon profil.\n"
+                                + "Créez un compte ou connectez-vous avec un compte patient / parent.");
                 return;
             }
             String motif = AppState.getPendingPublicRdvMotif();
@@ -272,12 +268,26 @@ public class PageRdvInfoController implements PublicShellAware {
             appt.setPatientReponseLue(true);
             appt.setNotes(notes);
             rdvSvc.add(appt);
+            Optional<String> erreurMail = new RdvPatientEmailService().trySendDemandeEnregistree(
+                    appt, slot, infoEmail.getText().trim());
             Alert ok = new Alert(Alert.AlertType.INFORMATION);
-            ok.setTitle("Proposition envoyée");
+            ok.setTitle("Demande envoyée");
             ok.setHeaderText(null);
             ok.setContentText(
-                    "Votre proposition de rendez-vous a été transmise au médecin. Vous serez notifié ici (icône cloche) lorsqu’il l’aura acceptée ou refusée.");
+                    "Votre demande a été transmise au médecin. Vous serez notifié ici (icône cloche) lorsqu’il l’aura acceptée ou refusée.");
             ok.showAndWait();
+            erreurMail.ifPresent(msg -> {
+                Alert w = new Alert(Alert.AlertType.WARNING);
+                w.setTitle("E-mail");
+                w.setHeaderText("L’e-mail récapitulatif n’a pas pu être envoyé.");
+                w.setContentText(msg
+                        + "\n\nVérifiez auticare.smtp.user et auticare.smtp.appPassword dans "
+                        + "src/main/resources/application.properties, puis recompilez (Maven / Build) "
+                        + "pour copier le fichier vers target/classes.\n"
+                        + "Les valeurs de ce fichier priment sur les fichiers locaux ; "
+                        + "un mot de passe d’application Google révoqué ou mal copié provoque l’erreur 535.");
+                w.showAndWait();
+            });
             AppState.clearPendingPublicRdvBooking();
             if (shell != null) {
                 try {
@@ -330,6 +340,10 @@ public class PageRdvInfoController implements PublicShellAware {
             alertWarn("Nom", "Le nom doit contenir au moins " + MIN_NOM_PRENOM_LEN + " caractères.");
             return false;
         }
+        if (!NAME_PATTERN.matcher(nom).matches()) {
+            alertWarn("Nom", "Le nom doit contenir uniquement des lettres.");
+            return false;
+        }
         if (prenom.length() < MIN_NOM_PRENOM_LEN) {
             alertWarn("Prénom", "Le prénom doit contenir au moins " + MIN_NOM_PRENOM_LEN + " caractères.");
             return false;
@@ -375,10 +389,17 @@ public class PageRdvInfoController implements PublicShellAware {
         a.showAndWait();
     }
 
-    private static int resolvePatientId() throws SQLException {
+    private static int resolvePatientId(String email) throws SQLException {
         User session = AppState.getCurrentUser();
         if (session != null && (session.getRole() == Role.PATIENT || session.getRole() == Role.PARENT)) {
             return session.getId();
+        }
+        Optional<User> byMail = new UserService().findByEmail(email);
+        if (byMail.isPresent()) {
+            Role r = byMail.get().getRole();
+            if (r == Role.PATIENT || r == Role.PARENT) {
+                return byMail.get().getId();
+            }
         }
         return -1;
     }
