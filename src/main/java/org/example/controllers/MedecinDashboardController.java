@@ -257,6 +257,8 @@ public class MedecinDashboardController {
     /** Créneaux dont la suppression est interdite (RDV non annulé lié). */
     private Set<Integer> disponibiliteIdsWithBlockingRdv = Set.of();
     private final List<Appointment> rdvAppointments = new ArrayList<>();
+    /** Notifications de demande masquées manuellement par le médecin (session courante). */
+    private final Set<Integer> dismissedNotificationAppointmentIds = new HashSet<>();
     private MainView mainView = MainView.HOME;
     /** Entrées du menu latéral filtrées par {@link #searchField}. */
     private final List<SidebarSearchTarget> sidebarSearchTargets = new ArrayList<>();
@@ -2396,6 +2398,14 @@ public class MedecinDashboardController {
         } catch (SQLException e) {
             alert(Alert.AlertType.ERROR, "Notifications", e.getMessage());
         }
+        if (!dismissedNotificationAppointmentIds.isEmpty()) {
+            pending = pending.stream()
+                    .filter(a -> a != null && !dismissedNotificationAppointmentIds.contains(a.getId()))
+                    .collect(Collectors.toList());
+            history = history.stream()
+                    .filter(a -> a != null && !dismissedNotificationAppointmentIds.contains(a.getId()))
+                    .collect(Collectors.toList());
+        }
         if (notifListContainer != null) {
             notifListContainer.getChildren().clear();
             Label titlePending = new Label("Demandes en attente");
@@ -2483,6 +2493,38 @@ public class MedecinDashboardController {
             notifListScroll.setManaged(!empty);
         }
         refreshMedecinPendingDemandesUi();
+    }
+
+    @FXML
+    private void onClearAllNotifications() {
+        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
+        confirm.setTitle("Notifications");
+        confirm.setHeaderText("Supprimer toutes les notifications affichées ?");
+        confirm.setContentText("Cette action vide la liste des notifications côté interface "
+                + "et marque les demandes en attente comme lues.");
+        Optional<ButtonType> choice = confirm.showAndWait();
+        if (choice.isEmpty() || choice.get() != ButtonType.OK) {
+            return;
+        }
+        try {
+            List<Appointment> pending = appointmentService.findEnAttenteByMedecin(currentDoctorId);
+            List<Appointment> history = appointmentService.findMedecinDecisionHistory(currentDoctorId, 120);
+            for (Appointment a : pending) {
+                if (a != null && a.getId() > 0) {
+                    dismissedNotificationAppointmentIds.add(a.getId());
+                }
+            }
+            for (Appointment a : history) {
+                if (a != null && a.getId() > 0) {
+                    dismissedNotificationAppointmentIds.add(a.getId());
+                }
+            }
+            appointmentService.markAllEnAttenteDemandesLuesForMedecin(currentDoctorId);
+            refreshNotifications();
+        } catch (SQLException ex) {
+            alert(Alert.AlertType.ERROR, "Notifications",
+                    ex.getMessage() != null ? ex.getMessage() : "Suppression impossible.");
+        }
     }
 
     private VBox buildPendingDemandeNotifCard(Appointment a) {

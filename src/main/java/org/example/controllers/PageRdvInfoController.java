@@ -247,13 +247,11 @@ public class PageRdvInfoController implements PublicShellAware {
                         "Ce créneau a été confirmé entre-temps par le médecin. Revenez à l’étape précédente pour en choisir un autre.");
                 return;
             }
-            String email = infoEmail.getText().trim();
-            int patientId = resolvePatientId(email);
+            int patientId = resolvePatientId();
             if (patientId <= 0) {
                 alertWarn(
                         "Compte requis",
-                        "Aucun compte patient ou parent n’est associé à cet e-mail, ou le compte n’a pas le bon profil.\n"
-                                + "Créez un compte ou connectez-vous avec un compte patient / parent.");
+                        "Vous devez être connecté avec un compte patient ou parent pour envoyer une demande de rendez-vous.");
                 return;
             }
             String motif = AppState.getPendingPublicRdvMotif();
@@ -275,10 +273,10 @@ public class PageRdvInfoController implements PublicShellAware {
             appt.setNotes(notes);
             rdvSvc.add(appt);
             Alert ok = new Alert(Alert.AlertType.INFORMATION);
-            ok.setTitle("Demande envoyée");
+            ok.setTitle("Proposition envoyée");
             ok.setHeaderText(null);
             ok.setContentText(
-                    "Votre demande a été transmise au médecin. Vous serez notifié ici (icône cloche) lorsqu’il l’aura acceptée ou refusée.");
+                    "Votre proposition de rendez-vous a été transmise au médecin. Vous serez notifié ici (icône cloche) lorsqu’il l’aura acceptée ou refusée.");
             ok.showAndWait();
             AppState.clearPendingPublicRdvBooking();
             if (shell != null) {
@@ -377,17 +375,10 @@ public class PageRdvInfoController implements PublicShellAware {
         a.showAndWait();
     }
 
-    private static int resolvePatientId(String email) throws SQLException {
+    private static int resolvePatientId() throws SQLException {
         User session = AppState.getCurrentUser();
         if (session != null && (session.getRole() == Role.PATIENT || session.getRole() == Role.PARENT)) {
             return session.getId();
-        }
-        Optional<User> byMail = new UserService().findByEmail(email);
-        if (byMail.isPresent()) {
-            Role r = byMail.get().getRole();
-            if (r == Role.PATIENT || r == Role.PARENT) {
-                return byMail.get().getId();
-            }
         }
         return -1;
     }

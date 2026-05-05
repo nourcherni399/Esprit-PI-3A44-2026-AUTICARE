@@ -90,7 +90,7 @@
                         <VBox spacing="2" styleClass="rdv-info-field">
                             <Label styleClass="rdv-info-label" text="Email *"/>
                             <TextField fx:id="infoEmail" promptText="vous@exemple.fr" styleClass="rdv-info-input"/>
-                            <Label styleClass="rdv-info-field-hint" text="Vous recevrez la confirmation de rendez-vous à cette adresse."
+                            <Label styleClass="rdv-info-field-hint" text="Vous recevrez la réponse du médecin (acceptation ou refus) à cette adresse."
                                    wrapText="true"/>
                         </VBox>
 

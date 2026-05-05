@@ -135,20 +135,6 @@
     -fx-cursor: hand;
 }
 
-.catalog-create-product-btn {
-    -fx-background-color: #90a67f;
-    -fx-text-fill: #ffffff;
-    -fx-background-radius: 8;
-    -fx-font-size: 15px;
-    -fx-font-weight: 600;
-    -fx-padding: 10 18 10 18;
-    -fx-cursor: hand;
-}
-
-.catalog-create-product-btn:hover {
-    -fx-background-color: #7d946f;
-}
-
 .public-product-order-card {
     -fx-background-color: #ffffff;
     -fx-background-radius: 12;
@@ -261,45 +247,6 @@
     -fx-padding: 8 4 16 4;
 }
 
-/* CTA catalogue / favoris / demande produit — évite le bouton Modena gris 3D par défaut */
-.catalog-add-cart-btn {
-    -fx-background-color: linear-gradient(to bottom, #3b82f6 0%, #2563eb 55%, #1d4ed8 100%);
-    -fx-text-fill: #ffffff;
-    -fx-font-size: 15px;
-    -fx-font-weight: 700;
-    -fx-background-radius: 10;
-    -fx-background-insets: 0;
-    -fx-border-color: rgba(15, 23, 42, 0.12);
-    -fx-border-radius: 10;
-    -fx-border-width: 1;
-    -fx-padding: 12 22 12 22;
-    -fx-cursor: hand;
-    -fx-effect: dropshadow(gaussian, rgba(37, 99, 235, 0.35), 10, 0.2, 0, 3);
-}
-
-.catalog-add-cart-btn:hover {
-    -fx-background-color: linear-gradient(to bottom, #60a5fa 0%, #3b82f6 50%, #2563eb 100%);
-    -fx-effect: dropshadow(gaussian, rgba(37, 99, 235, 0.45), 14, 0.25, 0, 4);
-}
-
-.catalog-add-cart-btn:pressed {
-    -fx-background-color: #1e40af;
-    -fx-effect: dropshadow(gaussian, rgba(30, 64, 175, 0.3), 6, 0.15, 0, 1);
-}
-
-.catalog-add-cart-btn:focused {
-    -fx-border-color: rgba(59, 130, 246, 0.65);
-    -fx-border-width: 2;
-}
-
-.catalog-add-cart-btn:disabled {
-    -fx-background-color: #e5e7eb;
-    -fx-text-fill: #9ca3af;
-    -fx-border-color: #d1d5db;
-    -fx-effect: null;
-    -fx-cursor: default;
-}
-
 /*
  * Champs alignés sur {@link org.example.ui.product.ProductFormUi#styleInputAddProduct}
  * et carte {@code AdminProductsController.showProductEditor}.
@@ -328,7 +275,6 @@
     -fx-padding: 20 8 40 8;
     -fx-spacing: 22;
     -fx-alignment: top_center;
-    -fx-font-family: "Inter", "Segoe UI Variable", "Segoe UI", "Roboto", sans-serif;
 }
 
 .checkout-shell {
@@ -340,7 +286,7 @@
 }
 
 .checkout-form-scroll {
-    -fx-min-viewport-height: 560;
+    -fx-min-viewport-height: 420;
 }
 
 .checkout-form-scroll > .viewport {
@@ -355,37 +301,20 @@
 }
 
 .checkout-form-inner {
-    -fx-spacing: 24;
+    -fx-spacing: 22;
     -fx-max-width: 640;
-    -fx-padding: 22 22 24 22;
-    -fx-background-color: linear-gradient(to bottom, #ffffff 0%, #f9fbff 100%);
-    -fx-border-color: #dbe6f5;
-    -fx-border-radius: 14;
-    -fx-background-radius: 14;
-}
-
-.checkout-form-title {
-    -fx-font-size: 22px;
-    -fx-font-weight: 800;
-    -fx-text-fill: #0f2748;
-    -fx-padding: 0 0 4 0;
 }
 
 .checkout-section-title {
-    -fx-font-size: 17px;
+    -fx-font-size: 16px;
     -fx-font-weight: 700;
-    -fx-text-fill: #214772;
-    -fx-padding: 4 0 0 0;
+    -fx-text-fill: #1f2937;
 }
 
 .checkout-form-label {
     -fx-font-size: 15px;
-    -fx-font-weight: 600;
-    -fx-text-fill: #334155;
-}
-
-#paymentCombo {
-    -fx-pref-height: 44;
+    -fx-font-weight: 500;
+    -fx-text-fill: #1f2937;
 }
 
 .checkout-field-hint {
@@ -395,17 +324,16 @@
 }
 
 .checkout-section-sep {
-    -fx-padding: 8 0 8 0;
-    -fx-opacity: 0.85;
+    -fx-padding: 4 0 4 0;
 }
 
 .checkout-card-fields {
-    -fx-spacing: 12;
-    -fx-padding: 14 16 16 16;
-    -fx-background-color: #f4f8ff;
-    -fx-background-radius: 10;
-    -fx-border-color: #cfe0f7;
-    -fx-border-radius: 10;
+    -fx-spacing: 10;
+    -fx-padding: 12 14 14 14;
+    -fx-background-color: #f9fafb;
+    -fx-background-radius: 8;
+    -fx-border-color: #e5e7eb;
+    -fx-border-radius: 8;
     -fx-border-width: 1;
 }
 
@@ -494,24 +422,9 @@
 }
 
 .checkout-actions-bar {
-    -fx-padding: 14 6 6 6;
-    -fx-spacing: 12;
+    -fx-padding: 12 4 4 4;
+    -fx-spacing: 10;
     -fx-background-color: rgba(255, 255, 255, 0.98);
-}
-
-.checkout-primary-btn {
-    -fx-background-color: linear-gradient(to right, #2f7fd9 0%, #1f63b8 100%);
-    -fx-text-fill: #ffffff;
-    -fx-background-radius: 10;
-    -fx-font-size: 15px;
-    -fx-font-weight: 700;
-    -fx-padding: 12 18 12 18;
-    -fx-cursor: hand;
-    -fx-effect: dropshadow(gaussian, rgba(31, 99, 184, 0.30), 10, 0.22, 0, 3);
-}
-
-.checkout-primary-btn:hover {
-    -fx-background-color: linear-gradient(to right, #3a8ae3 0%, #246ec6 100%);
 }
 
 .cart-outline-btn {
@@ -1259,6 +1172,24 @@
     -fx-background-color: linear-gradient(to bottom, #0d9488 0%, #0f766e 50%, #115e59 100%);
 }
 
+.rdv-proposal-btn {
+    -fx-background-color: linear-gradient(to bottom right, #3b82f6 0%, #2563eb 50%, #1d4ed8 100%);
+    -fx-text-fill: #ffffff;
+    -fx-font-weight: 800;
+    -fx-font-size: 12px;
+    -fx-padding: 11 18 11 18;
+    -fx-background-radius: 999;
+    -fx-border-radius: 999;
+    -fx-border-color: rgba(255, 255, 255, 0.55);
+    -fx-border-width: 1;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(37, 99, 235, 0.38), 10, 0.28, 0, 4);
+}
+
+.rdv-proposal-btn:hover {
+    -fx-background-color: linear-gradient(to bottom right, #2563eb 0%, #1d4ed8 55%, #1e40af 100%);
+}
+
 /* Carte médecin « Prendre RDV » (liste) — mise en page type fiche */
 .rdv-card-v2 {
     -fx-background-color: #ffffff;
@@ -1770,38 +1701,6 @@
     -fx-text-fill: #2f3138;
 }
 
-.rdv-booking-voice-box {
-    -fx-background-color: rgba(52, 152, 219, 0.12);
-    -fx-background-radius: 14;
-    -fx-border-color: rgba(52, 152, 219, 0.25);
-    -fx-border-radius: 14;
-    -fx-border-width: 1;
-    -fx-padding: 16 14 16 14;
-}
-
-.rdv-booking-voice-title {
-    -fx-font-size: 14px;
-    -fx-font-weight: 700;
-    -fx-text-fill: #1e5a8a;
-}
-
-.rdv-booking-voice-combo {
-    -fx-background-radius: 10;
-}
-
-.rdv-booking-voice-btn {
-    -fx-background-color: linear-gradient(to bottom, #14b8a6 0%, #0d9488 50%, #0f766e 100%);
-    -fx-text-fill: #ffffff;
-    -fx-font-weight: 600;
-    -fx-padding: 10 14 10 14;
-    -fx-background-radius: 10;
-    -fx-cursor: hand;
-}
-
-.rdv-booking-voice-btn:hover {
-    -fx-background-color: linear-gradient(to bottom, #0d9488 0%, #0f766e 55%, #115e59 100%);
-}
-
 .rdv-booking-content {
     -fx-padding: 4 0 0 0;
 }
@@ -2014,10 +1913,6 @@
     -fx-spacing: 10;
 }
 
-.rdv-type-root .rdv-booking-voice-box {
-    -fx-padding: 12 12 12 12;
-}
-
 .rdv-type-main-card {
     -fx-background-color: rgba(255, 255, 255, 0.97);
     -fx-background-radius: 14;
@@ -2078,6 +1973,13 @@
 .rdv-type-option-dur {
     -fx-font-size: 12px;
     -fx-text-fill: #6b7280;
+}
+
+.rdv-type-motif-hint {
+    -fx-font-size: 12px;
+    -fx-text-fill: #6b7280;
+    -fx-wrap-text: true;
+    -fx-padding: 0 0 4 0;
 }
 
 .rdv-type-motif-combo {
@@ -2142,10 +2044,6 @@
 .rdv-info-root .rdv-booking-profile-card {
     -fx-padding: 14 12 14 12;
     -fx-spacing: 10;
-}
-
-.rdv-info-root .rdv-booking-voice-box {
-    -fx-padding: 12 12 12 12;
 }
 
 .rdv-info-root .rdv-booking-main-title {
@@ -3698,4 +3596,801 @@
 
 #eventDetailJoinOnlineBtn:focused {
     -fx-border-color: rgba(147, 51, 234, 0.75);
+}
+
+/* Chatbot d'aide (page RDV publique) */
+.button.rdv-chatbot-toggle-btn {
+    -fx-background-color: linear-gradient(to bottom right, #173a70, #214f8e);
+    -fx-text-fill: #f8fbff;
+    -fx-font-weight: 800;
+    -fx-font-size: 14px;
+    -fx-background-radius: 999;
+    -fx-padding: 12 22 12 22;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(16, 43, 89, 0.36), 18, 0.3, 0, 5);
+    -fx-translate-x: -18;
+    -fx-translate-y: -14;
+}
+
+.button.rdv-chatbot-toggle-btn:hover {
+    -fx-background-color: linear-gradient(to bottom right, #1e4b8f, #2962aa);
+}
+
+.rdv-chatbot-panel {
+    -fx-background-color: linear-gradient(to bottom, #f8fbff, #f4f7fc);
+    -fx-border-color: #d8e2f0;
+    -fx-border-width: 1;
+    -fx-border-radius: 22;
+    -fx-background-radius: 22;
+    -fx-padding: 14;
+    -fx-effect: dropshadow(gaussian, rgba(17, 24, 39, 0.22), 34, 0.22, 0, 10);
+    -fx-translate-x: -18;
+    -fx-translate-y: -66;
+}
+
+.rdv-chatbot-header {
+    -fx-background-color: #eef3fb;
+    -fx-border-color: #d9e4f5;
+    -fx-border-width: 1;
+    -fx-background-radius: 14;
+    -fx-border-radius: 14;
+    -fx-padding: 11 12 11 12;
+}
+
+.rdv-chatbot-title {
+    -fx-font-size: 17px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #1f3558;
+}
+
+.rdv-chatbot-subtitle {
+    -fx-text-fill: #61656f;
+    -fx-font-size: 14px;
+    -fx-padding: 0 8 0 8;
+    -fx-text-alignment: center;
+}
+
+.rdv-chatbot-intro-card {
+    -fx-background-color: #f7faff;
+    -fx-border-color: #e1e9f6;
+    -fx-border-radius: 12;
+    -fx-background-radius: 12;
+    -fx-padding: 8 10 8 10;
+}
+
+.rdv-chatbot-intro-title {
+    -fx-font-size: 14px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #334155;
+    -fx-text-alignment: center;
+}
+
+.rdv-chatbot-intro-caption {
+    -fx-font-size: 13px;
+    -fx-text-fill: #4b5563;
+    -fx-text-alignment: center;
+}
+
+.rdv-chatbot-chip-wrap {
+    -fx-padding: 0;
+}
+
+.rdv-chatbot-panel .button.rdv-chatbot-chip,
+.button.rdv-chatbot-chip {
+    -fx-background-color: linear-gradient(to bottom, rgba(255,255,255,0.92), rgba(239,246,255,0.78));
+    -fx-text-fill: #21456f;
+    -fx-font-size: 13px;
+    -fx-font-weight: 800;
+    -fx-background-radius: 999;
+    -fx-border-color: rgba(170, 194, 230, 0.9);
+    -fx-border-width: 1;
+    -fx-border-radius: 999;
+    -fx-padding: 9 16 9 16;
+    -fx-min-height: 38;
+    -fx-min-width: 112;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(90, 122, 171, 0.16), 8, 0.2, 0, 1);
+}
+
+.rdv-chatbot-panel .button.rdv-chatbot-chip:hover,
+.button.rdv-chatbot-chip:hover {
+    -fx-background-color: linear-gradient(to bottom, rgba(255,255,255,0.98), rgba(224,237,255,0.9));
+    -fx-border-color: #90aee0;
+    -fx-effect: dropshadow(gaussian, rgba(78, 116, 180, 0.28), 12, 0.22, 0, 2);
+}
+
+/* Deux boutons principaux du quiz (ligne haute) */
+#rdvQuizQuestionnaireBtn,
+#rdvQuizImagesBtn {
+    -fx-font-size: 14px;
+    -fx-font-weight: 900;
+    -fx-padding: 10 18 10 18;
+    -fx-background-radius: 999;
+    -fx-border-radius: 999;
+    -fx-border-width: 1.2;
+    -fx-min-width: 148;
+    -fx-min-height: 40;
+    -fx-cursor: hand;
+}
+
+#rdvQuizQuestionnaireBtn {
+    -fx-background-color: linear-gradient(to bottom, #e8f9ef, #d3f1e0);
+    -fx-text-fill: #1d6a3b;
+    -fx-border-color: #9fd8b9;
+    -fx-effect: dropshadow(gaussian, rgba(36, 125, 78, 0.18), 10, 0.2, 0, 2);
+}
+
+#rdvQuizQuestionnaireBtn:hover {
+    -fx-background-color: linear-gradient(to bottom, #dcf4e6, #c5ebd6);
+    -fx-border-color: #7dc79f;
+}
+
+#rdvQuizQuestionnaireBtn:pressed {
+    -fx-background-color: linear-gradient(to bottom, #cdebd9, #b8e1ca);
+}
+
+#rdvQuizImagesBtn {
+    -fx-background-color: linear-gradient(to bottom, #eaf3ff, #d8e8ff);
+    -fx-text-fill: #1e4f95;
+    -fx-border-color: #a8c5f2;
+    -fx-effect: dropshadow(gaussian, rgba(44, 98, 179, 0.2), 10, 0.2, 0, 2);
+}
+
+#rdvQuizImagesBtn:hover {
+    -fx-background-color: linear-gradient(to bottom, #dfeeff, #cde1ff);
+    -fx-border-color: #85ace6;
+}
+
+#rdvQuizImagesBtn:pressed {
+    -fx-background-color: linear-gradient(to bottom, #d2e5ff, #bdd6fa);
+}
+
+.rdv-chatbot-panel .button.rdv-chip-green,
+.button.rdv-chip-green {
+    -fx-background-color: linear-gradient(to bottom, rgba(243,255,246,0.96), rgba(215,246,223,0.86));
+    -fx-text-fill: #1d6b33;
+    -fx-border-color: #b4e4c2;
+}
+
+.rdv-chatbot-panel .button.rdv-chip-blue,
+.button.rdv-chip-blue {
+    -fx-background-color: linear-gradient(to bottom, rgba(239,246,255,0.96), rgba(218,234,255,0.86));
+    -fx-text-fill: #1d4f93;
+    -fx-border-color: #bfd5fb;
+}
+
+.rdv-chatbot-image {
+    -fx-background-color: #ffffff;
+    -fx-border-color: #d8d8d8;
+    -fx-border-radius: 12;
+    -fx-background-radius: 12;
+}
+
+.rdv-chatbot-image-caption {
+    -fx-font-size: 12px;
+    -fx-text-fill: #475467;
+    -fx-padding: 0 4 0 4;
+}
+
+.rdv-chatbot-history {
+    -fx-background-color: #ffffff;
+    -fx-border-color: #dbe5f3;
+    -fx-border-radius: 14;
+    -fx-background-radius: 14;
+    -fx-padding: 0;
+}
+
+.rdv-chatbot-history .content {
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 14;
+}
+
+.rdv-chatbot-history-box {
+    -fx-padding: 12;
+    -fx-background-color: #ffffff;
+    -fx-spacing: 10;
+}
+
+.rdv-chatbot-bubble {
+    -fx-padding: 11 13 11 13;
+    -fx-background-radius: 14;
+    -fx-border-radius: 14;
+    -fx-border-width: 1;
+    -fx-spacing: 5;
+}
+
+.rdv-chatbot-bubble-assistant {
+    -fx-background-color: #f4f8ff;
+    -fx-border-color: #d6e3fa;
+}
+
+.rdv-chatbot-bubble-user {
+    -fx-background-color: linear-gradient(to bottom right, #e8f0ff, #dbe8ff);
+    -fx-border-color: #c3d8fb;
+}
+
+.rdv-chatbot-bubble-typing {
+    -fx-border-style: segments(4, 4);
+    -fx-border-color: #c7d7f3;
+}
+
+.rdv-chatbot-bubble-author {
+    -fx-font-size: 13px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #1d3e75;
+}
+
+.rdv-chatbot-bubble-user .rdv-chatbot-bubble-author {
+    -fx-text-fill: #204a8a;
+}
+
+.rdv-chatbot-bubble-message {
+    -fx-text-fill: #2f3f56;
+    -fx-font-family: "Segoe UI Variable Text", "Segoe UI", "Inter", "Roboto", sans-serif;
+    -fx-font-size: 15px;
+    -fx-line-spacing: 5px;
+}
+
+.rdv-chatbot-bubble-user .rdv-chatbot-bubble-message {
+    -fx-text-fill: #21384f;
+}
+
+.rdv-chatbot-bubble-image {
+    -fx-fit-width: 300;
+    -fx-preserve-ratio: true;
+    -fx-smooth: true;
+}
+
+.rdv-chatbot-bubble-image-caption {
+    -fx-text-fill: #475467;
+    -fx-font-size: 13px;
+    -fx-wrap-text: true;
+}
+
+.button.rdv-chatbot-retry-btn {
+    -fx-background-color: #eef2ff;
+    -fx-text-fill: #3730a3;
+    -fx-font-size: 12px;
+    -fx-font-weight: 700;
+    -fx-background-radius: 999;
+    -fx-padding: 5 10 5 10;
+    -fx-cursor: hand;
+}
+
+.button.rdv-chatbot-retry-btn:hover {
+    -fx-background-color: #e0e7ff;
+}
+
+.button.rdv-chatbot-edit-btn {
+    -fx-background-color: #eef5ff;
+    -fx-text-fill: #2d5a9b;
+    -fx-font-size: 13px;
+    -fx-font-weight: 700;
+    -fx-background-radius: 999;
+    -fx-border-radius: 999;
+    -fx-border-color: #c3d9f8;
+    -fx-border-width: 1;
+    -fx-min-width: 26;
+    -fx-min-height: 26;
+    -fx-pref-width: 26;
+    -fx-pref-height: 26;
+    -fx-padding: 0;
+    -fx-cursor: hand;
+    -fx-alignment: center;
+}
+
+.button.rdv-chatbot-edit-btn:hover {
+    -fx-background-color: #e1eeff;
+    -fx-border-color: #9fc3f4;
+}
+
+.rdv-chatbot-panel .button.rdv-chatbot-icon-btn,
+.button.rdv-chatbot-icon-btn {
+    -fx-background-color: rgba(255,255,255,0.38);
+    -fx-text-fill: #3f5573;
+    -fx-font-size: 17px;
+    -fx-font-weight: 800;
+    -fx-padding: 2 8 2 8;
+    -fx-cursor: hand;
+    -fx-background-radius: 10;
+    -fx-border-color: rgba(177, 198, 225, 0.8);
+    -fx-border-width: 1;
+    -fx-border-radius: 10;
+}
+
+.rdv-chatbot-panel .button.rdv-chatbot-icon-btn:hover,
+.button.rdv-chatbot-icon-btn:hover {
+    -fx-background-color: rgba(232, 241, 255, 0.92);
+    -fx-border-color: #9ab6e2;
+}
+
+.rdv-chatbot-input {
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 999;
+    -fx-border-radius: 999;
+    -fx-border-color: #cfdced;
+    -fx-border-width: 1;
+    -fx-padding: 11 15 11 15;
+    -fx-font-size: 14px;
+    -fx-text-fill: #334155;
+}
+
+.rdv-chatbot-input:focused {
+    -fx-border-color: #6c97d8;
+    -fx-effect: dropshadow(gaussian, rgba(76, 118, 184, 0.25), 12, 0.2, 0, 1);
+}
+
+.rdv-chatbot-input-row {
+    -fx-padding: 2 2 2 2;
+}
+
+.rdv-chatbot-quick-row {
+    -fx-padding: 2 0 0 0;
+}
+
+.rdv-chatbot-quick-label {
+    -fx-font-size: 13px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #6b7280;
+}
+
+.rdv-chatbot-panel .button.rdv-chatbot-mini-chip,
+.button.rdv-chatbot-mini-chip {
+    -fx-font-size: 12px;
+    -fx-font-weight: 700;
+    -fx-background-radius: 999;
+    -fx-border-radius: 999;
+    -fx-border-color: rgba(186, 204, 231, 0.95);
+    -fx-border-width: 1;
+    -fx-background-color: linear-gradient(to bottom, rgba(255,255,255,0.9), rgba(237,243,251,0.86));
+    -fx-text-fill: #2f4667;
+    -fx-padding: 6 12 6 12;
+}
+
+/* Cible explicite de la ligne "Rapide : Quiz texte / Quiz Rorschach" */
+.rdv-chatbot-quick-row .button {
+    -fx-font-size: 13px;
+    -fx-font-weight: 800;
+    -fx-background-radius: 999;
+    -fx-border-radius: 999;
+    -fx-border-width: 1;
+    -fx-padding: 7 14 7 14;
+    -fx-cursor: hand;
+}
+
+.rdv-chatbot-quick-row .button.rdv-chatbot-mini-chip.rdv-chip-green {
+    -fx-background-color: linear-gradient(to bottom, #e9fbef, #d5f3df);
+    -fx-text-fill: #1f6a38;
+    -fx-border-color: #b2e2c2;
+}
+
+.rdv-chatbot-quick-row .button.rdv-chatbot-mini-chip.rdv-chip-green:hover {
+    -fx-background-color: linear-gradient(to bottom, #def7e7, #c8ecd4);
+    -fx-border-color: #99d3ad;
+}
+
+.rdv-chatbot-quick-row .button.rdv-chatbot-mini-chip.rdv-chip-blue {
+    -fx-background-color: linear-gradient(to bottom, #ecf4ff, #d9e9ff);
+    -fx-text-fill: #205190;
+    -fx-border-color: #bad0f7;
+}
+
+.rdv-chatbot-quick-row .button.rdv-chatbot-mini-chip.rdv-chip-blue:hover {
+    -fx-background-color: linear-gradient(to bottom, #e1edff, #ccdfff);
+    -fx-border-color: #9fbde8;
+}
+
+.button.rdv-chatbot-media-btn {
+    -fx-background-color: #ece8e1;
+    -fx-text-fill: #455267;
+    -fx-background-radius: 12;
+    -fx-min-width: 38;
+    -fx-min-height: 38;
+    -fx-pref-width: 38;
+    -fx-pref-height: 38;
+    -fx-font-size: 15px;
+    -fx-cursor: hand;
+}
+
+.button.rdv-chatbot-media-btn:hover {
+    -fx-background-color: #e1dbd3;
+}
+
+.rdv-chatbot-panel .button.rdv-chatbot-send-btn,
+.button.rdv-chatbot-send-btn {
+    -fx-background-color: linear-gradient(to bottom, rgba(132,167,219,0.98), rgba(94,132,190,0.98));
+    -fx-text-fill: #ffffff;
+    -fx-font-weight: 800;
+    -fx-font-size: 14px;
+    -fx-background-radius: 16;
+    -fx-border-radius: 16;
+    -fx-border-color: rgba(84, 117, 171, 0.95);
+    -fx-border-width: 1;
+    -fx-padding: 11 18 11 18;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(40, 77, 134, 0.33), 14, 0.25, 0, 2);
+}
+
+.rdv-chatbot-panel .button.rdv-chatbot-send-btn:hover,
+.button.rdv-chatbot-send-btn:hover {
+    -fx-background-color: linear-gradient(to bottom, rgba(120,157,214,0.99), rgba(82,121,183,0.99));
+}
+
+/* Smart Planner IA (recommandation créneau) */
+.rdv-ai-planner {
+    -fx-background-color: linear-gradient(to bottom right, #f9fbff, #f3f7ff);
+    -fx-border-color: #d4e1ff;
+    -fx-border-width: 1;
+    -fx-border-radius: 20;
+    -fx-background-radius: 20;
+    -fx-padding: 14;
+    -fx-effect: dropshadow(gaussian, rgba(37, 99, 235, 0.12), 24, 0.2, 0, 4);
+}
+
+.rdv-ai-planner-title {
+    -fx-font-size: 16px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #1e3a8a;
+}
+
+.rdv-ai-planner-badge {
+    -fx-background-color: linear-gradient(to bottom right, #e9f0ff, #dbe7ff);
+    -fx-text-fill: #234a91;
+    -fx-font-size: 11px;
+    -fx-font-weight: 700;
+    -fx-background-radius: 999;
+    -fx-padding: 5 11 5 11;
+}
+
+.rdv-ai-planner-sub {
+    -fx-font-size: 12px;
+    -fx-text-fill: #475569;
+}
+
+.rdv-ai-controls-row {
+    -fx-padding: 3 0 0 0;
+}
+
+.rdv-ai-input {
+    -fx-background-color: #ffffff;
+    -fx-border-color: #d5def0;
+    -fx-border-width: 1;
+    -fx-background-radius: 12;
+    -fx-border-radius: 12;
+    -fx-font-size: 13px;
+    -fx-padding: 7 10 7 10;
+}
+
+.button.rdv-ai-generate-btn {
+    -fx-background-color: linear-gradient(to bottom right, #2563eb, #1e40af);
+    -fx-text-fill: #ffffff;
+    -fx-font-weight: 800;
+    -fx-font-size: 13px;
+    -fx-background-radius: 14;
+    -fx-padding: 10 16 10 16;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(37, 99, 235, 0.28), 14, 0.22, 0, 2);
+}
+
+.button.rdv-ai-generate-btn:hover {
+    -fx-background-color: linear-gradient(to bottom right, #1d4ed8, #1e3a8a);
+}
+
+.rdv-ai-status {
+    -fx-font-size: 12px;
+    -fx-text-fill: #334155;
+    -fx-background-color: linear-gradient(to bottom right, #eef3ff, #e9f1ff);
+    -fx-border-color: #d9e5ff;
+    -fx-border-radius: 12;
+    -fx-background-radius: 12;
+    -fx-padding: 9 11 9 11;
+}
+
+.rdv-ai-suggestions-wrap {
+    -fx-padding: 2 0 0 0;
+}
+
+.rdv-ai-skeleton-card {
+    -fx-background-color: #ffffff;
+    -fx-border-color: #e5edff;
+    -fx-border-radius: 14;
+    -fx-background-radius: 14;
+    -fx-padding: 12;
+}
+
+.rdv-ai-skeleton-line {
+    -fx-background-color: #e9eefc;
+    -fx-background-radius: 8;
+}
+
+.rdv-ai-skeleton-line-wide {
+    -fx-max-width: Infinity;
+}
+
+.rdv-ai-suggestion-card {
+    -fx-background-color: linear-gradient(to bottom right, #ffffff, #fcfdff);
+    -fx-border-color: #d8e3fb;
+    -fx-border-width: 1;
+    -fx-border-radius: 16;
+    -fx-background-radius: 16;
+    -fx-padding: 12;
+    -fx-effect: dropshadow(gaussian, rgba(30, 58, 138, 0.09), 14, 0.16, 0, 3);
+}
+
+.rdv-ai-suggestion-card:hover {
+    -fx-border-color: #c2d4ff;
+    -fx-background-color: linear-gradient(to bottom right, #ffffff, #f8fbff);
+    -fx-effect: dropshadow(gaussian, rgba(37, 99, 235, 0.2), 22, 0.24, 0, 5);
+}
+
+.rdv-ai-suggestion-best-card {
+    -fx-border-color: #7ee6a5;
+    -fx-background-color: linear-gradient(to bottom right, #f2fff7, #ffffff);
+    -fx-effect: dropshadow(gaussian, rgba(22, 163, 74, 0.24), 24, 0.24, 0, 6);
+}
+
+.rdv-ai-suggestion-best-card:hover {
+    -fx-border-color: #34d399;
+    -fx-background-color: linear-gradient(to bottom right, #ecfff4, #ffffff);
+    -fx-effect: dropshadow(gaussian, rgba(22, 163, 74, 0.3), 28, 0.28, 0, 7);
+}
+
+.rdv-ai-suggestion-title {
+    -fx-font-size: 14px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #1f2a44;
+}
+
+.rdv-ai-suggestion-badge {
+    -fx-background-color: #e0edff;
+    -fx-text-fill: #1d4ed8;
+    -fx-font-size: 11px;
+    -fx-font-weight: 700;
+    -fx-background-radius: 999;
+    -fx-padding: 4 8 4 8;
+}
+
+.rdv-ai-rank-badge {
+    -fx-font-size: 10px;
+    -fx-font-weight: 800;
+    -fx-background-radius: 999;
+    -fx-padding: 4 8 4 8;
+}
+
+.rdv-ai-rank-best {
+    -fx-background-color: #dcfce7;
+    -fx-text-fill: #166534;
+}
+
+.rdv-ai-rank-alt {
+    -fx-background-color: #eef2ff;
+    -fx-text-fill: #3730a3;
+}
+
+.rdv-ai-suggestion-meta {
+    -fx-font-size: 12px;
+    -fx-text-fill: #334155;
+    -fx-font-weight: 600;
+}
+
+.rdv-ai-fit-badge {
+    -fx-font-size: 11px;
+    -fx-font-weight: 800;
+    -fx-background-radius: 999;
+    -fx-padding: 4 10 4 10;
+}
+
+.rdv-ai-fit-good {
+    -fx-background-color: #dcfce7;
+    -fx-text-fill: #166534;
+}
+
+.rdv-ai-fit-medium {
+    -fx-background-color: #fef3c7;
+    -fx-text-fill: #92400e;
+}
+
+.rdv-ai-fit-low {
+    -fx-background-color: #fee2e2;
+    -fx-text-fill: #991b1b;
+}
+
+.rdv-ai-chip-row {
+    -fx-alignment: center-left;
+}
+
+.rdv-ai-insight-chip {
+    -fx-font-size: 11px;
+    -fx-text-fill: #1e3a8a;
+    -fx-background-color: #edf3ff;
+    -fx-border-color: #d8e5ff;
+    -fx-border-width: 1;
+    -fx-border-radius: 999;
+    -fx-background-radius: 999;
+    -fx-padding: 4 10 4 10;
+}
+
+.rdv-ai-chip-decision {
+    -fx-background-color: linear-gradient(to bottom right, #dbeafe, #e0f2fe);
+    -fx-text-fill: #0c4a6e;
+    -fx-border-color: #bfdbfe;
+}
+
+.rdv-ai-timeline-col {
+    -fx-alignment: top_center;
+    -fx-min-width: 12;
+    -fx-pref-width: 12;
+}
+
+.rdv-ai-timeline-dot {
+    -fx-background-color: #2563eb;
+    -fx-background-radius: 999;
+    -fx-min-width: 9;
+    -fx-pref-width: 9;
+    -fx-min-height: 9;
+    -fx-pref-height: 9;
+}
+
+.rdv-ai-timeline-line {
+    -fx-background-color: #dbe6ff;
+    -fx-min-width: 2;
+    -fx-pref-width: 2;
+}
+
+.rdv-ai-suggestion-reason {
+    -fx-font-size: 12px;
+    -fx-text-fill: #52607a;
+    -fx-font-style: italic;
+}
+
+.button.rdv-ai-pick-btn {
+    -fx-background-color: linear-gradient(to bottom right, #16a34a, #0891b2);
+    -fx-text-fill: white;
+    -fx-font-weight: 800;
+    -fx-font-size: 13px;
+    -fx-background-radius: 12;
+    -fx-padding: 9 14 9 14;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(8, 145, 178, 0.24), 14, 0.2, 0, 2);
+}
+
+.button.rdv-ai-pick-btn:hover {
+    -fx-background-color: linear-gradient(to bottom right, #15803d, #0e7490);
+}
+
+/* ---------- Dialogue « Proposer un RDV » (formulaire moderne) ---------- */
+
+.dialog-pane.rdv-proposal-dialog {
+    -fx-background-color: linear-gradient(to bottom, #f8fafc 0%, #eef2ff 55%, #f5f3ff 100%);
+    -fx-background-radius: 18;
+    -fx-border-radius: 18;
+    -fx-border-color: rgba(99, 102, 241, 0.28);
+    -fx-border-width: 1.2;
+    -fx-padding: 0;
+    -fx-effect: dropshadow(gaussian, rgba(79, 70, 229, 0.22), 24, 0.18, 0, 8);
+}
+
+.dialog-pane.rdv-proposal-dialog > .content.label,
+.dialog-pane.rdv-proposal-dialog > .header-panel {
+    -fx-padding: 0;
+}
+
+.dialog-pane.rdv-proposal-dialog > .content {
+    -fx-padding: 18 22 10 22;
+}
+
+.dialog-pane.rdv-proposal-dialog > .button-bar > .container {
+    -fx-padding: 12 22 18 22;
+}
+
+.dialog-pane.rdv-proposal-dialog > .button-bar > .container > .details > .button {
+    -fx-background-insets: 0;
+}
+
+.rdv-proposal-form-root {
+    -fx-spacing: 14;
+    -fx-padding: 0 0 4 0;
+}
+
+.rdv-proposal-kicker {
+    -fx-font-size: 11px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #6366f1;
+    -fx-letter-spacing: 0.14em;
+}
+
+.rdv-proposal-form-title {
+    -fx-font-size: 22px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #1e293b;
+}
+
+.rdv-proposal-form-sub {
+    -fx-font-size: 13px;
+    -fx-text-fill: #64748b;
+    -fx-line-spacing: 2px;
+}
+
+.rdv-proposal-pill {
+    -fx-font-size: 12px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #92400e;
+    -fx-background-color: linear-gradient(to bottom, #fef3c7 0%, #fde68a 100%);
+    -fx-background-radius: 999;
+    -fx-padding: 6 14 6 14;
+    -fx-border-color: rgba(245, 158, 11, 0.45);
+    -fx-border-radius: 999;
+    -fx-border-width: 1;
+    -fx-alignment: center-left;
+    -fx-max-width: Infinity;
+}
+
+.rdv-proposal-field-cap {
+    -fx-font-size: 11px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #64748b;
+    -fx-letter-spacing: 0.06em;
+}
+
+.rdv-proposal-datepicker,
+.rdv-proposal-combo {
+    -fx-background-radius: 12;
+    -fx-border-radius: 12;
+    -fx-border-color: rgba(148, 163, 184, 0.55);
+    -fx-border-width: 1;
+    -fx-background-color: #ffffff;
+}
+
+.rdv-proposal-datepicker > .text-field,
+.rdv-proposal-combo > .list-cell {
+    -fx-background-radius: 12 12 0 0;
+}
+
+.rdv-proposal-textarea {
+    -fx-background-radius: 12;
+    -fx-border-radius: 12;
+    -fx-border-color: rgba(148, 163, 184, 0.55);
+    -fx-border-width: 1;
+    -fx-background-color: #ffffff;
+    -fx-font-size: 14px;
+    -fx-padding: 10 12 10 12;
+}
+
+.rdv-proposal-hint {
+    -fx-font-size: 12px;
+    -fx-text-fill: #94a3b8;
+    -fx-wrap-text: true;
+}
+
+.button.rdv-proposal-submit-btn {
+    -fx-background-color: linear-gradient(to bottom right, #3b82f6 0%, #2563eb 55%, #1d4ed8 100%);
+    -fx-text-fill: #ffffff;
+    -fx-font-weight: 800;
+    -fx-font-size: 13px;
+    -fx-padding: 10 20 10 20;
+    -fx-background-radius: 12;
+    -fx-border-radius: 12;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(37, 99, 235, 0.35), 12, 0.22, 0, 3);
+}
+
+.button.rdv-proposal-submit-btn:hover {
+    -fx-background-color: linear-gradient(to bottom right, #2563eb 0%, #1d4ed8 60%, #1e40af 100%);
+}
+
+.button.rdv-proposal-cancel-btn {
+    -fx-background-color: #ffffff;
+    -fx-text-fill: #475569;
+    -fx-font-weight: 700;
+    -fx-font-size: 13px;
+    -fx-padding: 10 18 10 18;
+    -fx-background-radius: 12;
+    -fx-border-radius: 12;
+    -fx-border-color: rgba(148, 163, 184, 0.65);
+    -fx-border-width: 1.2;
+    -fx-cursor: hand;
+}
+
+.button.rdv-proposal-cancel-btn:hover {
+    -fx-background-color: #f8fafc;
 }
