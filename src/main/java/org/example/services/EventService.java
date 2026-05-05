@@ -105,7 +105,7 @@ public class EventService implements IService<Event> {
         ps.setTimestamp(3, Timestamp.valueOf(e.getDateDebut()));
         ps.setTimestamp(4, Timestamp.valueOf(e.getDateFin()));
         ps.setString(5, e.getLieu());
-        ps.setString(6, e.getThematique());
+        ps.setString(6, e.getThematiqueNom());
         ps.setString(7, e.getModeEvenement());
         ps.setString(8, e.getLienGoogleMaps());
         ps.setString(9, e.getLienZoomVisio());
@@ -134,7 +134,7 @@ public class EventService implements IService<Event> {
         e.setDateDebut(rs.getTimestamp("date_debut").toLocalDateTime());
         e.setDateFin(rs.getTimestamp("date_fin").toLocalDateTime());
         e.setLieu(rs.getString("lieu"));
-        e.setThematique(rs.getString("thematique"));
+        e.setThematiqueNom(rs.getString("thematique"));
         try {
             e.setModeEvenement(rs.getString("mode_evenement"));
         } catch (SQLException ignored) {

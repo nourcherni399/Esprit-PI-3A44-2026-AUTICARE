@@ -448,12 +448,12 @@ public class PageEventsController implements PublicShellAware {
             }
             if (!"Toutes".equals(themeSel)) {
                 if ("Autres".equals(themeSel)) {
-                    return !isListedPublicTheme(ev.getThematique());
+                    return !isListedPublicTheme(ev.getThematiqueNom());
                 }
-                if (!isListedPublicTheme(ev.getThematique())) {
+                if (!isListedPublicTheme(ev.getThematiqueNom())) {
                     return true;
                 }
-                return sameThematiqueAsThemeTitle(themeSel, ev.getThematique());
+                return sameThematiqueAsThemeTitle(themeSel, ev.getThematiqueNom());
             }
             return true;
         }).collect(Collectors.toList());
@@ -560,7 +560,7 @@ public class PageEventsController implements PublicShellAware {
             flow.getStyleClass().add("events-theme-flow");
             for (ThemeDef theme : visibleThemes) {
                 List<Event> forTheme = filtered.stream()
-                        .filter(ev -> sameThematiqueAsThemeTitle(theme.title(), ev.getThematique()))
+                        .filter(ev -> sameThematiqueAsThemeTitle(theme.title(), ev.getThematiqueNom()))
                         .collect(Collectors.toList());
                 if (hasAnyFilter && forTheme.isEmpty() && !hasSpecificTheme) {
                     continue;
@@ -575,7 +575,7 @@ public class PageEventsController implements PublicShellAware {
             stack.getStyleClass().add("events-list-stack");
             for (ThemeDef theme : visibleThemes) {
                 List<Event> forTheme = filtered.stream()
-                        .filter(ev -> sameThematiqueAsThemeTitle(theme.title(), ev.getThematique()))
+                        .filter(ev -> sameThematiqueAsThemeTitle(theme.title(), ev.getThematiqueNom()))
                         .collect(Collectors.toList());
                 if (hasAnyFilter && forTheme.isEmpty() && !hasSpecificTheme) {
                     continue;
@@ -586,7 +586,7 @@ public class PageEventsController implements PublicShellAware {
         }
 
         List<Event> autres = filtered.stream()
-                .filter(ev -> !isListedPublicTheme(ev.getThematique()))
+                .filter(ev -> !isListedPublicTheme(ev.getThematiqueNom()))
                 .collect(Collectors.toList());
 
         int n = autres.size();

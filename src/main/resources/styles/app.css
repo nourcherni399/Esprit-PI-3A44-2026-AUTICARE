@@ -1222,6 +1222,15 @@
     -fx-font-size: 15px;
 }
 
+.admin-event-detail-msg-body-flow {
+    -fx-padding: 0;
+}
+
+.admin-event-detail-msg-body-text {
+    -fx-fill: #1f2937;
+    -fx-font-size: 15px;
+}
+
 .admin-event-detail-msg-meta {
     -fx-text-fill: #6b7280;
     -fx-font-size: 12px;
@@ -1243,6 +1252,24 @@
 .admin-event-detail-msg-delete-btn:hover {
     -fx-background-color: #fef2f2;
     -fx-border-color: #fca5a5;
+}
+
+.admin-event-detail-msg-edit-btn {
+    -fx-background-color: #fff7cc;
+    -fx-text-fill: #92400e;
+    -fx-font-size: 11px;
+    -fx-font-weight: 700;
+    -fx-border-color: #fcd34d;
+    -fx-border-width: 1;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-padding: 4 10 4 10;
+    -fx-cursor: hand;
+}
+
+.admin-event-detail-msg-edit-btn:hover {
+    -fx-background-color: #fef3a3;
+    -fx-border-color: #fbbf24;
 }
 
 .admin-event-detail-send-btn {

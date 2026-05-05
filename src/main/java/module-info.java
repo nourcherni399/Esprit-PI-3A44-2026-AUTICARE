@@ -24,6 +24,15 @@ module org.example.pi {
     requires com.stripe;
     requires com.google.i18n.phonenumbers.libphonenumber;
 
+    exports org.example;
+    exports org.example.controllers;
+    exports org.example.elasticsearch;
+    exports org.example.models;
+    exports org.example.services;
+    exports org.example.stats;
+    exports org.example.ui.product;
+    exports org.example.utils;
+
     opens org.example to javafx.graphics;
     opens org.example.controllers to javafx.fxml;
 }

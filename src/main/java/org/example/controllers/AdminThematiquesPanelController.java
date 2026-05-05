@@ -682,7 +682,7 @@ public class AdminThematiquesPanelController {
         try {
             String themeName = t.getNom().trim();
             List<Event> published = eventService.findPublishedPublic().stream()
-                    .filter(ev -> thematiqueMatchesForPreview(themeName, ev.getThematique()))
+                    .filter(ev -> thematiqueMatchesForPreview(themeName, ev.getThematiqueNom()))
                     .filter(ev -> ev.getStatut() == EventStatus.PUBLIE)
                     .toList();
             if (published.isEmpty()) {

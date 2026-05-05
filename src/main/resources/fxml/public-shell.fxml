@@ -40,6 +40,7 @@
                 </HBox>
                 <HBox fx:id="shellNavMesCommandes" alignment="CENTER_LEFT" onMouseClicked="#onNavMesCommandes" spacing="10" styleClass="nav-item">
                     <Label styleClass="nav-item-icon" text="▤" />
+                    <Label styleClass="nav-item-icon" text="📦" />
                     <Label styleClass="nav-item-label" text="Mes commandes" />
                 </HBox>
                 <HBox fx:id="shellNavRdv" alignment="CENTER_LEFT" onMouseClicked="#onNavRdv" spacing="10" styleClass="nav-item">

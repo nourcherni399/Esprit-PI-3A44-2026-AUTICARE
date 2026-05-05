@@ -1,10 +1,9 @@
 package org.example.utils;
 
+import org.example.models.AppLanguage;
 import org.example.models.ModuleContent;
 import org.example.models.Ressource;
 import org.example.models.User;
-import org.example.models.AppLanguage;
-
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -14,31 +13,28 @@ import java.util.Map;
 public class AppState {
     private static AppLanguage currentLanguage = resolveDefaultLanguage();
     private static User currentUser;
-    /** Utilisateur affiché sur l’écran admin « détail » (œil dans la liste). */
     private static User adminDetailUser;
-    /** Utilisateur en cours d’édition (formulaire Modifier). */
     private static User adminEditUser;
-    /** Si vrai, Retour / après enregistrement renvoie vers la fiche détail au lieu de la liste. */
     private static boolean adminEditReturnToDetail;
-    /** Utilisateur ciblé par l’écran « Supprimer » (icône poubelle ou bouton sur la fiche). */
     private static User adminDeleteUser;
-    /** Si vrai, « Annuler » sur l’écran suppression renvoie vers la fiche détail. */
     private static boolean adminDeleteReturnToDetail;
-    /** Module en cours d’édition (écran « Modifier le module »). */
     private static ModuleContent adminEditModule;
     private static Ressource adminEditRessource;
-    /** Section à ouvrir automatiquement dans l'espace admin utilisateurs (events/thematiques). */
     private static String pendingAdminUsersSection;
-    /** Panier invité (clé = productId, valeur = quantity). */
+
     private static final Map<Integer, Integer> guestCart = new LinkedHashMap<>();
-    /** Historique léger de comportement catalogue (clics/consultations panier) pour suggestions. */
     private static final Map<Integer, Integer> productInterestCounts = new LinkedHashMap<>();
-    /** Listeners UI déclenchés après mise à jour du panier invité. */
     private static final List<Runnable> cartChangeListeners = new ArrayList<>();
-    /** Brouillon de produit alimenté par l’assistant chat avant ouverture du formulaire admin. */
+
     private static AdminProductDraft pendingAdminProductDraft;
-    /** Si vrai, ouvrir directement le formulaire produit admin (mode prérempli) au chargement. */
     private static boolean pendingOpenAdminProductEditor;
+
+    private static String pendingPublicRdvDoctorName;
+    private static int pendingPublicRdvDoctorId = -1;
+    private static int pendingPublicRdvAvailabilityId = -1;
+    private static String pendingPublicRdvConsultTypeLabel;
+    private static String pendingPublicRdvMotif;
+    private static int pendingPublicEventDetailId = -1;
 
     public static final class AdminProductDraft {
         private final String nom;
@@ -57,32 +53,28 @@ public class AppState {
             this.imagePath = imagePath;
         }
 
-        public String getNom() {
-            return nom;
-        }
-
-        public String getDescription() {
-            return description;
-        }
-
-        public String getCategorie() {
-            return categorie;
-        }
-
-        public String getPrixText() {
-            return prixText;
-        }
-
-        public String getStockHint() {
-            return stockHint;
-        }
-
-        public String getImagePath() {
-            return imagePath;
-        }
+        public String getNom() { return nom; }
+        public String getDescription() { return description; }
+        public String getCategorie() { return categorie; }
+        public String getPrixText() { return prixText; }
+        public String getStockHint() { return stockHint; }
+        public String getImagePath() { return imagePath; }
     }
 
     private AppState() {
+    }
+
+    public static AppLanguage getCurrentLanguage() {
+        return currentLanguage != null ? currentLanguage : AppLanguage.FR;
+    }
+
+    public static void setCurrentLanguage(AppLanguage language) {
+        currentLanguage = language != null ? language : AppLanguage.FR;
+    }
+
+    private static AppLanguage resolveDefaultLanguage() {
+        String configured = LocalAiPropertiesFile.readProperty("app.default.language");
+        return AppLanguage.fromCode(configured);
     }
 
     public static User getCurrentUser() {
@@ -136,19 +128,6 @@ public class AppState {
 
     public static void clearPendingOpenAdminProductEditor() {
         pendingOpenAdminProductEditor = false;
-    }
-
-    public static AppLanguage getCurrentLanguage() {
-        return currentLanguage != null ? currentLanguage : AppLanguage.FR;
-    }
-
-    public static void setCurrentLanguage(AppLanguage language) {
-        currentLanguage = language != null ? language : AppLanguage.FR;
-    }
-
-    private static AppLanguage resolveDefaultLanguage() {
-        String configured = LocalAiPropertiesFile.readProperty("app.default.language");
-        return AppLanguage.fromCode(configured);
     }
 
     public static User getAdminDetailUser() {
@@ -240,16 +219,6 @@ public class AppState {
     public static void clearPendingAdminUsersSection() {
         pendingAdminUsersSection = null;
     }
-
-    private static String pendingPublicRdvDoctorName;
-    private static int pendingPublicRdvDoctorId = -1;
-    /** Créneau choisi à l’étape 1 (réaffichage si retour depuis l’étape 2). */
-    private static int pendingPublicRdvAvailabilityId = -1;
-    private static String pendingPublicRdvConsultTypeLabel;
-    private static String pendingPublicRdvMotif;
-
-    /** > 0 : ouvrir la fiche événement public après chargement de {@code page-event-detail.fxml}. */
-    private static int pendingPublicEventDetailId = -1;
 
     public static void setPendingPublicEventDetailId(int eventId) {
         pendingPublicEventDetailId = eventId > 0 ? eventId : -1;

@@ -10,11 +10,15 @@ import javafx.geometry.Pos;
 import javafx.scene.chart.PieChart;
 import javafx.scene.control.*;
 import javafx.scene.control.SpinnerValueFactory.IntegerSpinnerValueFactory;
+import javafx.scene.text.Text;
+import javafx.scene.text.TextAlignment;
+import javafx.scene.text.TextFlow;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.web.WebView;
 import org.example.models.Event;
 import org.example.models.EventRegistration;
 import org.example.models.EventMessage;
@@ -27,11 +31,16 @@ import org.example.MainApp;
 import org.example.services.EventRegistrationService;
 import org.example.services.EventMessageService;
 import org.example.services.EventService;
+import org.example.services.ExternalParticipantsPdfService;
+import org.example.services.HuggingFaceTextService;
+import org.example.services.OpenStreetMapService;
 import org.example.services.ThematiqueService;
 import org.example.services.UserService;
 import org.example.services.UserNotificationService;
+import org.example.services.ZoomMeetingLinkService;
 import org.example.utils.AppState;
 import org.example.utils.FxInputConstraints;
+import org.example.utils.MapEmbedUrls;
 
 import javafx.application.Platform;
 import javafx.stage.FileChooser;
@@ -49,9 +58,10 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.function.Consumer;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -108,6 +118,7 @@ public class AdminEventsPanelController {
     @FXML private VBox detailConversationsListBox;
     @FXML private VBox detailConversationPlaceholderBox;
     @FXML private VBox detailConversationPanelBox;
+    @FXML private ScrollPane detailConversationMessagesScroll;
     @FXML private Label detailSelectedConversationTitle;
     @FXML private Label detailSelectedConversationSub;
     @FXML private VBox detailConversationMessagesBox;
@@ -144,6 +155,7 @@ public class AdminEventsPanelController {
     @FXML private TextField formLat;
     @FXML private TextField formLng;
     @FXML private ComboBox<String> formThematique;
+    @FXML private StackPane formMapPreviewHost;
 
     private final EventService eventService = new EventService();
     private final EventRegistrationService registrationService = new EventRegistrationService();
@@ -151,6 +163,10 @@ public class AdminEventsPanelController {
     private final ThematiqueService thematiqueService = new ThematiqueService();
     private final UserService userService = new UserService();
     private final UserNotificationService userNotificationService = new UserNotificationService();
+    private final OpenStreetMapService openStreetMapService = new OpenStreetMapService();
+    private final ZoomMeetingLinkService zoomMeetingLinkService = new ZoomMeetingLinkService();
+    private final ExternalParticipantsPdfService externalParticipantsPdfService = new ExternalParticipantsPdfService();
+    private final HuggingFaceTextService huggingFaceTextService = new HuggingFaceTextService();
 
     /** Données brutes (avant filtre / tri affiché). */
     private final ObservableList<Event> masterEvents = FXCollections.observableArrayList();
@@ -162,6 +178,7 @@ public class AdminEventsPanelController {
     private final Map<Integer, Integer> messageCountByEventId = new HashMap<>();
     private Integer selectedConversationUserId;
     private final List<Integer> currentConversationParticipantIds = new ArrayList<>();
+    private WebView formMapPreviewWeb;
 
     @FXML
     public void initialize() {
@@ -211,6 +228,12 @@ public class AdminEventsPanelController {
             newEventFormLayer.prefWidthProperty().bind(formW);
             newEventFormLayer.maxWidthProperty().bind(formW);
             newEventFormLayer.setMinWidth(680);
+        }
+        if (detailConversationMessagesScroll != null && detailConversationMessagesBox != null) {
+            detailConversationMessagesBox.minWidthProperty().bind(detailConversationMessagesScroll.widthProperty().subtract(18));
+            detailConversationMessagesBox.prefWidthProperty().bind(detailConversationMessagesScroll.widthProperty().subtract(18));
+            detailConversationMessagesBox.maxWidthProperty().bind(detailConversationMessagesScroll.widthProperty().subtract(18));
+            detailConversationMessagesBox.setFillWidth(true);
         }
     }
 
@@ -311,6 +334,19 @@ public class AdminEventsPanelController {
         boolean visio = "En ligne".equals(mode) || "Hybride".equals(mode);
         setSectionVisible(sectionLieuPhysique, lieu);
         setSectionVisible(sectionVisio, visio);
+        if (!lieu) {
+            clearFormMapPreview();
+            return;
+        }
+        try {
+            Double lat = parseOptionalDouble(formLat);
+            Double lng = parseOptionalDouble(formLng);
+            if (lat != null && lng != null) {
+                updateFormMapPreview(lat, lng);
+            }
+        } catch (NumberFormatException ignored) {
+            clearFormMapPreview();
+        }
     }
 
     private static void setSectionVisible(VBox section, boolean visible) {
@@ -439,11 +475,45 @@ public class AdminEventsPanelController {
             if (file == null) {
                 return;
             }
-            writeSimpleParticipantsPdf(file.toPath(), regs);
-            showInfo("PDF", "Export terminé : " + file.getName());
+            boolean usedExternalApi = writeParticipantsPdfWithExternalApiOrFallback(file.toPath(), regs);
+            if (usedExternalApi) {
+                showInfo("PDF", "Export terminé via API externe : " + file.getName());
+            } else {
+                showInfo("PDF", "Export terminé : " + file.getName());
+            }
         } catch (Exception ex) {
             showError(ex);
         }
+    }
+
+    private boolean writeParticipantsPdfWithExternalApiOrFallback(Path path, List<EventRegistration> regs) throws Exception {
+        List<ExternalParticipantsPdfService.ParticipantPdfRow> rows = new ArrayList<>();
+        if (regs != null) {
+            for (EventRegistration r : regs) {
+                User u = null;
+                try {
+                    u = userService.findById(r.getUtilisateurId()).orElse(null);
+                } catch (Exception ignored) {
+                    // repli sur placeholders
+                }
+                String name = displayNameForUser(u, r.getUtilisateurId());
+                String email = u != null && u.getEmail() != null ? u.getEmail() : "—";
+                rows.add(ExternalParticipantsPdfService.ParticipantPdfRow.of(name, email, r));
+            }
+        }
+        try {
+            Optional<byte[]> externalPdf = externalParticipantsPdfService.generateParticipantsPdf(
+                    detailShownEvent != null ? detailShownEvent.getTitre() : "Événement",
+                    rows);
+            if (externalPdf.isPresent()) {
+                Files.write(path, externalPdf.get());
+                return true;
+            }
+        } catch (Exception ignored) {
+            // Repli local silencieux si API externe indisponible / auth invalide.
+        }
+        writeSimpleParticipantsPdf(path, regs);
+        return false;
     }
 
     @FXML
@@ -609,7 +679,7 @@ public class AdminEventsPanelController {
                 u = userService.findById(r.getUtilisateurId()).orElse(null);
             } catch (Exception ignored) {
             }
-            String name = displayNameForUser(u);
+            String name = displayNameForUser(u, r.getUtilisateurId());
             String email = u != null && u.getEmail() != null ? u.getEmail() : "—";
             String when = r.getDateInscription() != null ? r.getDateInscription().format(f) : "—";
             String status = switch (r.getStatut()) {
@@ -702,13 +772,8 @@ public class AdminEventsPanelController {
     }
 
     private void writeSimpleParticipantsPdf(Path path, List<EventRegistration> regs) throws Exception {
-        List<String> lines = new ArrayList<>();
-        lines.add("Liste des participants");
-        if (detailShownEvent != null && detailShownEvent.getTitre() != null) {
-            lines.add("Événement : " + detailShownEvent.getTitre());
-        }
-        lines.add("");
-        DateTimeFormatter f = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm", Locale.FRENCH);
+        List<ExternalParticipantsPdfService.ParticipantPdfRow> rows = new ArrayList<>();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm", Locale.FRENCH);
         if (regs != null) {
             for (EventRegistration r : regs) {
                 User u = null;
@@ -716,29 +781,18 @@ public class AdminEventsPanelController {
                     u = userService.findById(r.getUtilisateurId()).orElse(null);
                 } catch (Exception ignored) {
                 }
-                String name = displayNameForUser(u);
+                String name = displayNameForUser(u, r.getUtilisateurId());
                 String email = u != null && u.getEmail() != null ? u.getEmail() : "—";
-                String when = r.getDateInscription() != null ? r.getDateInscription().format(f) : "—";
-                lines.add("- " + name + " | " + email + " | " + when + " | " + r.getStatut());
+                String when = r.getDateInscription() != null ? r.getDateInscription().format(formatter) : "—";
+                String status = r.getStatut() != null ? r.getStatut().name() : "—";
+                rows.add(new ExternalParticipantsPdfService.ParticipantPdfRow(name, email, when, status));
             }
         }
-        String text = String.join("\n", lines).replace("\\", "\\\\").replace("(", "\\(").replace(")", "\\)");
-        byte[] content = buildVerySimplePdf(text);
+        String title = detailShownEvent != null && detailShownEvent.getTitre() != null
+                ? detailShownEvent.getTitre()
+                : "Événement";
+        byte[] content = externalParticipantsPdfService.generateParticipantsPdfLocally(title, rows);
         Files.write(path, content);
-    }
-
-    private byte[] buildVerySimplePdf(String text) {
-        String stream = "BT /F1 12 Tf 50 780 Td (" + text.replace("\n", ") Tj T* (") + ") Tj ET";
-        String obj1 = "1 0 obj << /Type /Catalog /Pages 2 0 R >> endobj\n";
-        String obj2 = "2 0 obj << /Type /Pages /Count 1 /Kids [3 0 R] >> endobj\n";
-        String obj3 = "3 0 obj << /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >> endobj\n";
-        String obj4 = "4 0 obj << /Type /Font /Subtype /Type1 /BaseFont /Helvetica >> endobj\n";
-        String obj5 = "5 0 obj << /Length " + stream.length() + " >> stream\n" + stream + "\nendstream endobj\n";
-        String body = obj1 + obj2 + obj3 + obj4 + obj5;
-        String pdf = "%PDF-1.4\n" + body + "xref\n0 6\n0000000000 65535 f \n"
-                + "0000000010 00000 n \n0000000070 00000 n \n0000000132 00000 n \n0000000257 00000 n \n0000000327 00000 n \n"
-                + "trailer << /Root 1 0 R /Size 6 >>\nstartxref\n420\n%%EOF";
-        return pdf.getBytes(StandardCharsets.ISO_8859_1);
     }
 
     private void bindEventDiscussionView(Event e) {
@@ -792,7 +846,7 @@ public class AdminEventsPanelController {
         }
         try {
             User user = userService.findById(participantId).orElse(null);
-            String name = displayNameForUser(user);
+            String name = displayNameForUser(user, participantId);
             List<EventMessage> conv = eventMessageService.listConversationForEventAndParticipant(eventId, participantId);
             String when = conv.isEmpty() || conv.get(conv.size() - 1).getDateEnvoi() == null
                     ? ""
@@ -828,7 +882,7 @@ public class AdminEventsPanelController {
         renderConversationList(eventId);
         try {
             User u = userService.findById(participantId).orElse(null);
-            String name = displayNameForUser(u);
+            String name = displayNameForUser(u, participantId);
             if (detailSelectedConversationTitle != null) {
                 detailSelectedConversationTitle.setText("Conversation avec " + name);
             }
@@ -868,9 +922,21 @@ public class AdminEventsPanelController {
         boolean mine = msg.getExpediteurUserId() == meId;
         VBox bubble = new VBox(4);
         bubble.getStyleClass().add(mine ? "admin-event-detail-msg-bubble-me" : "admin-event-detail-msg-bubble-them");
-        Label body = new Label(msg.getCorps() != null ? msg.getCorps() : "");
-        body.setWrapText(true);
-        body.getStyleClass().add("admin-event-detail-msg-body");
+        bubble.setFillWidth(true);
+        bubble.setMaxWidth(Double.MAX_VALUE);
+        TextFlow body = new TextFlow();
+        body.getStyleClass().add("admin-event-detail-msg-body-flow");
+        body.setTextAlignment(TextAlignment.LEFT);
+        Text bodyText = new Text(msg.getCorps() != null ? msg.getCorps() : "");
+        bodyText.getStyleClass().add("admin-event-detail-msg-body-text");
+        body.getChildren().add(bodyText);
+        if (detailConversationMessagesBox != null) {
+            var wrapW = detailConversationMessagesBox.widthProperty().subtract(28);
+            body.prefWidthProperty().bind(wrapW);
+            Runnable applyWrap = () -> bodyText.setWrappingWidth(Math.max(40, wrapW.get()));
+            applyWrap.run();
+            wrapW.addListener((obs, o, n) -> applyWrap.run());
+        }
         String who = mine ? "Admin" : "Participant";
         String when = msg.getDateEnvoi() != null
                 ? msg.getDateEnvoi().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm", Locale.FRENCH))
@@ -879,12 +945,105 @@ public class AdminEventsPanelController {
         meta.getStyleClass().add("admin-event-detail-msg-meta");
         bubble.getChildren().addAll(body, meta);
         if (mine) {
+            HBox ownActions = new HBox(8);
+            Button editBtn = new Button("Modifier");
+            editBtn.getStyleClass().add("admin-event-detail-msg-edit-btn");
+            editBtn.setMinWidth(96);
+            editBtn.setPrefWidth(96);
+            editBtn.setOnAction(evt -> onEditOwnAdminMessage(msg));
             Button deleteBtn = new Button("Supprimer");
             deleteBtn.getStyleClass().add("admin-event-detail-msg-delete-btn");
+            deleteBtn.setMinWidth(96);
+            deleteBtn.setPrefWidth(96);
             deleteBtn.setOnAction(evt -> onDeleteOwnAdminMessage(msg));
-            bubble.getChildren().add(deleteBtn);
+            ownActions.getChildren().addAll(editBtn, deleteBtn);
+            bubble.getChildren().add(ownActions);
+        } else {
+            HBox aiActions = new HBox(8);
+            Button suggestReplyBtn = new Button("Suggérer une réponse (IA)");
+            suggestReplyBtn.getStyleClass().add("admin-new-event-btn-outline-blue");
+            suggestReplyBtn.setOnAction(evt -> onSuggestReplyWithAi(msg));
+            aiActions.getChildren().add(suggestReplyBtn);
+            bubble.getChildren().add(aiActions);
         }
         detailConversationMessagesBox.getChildren().add(bubble);
+    }
+
+    private void onSuggestReplyWithAi(EventMessage msg) {
+        if (msg == null || detailShownEvent == null || selectedConversationUserId == null) {
+            showInfo("IA", "Sélectionnez d'abord une conversation valide.");
+            return;
+        }
+        String eventTitle = detailShownEvent.getTitre() != null ? detailShownEvent.getTitre() : "Événement";
+        String participantMessage = msg.getCorps() != null ? msg.getCorps().trim() : "";
+        String context = buildConversationContext(detailShownEvent.getId(), selectedConversationUserId, 6);
+        runGenericAiTask(
+                () -> huggingFaceTextService.suggestReplyForParticipantMessage(eventTitle, participantMessage, context),
+                reply -> {
+                    String aiReply = normalizeAiReply(reply, eventTitle, participantMessage);
+                    if (aiReply.isBlank()) {
+                        showValidationMessage("L'IA n'a pas généré de réponse exploitable. Réessayez.");
+                        return;
+                    }
+                    if (detailReplyArea != null) {
+                        detailReplyArea.setText(aiReply);
+                        detailReplyArea.requestFocus();
+                    }
+                    // Flux attendu: 1 clic = génération + envoi direct, sans ressaisie manuelle.
+                    onDetailSendReply();
+                },
+                "Impossible de générer la réponse IA.");
+    }
+
+    private static String normalizeAiReply(String raw, String eventTitle, String participantMessage) {
+        String text = raw != null ? raw.trim() : "";
+        if (text.equals("...") || text.equals("…") || text.equals("..")) {
+            text = "";
+        }
+        text = text.replace("…", ".");
+        while (text.contains("...")) {
+            text = text.replace("...", ".");
+        }
+        text = text.replaceAll("\\s+", " ").trim();
+        boolean looksIncomplete = text.isBlank()
+                || text.length() < 20
+                || text.endsWith(",")
+                || text.endsWith(";")
+                || text.endsWith(":");
+        if (looksIncomplete) {
+            String safeEventTitle = eventTitle != null && !eventTitle.isBlank() ? eventTitle.trim() : "votre événement";
+            String participant = participantMessage != null && !participantMessage.isBlank()
+                    ? participantMessage.trim()
+                    : "votre message";
+            return "Bonjour, merci pour votre message concernant « " + safeEventTitle + " ». "
+                    + "Nous avons bien pris en compte votre demande : \"" + participant + "\". "
+                    + "Pouvez-vous nous préciser votre besoin exact afin que nous vous répondions rapidement et de manière complète ?";
+        }
+        return text;
+    }
+
+    private String buildConversationContext(int eventId, int participantId, int maxMessages) {
+        try {
+            List<EventMessage> all = eventMessageService.listConversationForEventAndParticipant(eventId, participantId);
+            if (all == null || all.isEmpty()) {
+                return "";
+            }
+            int from = Math.max(0, all.size() - Math.max(1, maxMessages));
+            List<EventMessage> recent = all.subList(from, all.size());
+            User me = AppState.getCurrentUser();
+            int meId = me != null ? me.getId() : -1;
+            List<String> lines = new ArrayList<>();
+            for (EventMessage m : recent) {
+                if (m == null || m.getCorps() == null || m.getCorps().isBlank()) {
+                    continue;
+                }
+                String who = m.getExpediteurUserId() == meId ? "Admin" : "Participant";
+                lines.add(who + ": " + m.getCorps().trim());
+            }
+            return String.join(" | ", lines);
+        } catch (Exception ignored) {
+            return "";
+        }
     }
 
     private void onDeleteOwnAdminMessage(EventMessage msg) {
@@ -917,6 +1076,49 @@ public class AdminEventsPanelController {
         }
     }
 
+    private void onEditOwnAdminMessage(EventMessage msg) {
+        if (msg == null || detailShownEvent == null || selectedConversationUserId == null) {
+            return;
+        }
+        User me = AppState.getCurrentUser();
+        if (me == null || msg.getExpediteurUserId() != me.getId()) {
+            showInfo("Modification", "Vous ne pouvez modifier que vos propres messages.");
+            return;
+        }
+        String current = msg.getCorps() != null ? msg.getCorps() : "";
+        Dialog<String> dialog = new Dialog<>();
+        dialog.setTitle("Modifier le message");
+        dialog.setHeaderText(null);
+        ButtonType saveBtn = new ButtonType("Enregistrer", ButtonBar.ButtonData.OK_DONE);
+        dialog.getDialogPane().getButtonTypes().addAll(saveBtn, ButtonType.CANCEL);
+        TextArea area = new TextArea(current);
+        area.setWrapText(true);
+        area.setPrefWidth(560);
+        area.setPrefHeight(200);
+        dialog.getDialogPane().setContent(area);
+        dialog.setResultConverter(bt -> bt == saveBtn ? area.getText() : null);
+        Optional<String> res = dialog.showAndWait();
+        if (res.isEmpty()) {
+            return;
+        }
+        String edited = res.get() != null ? res.get().trim() : "";
+        if (edited.isBlank()) {
+            showValidationMessage("Le message ne peut pas être vide.");
+            return;
+        }
+        try {
+            boolean updated = eventMessageService.updateOwnMessage(msg.getId(), me.getId(), edited);
+            if (!updated) {
+                showInfo("Modification", "Ce message n'est plus disponible.");
+            }
+            selectConversation(detailShownEvent.getId(), selectedConversationUserId);
+            reloadMessageCounts();
+            applyFilterAndSort();
+        } catch (Exception ex) {
+            showError(ex);
+        }
+    }
+
     private void showConversationPlaceholder(String text) {
         if (detailDiscussionBody != null) {
             detailDiscussionBody.setText(text);
@@ -931,18 +1133,12 @@ public class AdminEventsPanelController {
         }
     }
 
-    private static String displayNameForUser(User u) {
+    private static String displayNameForUser(User u, int fallbackId) {
         if (u == null) {
-            return "Compte membre";
+            return "Utilisateur #" + fallbackId;
         }
         String n = ((u.getPrenom() != null ? u.getPrenom() : "") + " " + (u.getNom() != null ? u.getNom() : "")).trim();
-        if (!n.isBlank()) {
-            return n;
-        }
-        if (u.getEmail() != null && !u.getEmail().isBlank()) {
-            return u.getEmail();
-        }
-        return "Compte membre";
+        return n.isBlank() ? ("Utilisateur #" + fallbackId) : n;
     }
 
     private void openEditEvent(Event ev) {
@@ -1002,11 +1198,16 @@ public class AdminEventsPanelController {
         if (formLng != null) {
             formLng.setText(e.getLongitude() != null ? String.valueOf(e.getLongitude()) : "");
         }
+        if (e.getLatitude() != null && e.getLongitude() != null) {
+            updateFormMapPreview(e.getLatitude(), e.getLongitude());
+        } else {
+            clearFormMapPreview();
+        }
         if (formLienZoom != null) {
             formLienZoom.setText(evStr(e.getLienZoomVisio()));
         }
         if (formThematique != null) {
-            String th = e.getThematique();
+            String th = e.getThematiqueNom();
             if (th != null && !th.isBlank()) {
                 if (formThematique.getItems().contains(th)) {
                     formThematique.getSelectionModel().select(th);
@@ -1247,7 +1448,7 @@ public class AdminEventsPanelController {
         e.setDateDebut(debut);
         e.setDateFin(fin);
         e.setModeEvenement(mode);
-        e.setThematique(thematique);
+        e.setThematiqueNom(thematique);
         e.setPlacesMax(0);
         /* Visible sur la vitrine publique ; la modification conserve le statut existant (voir onSaveNewEvent). */
         e.setStatut(EventStatus.PUBLIE);
@@ -1266,7 +1467,7 @@ public class AdminEventsPanelController {
                     return "Le lieu ne doit pas dépasser " + MAX_LIEU + " caractères.";
                 }
                 String maps = formLienMaps != null ? nullIfBlank(formLienMaps.getText()) : null;
-                String mapsErr = validateOptionalHttpUrl("Lien Google Maps", maps, false);
+                String mapsErr = validateOptionalHttpUrl("Lien carte", maps, false);
                 if (mapsErr != null) {
                     return mapsErr;
                 }
@@ -1301,7 +1502,7 @@ public class AdminEventsPanelController {
                     return "Le lieu ne doit pas dépasser " + MAX_LIEU + " caractères.";
                 }
                 String maps = formLienMaps != null ? nullIfBlank(formLienMaps.getText()) : null;
-                String mapsErr = validateOptionalHttpUrl("Lien Google Maps", maps, false);
+                String mapsErr = validateOptionalHttpUrl("Lien carte", maps, false);
                 if (mapsErr != null) {
                     return mapsErr;
                 }
@@ -1396,25 +1597,216 @@ public class AdminEventsPanelController {
 
     @FXML
     public void onFormAiSummarize() {
-        showInfo("IA", "Fonction « Résumer avec l'IA » : à brancher sur votre service (API).");
+        String sourceText = formDescription != null && formDescription.getText() != null
+                ? formDescription.getText().trim()
+                : "";
+        if (sourceText.isBlank()) {
+            showValidationMessage("Saisissez d'abord une description avant de demander un résumé IA.");
+            return;
+        }
+        runAiTextTask(
+                () -> huggingFaceTextService.summarizeDescription(sourceText),
+                "Résumé IA prêt.",
+                "Impossible de résumer le texte.");
     }
 
     @FXML
     public void onFormAiSuggest() {
-        showInfo("IA", "Fonction « Suggérer une description » : à brancher sur votre service (API).");
+        String thematique = resolveThematiqueText();
+        if (thematique == null || thematique.isBlank()) {
+            showValidationMessage("Choisissez une thématique avant de générer la description IA.");
+            return;
+        }
+        runAiTextTask(
+                () -> huggingFaceTextService.suggestDetailedDescription(thematique),
+                "Description IA générée.",
+                "Impossible de générer la description.");
+    }
+
+    private interface AiTextSupplier {
+        String get() throws Exception;
+    }
+
+    private void runAiTextTask(AiTextSupplier supplier, String successMessage, String errorPrefix) {
+        if (formDescription != null) {
+            formDescription.setDisable(true);
+        }
+        CompletableFuture
+                .supplyAsync(() -> {
+                    try {
+                        return supplier.get();
+                    } catch (Exception ex) {
+                        throw new RuntimeException(ex);
+                    }
+                })
+                .whenComplete((text, throwable) -> Platform.runLater(() -> {
+                    if (formDescription != null) {
+                        formDescription.setDisable(false);
+                    }
+                    if (throwable != null) {
+                        Throwable cause = throwable.getCause() != null ? throwable.getCause() : throwable;
+                        showValidationMessage(errorPrefix + "\n" + cause.getMessage());
+                        return;
+                    }
+                    if (formDescription != null) {
+                        formDescription.setText(text != null ? text.trim() : "");
+                    }
+                    showInfo("IA", successMessage);
+                }));
+    }
+
+    private void runGenericAiTask(AiTextSupplier supplier, Consumer<String> onSuccess, String errorPrefix) {
+        if (detailReplyArea != null) {
+            detailReplyArea.setDisable(true);
+        }
+        CompletableFuture
+                .supplyAsync(() -> {
+                    try {
+                        return supplier.get();
+                    } catch (Exception ex) {
+                        throw new RuntimeException(ex);
+                    }
+                })
+                .whenComplete((text, throwable) -> Platform.runLater(() -> {
+                    if (detailReplyArea != null) {
+                        detailReplyArea.setDisable(false);
+                    }
+                    if (throwable != null) {
+                        Throwable cause = throwable.getCause() != null ? throwable.getCause() : throwable;
+                        showValidationMessage(errorPrefix + "\n" + cause.getMessage());
+                        return;
+                    }
+                    onSuccess.accept(text != null ? text.trim() : "");
+                }));
     }
 
     @FXML
     public void onFormFetchCoords() {
-        showInfo("Coordonnées", "Récupération automatique à partir du lieu : branchez un géocodage (API) si besoin.");
+        fetchCoordsFromAddress(true);
+    }
+
+    private void fetchCoordsFromAddress(boolean showDialogs) {
+        String lieu = formLieu != null ? nullIfBlank(formLieu.getText()) : null;
+        if (lieu == null) {
+            if (showDialogs) {
+                showValidationMessage("Renseignez d'abord le champ lieu/adresse avant de récupérer les coordonnées.");
+            }
+            return;
+        }
+        // Évite d'afficher d'anciennes coordonnées pendant une nouvelle recherche.
+        clearMapCoordinateFields();
+        try {
+            // Toujours géocoder depuis l'adresse saisie; ne jamais réutiliser l'ancien lien Maps.
+            Optional<OpenStreetMapService.GeocodeResult> result = openStreetMapService.geocodeAddressDetailed(lieu);
+            if (result.isEmpty()) {
+                clearMapCoordinateFields();
+                if (showDialogs) {
+                    showInfo("Coordonnées", "Adresse introuvable. Essayez une adresse plus complète (ville, pays).");
+                }
+                return;
+            }
+            OpenStreetMapService.GeocodeResult c = result.get();
+            if (formLat != null) {
+                formLat.setText(String.format(Locale.US, "%.6f", c.latitude()));
+            }
+            if (formLng != null) {
+                formLng.setText(String.format(Locale.US, "%.6f", c.longitude()));
+            }
+            if (formLienMaps != null) {
+                formLienMaps.setText(openStreetMapService.buildMapLink(c.latitude(), c.longitude()));
+            }
+            updateFormMapPreview(c.latitude(), c.longitude());
+            if (showDialogs) {
+                showInfo("Coordonnées",
+                        "Coordonnées trouvées via " + c.provider() + " :\n" + c.label());
+            }
+        } catch (Exception ex) {
+            clearMapCoordinateFields();
+            if (showDialogs) {
+                showError(ex);
+            }
+        }
+    }
+
+    private void clearMapCoordinateFields() {
+        if (formLat != null) {
+            formLat.clear();
+        }
+        if (formLng != null) {
+            formLng.clear();
+        }
+        if (formLienMaps != null) {
+            formLienMaps.clear();
+        }
+        clearFormMapPreview();
+    }
+
+    private void updateFormMapPreview(double lat, double lng) {
+        if (formMapPreviewHost == null) {
+            return;
+        }
+        String mode = formMode != null ? formMode.getValue() : null;
+        boolean showMap = "Présentiel".equals(mode) || "Hybride".equals(mode);
+        if (!showMap) {
+            clearFormMapPreview();
+            return;
+        }
+        if (formMapPreviewWeb == null) {
+            formMapPreviewWeb = new WebView();
+            formMapPreviewWeb.setPrefHeight(260);
+            formMapPreviewWeb.setMinHeight(220);
+            formMapPreviewWeb.setMaxWidth(Double.MAX_VALUE);
+            formMapPreviewWeb.getEngine().setUserAgent(
+                    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36");
+        }
+        String embedUrl = String.format(
+                Locale.US,
+                "https://www.google.com/maps?q=%f,%f&z=16&output=embed&hl=fr&maptype=roadmap",
+                lat,
+                lng);
+        formMapPreviewHost.getChildren().setAll(formMapPreviewWeb);
+        formMapPreviewWeb.getEngine().loadContent(MapEmbedUrls.htmlDocumentWithMapIframe(embedUrl));
+    }
+
+    private void clearFormMapPreview() {
+        if (formMapPreviewHost == null) {
+            return;
+        }
+        Label hint = new Label("La mini-carte s'affichera ici après récupération des coordonnées.");
+        hint.getStyleClass().add("event-detail-map-hint");
+        hint.setWrapText(true);
+        formMapPreviewHost.getChildren().setAll(hint);
     }
 
     @FXML
     public void onFormGenerateZoomLink() {
-        if (formLienZoom != null) {
-            formLienZoom.setText("https://zoom.us/j/0000000000?pwd=exemple");
+        String lieu = formLieu != null ? nullIfBlank(formLieu.getText()) : null;
+        if (lieu == null) {
+            showValidationMessage("Renseignez d'abord le champ lieu/adresse avant de générer le lien Zoom.");
+            return;
         }
-        showInfo("Zoom", "Lien d'exemple inséré. Branchez l'API Zoom pour une génération réelle.");
+        try {
+            String topic = formTitre != null && formTitre.getText() != null && !formTitre.getText().isBlank()
+                    ? formTitre.getText().trim()
+                    : ("Réunion événement - " + lieu);
+            LocalDateTime startAt = null;
+            if (formDate != null && formDate.getValue() != null) {
+                try {
+                    LocalTime tDebut = readTimeFromPickers(
+                            formHeureDebutHeure, formHeureDebutMin, formHeureDebutAmPm, "Heure de début");
+                    startAt = LocalDateTime.of(formDate.getValue(), tDebut);
+                } catch (IllegalArgumentException ignored) {
+                    // fallback : le service utilise une date proche si les contrôles heure ne sont pas prêts
+                }
+            }
+            String link = zoomMeetingLinkService.generateMeetingLink(topic, startAt, 60);
+            if (formLienZoom != null) {
+                formLienZoom.setText(link);
+            }
+            showInfo("Zoom", "Nouveau lien Zoom généré automatiquement.");
+        } catch (Exception ex) {
+            showError(ex);
+        }
     }
 
     private static String nullIfBlank(String s) {
@@ -1546,15 +1938,7 @@ public class AdminEventsPanelController {
         if (formLieu != null) {
             formLieu.clear();
         }
-        if (formLienMaps != null) {
-            formLienMaps.clear();
-        }
-        if (formLat != null) {
-            formLat.clear();
-        }
-        if (formLng != null) {
-            formLng.clear();
-        }
+        clearMapCoordinateFields();
         if (formLienZoom != null) {
             formLienZoom.clear();
         }
@@ -1637,7 +2021,7 @@ public class AdminEventsPanelController {
         if (contains(e.getLieu(), q)) {
             return true;
         }
-        if (contains(e.getThematique(), q)) {
+        if (contains(e.getThematiqueNom(), q)) {
             return true;
         }
         if (e.getDateDebut() != null && contains(e.getDateDebut().toString(), q)) {
@@ -1807,7 +2191,7 @@ public class AdminEventsPanelController {
         TableColumn<Event, String> colTheme = new TableColumn<>("THÉMATIQUE");
         colTheme.setCellValueFactory(c -> {
             Event ev = c.getValue();
-            String t = ev != null ? ev.getThematique() : null;
+            String t = ev != null ? ev.getThematiqueNom() : null;
             return new ReadOnlyObjectWrapper<>(t != null && !t.isBlank() ? t : "—");
         });
         colTheme.setCellFactory(col -> new TableCell<Event, String>() {

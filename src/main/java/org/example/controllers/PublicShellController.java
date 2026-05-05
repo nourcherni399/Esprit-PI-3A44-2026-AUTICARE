@@ -762,6 +762,11 @@ public class PublicShellController {
             aware.setPublicShell(this);
             aware.onShellReady();
         }
+        if (ctrl instanceof PublicShellAware aware) {
+            aware.setPublicShell(this);
+        }
+        pageContentHost.getChildren().setAll(page);
+        StackPane.setAlignment(page, Pos.TOP_CENTER);
         applyShellHeroForPage(currentShellPageKey);
         refreshTopNavState();
         updatePublicNavHighlight();
@@ -918,15 +923,31 @@ public class PublicShellController {
         if (pageId == null || pageId.isBlank()) {
             return false;
         }
-        return switch (pageId.trim().toLowerCase(Locale.ROOT)) {
-            case "rdv", "rendez-vous", "rendezvous", "rdv-booking", "rdv-creneau", "rdv-type", "rdv-info",
-                 "events", "evenements", "événements",
-                 "event-detail", "evenement", "événement",
-                 "login", "connexion", "signup", "inscription", "register",
-                 "notifications", "notifs",
-                 "panier", "cart", "checkout", "paiement" -> true;
-            default -> false;
-        };
+        String id = pageId.trim().toLowerCase(Locale.ROOT);
+        return "rdv".equals(id)
+                || "rendez-vous".equals(id)
+                || "rendezvous".equals(id)
+                || "rdv-booking".equals(id)
+                || "rdv-creneau".equals(id)
+                || "rdv-type".equals(id)
+                || "rdv-info".equals(id)
+                || "events".equals(id)
+                || "evenements".equals(id)
+                || "événements".equals(id)
+                || "event-detail".equals(id)
+                || "evenement".equals(id)
+                || "événement".equals(id)
+                || "login".equals(id)
+                || "connexion".equals(id)
+                || "signup".equals(id)
+                || "inscription".equals(id)
+                || "register".equals(id)
+                || "notifications".equals(id)
+                || "notifs".equals(id)
+                || "panier".equals(id)
+                || "cart".equals(id)
+                || "checkout".equals(id)
+                || "paiement".equals(id);
     }
 
     private static boolean isAuthPublicPage(String pageId) {

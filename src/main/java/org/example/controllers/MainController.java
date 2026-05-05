@@ -369,7 +369,7 @@ public class MainController {
             e.setDateDebut(LocalDateTime.parse(eventStartField.getText()));
             e.setDateFin(LocalDateTime.parse(eventEndField.getText()));
             e.setLieu(eventLieuField.getText());
-            e.setThematique(null);
+            e.setThematiqueNom(null);
             e.setModeEvenement(null);
             e.setLienGoogleMaps(null);
             e.setPlacesMax(Integer.parseInt(eventPlacesField.getText()));
@@ -457,7 +457,7 @@ public class MainController {
         TableColumn<Event, String> colTheme = new TableColumn<>("THÉMATIQUE");
         colTheme.setCellValueFactory(c -> {
             Event ev = c.getValue();
-            String t = ev != null ? ev.getThematique() : null;
+            String t = ev != null ? ev.getThematiqueNom() : null;
             return new ReadOnlyObjectWrapper<>(t != null && !t.isBlank() ? t : "—");
         });
         TableColumn<Event, Event> colActions = new TableColumn<>("ACTIONS");
@@ -533,7 +533,7 @@ public class MainController {
         if (containsDashboard(e.getLieu(), q)) {
             return true;
         }
-        if (containsDashboard(e.getThematique(), q)) {
+        if (containsDashboard(e.getThematiqueNom(), q)) {
             return true;
         }
         if (e.getDateDebut() != null && containsDashboard(e.getDateDebut().toString(), q)) {
