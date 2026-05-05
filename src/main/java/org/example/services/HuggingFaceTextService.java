@@ -1,5 +1,10 @@
 package org.example.services;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+
 import java.io.InputStream;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -111,6 +116,45 @@ public class HuggingFaceTextService {
                 4) Réponse conseillée: ...
                 """.formatted(safeEvent, safeContext.isBlank() ? "Aucun." : safeContext, safeMessage);
         return runGeneration(prompt, 170, 0.4);
+    }
+
+    /**
+     * Propose des événements inspirés par les résultats d’index web (résumé texte) déjà regroupé par l’appelant.
+     */
+    public String suggestEventProposalsFromWebContext(String userKeywords, String periode, String resultDigest)
+            throws Exception {
+        String kw = userKeywords == null ? "" : userKeywords.trim();
+        String p = periode == null ? "" : periode.trim();
+        if (kw.isBlank()) {
+            throw new IllegalArgumentException("Aucun mot-clé de recherche.");
+        }
+        String body = resultDigest == null ? "" : resultDigest.trim();
+        if (body.isBlank()) {
+            throw new IllegalArgumentException("Aucun résultat de recherche à transmettre à l’IA.");
+        }
+        String safeBody = body.length() > 12000 ? body.substring(0, 12000) + "…" : body;
+        String safeKw = kw.length() > 200 ? kw.substring(0, 200) : kw;
+        String periodLabel = p.isBlank() ? "—" : p;
+        String prompt = """
+                Contexte (sources web publiques indexées par la recherche, à utiliser seulement comme idées générales) :
+                %s
+
+                Mots-clés utilisés par l’utilisateur : « %s ». Période retenue : %s.
+
+                Tâche : proposer 3 à 4 idées d’événements que l’association pourrait organiser, en cohérence avec cette recherche.
+                Pour chaque idée, fournir en français, en respectant le format structuré suivant :
+
+                1) TITRE: ...
+                2) DESCRIPTION: (2 à 4 phrases, ton institutionnel, sans inventer de partenaires inconnus) ...
+                3) SUJETS: (3 à 6 mots-thèmes séparés par des virgules) ...
+
+                Règles :
+                - S’inspirer des thèmes et lieux proposés par l’index sans copier de longs extraits d’un site.
+                - Ne jamais affirmer qu’un événement a lieu si ce n’est pas sûr ; proposer plutôt « une journée d’échanges sur... »
+                - Si les sources sont incertaines, le signaler en une courte phrase.
+                - Retourner uniquement le texte des propositions, une idée numérotée 1) à 4) sans préambule.
+                """.formatted(safeBody, safeKw, periodLabel);
+        return runGeneration(prompt, 800, 0.65);
     }
 
     private String runGeneration(String prompt, int maxNewTokens, double temperature) throws Exception {
@@ -255,6 +299,10 @@ public class HuggingFaceTextService {
     }
 
     private static String extractGeneratedText(String json) {
+        String parsed = extractFromJson(json, "generated_text");
+        if (!parsed.isBlank()) {
+            return parsed;
+        }
         Matcher matcher = GENERATED_TEXT_PATTERN.matcher(json == null ? "" : json);
         if (!matcher.find()) {
             return "";
@@ -263,6 +311,10 @@ public class HuggingFaceTextService {
     }
 
     private static String extractError(String json) {
+        String parsed = extractFromJson(json, "error");
+        if (!parsed.isBlank()) {
+            return parsed;
+        }
         Matcher matcher = ERROR_PATTERN.matcher(json == null ? "" : json);
         if (!matcher.find()) {
             return "";
@@ -271,6 +323,10 @@ public class HuggingFaceTextService {
     }
 
     private static String extractChatContent(String json) {
+        String parsed = extractFromJson(json, "content");
+        if (!parsed.isBlank()) {
+            return parsed;
+        }
         Matcher matcher = CHAT_CONTENT_PATTERN.matcher(json == null ? "" : json);
         if (!matcher.find()) {
             return "";
@@ -339,5 +395,49 @@ public class HuggingFaceTextService {
                 .replace("\\r", "\r")
                 .replace("\\\"", "\"")
                 .replace("\\\\", "\\");
+    }
+
+    private static String extractFromJson(String json, String key) {
+        if (json == null || json.isBlank()) {
+            return "";
+        }
+        try {
+            JsonElement root = JsonParser.parseString(json);
+            return findStringByKey(root, key);
+        } catch (Exception ignored) {
+            return "";
+        }
+    }
+
+    private static String findStringByKey(JsonElement element, String targetKey) {
+        if (element == null || element.isJsonNull()) {
+            return "";
+        }
+        if (element.isJsonObject()) {
+            JsonObject obj = element.getAsJsonObject();
+            if (obj.has(targetKey)) {
+                JsonElement v = obj.get(targetKey);
+                if (v != null && v.isJsonPrimitive()) {
+                    return v.getAsString();
+                }
+            }
+            for (var e : obj.entrySet()) {
+                String found = findStringByKey(e.getValue(), targetKey);
+                if (!found.isBlank()) {
+                    return found;
+                }
+            }
+            return "";
+        }
+        if (element.isJsonArray()) {
+            JsonArray arr = element.getAsJsonArray();
+            for (JsonElement child : arr) {
+                String found = findStringByKey(child, targetKey);
+                if (!found.isBlank()) {
+                    return found;
+                }
+            }
+        }
+        return "";
     }
 }

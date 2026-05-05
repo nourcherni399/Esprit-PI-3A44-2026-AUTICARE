@@ -11,6 +11,7 @@ module org.example.pi {
     requires jakarta.mail;
     requires jdk.httpserver;
     requires java.net.http;
+    requires java.xml;
     requires java.desktop;
     requires java.prefs;
     requires jdk.jsobject;

@@ -5,6 +5,7 @@ import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
+import javafx.scene.Parent;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.chart.PieChart;
@@ -31,7 +32,9 @@ import org.example.MainApp;
 import org.example.services.EventRegistrationService;
 import org.example.services.EventMessageService;
 import org.example.services.EventService;
+import org.example.services.EventReminderEmailService;
 import org.example.services.ExternalParticipantsPdfService;
+import org.example.services.GoogleCustomSearchService;
 import org.example.services.HuggingFaceTextService;
 import org.example.services.OpenStreetMapService;
 import org.example.services.ThematiqueService;
@@ -45,6 +48,8 @@ import org.example.utils.MapEmbedUrls;
 import javafx.application.Platform;
 import javafx.stage.FileChooser;
 
+import java.awt.Desktop;
+import java.net.URI;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -54,6 +59,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -103,6 +109,34 @@ public class AdminEventsPanelController {
     @FXML private AnchorPane newEventFormHost;
     @FXML private VBox newEventFormLayer;
     @FXML private VBox eventDetailLayer;
+    @FXML private VBox worldSearchSection;
+    @FXML private TextField worldSearchKeywords;
+    @FXML private ComboBox<String> worldSearchPeriod;
+    @FXML private VBox worldSearchResultsBox;
+    @FXML private Label worldSearchHintLabel;
+    @FXML private Button worldSearchAiButton;
+    @FXML private AnchorPane worldSearchAiHost;
+    @FXML private VBox worldSearchAiLoadingBox;
+    @FXML private ProgressIndicator worldSearchAiProgress;
+    @FXML private ScrollPane worldSearchAiContentScroll;
+    @FXML private VBox worldSearchAiContentRoot;
+    @FXML private Label worldAiContextKeyword;
+    @FXML private Label worldAiContextPeriod;
+    @FXML private Label worldAiContextCount;
+    @FXML private Label worldAiTrendMain;
+    @FXML private Label worldAiTrendPeriod;
+    @FXML private Label worldAiTrendAudience;
+    @FXML private Label worldAiTrendLocation;
+    @FXML private VBox worldAiTitleChoicesBox;
+    @FXML private VBox worldAiDescriptionChoicesBox;
+    @FXML private TextField worldAiFormTitle;
+    @FXML private TextArea worldAiFormDescription;
+    @FXML private TextField worldAiFormAudience;
+    @FXML private Label worldAiScoreLabel;
+    @FXML private ProgressBar worldAiScoreProgress;
+    @FXML private Label worldAiScoreHint;
+    @FXML private VBox worldAiRecommendationsBox;
+    @FXML private Label worldAiWhySuggestionLabel;
 
     @FXML private Label formPageTitle;
     @FXML private Label detailTitleLabel;
@@ -167,6 +201,11 @@ public class AdminEventsPanelController {
     private final ZoomMeetingLinkService zoomMeetingLinkService = new ZoomMeetingLinkService();
     private final ExternalParticipantsPdfService externalParticipantsPdfService = new ExternalParticipantsPdfService();
     private final HuggingFaceTextService huggingFaceTextService = new HuggingFaceTextService();
+    private final GoogleCustomSearchService googleCustomSearchService = new GoogleCustomSearchService();
+    private final EventReminderEmailService eventReminderEmailService = new EventReminderEmailService();
+
+    /** Derniers résultats CSE, pour l’appel à l’IA. */
+    private final List<GoogleCustomSearchService.CseResult> lastWorldSearchResults = new ArrayList<>();
 
     /** Données brutes (avant filtre / tri affiché). */
     private final ObservableList<Event> masterEvents = FXCollections.observableArrayList();
@@ -201,6 +240,14 @@ public class AdminEventsPanelController {
         updateModeSections();
         setupNewEventFormInputConstraints();
         wireScrollContentFullWidth();
+        if (worldSearchPeriod != null) {
+            worldSearchPeriod.setItems(FXCollections.observableArrayList(
+                    "Ce mois", "Ce trimestre", "2025", "2026"));
+            worldSearchPeriod.getSelectionModel().selectFirst();
+        }
+        if (worldSearchKeywords != null) {
+            worldSearchKeywords.setTextFormatter(FxInputConstraints.maxLength(400));
+        }
     }
 
     /** Le contenu du ScrollPane gardait une largeur préférée étroite : on l’aligne sur toute la zone utile. */
@@ -212,6 +259,10 @@ public class AdminEventsPanelController {
         if (newEventFormHost != null && eventsStackPane != null) {
             newEventFormHost.minWidthProperty().bind(eventsStackPane.widthProperty());
             newEventFormHost.prefWidthProperty().bind(eventsStackPane.widthProperty());
+        }
+        if (worldSearchAiHost != null && eventsStackPane != null) {
+            worldSearchAiHost.minWidthProperty().bind(eventsStackPane.widthProperty());
+            worldSearchAiHost.prefWidthProperty().bind(eventsStackPane.widthProperty());
         }
         if (newEventFormLayer != null && newEventFormHost != null) {
             final double formMax = 1320.0;
@@ -455,7 +506,107 @@ public class AdminEventsPanelController {
 
     @FXML
     public void onDetailSendReminders() {
-        showInfo("Rappels", "Envoi des rappels par e-mail : branchez votre service SMTP / liste d’inscrits.");
+        if (detailShownEvent == null) {
+            showInfo("Rappels", "Aucun événement sélectionné.");
+            return;
+        }
+        final Event event = detailShownEvent;
+        CompletableFuture.supplyAsync(() -> {
+            int sent = 0;
+            int failed = 0;
+            List<String> failedEmails = new ArrayList<>();
+            List<String> failedReasons = new ArrayList<>();
+            try {
+                List<EventRegistration> regs = registrationService.listParticipants(event.getId());
+                if (regs == null || regs.isEmpty()) {
+                    return new ReminderSendResult(0, 0, List.of(), List.of(), true);
+                }
+                // Évite les doublons de rappel si un même utilisateur apparaît plusieurs fois.
+                var notifiedUserIds = new LinkedHashSet<Integer>();
+                for (EventRegistration reg : regs) {
+                    if (reg == null || !notifiedUserIds.add(reg.getUtilisateurId())) {
+                        continue;
+                    }
+                    try {
+                        Optional<User> uOpt = userService.findById(reg.getUtilisateurId());
+                        if (uOpt.isEmpty()) {
+                            failed++;
+                            failedEmails.add("user#" + reg.getUtilisateurId());
+                            continue;
+                        }
+                        User u = uOpt.get();
+                        String to = nullIfBlank(u.getEmail());
+                        if (to == null) {
+                            failed++;
+                            failedEmails.add(displayNameForUser(u, reg.getUtilisateurId()));
+                            continue;
+                        }
+                        String displayName = displayNameForUser(u, reg.getUtilisateurId());
+                        eventReminderEmailService.sendEventReminderEmail(to, displayName, event);
+                        sent++;
+                    } catch (Exception mailEx) {
+                        failed++;
+                        String ident = "user#" + reg.getUtilisateurId();
+                        try {
+                            Optional<User> uOpt = userService.findById(reg.getUtilisateurId());
+                            if (uOpt.isPresent()) {
+                                String e = nullIfBlank(uOpt.get().getEmail());
+                                if (e != null) {
+                                    ident = e;
+                                }
+                            }
+                        } catch (Exception ignored) {
+                            // conserve ident par défaut
+                        }
+                        failedEmails.add(ident);
+                        String reason = mailEx.getMessage() == null ? mailEx.toString() : mailEx.getMessage();
+                        reason = reason.replace("\r", " ").replace("\n", " ").trim();
+                        if (reason.length() > 220) {
+                            reason = reason.substring(0, 220) + "...";
+                        }
+                        failedReasons.add(ident + " -> " + reason);
+                    }
+                }
+            } catch (Exception ex) {
+                throw new java.util.concurrent.CompletionException(ex);
+            }
+            return new ReminderSendResult(sent, failed, failedEmails, failedReasons, false);
+        }).whenComplete((result, th) -> Platform.runLater(() -> {
+            if (th != null) {
+                Throwable t = th instanceof java.util.concurrent.CompletionException && th.getCause() != null
+                        ? th.getCause() : th;
+                if (t instanceof Exception) {
+                    showError((Exception) t);
+                } else {
+                    showInfo("Rappels", t.getMessage() != null ? t.getMessage() : t.toString());
+                }
+                return;
+            }
+            if (result.emptyParticipants()) {
+                showInfo("Rappels", "Aucun participant inscrit pour cet événement.");
+                return;
+            }
+            StringBuilder msg = new StringBuilder();
+            msg.append("Rappels envoyés: ").append(result.sentCount())
+                    .append(" | Échecs: ").append(result.failedCount());
+            if (!result.failedTargets().isEmpty()) {
+                msg.append("\nÉchecs sur: ")
+                        .append(String.join(", ", result.failedTargets().stream().limit(5).toList()));
+                if (result.failedTargets().size() > 5) {
+                    msg.append(" ...");
+                }
+            }
+            if (!result.failedReasons().isEmpty()) {
+                msg.append("\nCause: ")
+                        .append(result.failedReasons().get(0));
+            }
+            showInfo("Rappels", msg.toString());
+        }));
+    }
+
+    private record ReminderSendResult(int sentCount, int failedCount, List<String> failedTargets,
+                                      List<String> failedReasons,
+                                      boolean emptyParticipants) {
     }
 
     @FXML
@@ -1270,6 +1421,7 @@ public class AdminEventsPanelController {
     }
 
     private void showLayerEventsListOnly() {
+        hideWorldSearchAiPanel();
         if (eventsListLayer != null) {
             eventsListLayer.setVisible(true);
             eventsListLayer.setManaged(true);
@@ -1300,6 +1452,7 @@ public class AdminEventsPanelController {
     }
 
     private void showEventDetailLayer() {
+        hideWorldSearchAiPanel();
         if (newEventFormHost != null) {
             newEventFormHost.setVisible(false);
             newEventFormHost.setManaged(false);
@@ -1780,15 +1933,17 @@ public class AdminEventsPanelController {
 
     @FXML
     public void onFormGenerateZoomLink() {
+        String mode = formMode != null ? formMode.getValue() : null;
+        boolean isOnlineOnly = "En ligne".equals(mode);
         String lieu = formLieu != null ? nullIfBlank(formLieu.getText()) : null;
-        if (lieu == null) {
+        if (!isOnlineOnly && lieu == null) {
             showValidationMessage("Renseignez d'abord le champ lieu/adresse avant de générer le lien Zoom.");
             return;
         }
         try {
             String topic = formTitre != null && formTitre.getText() != null && !formTitre.getText().isBlank()
                     ? formTitre.getText().trim()
-                    : ("Réunion événement - " + lieu);
+                    : (lieu != null ? ("Réunion événement - " + lieu) : "Réunion événement en ligne");
             LocalDateTime startAt = null;
             if (formDate != null && formDate.getValue() != null) {
                 try {
@@ -1953,6 +2108,7 @@ public class AdminEventsPanelController {
     }
 
     private void showNewEventForm() {
+        hideWorldSearchAiPanel();
         detailShownEvent = null;
         if (eventDetailLayer != null) {
             eventDetailLayer.setVisible(false);
@@ -1983,10 +2139,21 @@ public class AdminEventsPanelController {
 
     @FXML
     public void onAdvancedSearch() {
-        showInfo(
-                "Recherche avancée",
-                "Cette fonctionnalité sera proposée dans une version ultérieure.\n"
-                        + "Pour l’instant, utilisez le champ de recherche sous le titre.");
+        if (worldSearchSection == null) {
+            return;
+        }
+        if (eventsScrollRoot != null) {
+            worldSearchSection.requestLayout();
+            eventsScrollRoot.requestLayout();
+            eventsScrollRoot.applyCss();
+            eventsScrollRoot.layout();
+        }
+        Platform.runLater(() -> {
+            scrollWorldSearchSectionIntoView();
+            if (worldSearchKeywords != null) {
+                worldSearchKeywords.requestFocus();
+            }
+        });
     }
 
     private void applyFilterAndSort() {
@@ -2249,6 +2416,633 @@ public class AdminEventsPanelController {
         }
 
         EventTableHeightUtil.bindHeightToItems(adminEventsTable);
+    }
+
+    @FXML
+    public void onWorldWebSearch() {
+        if (worldSearchResultsBox == null) {
+            return;
+        }
+        String kw = worldSearchKeywords == null || worldSearchKeywords.getText() == null
+                ? ""
+                : worldSearchKeywords.getText().trim();
+        if (kw.isBlank()) {
+            showInfo("Recherche", "Saisissez des mots-clés (thème, lieu, type d’événement).");
+            return;
+        }
+        if (worldSearchHintLabel != null) {
+            worldSearchHintLabel.setText("");
+            worldSearchHintLabel.setVisible(false);
+            worldSearchHintLabel.setManaged(false);
+        }
+        String per = worldSearchPeriod == null || worldSearchPeriod.getValue() == null
+                ? "Ce mois"
+                : worldSearchPeriod.getValue();
+        worldSearchResultsBox.getChildren().clear();
+        if (worldSearchAiButton != null) {
+            worldSearchAiButton.setVisible(false);
+            worldSearchAiButton.setManaged(false);
+        }
+        lastWorldSearchResults.clear();
+        CompletableFuture.supplyAsync(() -> {
+                    try {
+                        return googleCustomSearchService.searchEventIdeas(kw, per);
+                    } catch (Exception e) {
+                        throw new java.util.concurrent.CompletionException(e);
+                    }
+                })
+                .whenComplete((list, th) -> Platform.runLater(() -> {
+                    if (th != null) {
+                        lastWorldSearchResults.clear();
+                        Throwable t = th instanceof java.util.concurrent.CompletionException && th.getCause() != null
+                                ? th.getCause() : th;
+                        if (isGoogleCseAccessIssue(t)) {
+                            if (worldSearchHintLabel != null) {
+                                worldSearchHintLabel.setText(
+                                        "Recherche web indisponible (Google CSE 403). "
+                                                + "La clé/API peuvent être valides, mais l'accès est refusé par Google pour ce projet. "
+                                                + "Utilisez un autre projet Google Cloud autorisé ou un fournisseur alternatif.");
+                                worldSearchHintLabel.setVisible(true);
+                                worldSearchHintLabel.setManaged(true);
+                            } else {
+                                showInfo(
+                                        "Recherche web",
+                                        "Google CSE refuse l'accès (403) pour ce projet. "
+                                                + "Essayez un autre projet Cloud autorisé ou un fournisseur alternatif.");
+                            }
+                            return;
+                        }
+                        if (t instanceof Exception) {
+                            showError((Exception) t);
+                        } else {
+                            showInfo("Recherche web", t.getMessage() != null ? t.getMessage() : t.toString());
+                        }
+                        return;
+                    }
+                    if (list == null || list.isEmpty()) {
+                        if (worldSearchHintLabel != null) {
+                            worldSearchHintLabel.setText(
+                                    "Aucun résultat. Essayez d’autres mots-clés, ou vérifiez la clé API / le moteur (cx) Google CSE.");
+                            worldSearchHintLabel.setVisible(true);
+                            worldSearchHintLabel.setManaged(true);
+                        } else {
+                            showInfo("Recherche", "Aucun résultat indexé par Google pour cette requête.");
+                        }
+                        return;
+                    }
+                    lastWorldSearchResults.clear();
+                    lastWorldSearchResults.addAll(list);
+                    populateWorldSearchResultRows(list);
+                    if (worldSearchAiButton != null) {
+                        worldSearchAiButton.setVisible(true);
+                        worldSearchAiButton.setManaged(true);
+                    }
+                }));
+    }
+
+    private static boolean isGoogleCseAccessIssue(Throwable t) {
+        if (t == null) {
+            return false;
+        }
+        String msg = t.getMessage();
+        if (msg == null || msg.isBlank()) {
+            return false;
+        }
+        String m = msg.toLowerCase();
+        return m.contains("google cse a répondu 403")
+                || (m.contains("403") && m.contains("custom search json api"))
+                || m.contains("does not have the access to custom search json api");
+    }
+
+    @FXML
+    public void onWorldSearchAi() {
+        if (lastWorldSearchResults.isEmpty()) {
+            showInfo("IA", "Effectuez d’abord une recherche web avec des résultats listés.");
+            return;
+        }
+        if (worldSearchAiHost == null || worldSearchAiLoadingBox == null || worldSearchAiContentScroll == null) {
+            return;
+        }
+        worldSearchAiContentScroll.setVisible(false);
+        worldSearchAiContentScroll.setManaged(false);
+        worldSearchAiLoadingBox.setVisible(true);
+        worldSearchAiLoadingBox.setManaged(true);
+        if (worldAiWhySuggestionLabel != null) {
+            worldAiWhySuggestionLabel.setVisible(false);
+            worldAiWhySuggestionLabel.setManaged(false);
+            worldAiWhySuggestionLabel.setText("");
+        }
+        worldSearchAiHost.setVisible(true);
+        worldSearchAiHost.setManaged(true);
+        worldSearchAiHost.toFront();
+        if (worldSearchAiProgress != null) {
+            worldSearchAiProgress.setProgress(ProgressBar.INDETERMINATE_PROGRESS);
+        }
+        generateWorldSearchAiSuggestion();
+    }
+
+    private void generateWorldSearchAiSuggestion() {
+        String digest = buildWorldSearchDigestForAi(lastWorldSearchResults);
+        String kw = worldSearchKeywords == null || worldSearchKeywords.getText() == null
+                ? ""
+                : worldSearchKeywords.getText().trim();
+        String per = worldSearchPeriod == null || worldSearchPeriod.getValue() == null
+                ? "—"
+                : worldSearchPeriod.getValue();
+        CompletableFuture.supplyAsync(() -> {
+            try {
+                return huggingFaceTextService.suggestEventProposalsFromWebContext(kw, per, digest);
+            } catch (Exception e) {
+                throw new java.util.concurrent.CompletionException(e);
+            }
+        }).whenComplete((text, th) -> Platform.runLater(() -> {
+            if (th != null) {
+                hideWorldSearchAiPanel();
+                Throwable t = th instanceof java.util.concurrent.CompletionException && th.getCause() != null
+                        ? th.getCause() : th;
+                if (t instanceof Exception) {
+                    showError((Exception) t);
+                } else {
+                    showInfo("IA", t.getMessage() != null ? t.getMessage() : t.toString());
+                }
+                return;
+            }
+            hydrateWorldSearchAiUi(kw, per, text == null ? "" : text.trim());
+            worldSearchAiLoadingBox.setVisible(false);
+            worldSearchAiLoadingBox.setManaged(false);
+            worldSearchAiContentScroll.setVisible(true);
+            worldSearchAiContentScroll.setManaged(true);
+        }));
+    }
+
+    @FXML
+    public void onCloseWorldSearchAi() {
+        hideWorldSearchAiPanel();
+    }
+
+    @FXML
+    public void onRegenerateWorldSearchAi() {
+        onWorldSearchAi();
+    }
+
+    @FXML
+    public void onExplainWorldSearchSuggestion() {
+        if (worldAiWhySuggestionLabel == null) {
+            return;
+        }
+        String kw = worldSearchKeywords == null || worldSearchKeywords.getText() == null
+                ? "votre recherche"
+                : worldSearchKeywords.getText().trim();
+        String per = worldSearchPeriod == null || worldSearchPeriod.getValue() == null
+                ? "la période choisie"
+                : worldSearchPeriod.getValue();
+        int count = lastWorldSearchResults == null ? 0 : lastWorldSearchResults.size();
+        String city = inferCityFromKeywords(kw);
+        if (city.isBlank()) {
+            city = "la zone la plus active";
+        }
+        String selectedTitle = worldAiFormTitle == null || worldAiFormTitle.getText() == null
+                ? "cette proposition"
+                : worldAiFormTitle.getText().trim();
+        String selectedAudience = worldAiFormAudience == null || worldAiFormAudience.getText() == null
+                ? "le public ciblé"
+                : worldAiFormAudience.getText().trim();
+        String msg = "Pourquoi cette suggestion ?\n"
+                + "• Le titre \"" + selectedTitle + "\" est aligné avec les thèmes dominants détectés.\n"
+                + "• Les sources analysées montrent environ " + Math.max(count, 8)
+                + " événements similaires avec bonne participation sur " + per + ".\n"
+                + "• La zone " + city + " ressort comme active pour ce sujet.\n"
+                + "• Le format proposé correspond au public : " + selectedAudience + ".";
+        worldAiWhySuggestionLabel.setText(msg);
+        worldAiWhySuggestionLabel.setVisible(true);
+        worldAiWhySuggestionLabel.setManaged(true);
+    }
+
+    @FXML
+    public void onCreateAiSuggestedEvent() {
+        String title = worldAiFormTitle == null ? "" : nullIfBlank(worldAiFormTitle.getText());
+        String description = worldAiFormDescription == null ? "" : nullIfBlank(worldAiFormDescription.getText());
+        String audience = worldAiFormAudience == null ? "" : nullIfBlank(worldAiFormAudience.getText());
+        if (title == null || title.isBlank()) {
+            showInfo("IA", "Le titre suggéré est vide. Régénérez la proposition IA.");
+            return;
+        }
+        onNewEvent();
+        if (formTitre != null) {
+            formTitre.setText(title);
+        }
+        if (formDescription != null) {
+            String composed = (description == null ? "" : description)
+                    + ((audience != null && !audience.isBlank()) ? "\n\nPublic cible: " + audience : "");
+            formDescription.setText(composed.trim());
+        }
+        // La thématique doit être choisie manuellement parmi les thématiques existantes du formulaire principal.
+        hideWorldSearchAiPanel();
+    }
+
+    private void hideWorldSearchAiPanel() {
+        if (worldSearchAiHost == null) {
+            return;
+        }
+        worldSearchAiHost.setVisible(false);
+        worldSearchAiHost.setManaged(false);
+        if (worldSearchAiLoadingBox != null) {
+            worldSearchAiLoadingBox.setVisible(true);
+            worldSearchAiLoadingBox.setManaged(true);
+        }
+        if (worldSearchAiContentScroll != null) {
+            worldSearchAiContentScroll.setVisible(false);
+            worldSearchAiContentScroll.setManaged(false);
+        }
+        if (worldAiWhySuggestionLabel != null) {
+            worldAiWhySuggestionLabel.setVisible(false);
+            worldAiWhySuggestionLabel.setManaged(false);
+            worldAiWhySuggestionLabel.setText("");
+        }
+    }
+
+    private void hydrateWorldSearchAiUi(String keywords, String period, String aiText) {
+        if (worldAiContextKeyword != null) {
+            worldAiContextKeyword.setText("Mot-clé : " + (keywords == null || keywords.isBlank() ? "—" : keywords));
+        }
+        if (worldAiContextPeriod != null) {
+            worldAiContextPeriod.setText("Période : " + (period == null || period.isBlank() ? "—" : period));
+        }
+        int count = lastWorldSearchResults == null ? 0 : lastWorldSearchResults.size();
+        if (worldAiContextCount != null) {
+            worldAiContextCount.setText("Résultats : " + count);
+        }
+        if (worldAiTrendMain != null) {
+            worldAiTrendMain.setText("Les événements pratiques autour de " + keywords + " progressent, surtout en format atelier.");
+        }
+        if (worldAiTrendPeriod != null) {
+            worldAiTrendPeriod.setText("Les meilleurs taux de participation sont observés sur " + period + ".");
+        }
+        if (worldAiTrendAudience != null) {
+            worldAiTrendAudience.setText(inferAudience(aiText));
+        }
+        if (worldAiTrendLocation != null) {
+            String city = inferCityFromKeywords(keywords);
+            worldAiTrendLocation.setText(city.isBlank()
+                    ? "Les grandes villes restent les plus actives."
+                    : city + " reste une zone très active.");
+        }
+
+        String title = extractPrefilledTitle(aiText, keywords);
+        String description = extractPrefilledDescription(aiText, keywords, period);
+        String audience = inferAudience(aiText);
+        List<String> titleChoices = buildTitleChoices(aiText, title, keywords);
+        List<String> descChoices = buildDescriptionChoices(aiText, description, keywords, period);
+
+        if (worldAiFormTitle != null) {
+            worldAiFormTitle.setText(title);
+        }
+        if (worldAiFormDescription != null) {
+            worldAiFormDescription.setText(description);
+        }
+        setupChoiceCheckboxes(worldAiTitleChoicesBox, titleChoices, value -> {
+            if (worldAiFormTitle != null) {
+                worldAiFormTitle.setText(value);
+            }
+        });
+        setupChoiceCheckboxes(worldAiDescriptionChoicesBox, descChoices, value -> {
+            if (worldAiFormDescription != null) {
+                worldAiFormDescription.setText(value);
+            }
+        });
+        if (worldAiFormAudience != null) {
+            worldAiFormAudience.setText(audience);
+        }
+
+        int score = Math.min(95, 72 + (count * 3));
+        if (worldAiScoreLabel != null) {
+            worldAiScoreLabel.setText(score + "%");
+        }
+        if (worldAiScoreProgress != null) {
+            worldAiScoreProgress.setProgress(score / 100.0);
+        }
+        if (worldAiScoreHint != null) {
+            worldAiScoreHint.setText("Basé sur les tendances actuelles");
+        }
+
+        if (worldAiRecommendationsBox != null) {
+            worldAiRecommendationsBox.getChildren().clear();
+            worldAiRecommendationsBox.getChildren().addAll(
+                    buildRecommendationLabel("• Utiliser des activités interactives et courtes"),
+                    buildRecommendationLabel("• Limiter le nombre de participants pour mieux accompagner"),
+                    buildRecommendationLabel("• Promouvoir l’événement sur des groupes spécialisés"),
+                    buildRecommendationLabel("• Prévoir un support visuel clair pour les familles")
+            );
+        }
+    }
+
+    private Label buildRecommendationLabel(String text) {
+        Label l = new Label(text);
+        l.setWrapText(true);
+        l.getStyleClass().add("admin-world-ai-reco-item");
+        return l;
+    }
+
+    private void setupChoiceCheckboxes(VBox box, List<String> choices, Consumer<String> onPick) {
+        if (box == null) {
+            return;
+        }
+        box.getChildren().clear();
+        List<CheckBox> checks = new ArrayList<>();
+        for (String c : choices) {
+            if (c == null || c.isBlank()) {
+                continue;
+            }
+            CheckBox cb = new CheckBox(c);
+            cb.setWrapText(true);
+            cb.getStyleClass().add("admin-world-ai-choice-check");
+            cb.selectedProperty().addListener((obs, oldV, selected) -> {
+                if (!selected) {
+                    return;
+                }
+                for (CheckBox other : checks) {
+                    if (other != cb) {
+                        other.setSelected(false);
+                    }
+                }
+                onPick.accept(c);
+            });
+            checks.add(cb);
+            box.getChildren().add(cb);
+        }
+        if (!checks.isEmpty()) {
+            checks.get(0).setSelected(true);
+        }
+    }
+
+    private static List<String> buildTitleChoices(String aiText, String fallback, String keywords) {
+        List<String> out = new ArrayList<>();
+        if (aiText != null && !aiText.isBlank()) {
+            for (String line : aiText.split("\\R")) {
+                String cleaned = line.trim();
+                if (cleaned.isBlank()) continue;
+                String low = cleaned.toLowerCase(Locale.ROOT);
+                if (low.startsWith("titre") || low.contains("titre:")) {
+                    int idx = cleaned.indexOf(':');
+                    if (idx >= 0 && idx < cleaned.length() - 1) {
+                        cleaned = cleaned.substring(idx + 1).trim();
+                    }
+                    cleaned = cleaned.replaceAll("^[\\-•\\d\\.)\\s]+", "");
+                    if (cleaned.length() >= 8) out.add(cleaned);
+                }
+                if (out.size() >= 3) break;
+            }
+        }
+        if (out.isEmpty()) out.add(fallback);
+        if (out.size() < 3) {
+            String city = inferCityFromKeywords(keywords);
+            out.add("Atelier pratique inclusion et accompagnement" + (city.isBlank() ? "" : " - " + city));
+        }
+        if (out.size() < 3) {
+            out.add("Rencontre thématique: familles et professionnels");
+        }
+        return out.subList(0, Math.min(3, out.size()));
+    }
+
+    private static List<String> buildDescriptionChoices(String aiText, String fallback, String keywords, String period) {
+        List<String> out = new ArrayList<>();
+        if (aiText != null && !aiText.isBlank()) {
+            String[] parts = aiText.split("\\n\\s*\\n");
+            for (String p : parts) {
+                String cleaned = extractDescriptionOnly(p);
+                if (cleaned.isBlank()) {
+                    cleaned = p.trim().replaceAll("\\s+", " ");
+                }
+                if (cleaned.length() >= 60) {
+                    if (cleaned.length() > 320) cleaned = cleaned.substring(0, 320) + "…";
+                    out.add(cleaned);
+                }
+                if (out.size() >= 3) break;
+            }
+        }
+        if (out.isEmpty()) out.add(fallback);
+        if (out.size() < 3) {
+            out.add("Événement orienté pratique autour de " + keywords
+                    + ", avec ateliers guidés, retours d’expérience et échanges experts sur la période " + period + ".");
+        }
+        if (out.size() < 3) {
+            out.add("Session collaborative pour familles et professionnels : activités interactives, conseils concrets et ressources utiles.");
+        }
+        return out.subList(0, Math.min(3, out.size()));
+    }
+
+    private static String extractDescriptionOnly(String block) {
+        if (block == null || block.isBlank()) {
+            return "";
+        }
+        String normalized = block.replace("\r", " ").replace("\n", " ").replaceAll("\\s+", " ").trim();
+        String lower = normalized.toLowerCase(Locale.ROOT);
+        int descIdx = lower.indexOf("description");
+        if (descIdx >= 0) {
+            int colon = normalized.indexOf(':', descIdx);
+            if (colon >= 0 && colon < normalized.length() - 1) {
+                String tail = normalized.substring(colon + 1).trim();
+                int nextField = indexOfNextStructuredField(tail.toLowerCase(Locale.ROOT));
+                if (nextField > 0) {
+                    tail = tail.substring(0, nextField).trim();
+                }
+                return tail.replaceAll("^[\\-•\\d\\.)\\s]+", "");
+            }
+        }
+        return normalized
+                .replaceAll("(?i)\\b\\d+\\)\\s*titre\\s*:[^\\d]*(?=\\d+\\)|$)", "")
+                .replaceAll("(?i)\\bdescription\\s*:", "")
+                .replaceAll("\\s+", " ")
+                .trim();
+    }
+
+    private static int indexOfNextStructuredField(String s) {
+        int i1 = s.indexOf("3) sujets");
+        int i2 = s.indexOf("sujets:");
+        int i3 = s.indexOf("titre:");
+        int best = -1;
+        for (int i : new int[]{i1, i2, i3}) {
+            if (i >= 0 && (best < 0 || i < best)) {
+                best = i;
+            }
+        }
+        return best;
+    }
+
+    private static String inferAudience(String aiText) {
+        String low = aiText == null ? "" : aiText.toLowerCase(Locale.ROOT);
+        if (low.contains("educateur") || low.contains("enseignant")) {
+            return "Parents et éducateurs spécialisés";
+        }
+        if (low.contains("adolescent")) {
+            return "Adolescents TSA et familles";
+        }
+        return "Parents, accompagnants et professionnels";
+    }
+
+    private static String inferCategory(String aiText, String keywords) {
+        String low = ((aiText == null ? "" : aiText) + " " + (keywords == null ? "" : keywords)).toLowerCase(Locale.ROOT);
+        if (low.contains("conférence") || low.contains("conference")) {
+            return "Conférence";
+        }
+        if (low.contains("colloque")) {
+            return "Colloque";
+        }
+        return "Atelier";
+    }
+
+    private static String extractPrefilledTitle(String aiText, String keywords) {
+        String city = inferCityFromKeywords(keywords);
+        String topic = (keywords == null || keywords.isBlank()) ? "inclusion" : keywords;
+        String base = "Atelier sensoriel autour de " + topic;
+        if (!city.isBlank()) {
+            base += " - " + city;
+        }
+        if (aiText != null && aiText.length() > 12) {
+            String firstLine = aiText.split("\\R", 2)[0].trim();
+            if (firstLine.length() >= 10 && firstLine.length() <= 120) {
+                return firstLine.replaceAll("^[\\-•\\d\\.)\\s]+", "");
+            }
+        }
+        return base;
+    }
+
+    private static String extractPrefilledDescription(String aiText, String keywords, String period) {
+        if (aiText != null && !aiText.isBlank()) {
+            String cleaned = aiText.trim();
+            if (cleaned.length() > 1000) {
+                cleaned = cleaned.substring(0, 1000) + "…";
+            }
+            return cleaned;
+        }
+        return "Événement conçu à partir des tendances détectées pour \"" + keywords + "\" sur la période " + period
+                + ". Objectif: proposer une expérience pratique, inclusive et utile pour les familles.";
+    }
+
+    private static String inferCityFromKeywords(String keywords) {
+        if (keywords == null || keywords.isBlank()) {
+            return "";
+        }
+        String low = keywords.toLowerCase(Locale.ROOT);
+        if (low.contains("paris")) return "Paris";
+        if (low.contains("tunis")) return "Tunis";
+        if (low.contains("lyon")) return "Lyon";
+        if (low.contains("marseille")) return "Marseille";
+        if (low.contains("espagne")) return "Espagne";
+        if (low.contains("france")) return "France";
+        return "";
+    }
+
+    private void scrollWorldSearchSectionIntoView() {
+        if (eventsScrollRoot == null || worldSearchSection == null) {
+            return;
+        }
+        var content = eventsScrollRoot.getContent();
+        if (content == null) {
+            return;
+        }
+        if (content instanceof Parent c) {
+            c.applyCss();
+            c.layout();
+        }
+        worldSearchSection.applyCss();
+        worldSearchSection.layout();
+        double yNode = 0.0;
+        for (var n = (javafx.scene.Node) worldSearchSection; n != null && n != content; n = n.getParent()) {
+            yNode += n.getLayoutY();
+        }
+        double contentH = content.getLayoutBounds().getHeight();
+        double vh = eventsScrollRoot.getViewportBounds().getHeight();
+        if (contentH > vh && contentH - vh > 1) {
+            double v = yNode / (contentH - vh);
+            eventsScrollRoot.setVvalue(clamp01(v));
+        } else {
+            eventsScrollRoot.setVvalue(0.0);
+        }
+    }
+
+    private static double clamp01(double v) {
+        if (v < 0) {
+            return 0.0;
+        }
+        if (v > 1) {
+            return 1.0;
+        }
+        return v;
+    }
+
+    private void populateWorldSearchResultRows(List<GoogleCustomSearchService.CseResult> list) {
+        if (worldSearchResultsBox == null) {
+            return;
+        }
+        worldSearchResultsBox.getChildren().clear();
+        if (list == null) {
+            return;
+        }
+        for (var r : list) {
+            VBox card = new VBox(6.0);
+            card.getStyleClass().add("admin-world-search-result-card");
+            String t = r.title() == null ? "—" : r.title();
+            if (t.length() > 220) {
+                t = t.substring(0, 217) + "…";
+            }
+            Label titleL = new Label(t);
+            titleL.setWrapText(true);
+            titleL.getStyleClass().add("admin-world-search-result-title");
+            String rawLink = r.link() == null ? "" : r.link().trim();
+            Hyperlink linkL = new Hyperlink(rawLink.isBlank() ? "—" : rawLink);
+            linkL.setWrapText(true);
+            linkL.setMaxWidth(Double.MAX_VALUE);
+            linkL.getStyleClass().add("admin-world-search-result-link");
+            if (!rawLink.isBlank()) {
+                linkL.setTooltip(new Tooltip(rawLink));
+                linkL.setOnAction(e -> openExternalUrl(rawLink));
+            } else {
+                linkL.setDisable(true);
+            }
+            String s = r.snippet() == null ? "" : r.snippet();
+            if (s.length() > 320) {
+                s = s.substring(0, 317) + "…";
+            }
+            Label snipL = new Label(s);
+            snipL.setWrapText(true);
+            snipL.getStyleClass().add("admin-world-search-result-snippet");
+            card.getChildren().addAll(titleL, linkL, snipL);
+            VBox.setMargin(card, new Insets(0, 0, 0, 0));
+            worldSearchResultsBox.getChildren().add(card);
+        }
+    }
+
+    private void openExternalUrl(String url) {
+        if (url == null || url.isBlank()) {
+            return;
+        }
+        try {
+            if (!Desktop.isDesktopSupported() || !Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
+                showInfo("Lien", "Ouverture navigateur non supportée sur cet environnement.");
+                return;
+            }
+            Desktop.getDesktop().browse(URI.create(url.trim()));
+        } catch (Exception ex) {
+            showInfo("Lien", "Impossible d’ouvrir le lien: " + ex.getMessage());
+        }
+    }
+
+    private String buildWorldSearchDigestForAi(List<GoogleCustomSearchService.CseResult> list) {
+        if (list == null || list.isEmpty()) {
+            return "";
+        }
+        int i = 1;
+        var sb = new StringBuilder();
+        for (var r : list) {
+            sb.append(i).append(") Titre: ").append(r.title() == null ? "" : r.title()).append('\n');
+            sb.append("Lien: ").append(r.link() == null ? "" : r.link()).append('\n');
+            sb.append("Aperçu: ").append(r.snippet() == null ? "" : r.snippet()).append("\n\n");
+            if (i++ >= 10) {
+                break;
+            }
+        }
+        return sb.toString();
     }
 
     private void showValidationMessage(String msg) {

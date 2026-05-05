@@ -20,7 +20,7 @@
                 <ComboBox fx:id="sortOrderBox" prefWidth="120" promptText="Ordre" styleClass="admin-events-combo"/>
                 <Button mnemonicParsing="false" onAction="#onAdvancedSearch" styleClass="admin-events-btn-advanced" text="Recherche avancée">
                     <tooltip>
-                        <Tooltip text="À venir dans une prochaine version. Utilisez le champ de recherche ci-contre."/>
+                        <Tooltip text="Aller au panneau de recherche web (événements réels) sous le tableau."/>
                     </tooltip>
                 </Button>
                 <Button mnemonicParsing="false" onAction="#onNewEvent" styleClass="admin-events-btn-new" text="+ Nouvel élément"/>
@@ -31,6 +31,31 @@
                     <Label styleClass="admin-events-table-placeholder" text="Aucun événement"/>
                 </placeholder>
             </TableView>
+            <VBox fx:id="worldSearchSection" maxWidth="Infinity" spacing="12" styleClass="admin-events-world-search">
+                <HBox alignment="CENTER_LEFT" spacing="10" styleClass="admin-events-world-search-hero">
+                    <Label text="Recherche avancée — événements dans le monde" styleClass="admin-events-world-search-title" wrapText="true"/>
+                </HBox>
+                <VBox spacing="10" styleClass="admin-events-world-search-form">
+                    <HBox alignment="BASELINE_LEFT" maxWidth="Infinity" spacing="14" styleClass="admin-world-search-row">
+                        <VBox minWidth="220" spacing="6" HBox.hgrow="SOMETIMES">
+                            <Label styleClass="admin-new-event-label" text="Mots-clés (thème, lieu, type)"/>
+                            <TextField fx:id="worldSearchKeywords" maxWidth="Infinity" promptText="ex. éducation Tunisie" styleClass="admin-new-event-input"/>
+                        </VBox>
+                        <VBox minWidth="140" spacing="6" prefWidth="200">
+                            <Label styleClass="admin-new-event-label" text="Période"/>
+                            <ComboBox fx:id="worldSearchPeriod" maxWidth="Infinity" prefWidth="200" styleClass="admin-new-event-input"/>
+                        </VBox>
+                        <Button mnemonicParsing="false" onAction="#onWorldWebSearch" text="Rechercher dans le monde" styleClass="admin-world-search-submit"/>
+                    </HBox>
+                    <Label fx:id="worldSearchHintLabel" managed="false" maxWidth="Infinity" styleClass="admin-events-stat-warn" visible="false" wrapText="true"/>
+                    <ScrollPane fx:id="worldSearchScroll" fitToWidth="true" hbarPolicy="NEVER" maxHeight="320" minHeight="100" vbarPolicy="AS_NEEDED" styleClass="admin-world-search-scroll">
+                        <content>
+                        <VBox fx:id="worldSearchResultsBox" maxWidth="Infinity" spacing="8" styleClass="admin-world-search-results"/>
+                        </content>
+                    </ScrollPane>
+                    <Button fx:id="worldSearchAiButton" managed="false" minHeight="40" mnemonicParsing="false" onAction="#onWorldSearchAi" styleClass="admin-world-search-ai-btn" text="✨  Analyser et proposer des idées avec l'IA" visible="false" wrapText="true"/>
+                </VBox>
+            </VBox>
             <HBox alignment="TOP_LEFT" spacing="16" styleClass="admin-events-charts-row">
                 <VBox spacing="10" styleClass="admin-events-chart-card" HBox.hgrow="ALWAYS">
                     <Label styleClass="admin-events-chart-title" text="Répartition des événements par période"/>
@@ -297,5 +322,118 @@
                 </HBox>
             </VBox>
         </VBox>
+
+        <AnchorPane fx:id="worldSearchAiHost" managed="false" maxHeight="Infinity" maxWidth="Infinity" styleClass="admin-world-ai-dim" visible="false" StackPane.alignment="TOP_LEFT">
+            <StackPane maxHeight="Infinity" maxWidth="Infinity" styleClass="admin-world-ai-dim" alignment="CENTER"
+                       AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                <VBox maxHeight="720" maxWidth="900" minWidth="560" prefWidth="860" spacing="14" styleClass="admin-world-ai-card" StackPane.alignment="CENTER">
+                    <padding>
+                        <Insets bottom="20" left="20" right="20" top="20"/>
+                    </padding>
+                    <Button alignment="BASELINE_LEFT" onAction="#onCloseWorldSearchAi" styleClass="admin-new-event-back-link" text="Fermer"/>
+                    <VBox spacing="4">
+                        <Label styleClass="admin-world-ai-main-title" text="Analyse intelligente des événements"/>
+                        <Label styleClass="admin-world-ai-sub-title" text="Découvrez les tendances et créez un événement optimisé"/>
+                    </VBox>
+                    <HBox spacing="8" styleClass="admin-world-ai-timeline">
+                        <Label styleClass="admin-world-ai-step-active" text="Recherche"/>
+                        <Label styleClass="admin-world-ai-step-arrow" text="→"/>
+                        <Label styleClass="admin-world-ai-step-active" text="Analyse IA"/>
+                        <Label styleClass="admin-world-ai-step-arrow" text="→"/>
+                        <Label styleClass="admin-world-ai-step-active" text="Idée générée"/>
+                        <Label styleClass="admin-world-ai-step-arrow" text="→"/>
+                        <Label styleClass="admin-world-ai-step-active" text="Création"/>
+                    </HBox>
+                    <StackPane fx:id="worldSearchAiStatePane" minHeight="200" VBox.vgrow="ALWAYS">
+                        <VBox fx:id="worldSearchAiLoadingBox" alignment="CENTER" spacing="12" styleClass="admin-world-ai-loading">
+                            <ProgressIndicator fx:id="worldSearchAiProgress" maxHeight="64" maxWidth="64" prefHeight="64" prefWidth="64" styleClass="admin-world-ai-spinner"/>
+                            <Label styleClass="admin-events-main-title" text="Génération des idées en cours…" wrapText="true"/>
+                            <Label styleClass="admin-events-stat-warn" text="L’IA prépare des propositions selon votre recherche web." textAlignment="CENTER" wrapText="true"/>
+                        </VBox>
+                        <ScrollPane fx:id="worldSearchAiContentScroll" fitToWidth="true" hbarPolicy="NEVER" managed="false" styleClass="admin-world-ai-scroll" vbarPolicy="AS_NEEDED" visible="false" StackPane.alignment="TOP_LEFT">
+                            <content>
+                                <VBox fx:id="worldSearchAiContentRoot" spacing="14">
+                                    <HBox spacing="8" styleClass="admin-world-ai-card-box">
+                                        <Label styleClass="admin-world-ai-emoji" text="🔍"/>
+                                        <VBox spacing="6" HBox.hgrow="ALWAYS">
+                                            <Label styleClass="admin-world-ai-card-title" text="Contexte de recherche"/>
+                                            <HBox spacing="16">
+                                                <Label fx:id="worldAiContextKeyword" styleClass="admin-world-ai-chip" text="Mot-clé : —" wrapText="true"/>
+                                                <Label fx:id="worldAiContextPeriod" styleClass="admin-world-ai-chip" text="Période : —"/>
+                                                <Label fx:id="worldAiContextCount" styleClass="admin-world-ai-chip" text="Résultats : 0"/>
+                                            </HBox>
+                                        </VBox>
+                                    </HBox>
+
+                                    <VBox spacing="10">
+                                        <Label styleClass="admin-world-ai-card-title" text="Analyse IA"/>
+                                        <HBox spacing="10">
+                                            <VBox styleClass="admin-world-ai-insight-card" HBox.hgrow="ALWAYS">
+                                                <Label styleClass="admin-world-ai-insight-title" text="🔥 Tendances principales"/>
+                                                <Label fx:id="worldAiTrendMain" styleClass="admin-world-ai-insight-text" text="—" wrapText="true"/>
+                                            </VBox>
+                                        </HBox>
+                                        <HBox spacing="10">
+                                            <VBox styleClass="admin-world-ai-insight-card" HBox.hgrow="ALWAYS">
+                                                <Label styleClass="admin-world-ai-insight-title" text="👥 Public cible"/>
+                                                <Label fx:id="worldAiTrendAudience" styleClass="admin-world-ai-insight-text" text="—" wrapText="true"/>
+                                            </VBox>
+                                            <VBox styleClass="admin-world-ai-insight-card" HBox.hgrow="ALWAYS">
+                                                <Label styleClass="admin-world-ai-insight-title" text="📍 Localisation"/>
+                                                <Label fx:id="worldAiTrendLocation" styleClass="admin-world-ai-insight-text" text="—" wrapText="true"/>
+                                            </VBox>
+                                        </HBox>
+                                    </VBox>
+
+                                    <VBox spacing="8" styleClass="admin-world-ai-card-box">
+                                        <Label styleClass="admin-world-ai-card-title" text="Idée d’événement générée par IA"/>
+                                        <VBox spacing="8">
+                                            <Label styleClass="admin-new-event-label" text="Choisir un titre proposé (max 1)"/>
+                                            <VBox fx:id="worldAiTitleChoicesBox" spacing="6"/>
+                                            <Label styleClass="admin-new-event-label" text="Choisir une description proposée (max 1)"/>
+                                            <VBox fx:id="worldAiDescriptionChoicesBox" spacing="6"/>
+                                        </VBox>
+                                        <GridPane hgap="10" vgap="10">
+                                            <columnConstraints>
+                                                <ColumnConstraints hgrow="SOMETIMES" percentWidth="50"/>
+                                                <ColumnConstraints hgrow="SOMETIMES" percentWidth="50"/>
+                                            </columnConstraints>
+                                            <Label styleClass="admin-new-event-label" text="Titre"/>
+                                            <TextField fx:id="worldAiFormTitle" GridPane.columnIndex="1" styleClass="admin-new-event-input"/>
+
+                                            <Label styleClass="admin-new-event-label" text="Description" GridPane.rowIndex="1"/>
+                                            <TextArea fx:id="worldAiFormDescription" prefRowCount="4" styleClass="admin-new-event-textarea" wrapText="true" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+
+                                            <Label styleClass="admin-new-event-label" text="Public cible" GridPane.rowIndex="2"/>
+                                            <TextField fx:id="worldAiFormAudience" GridPane.columnIndex="1" GridPane.rowIndex="2" styleClass="admin-new-event-input"/>
+                                        </GridPane>
+                                    </VBox>
+
+                                    <VBox spacing="8" styleClass="admin-world-ai-card-box">
+                                        <Label styleClass="admin-world-ai-card-title" text="Score de succès"/>
+                                        <HBox alignment="CENTER_LEFT" spacing="10">
+                                            <Label fx:id="worldAiScoreLabel" styleClass="admin-world-ai-score" text="0%"/>
+                                            <ProgressBar fx:id="worldAiScoreProgress" prefWidth="340" progress="0.0"/>
+                                        </HBox>
+                                        <Label fx:id="worldAiScoreHint" styleClass="admin-events-stat-warn" text="Basé sur les tendances actuelles"/>
+                                    </VBox>
+
+                                    <VBox spacing="8" styleClass="admin-world-ai-card-box">
+                                        <Label styleClass="admin-world-ai-card-title" text="Recommandations IA"/>
+                                        <VBox fx:id="worldAiRecommendationsBox" spacing="6"/>
+                                    </VBox>
+
+                                    <Label fx:id="worldAiWhySuggestionLabel" managed="false" styleClass="admin-world-ai-why" visible="false" wrapText="true"/>
+                                </VBox>
+                            </content>
+                        </ScrollPane>
+                    </StackPane>
+                    <HBox alignment="CENTER_LEFT" spacing="10">
+                        <Button mnemonicParsing="false" onAction="#onCreateAiSuggestedEvent" styleClass="admin-world-search-submit" text="Créer cet événement"/>
+                        <Button mnemonicParsing="false" onAction="#onExplainWorldSearchSuggestion" styleClass="admin-world-search-ai-btn" text="🤖 Pourquoi cette suggestion ?"/>
+                    </HBox>
+                </VBox>
+            </StackPane>
+        </AnchorPane>
     </StackPane>
 </ScrollPane>
