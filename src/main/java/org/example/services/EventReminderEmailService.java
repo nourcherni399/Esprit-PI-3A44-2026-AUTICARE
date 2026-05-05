@@ -11,9 +11,13 @@ import jakarta.mail.internet.MimeMessage;
 import org.example.models.Event;
 
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Duration;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 import java.util.Properties;
 
@@ -25,27 +29,39 @@ public class EventReminderEmailService {
     private static final String DEFAULT_FROM = "no-reply@auticare.local";
     private static final String DEFAULT_HOST = "smtp.gmail.com";
     private static final String DEFAULT_PORT = "587";
-    private static final Properties FILE_CONFIG = loadFileConfig();
-
     public void sendEventReminderEmail(String recipientEmail, String recipientDisplayName, Event event)
             throws MessagingException {
+        String title = safe(event != null ? event.getTitre() : null, "Événement AutiCare");
+        sendHtmlEmail(
+                recipientEmail,
+                "Rappel - " + title,
+                buildHtmlTemplate(recipientDisplayName, event));
+    }
+
+    /**
+     * Envoi SMTP générique HTML.
+     */
+    public void sendHtmlEmail(String recipientEmail, String subject, String htmlBody) throws MessagingException {
         if (recipientEmail == null || recipientEmail.isBlank()) {
             throw new MessagingException("Destinataire e-mail manquant.");
         }
-        if (event == null) {
-            throw new MessagingException("Événement manquant pour le rappel.");
-        }
+        String safeSubject = subject == null || subject.isBlank() ? "Notification AutiCare" : subject.trim();
+        String safeHtml = htmlBody == null ? "" : htmlBody;
 
         String smtpUser = readConfig("auticare.smtp.user", "AUTICARE_SMTP_USER", DEFAULT_FROM);
         String smtpPasswordRaw = readConfig("auticare.smtp.appPassword", "AUTICARE_SMTP_APP_PASSWORD", "");
-        String smtpPassword = smtpPasswordRaw.replaceAll("\\s+", "");
+        String smtpPassword = sanitizeSecret(smtpPasswordRaw);
         if (smtpPassword.isBlank()) {
             Path propsPath = locateProjectPropertiesFile();
             throw new MessagingException(
                     "Configuration SMTP manquante: auticare.smtp.appPassword (mot de passe d'application Gmail). "
                             + "[user.dir=" + System.getProperty("user.dir", "?")
                             + ", propsPath=" + propsPath
-                            + ", exists=" + Files.exists(propsPath) + "]");
+                            + ", exists=" + Files.exists(propsPath)
+                            + ", cpHasKey=" + hasValue(readFromFreshClasspathProperties("auticare.smtp.appPassword"))
+                            + ", srcHasKey=" + hasValue(readFromProjectProperties("auticare.smtp.appPassword"))
+                            + ", knownHasKey=" + hasValue(readFromKnownPropertyFiles("auticare.smtp.appPassword"))
+                            + "]");
         }
 
         String smtpHost = readConfig("auticare.smtp.host", "AUTICARE_SMTP_HOST", DEFAULT_HOST);
@@ -79,33 +95,39 @@ public class EventReminderEmailService {
         Message message = new MimeMessage(session);
         message.setFrom(new InternetAddress(smtpUser));
         message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(to, false));
-        message.setSubject("Rappel - " + safe(event.getTitre(), "Événement AutiCare"));
-        message.setContent(buildHtmlTemplate(recipientDisplayName, event), "text/html; charset=UTF-8");
+        message.setSubject(safeSubject);
+        String finalHtml = safeHtml.isBlank()
+                ? "<html><body><p>Notification AutiCare</p></body></html>"
+                : safeHtml;
+        message.setContent(finalHtml, "text/html; charset=UTF-8");
         Transport.send(message);
     }
 
     private static String buildHtmlTemplate(String recipientDisplayName, Event event) {
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm", Locale.FRENCH);
         String when = event.getDateDebut() != null ? event.getDateDebut().format(dtf) : "Date à confirmer";
+        String duration = formatEventDuration(event);
         String mode = safe(event.getModeEvenement(), "—");
         String titre = safe(event.getTitre(), "Événement");
         String lieu = safe(event.getLieu(), "—");
         String zoom = safe(event.getLienZoomVisio(), "");
         String maps = safe(event.getLienGoogleMaps(), "");
         String name = safe(recipientDisplayName, "Participant");
+        boolean onlineOrHybrid = isOnlineOrHybridMode(mode);
+        boolean presentielOrHybrid = isPresentielOrHybridMode(mode);
 
-        String locationLine = "En ligne".equalsIgnoreCase(mode)
+        String locationLine = onlineOrHybrid
                 ? (zoom.isBlank() ? "Lien visio: à venir" : "Lien visio: " + zoom)
                 : ("Lieu: " + lieu);
 
         String links = "";
-        if (!zoom.isBlank()) {
+        if (onlineOrHybrid && !zoom.isBlank()) {
             links += "<p style=\"margin:0 0 8px 0;\"><a href=\"" + escapeHtml(zoom)
                     + "\" style=\"color:#2563eb;\">Rejoindre la réunion</a></p>";
         }
-        if (!maps.isBlank()) {
+        if (presentielOrHybrid && !maps.isBlank()) {
             links += "<p style=\"margin:0 0 8px 0;\"><a href=\"" + escapeHtml(maps)
-                    + "\" style=\"color:#2563eb;\">Voir l'adresse sur la carte</a></p>";
+                    + "\" style=\"color:#2563eb;\">Voir la localisation (Google Maps)</a></p>";
         }
 
         return """
@@ -117,6 +139,7 @@ public class EventReminderEmailService {
                     <p style="margin:0 0 12px 0;">Ceci est un rappel pour votre événement déjà inscrit :</p>
                     <h2 style="margin:0 0 12px 0;color:#1e3a8a;">%s</h2>
                     <p style="margin:0 0 6px 0;"><strong>Date/heure :</strong> %s</p>
+                    <p style="margin:0 0 6px 0;"><strong>Durée :</strong> %s</p>
                     <p style="margin:0 0 6px 0;"><strong>Mode :</strong> %s</p>
                     <p style="margin:0 0 12px 0;"><strong>%s</strong></p>
                     %s
@@ -129,6 +152,7 @@ public class EventReminderEmailService {
                 escapeHtml(name),
                 escapeHtml(titre),
                 escapeHtml(when),
+                escapeHtml(duration),
                 escapeHtml(mode),
                 escapeHtml(locationLine),
                 links);
@@ -143,7 +167,7 @@ public class EventReminderEmailService {
         if (fromEnv != null && !fromEnv.isBlank()) {
             return fromEnv.trim();
         }
-        String fromFile = FILE_CONFIG.getProperty(propKey);
+        String fromFile = readFromFreshClasspathProperties(propKey);
         if (fromFile != null && !fromFile.isBlank()) {
             return fromFile.trim();
         }
@@ -151,20 +175,29 @@ public class EventReminderEmailService {
         if (fromProjectFile != null && !fromProjectFile.isBlank()) {
             return fromProjectFile.trim();
         }
+        String fromKnownFiles = readFromKnownPropertyFiles(propKey);
+        if (fromKnownFiles != null && !fromKnownFiles.isBlank()) {
+            return fromKnownFiles.trim();
+        }
+        String fromAlias = readFromAliasKeys(propKey);
+        if (fromAlias != null && !fromAlias.isBlank()) {
+            return fromAlias.trim();
+        }
         return fallback;
     }
 
-    private static Properties loadFileConfig() {
-        Properties p = new Properties();
+    private static String readFromFreshClasspathProperties(String key) {
         try (InputStream in = EventReminderEmailService.class.getClassLoader()
                 .getResourceAsStream("application.properties")) {
             if (in != null) {
+                Properties p = new Properties();
                 p.load(in);
+                return p.getProperty(key);
             }
         } catch (Exception ignored) {
             // fallback env/system/default
         }
-        return p;
+        return null;
     }
 
     private static String readFromProjectProperties(String key) {
@@ -173,26 +206,196 @@ public class EventReminderEmailService {
             if (!Files.exists(p)) {
                 return null;
             }
-            Properties props = new Properties();
-            try (var in = Files.newInputStream(p)) {
-                props.load(in);
-            }
-            return props.getProperty(key);
+            return readPropertyByScanningLines(p, key);
         } catch (Exception ignored) {
             return null;
         }
     }
 
-    private static Path locateProjectPropertiesFile() {
-        Path cwd = Path.of(System.getProperty("user.dir", ".")).toAbsolutePath().normalize();
-        Path cur = cwd;
-        for (int i = 0; i < 8 && cur != null; i++) {
-            if (Files.exists(cur.resolve("pom.xml"))) {
-                return cur.resolve("src").resolve("main").resolve("resources").resolve("application.properties");
+    private static String readFromKnownPropertyFiles(String key) {
+        try {
+            Path cwd = Path.of(System.getProperty("user.dir", ".")).toAbsolutePath().normalize();
+            List<Path> candidates = new ArrayList<>();
+            candidates.add(cwd.resolve("src").resolve("main").resolve("resources").resolve("application.properties"));
+            candidates.add(cwd.resolve("target").resolve("classes").resolve("application.properties"));
+            Path cur = cwd;
+            for (int i = 0; i < 10 && cur != null; i++) {
+                candidates.add(cur.resolve("src").resolve("main").resolve("resources").resolve("application.properties"));
+                candidates.add(cur.resolve("target").resolve("classes").resolve("application.properties"));
+                cur = cur.getParent();
             }
-            cur = cur.getParent();
+            for (Path p : candidates) {
+                if (!Files.exists(p)) {
+                    continue;
+                }
+                String value = readPropertyByScanningLines(p, key);
+                if (value != null && !value.isBlank()) {
+                    return value;
+                }
+                if ("auticare.smtp.appPassword".equals(key)) {
+                    String fuzzy = readSmtpPasswordFuzzy(p);
+                    if (fuzzy != null && !fuzzy.isBlank()) {
+                        return fuzzy;
+                    }
+                }
+            }
+        } catch (Exception ignored) {
+            return null;
         }
-        return cwd.resolve("src").resolve("main").resolve("resources").resolve("application.properties");
+        return null;
+    }
+
+    private static String readFromAliasKeys(String key) {
+        if (!"auticare.smtp.appPassword".equals(key)) {
+            return null;
+        }
+        String[] aliases = new String[] {
+                "auticare.smtp.apppassword",
+                "auticare.smtp.app.password",
+                "auticare.smtp.app_password",
+                "auticare.smtp.gmail.appPassword",
+                "auticare.smtp.gmail.apppassword"
+        };
+        for (String alias : aliases) {
+            String fromCp = readFromFreshClasspathProperties(alias);
+            if (hasValue(fromCp)) {
+                return fromCp;
+            }
+            String fromSrc = readFromProjectProperties(alias);
+            if (hasValue(fromSrc)) {
+                return fromSrc;
+            }
+            String fromKnown = readFromKnownPropertyFiles(alias);
+            if (hasValue(fromKnown)) {
+                return fromKnown;
+            }
+        }
+        try {
+            Path src = locateProjectPropertiesFile();
+            String fuzzy = readSmtpPasswordFuzzy(src);
+            if (hasValue(fuzzy)) {
+                return fuzzy;
+            }
+        } catch (Exception ignored) {
+            return null;
+        }
+        return null;
+    }
+
+    private static String readPropertyByScanningLines(Path file, String key) {
+        String normalizedKey = normalizeKeyForMatch(key);
+        try {
+            for (String raw : Files.readAllLines(file, StandardCharsets.UTF_8)) {
+                if (raw == null) {
+                    continue;
+                }
+                String line = raw.trim();
+                if (line.isEmpty() || line.startsWith("#")) {
+                    continue;
+                }
+                int eq = line.indexOf('=');
+                if (eq <= 0) {
+                    continue;
+                }
+                String k = line.substring(0, eq);
+                if (!normalizeKeyForMatch(k).equals(normalizedKey)) {
+                    continue;
+                }
+                return line.substring(eq + 1).trim();
+            }
+        } catch (Exception ignored) {
+            return null;
+        }
+        return null;
+    }
+
+    private static String readSmtpPasswordFuzzy(Path file) {
+        if (file == null || !Files.exists(file)) {
+            return null;
+        }
+        try {
+            for (String raw : Files.readAllLines(file, StandardCharsets.UTF_8)) {
+                if (raw == null) {
+                    continue;
+                }
+                String line = raw.trim();
+                if (line.isEmpty() || line.startsWith("#")) {
+                    continue;
+                }
+                int eq = line.indexOf('=');
+                if (eq <= 0) {
+                    continue;
+                }
+                String lhs = normalizeKeyForMatch(line.substring(0, eq));
+                // Fallback volontairement tolérant aux caractères invisibles/variantes.
+                if (lhs.contains("auticare")
+                        && lhs.contains("smtp")
+                        && lhs.contains("app")
+                        && lhs.contains("password")) {
+                    return line.substring(eq + 1).trim();
+                }
+            }
+        } catch (Exception ignored) {
+            return null;
+        }
+        return null;
+    }
+
+    private static String normalizeKeyForMatch(String key) {
+        if (key == null) {
+            return "";
+        }
+        return key.replace("\uFEFF", "")
+                .replace(" ", "")
+                .replace("\t", "")
+                .trim()
+                .toLowerCase(Locale.ROOT);
+    }
+
+    private static String sanitizeSecret(String value) {
+        if (value == null) {
+            return "";
+        }
+        return value
+                .replace("\u00A0", "")
+                .replace("\u2007", "")
+                .replace("\u202F", "")
+                .replaceAll("\\s+", "")
+                .trim();
+    }
+
+    private static boolean hasValue(String value) {
+        return value != null && !sanitizeSecret(value).isBlank();
+    }
+
+    private static Path locateProjectPropertiesFile() {
+        List<Path> roots = new ArrayList<>();
+        String mm = System.getProperty("maven.multiModuleProjectDirectory");
+        if (mm != null && !mm.isBlank()) {
+            roots.add(Path.of(mm));
+        }
+        String basedir = System.getProperty("basedir");
+        if (basedir != null && !basedir.isBlank()) {
+            roots.add(Path.of(basedir));
+        }
+        roots.add(Path.of(System.getProperty("user.dir", ".")));
+
+        for (Path rootCandidate : roots) {
+            Path cur = rootCandidate.toAbsolutePath().normalize();
+            for (int i = 0; i < 10 && cur != null; i++) {
+                if (Files.exists(cur.resolve("pom.xml"))) {
+                    return cur.resolve("src").resolve("main").resolve("resources").resolve("application.properties");
+                }
+                cur = cur.getParent();
+            }
+        }
+        return Path.of(System.getProperty("user.dir", "."))
+                .toAbsolutePath()
+                .normalize()
+                .resolve("src")
+                .resolve("main")
+                .resolve("resources")
+                .resolve("application.properties");
     }
 
     private static String safe(String s, String fallback) {
@@ -211,4 +414,44 @@ public class EventReminderEmailService {
                 .replace(">", "&gt;")
                 .replace("\"", "&quot;");
     }
+
+    private static String formatEventDuration(Event event) {
+        if (event == null || event.getDateDebut() == null || event.getDateFin() == null) {
+            return "Non précisée";
+        }
+        long minutes = Duration.between(event.getDateDebut(), event.getDateFin()).toMinutes();
+        if (minutes <= 0) {
+            return "Non précisée";
+        }
+        long hours = minutes / 60;
+        long mins = minutes % 60;
+        if (hours > 0 && mins > 0) {
+            return hours + " h " + mins + " min";
+        }
+        if (hours > 0) {
+            return hours + " h";
+        }
+        return mins + " min";
+    }
+
+    private static boolean isOnlineOrHybridMode(String mode) {
+        if (mode == null) {
+            return false;
+        }
+        String normalized = mode.trim().toLowerCase(Locale.ROOT);
+        return normalized.contains("en ligne") || normalized.contains("hybride");
+    }
+
+    private static boolean isPresentielOrHybridMode(String mode) {
+        if (mode == null) {
+            return false;
+        }
+        String normalized = mode.trim().toLowerCase(Locale.ROOT);
+        return normalized.contains("hybride")
+                || normalized.contains("présentiel")
+                || normalized.contains("presentiel")
+                || normalized.contains("physique");
+    }
 }
+
+

@@ -95,6 +95,22 @@ public class HuggingFaceTextService {
         return runGeneration(prompt, 190, 0.6);
     }
 
+    public String suggestReplyForParticipantMessage(
+            String eventTitle,
+            String participantMessage,
+            String conversationContext,
+            String eventFacts
+    ) throws Exception {
+        String mergedContext = conversationContext == null ? "" : conversationContext.trim();
+        String facts = eventFacts == null ? "" : eventFacts.trim();
+        if (!facts.isBlank()) {
+            mergedContext = mergedContext.isBlank()
+                    ? "Faits événement: " + facts
+                    : mergedContext + "\nFaits événement: " + facts;
+        }
+        return suggestReplyForParticipantMessage(eventTitle, participantMessage, mergedContext);
+    }
+
     public String analyzeParticipantMessage(String eventTitle, String participantMessage, String conversationContext)
             throws Exception {
         String safeEvent = eventTitle == null || eventTitle.isBlank() ? "Événement" : eventTitle.trim();

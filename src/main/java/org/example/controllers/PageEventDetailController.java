@@ -523,14 +523,26 @@ public class PageEventDetailController implements PublicShellAware {
         }
         try {
             Optional<EventRegistration> regOpt = registrationService.findByEventAndUser(eventId, u.getId());
-            boolean already = regOpt.isPresent();
-            boolean accepted = regOpt.map(r -> r.getStatut() == RegistrationStatus.ACCEPTE).orElse(false);
+            RegistrationStatus status = regOpt.map(EventRegistration::getStatut).orElse(null);
+            boolean pending = status == RegistrationStatus.EN_ATTENTE;
+            boolean accepted = status == RegistrationStatus.ACCEPTE;
+            boolean refused = status == RegistrationStatus.REFUSE;
             if (registerHint != null) {
-                registerHint.setText(already ? "Vous êtes déjà inscrit·e à cet événement." : "");
+                if (pending) {
+                    registerHint.setText("Votre demande est en attente d'acceptation par l'admin.");
+                    registerHint.setStyle("-fx-text-fill:#a16207; -fx-font-weight:700;");
+                } else if (accepted) {
+                    registerHint.setText("Votre inscription est acceptée. À bientôt.");
+                    registerHint.setStyle("-fx-text-fill:#166534; -fx-font-weight:700;");
+                } else if (refused) {
+                    registerHint.setText("Votre demande a été refusée. Vous pouvez redemander une autre fois.");
+                    registerHint.setStyle("-fx-text-fill:#b91c1c; -fx-font-weight:700;");
+                } else {
+                    registerHint.setText("");
+                    registerHint.setStyle("");
+                }
             }
-            if (registerBtn != null) {
-                registerBtn.setDisable(already);
-            }
+            applyRegisterButtonVisualState(status);
             if (joinOnlineBtn != null) {
                 boolean showJoin = accepted && isOnlineOrHybridMode(loaded);
                 joinOnlineBtn.setVisible(showJoin);
@@ -539,10 +551,45 @@ public class PageEventDetailController implements PublicShellAware {
         } catch (SQLException ex) {
             if (registerHint != null) {
                 registerHint.setText("");
+                registerHint.setStyle("");
             }
             if (joinOnlineBtn != null) {
                 joinOnlineBtn.setVisible(false);
                 joinOnlineBtn.setManaged(false);
+            }
+            applyRegisterButtonVisualState(null);
+        }
+    }
+
+    private void applyRegisterButtonVisualState(RegistrationStatus status) {
+        if (registerBtn == null) {
+            return;
+        }
+        registerBtn.getStyleClass().removeAll(
+                "event-detail-sidebar-btn-blue",
+                "event-detail-sidebar-btn-yellow",
+                "event-detail-sidebar-btn-green");
+        if (status == null) {
+            registerBtn.setDisable(false);
+            registerBtn.setText("S'inscrire");
+            registerBtn.getStyleClass().add("event-detail-sidebar-btn-blue");
+            return;
+        }
+        switch (status) {
+            case EN_ATTENTE -> {
+                registerBtn.setDisable(true);
+                registerBtn.setText("Demande envoyée (en attente)");
+                registerBtn.getStyleClass().add("event-detail-sidebar-btn-yellow");
+            }
+            case ACCEPTE -> {
+                registerBtn.setDisable(true);
+                registerBtn.setText("Inscription acceptée");
+                registerBtn.getStyleClass().add("event-detail-sidebar-btn-green");
+            }
+            case REFUSE -> {
+                registerBtn.setDisable(false);
+                registerBtn.setText("S'inscrire");
+                registerBtn.getStyleClass().add("event-detail-sidebar-btn-blue");
             }
         }
     }
@@ -755,8 +802,37 @@ public class PageEventDetailController implements PublicShellAware {
             return;
         }
         try {
-            if (registrationService.isUserRegistered(eventId, u.getId())) {
-                alert(Alert.AlertType.INFORMATION, "Inscription", "Vous êtes déjà inscrit·e.");
+            Optional<EventRegistration> existingOpt = registrationService.findByEventAndUser(eventId, u.getId());
+            if (existingOpt.isPresent()) {
+                RegistrationStatus st = existingOpt.get().getStatut();
+                if (st == RegistrationStatus.EN_ATTENTE) {
+                    alert(Alert.AlertType.INFORMATION, "Inscription",
+                            "Votre demande est déjà en attente d'acceptation par l'admin.");
+                } else if (st == RegistrationStatus.ACCEPTE) {
+                    alert(Alert.AlertType.INFORMATION, "Inscription",
+                            "Votre inscription est déjà acceptée.");
+                    return;
+                } else if (st == RegistrationStatus.REFUSE) {
+                    registrationService.setStatus(existingOpt.get().getId(), RegistrationStatus.EN_ATTENTE);
+                    String titre = loaded.getTitre() != null ? loaded.getTitre() : "Événement #" + eventId;
+                    try {
+                        adminNotificationService.addNotification(
+                                AdminNotificationService.TYPE_INSCRIPTION_DEMANDE,
+                                eventId,
+                                u.getId(),
+                                "Redemande d'inscription : « " + titre + " » — en attente de validation.");
+                        userNotificationService.addNotification(
+                                u.getId(),
+                                UserNotificationService.TYPE_EVENT_REGISTRATION_PENDING,
+                                eventId,
+                                "Votre redemande d'inscription à « " + titre + " » est en attente de validation.");
+                    } catch (SQLException ignored) {
+                        // l'action principale (redemande) est déjà appliquée
+                    }
+                    alert(Alert.AlertType.INFORMATION, "Inscription",
+                            "Votre redemande a été envoyée (en attente d'acceptation).");
+                    refreshAuthUi();
+                }
                 return;
             }
             EventRegistration r = new EventRegistration();
@@ -783,7 +859,8 @@ public class PageEventDetailController implements PublicShellAware {
             refreshAuthUi();
         } catch (SQLException ex) {
             if (ex.getErrorCode() == 1062) {
-                alert(Alert.AlertType.INFORMATION, "Inscription", "Vous êtes déjà inscrit·e.");
+                alert(Alert.AlertType.INFORMATION, "Inscription",
+                        "Votre demande est déjà enregistrée (en attente d'acceptation).");
             } else {
                 alert(Alert.AlertType.ERROR, "Inscription", ex.getMessage());
             }

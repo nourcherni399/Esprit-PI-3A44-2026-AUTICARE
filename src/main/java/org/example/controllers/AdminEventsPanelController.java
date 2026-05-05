@@ -1,5 +1,7 @@
 package org.example.controllers;
 
+import com.sun.net.httpserver.HttpExchange;
+import com.sun.net.httpserver.HttpServer;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.collections.FXCollections;
@@ -31,6 +33,7 @@ import org.example.models.Role;
 import org.example.MainApp;
 import org.example.services.EventRegistrationService;
 import org.example.services.EventMessageService;
+import org.example.services.EventRegistrationTicketEmailService;
 import org.example.services.EventService;
 import org.example.services.EventReminderEmailService;
 import org.example.services.ExternalParticipantsPdfService;
@@ -50,6 +53,8 @@ import javafx.stage.FileChooser;
 
 import java.awt.Desktop;
 import java.net.URI;
+import java.net.URLDecoder;
+import java.net.InetSocketAddress;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -70,6 +75,9 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.Properties;
 
 /**
  * Panneau « Gestion des événements » pour l’admin (sidebar), sans le {@code TabPane} du dashboard.
@@ -102,6 +110,7 @@ public class AdminEventsPanelController {
 
     @FXML private TextField searchField;
     @FXML private ComboBox<String> sortOrderBox;
+    @FXML private Label checkinServerHintLabel;
 
     @FXML private VBox eventsListLayer;
     @FXML private ScrollPane eventsScrollRoot;
@@ -144,10 +153,12 @@ public class AdminEventsPanelController {
     @FXML private Label detailDescriptionLabel;
     @FXML private Label detailParticipantsHeader;
     @FXML private Label detailParticipantsBody;
+    @FXML private Label detailQrValidationLabel;
     @FXML private Label detailDiscussionBody;
     @FXML private Label detailUnreadBadgeLabel;
     @FXML private VBox detailParticipantsCard;
     @FXML private VBox detailParticipantsTableBox;
+    @FXML private TextField detailQrTicketInput;
     @FXML private VBox detailDiscussionCard;
     @FXML private VBox detailConversationsListBox;
     @FXML private VBox detailConversationPlaceholderBox;
@@ -203,6 +214,9 @@ public class AdminEventsPanelController {
     private final HuggingFaceTextService huggingFaceTextService = new HuggingFaceTextService();
     private final GoogleCustomSearchService googleCustomSearchService = new GoogleCustomSearchService();
     private final EventReminderEmailService eventReminderEmailService = new EventReminderEmailService();
+    private final EventRegistrationTicketEmailService eventRegistrationTicketEmailService = new EventRegistrationTicketEmailService();
+    private HttpServer localQrCheckinServer;
+    private volatile boolean localQrCheckinServerStarted;
 
     /** Derniers résultats CSE, pour l’appel à l’IA. */
     private final List<GoogleCustomSearchService.CseResult> lastWorldSearchResults = new ArrayList<>();
@@ -242,12 +256,14 @@ public class AdminEventsPanelController {
         wireScrollContentFullWidth();
         if (worldSearchPeriod != null) {
             worldSearchPeriod.setItems(FXCollections.observableArrayList(
-                    "Ce mois", "Ce trimestre", "2025", "2026"));
+                    "Ce mois", "3 derniers mois", "Cette année"));
             worldSearchPeriod.getSelectionModel().selectFirst();
         }
         if (worldSearchKeywords != null) {
             worldSearchKeywords.setTextFormatter(FxInputConstraints.maxLength(400));
         }
+        ensureLocalQrCheckinServer();
+        refreshCheckinServerHintUi();
     }
 
     /** Le contenu du ScrollPane gardait une largeur préférée étroite : on l’aligne sur toute la zone utile. */
@@ -811,8 +827,549 @@ public class AdminEventsPanelController {
                 detailParticipantsBody.setText(n + " inscription(s) pour cet événement.");
             }
         }
+        resetQrValidationFeedback();
         rebuildParticipantsRows(regs);
         bindEventDiscussionView(e);
+    }
+
+    @FXML
+    public void onValidateQrTicket() {
+        if (detailShownEvent == null) {
+            setQrValidationFeedback("Aucun événement sélectionné.", false);
+            return;
+        }
+        String raw = detailQrTicketInput != null && detailQrTicketInput.getText() != null
+                ? detailQrTicketInput.getText().trim()
+                : "";
+        if (raw.isBlank()) {
+            setQrValidationFeedback("Collez d'abord le ticket scanné.", false);
+            return;
+        }
+        try {
+            ParsedTicket ticket = parseQrTicket(raw);
+            ValidationResult vr = validateParsedTicket(ticket, detailShownEvent.getId());
+            setQrValidationFeedback(vr.message(), vr.success());
+        } catch (IllegalArgumentException ex) {
+            setQrValidationFeedback("Format QR invalide. Format attendu : AUTICARE|EVENT=...|REG=...|USER=...", false);
+        } catch (Exception ex) {
+            setQrValidationFeedback("Erreur pendant la validation du QR: " + safeErrorMessage(ex), false);
+        }
+    }
+
+    private ValidationResult validateParsedTicket(ParsedTicket ticket, Integer expectedEventId) {
+        try {
+            Optional<EventRegistration> regOpt = registrationService.findById(ticket.registrationId());
+            if (regOpt.isEmpty()) {
+                return ValidationResult.error("Ticket invalide : inscription introuvable.");
+            }
+            EventRegistration reg = regOpt.get();
+            if (reg.getEvenementId() != ticket.eventId()) {
+                return ValidationResult.error("Ticket invalide : l'événement du ticket ne correspond pas.");
+            }
+            if (reg.getUtilisateurId() != ticket.userId()) {
+                return ValidationResult.error("Ticket invalide : utilisateur du ticket incorrect.");
+            }
+            if (expectedEventId != null && expectedEventId > 0 && expectedEventId != ticket.eventId()) {
+                return ValidationResult.error(
+                        "Ticket valide, mais il appartient à l'événement #" + ticket.eventId()
+                                + " (pas à la fiche actuellement ouverte).");
+            }
+            if (reg.getStatut() != RegistrationStatus.ACCEPTE) {
+                return ValidationResult.error(
+                        "Ticket reconnu, mais l'inscription n'est pas acceptée (statut: " + reg.getStatut() + ").");
+            }
+            // Check-in validé : marquer présence en base.
+            registrationService.markPresent(reg.getId());
+            User u = userService.findById(reg.getUtilisateurId()).orElse(null);
+            String participant = displayNameForUser(u, reg.getUtilisateurId());
+            return ValidationResult.ok(
+                    "Ticket valide : l'inscription de " + participant + " est acceptée et la présence est enregistrée.");
+        } catch (Exception ex) {
+            return ValidationResult.error("Erreur pendant la validation du QR: " + safeErrorMessage(ex));
+        }
+    }
+
+    private void resetQrValidationFeedback() {
+        if (detailQrTicketInput != null) {
+            detailQrTicketInput.clear();
+        }
+        if (detailQrValidationLabel != null) {
+            detailQrValidationLabel.setText("");
+            detailQrValidationLabel.setVisible(false);
+            detailQrValidationLabel.setManaged(false);
+            detailQrValidationLabel.setStyle("");
+        }
+    }
+
+    private void setQrValidationFeedback(String message, boolean success) {
+        if (detailQrValidationLabel == null) {
+            return;
+        }
+        detailQrValidationLabel.setText(message == null ? "" : message.trim());
+        detailQrValidationLabel.setVisible(true);
+        detailQrValidationLabel.setManaged(true);
+        if (success) {
+            detailQrValidationLabel.setStyle("-fx-text-fill:#166534; -fx-font-weight:700;");
+        } else {
+            detailQrValidationLabel.setStyle("-fx-text-fill:#b91c1c; -fx-font-weight:700;");
+        }
+    }
+
+    private ParsedTicket parseQrTicket(String rawValue) {
+        String payload = extractTicketPayload(rawValue);
+        String normalized = payload == null ? "" : payload.trim();
+        if (normalized.isBlank()) {
+            throw new IllegalArgumentException("empty payload");
+        }
+        String[] tokens = normalized.split("\\|");
+        if (tokens.length < 4 || !"AUTICARE".equalsIgnoreCase(tokens[0].trim())) {
+            throw new IllegalArgumentException("bad prefix");
+        }
+        Integer eventId = null;
+        Integer regId = null;
+        Integer userId = null;
+        for (int i = 1; i < tokens.length; i++) {
+            String[] kv = tokens[i].split("=", 2);
+            if (kv.length != 2) {
+                continue;
+            }
+            String key = kv[0].trim().toUpperCase(Locale.ROOT);
+            String val = kv[1].trim();
+            switch (key) {
+                case "EVENT" -> eventId = parsePositiveInt(val);
+                case "REG" -> regId = parsePositiveInt(val);
+                case "USER" -> userId = parsePositiveInt(val);
+                default -> {
+                    // ignore unknown fields
+                }
+            }
+        }
+        if (eventId == null || regId == null || userId == null) {
+            throw new IllegalArgumentException("missing keys");
+        }
+        return new ParsedTicket(eventId, regId, userId);
+    }
+
+    private String extractTicketPayload(String input) {
+        String raw = input == null ? "" : input.trim();
+        if (raw.isBlank()) {
+            return "";
+        }
+        if (raw.toUpperCase(Locale.ROOT).contains("AUTICARE|EVENT=")) {
+            return raw;
+        }
+        if (raw.startsWith("http://") || raw.startsWith("https://")) {
+            Map<String, String> params = parseQueryParamsFromUrl(raw);
+            String event = params.get("event");
+            String reg = firstNonBlank(
+                    params.get("rid"),
+                    params.get("reg"),
+                    params.get("registration"),
+                    params.get("registrationid"),
+                    params.get("®"));
+            String user = params.get("user");
+            if (event != null && reg != null && user != null) {
+                return "AUTICARE|EVENT=" + event + "|REG=" + reg + "|USER=" + user;
+            }
+            String code = params.get("code");
+            if (code != null && !code.isBlank()) {
+                return code;
+            }
+        }
+        // Cas serveur local HttpExchange: URI brute "/checkin?event=..&reg=..&user=.."
+        int qPos = raw.indexOf('?');
+        if (qPos >= 0 && qPos < raw.length() - 1) {
+            String rawQuery = raw.substring(qPos + 1);
+            Map<String, String> params = parseQueryParams(rawQuery);
+            String event = params.get("event");
+            String reg = firstNonBlank(
+                    params.get("rid"),
+                    params.get("reg"),
+                    params.get("registration"),
+                    params.get("registrationid"),
+                    params.get("®"));
+            String user = params.get("user");
+            if (event != null && reg != null && user != null) {
+                return "AUTICARE|EVENT=" + event + "|REG=" + reg + "|USER=" + user;
+            }
+            String code = params.get("code");
+            if (code != null && !code.isBlank()) {
+                return code;
+            }
+        }
+        // Fallback ultra tolérant: récupère les IDs même si les séparateurs '&' sont altérés.
+        String fallback = buildPayloadFromCorruptedUrl(raw);
+        if (fallback != null) {
+            return fallback;
+        }
+        String lower = raw.toLowerCase(Locale.ROOT);
+        int textParamPos = lower.indexOf("text=");
+        if (textParamPos < 0) {
+            return raw;
+        }
+        String encoded = raw.substring(textParamPos + 5);
+        int amp = encoded.indexOf('&');
+        if (amp >= 0) {
+            encoded = encoded.substring(0, amp);
+        }
+        return URLDecoder.decode(encoded, java.nio.charset.StandardCharsets.UTF_8);
+    }
+
+    private String buildPayloadFromCorruptedUrl(String raw) {
+        try {
+            var eventM = java.util.regex.Pattern.compile("event=(\\d+)", java.util.regex.Pattern.CASE_INSENSITIVE).matcher(raw);
+            var regM = java.util.regex.Pattern.compile("(?:rid|reg|®)=(\\d+)", java.util.regex.Pattern.CASE_INSENSITIVE).matcher(raw);
+            var userM = java.util.regex.Pattern.compile("user=(\\d+)", java.util.regex.Pattern.CASE_INSENSITIVE).matcher(raw);
+            if (eventM.find() && regM.find() && userM.find()) {
+                return "AUTICARE|EVENT=" + eventM.group(1)
+                        + "|REG=" + regM.group(1)
+                        + "|USER=" + userM.group(1);
+            }
+        } catch (Exception ignored) {
+            return null;
+        }
+        return null;
+    }
+
+    private Map<String, String> parseQueryParamsFromUrl(String rawUrl) {
+        try {
+            URI uri = URI.create(rawUrl.trim());
+            return parseQueryParams(uri.getRawQuery());
+        } catch (Exception ignored) {
+            return new HashMap<>();
+        }
+    }
+
+    private Map<String, String> parseQueryParams(String rawQuery) {
+        Map<String, String> map = new HashMap<>();
+        try {
+            String query = rawQuery;
+            if (query == null || query.isBlank()) {
+                return map;
+            }
+            for (String part : query.split("&")) {
+                if (part == null || part.isBlank()) {
+                    continue;
+                }
+                String[] kv = part.split("=", 2);
+                String key = URLDecoder.decode(kv[0], java.nio.charset.StandardCharsets.UTF_8).trim().toLowerCase(Locale.ROOT);
+                String val = kv.length > 1
+                        ? URLDecoder.decode(kv[1], java.nio.charset.StandardCharsets.UTF_8).trim()
+                        : "";
+                if ("®".equals(key)) {
+                    key = "reg";
+                }
+                if (!key.isBlank()) {
+                    map.put(key, val);
+                }
+            }
+        } catch (Exception ignored) {
+            return map;
+        }
+        return map;
+    }
+
+    private static String firstNonBlank(String... values) {
+        if (values == null) {
+            return null;
+        }
+        for (String v : values) {
+            if (v != null && !v.isBlank()) {
+                return v.trim();
+            }
+        }
+        return null;
+    }
+
+    private int parsePositiveInt(String raw) {
+        int value = Integer.parseInt(raw);
+        if (value <= 0) {
+            throw new IllegalArgumentException("non positive");
+        }
+        return value;
+    }
+
+    private static String safeErrorMessage(Throwable t) {
+        if (t == null) {
+            return "inconnue";
+        }
+        String m = t.getMessage();
+        if (m == null || m.isBlank()) {
+            return t.toString();
+        }
+        String oneLine = m.replace('\n', ' ').replace('\r', ' ').trim();
+        return oneLine.length() > 220 ? oneLine.substring(0, 220) + "..." : oneLine;
+    }
+
+    private static String escapeHtml(String s) {
+        if (s == null) {
+            return "";
+        }
+        return s.replace("&", "&amp;")
+                .replace("<", "&lt;")
+                .replace(">", "&gt;")
+                .replace("\"", "&quot;");
+    }
+
+    private record ParsedTicket(int eventId, int registrationId, int userId) {
+    }
+
+    private record ValidationResult(boolean success, String message) {
+        private static ValidationResult ok(String message) {
+            return new ValidationResult(true, message);
+        }
+
+        private static ValidationResult error(String message) {
+            return new ValidationResult(false, message);
+        }
+    }
+
+    private void ensureLocalQrCheckinServer() {
+        if (localQrCheckinServerStarted) {
+            return;
+        }
+        synchronized (this) {
+            if (localQrCheckinServerStarted) {
+                return;
+            }
+            int port = readCheckinPort();
+            try {
+                // 0.0.0.0 : écoute IPv4 sur toutes les interfaces (LAN), pour que l’iPhone atteigne le PC via 192.168.x.x
+                HttpServer server = HttpServer.create(new InetSocketAddress("0.0.0.0", port), 0);
+                server.createContext("/checkin", this::handleLocalCheckinRequest);
+                server.setExecutor(java.util.concurrent.Executors.newCachedThreadPool());
+                server.start();
+                localQrCheckinServer = server;
+                localQrCheckinServerStarted = true;
+                System.out.println("[AutiCare] Local QR check-in server started on 0.0.0.0:" + port);
+            } catch (Exception ex) {
+                localQrCheckinServerStarted = false;
+                localQrCheckinServer = null;
+                System.err.println("[AutiCare] Unable to start local QR check-in server: " + ex.getMessage());
+                String base = readClasspathCheckinBaseUrl();
+                if (base != null && !base.isBlank()) {
+                    Platform.runLater(() -> {
+                        Alert a = new Alert(Alert.AlertType.WARNING);
+                        a.setTitle("Scan QR téléphone");
+                        a.setHeaderText(null);
+                        a.setContentText(
+                                "Le mini-serveur check-in n’a pas démarré (port " + port + "). "
+                                        + "Safari sur l’iPhone affichera « impossible de se connecter » tant que ce serveur n’écoute pas.\n\n"
+                                        + "Vérifiez : port libre (auticare.checkin.port), pare-feu Windows, lancez l’app en admin une fois pour la règle pare-feu.\n\n"
+                                        + "Détail : " + safeErrorMessage(ex));
+                        a.show();
+                    });
+                }
+            }
+        }
+    }
+
+    private static String readClasspathCheckinBaseUrl() {
+        try (InputStream in = AdminEventsPanelController.class.getClassLoader()
+                .getResourceAsStream("application.properties")) {
+            if (in == null) {
+                return "";
+            }
+            Properties p = new Properties();
+            p.load(in);
+            String v = p.getProperty("auticare.checkin.baseUrl");
+            return v != null ? v.trim() : "";
+        } catch (Exception ignored) {
+            return "";
+        }
+    }
+
+    private void refreshCheckinServerHintUi() {
+        if (checkinServerHintLabel == null) {
+            return;
+        }
+        String base = readClasspathCheckinBaseUrl();
+        int port = readCheckinPort();
+        if (base.isBlank()) {
+            checkinServerHintLabel.setManaged(false);
+            checkinServerHintLabel.setVisible(false);
+            checkinServerHintLabel.setText("");
+            return;
+        }
+        checkinServerHintLabel.setManaged(true);
+        checkinServerHintLabel.setVisible(true);
+        if (localQrCheckinServerStarted) {
+            checkinServerHintLabel.setText(
+                    "Scan QR (téléphone) : serveur actif sur le port " + port
+                            + ". URL dans les mails / QR : " + base
+                            + " — iPhone et PC doivent être sur le même Wi‑Fi ; l’IP du PC doit correspondre à cette URL (ipconfig).");
+            checkinServerHintLabel.setStyle("-fx-text-fill: #166534;");
+        } else {
+            checkinServerHintLabel.setText(
+                    "Scan QR (téléphone) : le serveur local n’est pas démarré (port " + port
+                            + "). Safari ne pourra pas joindre " + base
+                            + " tant que l’appli est ouverte et que le port est libre / autorisé au pare-feu.");
+            checkinServerHintLabel.setStyle("-fx-text-fill: #b45309;");
+        }
+    }
+
+    private int readCheckinPort() {
+        String fromProp = System.getProperty("auticare.checkin.port");
+        if (fromProp != null && !fromProp.isBlank()) {
+            try {
+                return Integer.parseInt(fromProp.trim());
+            } catch (Exception ignored) {
+                // fallback
+            }
+        }
+        String fromEnv = System.getenv("AUTICARE_CHECKIN_PORT");
+        if (fromEnv != null && !fromEnv.isBlank()) {
+            try {
+                return Integer.parseInt(fromEnv.trim());
+            } catch (Exception ignored) {
+                // fallback
+            }
+        }
+        return 8787;
+    }
+
+    private void handleLocalCheckinRequest(HttpExchange exchange) throws java.io.IOException {
+        try {
+            String method = exchange.getRequestMethod();
+            if (!"GET".equalsIgnoreCase(method)) {
+                writeCheckinHttpResponse(exchange, 405, "Method Not Allowed", false, "", "");
+                return;
+            }
+            String rawUrl = exchange.getRequestURI().toString();
+            ParsedTicket ticket;
+            try {
+                ticket = parseQrTicket(rawUrl);
+            } catch (Exception parseEx) {
+                writeCheckinHttpResponse(exchange, 400, "QR invalide : format non reconnu.", false, "", "");
+                return;
+            }
+            ValidationResult vr = validateParsedTicket(ticket, null);
+            String eventTitle = "Événement #" + ticket.eventId();
+            String participantsStatusHtml = "";
+            try {
+                Event ev = eventService.findById(ticket.eventId()).orElse(null);
+                if (ev != null && ev.getTitre() != null && !ev.getTitre().isBlank()) {
+                    eventTitle = ev.getTitre().trim();
+                }
+                participantsStatusHtml = buildParticipantsStatusHtml(ticket.eventId(), ticket.userId());
+            } catch (Exception ignored) {
+                participantsStatusHtml = "<p style=\"color:#64748b;\">Liste des participants indisponible pour le moment.</p>";
+            }
+            Platform.runLater(() -> {
+                if (detailShownEvent != null) {
+                    setQrValidationFeedback(
+                            "[Scan téléphone] " + vr.message(),
+                            vr.success());
+                    if (vr.success() && detailShownEvent.getId() == ticket.eventId()) {
+                        try {
+                            bindEventDetailView(detailShownEvent);
+                        } catch (Exception ignored) {
+                            // no-op refresh best effort
+                        }
+                    }
+                }
+            });
+            writeCheckinHttpResponse(
+                    exchange,
+                    vr.success() ? 200 : 422,
+                    vr.message(),
+                    vr.success(),
+                    eventTitle,
+                    participantsStatusHtml);
+        } catch (Exception ex) {
+            writeCheckinHttpResponse(exchange, 500, "Erreur serveur check-in: " + safeErrorMessage(ex), false, "", "");
+        }
+    }
+
+    private void writeCheckinHttpResponse(HttpExchange exchange, int status, String message, boolean success,
+                                          String eventTitle, String participantsStatusHtml)
+            throws java.io.IOException {
+        String safeMessage = message == null ? "" : message.trim();
+        String color = success ? "#166534" : "#b91c1c";
+        String safeTitle = eventTitle == null || eventTitle.isBlank() ? "—" : eventTitle.trim();
+        String listHtml = participantsStatusHtml == null ? "" : participantsStatusHtml;
+        String html = """
+                <!doctype html>
+                <html lang="fr">
+                <head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/></head>
+                <body style="font-family:Segoe UI,Arial,sans-serif;background:#f8fafc;padding:24px;">
+                  <div style="max-width:620px;margin:0 auto;background:#ffffff;border:1px solid #e2e8f0;border-radius:12px;padding:20px;">
+                    <h2 style="margin:0 0 10px 0;color:%s;">AutiCare - Validation ticket</h2>
+                    <p style="margin:0 0 10px 0;color:#0f172a;"><strong>Événement :</strong> %s</p>
+                    <p style="margin:0 0 8px 0;color:#0f172a;">%s</p>
+                    <div style="margin-top:14px;border-top:1px solid #e2e8f0;padding-top:12px;">
+                      <h3 style="margin:0 0 8px 0;color:#0f172a;font-size:16px;">Participants et statuts</h3>
+                      %s
+                    </div>
+                    <p style="margin:10px 0 0 0;color:#64748b;font-size:13px;">Vous pouvez fermer cette page.</p>
+                  </div>
+                </body>
+                </html>
+                """.formatted(color, escapeHtml(safeTitle), escapeHtml(safeMessage), listHtml);
+        byte[] bytes = html.getBytes(java.nio.charset.StandardCharsets.UTF_8);
+        exchange.getResponseHeaders().set("Content-Type", "text/html; charset=UTF-8");
+        exchange.sendResponseHeaders(status, bytes.length);
+        try (OutputStream os = exchange.getResponseBody()) {
+            os.write(bytes);
+        } finally {
+            exchange.close();
+        }
+    }
+
+    private String buildParticipantsStatusHtml(int eventId, Integer scannedUserId) throws Exception {
+        List<EventRegistration> regs = registrationService.listParticipants(eventId);
+        if (regs == null || regs.isEmpty()) {
+            return "<p style=\"color:#64748b;\">Aucun participant trouvé.</p>";
+        }
+        StringBuilder sb = new StringBuilder();
+        sb.append("<ul style=\"margin:0;padding-left:18px;color:#0f172a;\">");
+        int shown = 0;
+        for (EventRegistration r : regs) {
+            if (r == null) {
+                continue;
+            }
+            User u = null;
+            try {
+                u = userService.findById(r.getUtilisateurId()).orElse(null);
+            } catch (Exception ignored) {
+                // fallback id
+            }
+            String name = displayNameForUser(u, r.getUtilisateurId());
+            String statusFr = switch (r.getStatut()) {
+                case ACCEPTE -> "Acceptée";
+                case EN_ATTENTE -> "En attente";
+                case REFUSE -> "Refusée";
+            };
+            String statusColor = switch (r.getStatut()) {
+                case ACCEPTE -> "#166534";
+                case EN_ATTENTE -> "#92400e";
+                case REFUSE -> "#991b1b";
+            };
+            boolean scanned = scannedUserId != null && scannedUserId > 0 && scannedUserId == r.getUtilisateurId();
+            String presenceFr = (r.getDatePresence() != null) ? "Présent" : "Non scanné";
+            String presenceColor = (r.getDatePresence() != null) ? "#166534" : "#6b7280";
+            sb.append("<li style=\"margin:4px 0;\">")
+                    .append(escapeHtml(name))
+                    .append(" - <strong style=\"color:")
+                    .append(statusColor)
+                    .append(";\">")
+                    .append(escapeHtml(statusFr))
+                    .append("</strong>")
+                    .append(" - <span style=\"color:")
+                    .append(presenceColor)
+                    .append(";\">")
+                    .append(escapeHtml(presenceFr))
+                    .append("</span>")
+                    .append(scanned ? " <span style=\"color:#2563eb;\">(QR scanné)</span>" : "")
+                    .append("</li>");
+            shown++;
+            if (shown >= 100) {
+                sb.append("<li style=\"margin:4px 0;color:#64748b;\">…</li>");
+                break;
+            }
+        }
+        sb.append("</ul>");
+        return sb.toString();
     }
 
     private void rebuildParticipantsRows(List<EventRegistration> regs) {
@@ -906,6 +1463,7 @@ public class AdminEventsPanelController {
                         UserNotificationService.TYPE_EVENT_REGISTRATION_ACCEPTED,
                         reg.getEvenementId(),
                         "Votre inscription à « " + title + " » a été acceptée.");
+                sendAcceptedTicketEmailAsync(reg);
             } else if (status == RegistrationStatus.REFUSE) {
                 userNotificationService.addNotification(
                         reg.getUtilisateurId(),
@@ -920,6 +1478,33 @@ public class AdminEventsPanelController {
         } catch (Exception ex) {
             showError(ex);
         }
+    }
+
+    private void sendAcceptedTicketEmailAsync(EventRegistration reg) {
+        if (reg == null) {
+            return;
+        }
+        CompletableFuture.runAsync(() -> {
+            try {
+                User u = userService.findById(reg.getUtilisateurId()).orElse(null);
+                if (u == null || u.getEmail() == null || u.getEmail().isBlank()) {
+                    return;
+                }
+                Event event = detailShownEvent;
+                if (event == null || event.getId() != reg.getEvenementId()) {
+                    event = eventService.findById(reg.getEvenementId()).orElse(null);
+                }
+                if (event == null) {
+                    return;
+                }
+                eventRegistrationTicketEmailService.sendAcceptedRegistrationTicket(u, event, reg);
+            } catch (Exception ex) {
+                Platform.runLater(() -> showInfo(
+                        "E-mail ticket",
+                        "Inscription acceptée, mais l'envoi du ticket QR a échoué: "
+                                + (ex.getMessage() == null ? ex.toString() : ex.getMessage())));
+            }
+        });
     }
 
     private void writeSimpleParticipantsPdf(Path path, List<EventRegistration> regs) throws Exception {

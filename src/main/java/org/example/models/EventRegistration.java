@@ -8,6 +8,7 @@ public class EventRegistration {
     private int utilisateurId;
     private RegistrationStatus statut;
     private LocalDateTime dateInscription;
+    private LocalDateTime datePresence;
 
     public int getId() { return id; }
     public void setId(int id) { this.id = id; }
@@ -19,6 +20,8 @@ public class EventRegistration {
     public void setStatut(RegistrationStatus statut) { this.statut = statut; }
     public LocalDateTime getDateInscription() { return dateInscription; }
     public void setDateInscription(LocalDateTime dateInscription) { this.dateInscription = dateInscription; }
+    public LocalDateTime getDatePresence() { return datePresence; }
+    public void setDatePresence(LocalDateTime datePresence) { this.datePresence = datePresence; }
 
     @Override
     public String toString() {

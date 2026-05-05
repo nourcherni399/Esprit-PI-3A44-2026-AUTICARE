@@ -94,23 +94,36 @@ public class EventRegistrationService implements IService<EventRegistration> {
         return list;
     }
 
-    public List<EventRegistration> findByUserId(int userId) throws SQLException {
-        List<EventRegistration> list = new ArrayList<>();
-        String sql = "SELECT * FROM inscriptions_evenement WHERE utilisateur_id=? ORDER BY date_inscription DESC";
+    public Optional<Integer> findAnyAcceptedEventIdForUser(int userId) throws SQLException {
+        String sql = "SELECT evenement_id FROM inscriptions_evenement WHERE utilisateur_id=? AND statut=? " +
+                "ORDER BY date_inscription DESC, id DESC LIMIT 1";
         try (PreparedStatement ps = MyDatabase.getConnection().prepareStatement(sql)) {
             ps.setInt(1, userId);
-            ResultSet rs = ps.executeQuery();
-            while (rs.next()) {
-                list.add(map(rs));
+            ps.setString(2, RegistrationStatus.ACCEPTE.name());
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return Optional.of(rs.getInt("evenement_id"));
+                }
+                return Optional.empty();
             }
         }
-        return list;
     }
 
     public void setStatus(int registrationId, RegistrationStatus status) throws SQLException {
         try (PreparedStatement ps = MyDatabase.getConnection().prepareStatement("UPDATE inscriptions_evenement SET statut=? WHERE id=?")) {
             ps.setString(1, status.name());
             ps.setInt(2, registrationId);
+            ps.executeUpdate();
+        }
+    }
+
+    /**
+     * Marque le participant comme présent (check-in QR).
+     */
+    public void markPresent(int registrationId) throws SQLException {
+        try (PreparedStatement ps = MyDatabase.getConnection().prepareStatement(
+                "UPDATE inscriptions_evenement SET checked_in_at=NOW() WHERE id=?")) {
+            ps.setInt(1, registrationId);
             ps.executeUpdate();
         }
     }
@@ -122,6 +135,12 @@ public class EventRegistrationService implements IService<EventRegistration> {
         r.setUtilisateurId(rs.getInt("utilisateur_id"));
         r.setStatut(RegistrationStatus.valueOf(rs.getString("statut")));
         r.setDateInscription(rs.getTimestamp("date_inscription").toLocalDateTime());
+        try {
+            Timestamp checkedIn = rs.getTimestamp("checked_in_at");
+            r.setDatePresence(checkedIn != null ? checkedIn.toLocalDateTime() : null);
+        } catch (SQLException ignored) {
+            r.setDatePresence(null);
+        }
         return r;
     }
 }
