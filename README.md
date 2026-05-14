@@ -1,4 +1,5 @@
 AutiCare – Autism Support Desktop Application
+
 Overview
 
 This project was developed as part of a university academic program in Software Engineering (Academic Year 2025–2026).
@@ -17,19 +18,24 @@ User authentication and role management
 Admin dashboard for content and user management
 Responsive and user-friendly JavaFX interface
 Secure database management
-Tech Stack
+
 Frontend
+
 JavaFX
 FXML
 CSS
+
 Backend
+
 Java
 JDBC
 MySQL
+
 Tools & Technologies
 Scene Builder
 Maven
 Git & GitHub
+
 Architecture
 
 The application follows a layered architecture inspired by the MVC (Model-View-Controller) design pattern.
